@@ -613,12 +613,12 @@ int state_set::is_in(int_value_state i)
 
 int state_set::is_in(units_value_state u)
 {
-  return (unitsset & (1 << (int)u) != 0);
+  return ((unitsset & (1 << (int)u)) != 0);
 }
 
 int state_set::is_in(string_value_state s)
 {
-  return (stringset & (1 << (int)s) != 0);
+  return ((stringset & (1 << (int)s)) != 0);
 }
 
 void state_set::add(units_value_state, int n)
