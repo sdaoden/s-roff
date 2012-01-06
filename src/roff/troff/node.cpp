@@ -4644,7 +4644,7 @@ void hline_node::tprint(troff_output_file *out)
   }
   else {
     hunits rem = x - w*i;
-    if (rem > H0)
+    if (rem > H0) {
       if (n->overlaps_horizontally()) {
 	if (out->is_on())
 	  n->tprint(out);
@@ -4652,6 +4652,7 @@ void hline_node::tprint(troff_output_file *out)
       }
       else
 	out->right(rem);
+    }
     while (--i >= 0)
       if (out->is_on())
 	n->tprint(out);
