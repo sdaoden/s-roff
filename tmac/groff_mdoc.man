@@ -1279,7 +1279,8 @@ macro does not assert a dash in front of every argument.
 Traditionally flags are marked by the preceding dash, however, some commands
 or subsets of commands do not use them.
 Command modifiers may also be specified in conjunction with interactive
-commands such as editor commands.
+commands such as editor commands, or used for fixed command strings given
+on the command line to change program behaviour.
 See
 .Sx Flags .
 .Pp
