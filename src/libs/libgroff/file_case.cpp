@@ -21,6 +21,10 @@
 #include <errno.h>
 #include <stdio.h>
 
+#ifdef HAVE_ZLIB
+# include <zlib.h>
+#endif
+
 #include "errarg.h"
 #include "error.h"
 #include "posix.h"
@@ -41,8 +45,23 @@
 # undef HAVE_UNPACK
 #endif
 
+// (Enclosed by HAVE_UNPACK) Directly support decompression library layer?
+// XXX We yet only support a zlib _LAYER, which is why we directly address zlib
+// XXX functions instead of furtherly abstracting into a struct iolayer or sth.
+// XXX If we would, that can only have read_buf() and close() and we should
+// XXX deal with buffer handling entirely ourselfs, in which case even the
+// XXX popen(3) code path could be enwrapped into struct iolayer; i.e., then
+// XXX the entire public read interface could internally be driven by iolayer
+#ifndef HAVE_ZLIB
+# define HAVE_ZLIB  0
+#endif
+#if HAVE_ZLIB
+# define _LAYER
+#endif
+
 struct args {
   FILE        *a_fp;
+  void        *a_layer;
   char const  *a_path;
   size_t      a_path_len;
   char const  *a_mode;      // Mode for fopen(3), if used
@@ -55,20 +74,21 @@ struct zproc {
   uint8_t     zp_popen;
   uint8_t     zp_ext_len;   // Extension including `.' (<period>)
   uint8_t     zp_cmd_len;
+  uint8_t     zp_layer;     // Uses I/O layer (zlib)
   char        zp_ext[5];
-  char        zp_cmd[16];
+  char        zp_cmd[15];
 };
 
 static zproc const  _zprocs[] = {
-# define __X(C,E) {true, sizeof(E) -1, sizeof(C) -1, E, C}
+# define __X(L,C,E) {true, sizeof(E) -1, sizeof(C) -1, L, E, C}
 # ifdef HAVE_UNPACK_BZ2
-  __X("bzip2 -cdf", ".bz2"),
+  __X(0, "bzip2 -cdf", ".bz2"),
 # endif
 # ifdef HAVE_UNPACK_GZ
-  __X("gzip -cdf", ".gz"),
+  __X(HAVE_ZLIB, "gzip -cdf", ".gz"),
 # endif
 # ifdef HAVE_UNPACK_XZ
-  __X("xz -cdf", ".xz")
+  __X(0, "xz -cdf", ".xz")
 # endif
 # undef __X
 };
@@ -89,7 +109,7 @@ static bool   _try_all_ext(args *ap);
 // Create a FILE* according to zp, return NULL on error
 static args * __run_zproc(args *ap, zproc const *zp);
 
-// Callee needs seek()ing, unpack into temporary file, return NULL on error
+// Callee needs seek()ing or STD I/O, unpack into temporary file, NULL on error
 static args * __unpack(args *ap);
 #endif // HAVE_UNPACK
 
@@ -146,22 +166,36 @@ jleave:
 static args *
 __run_zproc(args *ap, zproc const *zp)
 {
-  char *np = new char[zp->zp_cmd_len + 1 + ap->a_path_len +1];
+# ifdef _LAYER
+  if (zp->zp_layer) {
+    if ((ap->a_layer = gzopen(ap->a_path, "rb")) == NULL) {
+      ap->a_errno = errno;
+      ap = NULL;
+    } else if (ap->a_flags &
+        (file_case::mux_need_seek | file_case::mux_need_stdio))
+      ap = __unpack(ap);
+  } else {
+# endif
+    char *np = new char[zp->zp_cmd_len + 1 + ap->a_path_len +1];
 
-  size_t l;
-  memcpy(np, zp->zp_cmd, l = zp->zp_cmd_len);
-  np[l++] = ' ';
-  memcpy(np + l, ap->a_path, ap->a_path_len +1);
+    size_t l;
+    memcpy(np, zp->zp_cmd, l = zp->zp_cmd_len);
+    np[l++] = ' ';
+    memcpy(np + l, ap->a_path, ap->a_path_len +1);
 
-  if ((ap->a_fp = popen(np, "r")) == NULL) {
-    ap->a_errno = errno;
-    ap = NULL;
-  } else if (ap->a_flags & file_case::mux_need_seek)
-    ap = __unpack(ap);
-  else
-    ap->a_flags |= file_case::fc_pipe;
+    if ((ap->a_fp = popen(np, "r")) == NULL) {
+      ap->a_errno = errno;
+      ap = NULL;
+    } else if (ap->a_flags & file_case::mux_need_seek)
+      ap = __unpack(ap);
+    else
+      ap->a_flags |= file_case::fc_pipe | file_case::fc_have_stdio;
 
-  a_delete np;
+    a_delete np;
+# ifdef _LAYER
+  }
+# endif
+
   return ap;
 }
 
@@ -174,8 +208,21 @@ __unpack(args *ap)
   // xtmpfile uses binary mode and fatal()s on error
   FILE *decomp = xtmpfile(NULL, "groff_unpack"), *decomp_save = decomp;
   for (;;) {
-    size_t oc = fread(buf, sizeof *buf, buf_len, ap->a_fp);
-    if (oc == 0) {
+    size_t oc;
+
+# ifdef _LAYER
+    if (ap->a_layer != NULL) {
+      int i = gzread((gzFile)ap->a_layer, buf, buf_len);
+      if (i == -1) {
+        ap->a_errno = errno;
+        decomp = NULL;
+        break;
+      } else if (i == 0)
+        break;
+      oc = (size_t)i;
+    } else
+# endif
+    if ((oc = fread(buf, sizeof *buf, buf_len, ap->a_fp)) == 0) {
       if (!feof(ap->a_fp)) {
         ap->a_errno = errno;
         decomp = NULL;
@@ -197,12 +244,21 @@ __unpack(args *ap)
       }
     }
   }
+
+# ifdef _LAYER
+  if (ap->a_layer != NULL) {
+    if (gzclose((gzFile)ap->a_layer) != Z_OK)
+      error("decompressor gzclose(3) failed");
+    ap->a_layer = NULL;
+  } else
+# endif
   if (pclose(ap->a_fp) != 0)
     error("decompressor pipe pclose(3) didn't exit cleanly");
 
-  if (decomp != NULL)
+  if (decomp != NULL) {
+    ap->a_flags |= file_case::fc_have_stdio;
     rewind(ap->a_fp = decomp);
-  else {
+  } else {
     fclose(decomp_save);
     ap->a_fp = NULL;
     ap = NULL;
@@ -216,7 +272,8 @@ __unpack(args *ap)
 bool
 file_case::close(void)
 {
-  assert(_file != NULL);
+  assert((_file != NULL && _layer == NULL) ||
+    (_file == NULL && _layer != NULL));
 
   if (!(_flags & fc_const_path))
     a_delete _path;
@@ -224,6 +281,10 @@ file_case::close(void)
   bool rv;
   if (_flags & fc_dont_close)
     rv = true;
+#ifdef _LAYER
+  else if (_layer != NULL)
+    rv = (gzclose((gzFile)_layer) == Z_OK);
+#endif
 #ifdef HAVE_UNPACK
   else if (_flags & fc_pipe)
     rv = (pclose(_file) == 0);
@@ -232,8 +293,9 @@ file_case::close(void)
     rv = (fclose(_file) == 0);
 
 #ifndef NDEBUG
-  _file = NULL;
   _path = NULL;
+  _file = NULL;
+  _layer = NULL;
   _flags = fc_none;
 #endif
   return rv;
@@ -242,46 +304,91 @@ file_case::close(void)
 bool
 file_case::is_eof(void) const
 {
-  return (feof(_file) != 0);
+  bool rv;
+#ifdef _LAYER
+  if (_layer != NULL)
+    rv = (gzeof((gzFile)_layer) != 0);
+  else
+#endif
+    rv = (feof(_file) != 0);
+  return rv;
 }
 
 int
 file_case::get_c(void)
 {
-  return _getc(_file);
+  int rv;
+#ifdef _LAYER
+  if (_layer != NULL)
+    rv = gzgetc((gzFile)_layer);
+  else
+#endif
+    rv = _getc(_file);
+  return rv;
 }
 
 int
 file_case::unget_c(int c)
 {
-  return ungetc(c, _file);
+  int rv;
+#ifdef _LAYER
+  if (_layer != NULL)
+    rv = gzungetc(c, (gzFile)_layer);
+  else
+#endif
+    rv = ungetc(c, _file);
+  return rv;
 }
 
 char *
 file_case::get_line(char *buf, size_t buf_size)
 {
-  buf = fgets(buf, (int)buf_size, _file);
+#ifdef _LAYER
+  if (_layer != NULL)
+    buf = gzgets((gzFile)_layer, buf, (int)buf_size);
+  else
+#endif
+    buf = fgets(buf, (int)buf_size, _file);
   return buf;
 }
 
 size_t
 file_case::get_buf(void *buf, size_t buf_size)
 {
-  return fread(buf, 1, buf_size, _file);
+  size_t rv;
+#ifdef _LAYER
+  if (_layer != NULL) {
+    int i = gzread((gzFile)_layer, buf, (unsigned int)buf_size);
+    rv = (i <= 0) ? 0 : (size_t)i;
+  } else
+#endif
+    rv = fread(buf, 1, buf_size, _file);
+  return rv;
 }
 
 void
 file_case::rewind(void)
 {
-  ::rewind(_file);
+#ifdef _LAYER
+  if (_layer != NULL)
+    gzrewind((gzFile)_layer);
+  else
+#endif
+    ::rewind(_file);
 }
 
 int
 file_case::seek(long offset, seek_whence whence)
 {
-  int w = (whence == seek_set ? SEEK_SET :
+  int x = (whence == seek_set ? SEEK_SET :
       (whence == seek_cur ? SEEK_CUR : SEEK_END));
-  return fseek(_file, offset, w);
+#ifdef _LAYER
+  if (_layer != NULL)
+    x = gzseek((gzFile)_layer, (z_off_t)offset, x);
+  else
+#endif
+    x = fseek(_file, offset, x);
+  return x;
 }
 
 /*static*/ file_case *
@@ -303,6 +410,7 @@ file_case::muxer(char const *path, uint32_t flags)
   file_case *fcp;
   args a;
   a.a_fp = NULL;
+  a.a_layer = NULL;
   a.a_path_len = strlen(a.a_path = path);
   a.a_mode = (flags & mux_need_binary) ? "rb" : "r";
   a.a_flags = flags;
@@ -312,10 +420,10 @@ file_case::muxer(char const *path, uint32_t flags)
   // a packer's extension, i.e., explicitly.  Anyway unpack then, despite flags
 #ifdef HAVE_UNPACK
   if (!_is_ext(&a)) {
-    assert(a.a_fp == NULL);
+    assert(a.a_fp == NULL && a.a_layer == NULL);
     goto jerror;
   }
-  if (a.a_fp != NULL)
+  if (a.a_fp != NULL || a.a_layer != NULL)
     goto jnew;
 #endif
 
@@ -326,8 +434,10 @@ file_case::muxer(char const *path, uint32_t flags)
 #ifdef HAVE_UNPACK
 jnew:
 #endif
-    assert(a.a_fp != NULL);
+    assert((a.a_fp != NULL && a.a_layer == NULL) ||
+      (a.a_fp == NULL && a.a_layer != NULL));
     fcp = new file_case(a.a_fp, path, a.a_flags & ~mux_mask); // XXX real path?
+    fcp->_layer = a.a_layer;
     goto jleave;
   }
   a.a_errno = errno;
