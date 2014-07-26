@@ -5895,7 +5895,8 @@ void source()
   else {
     while (!tok.newline() && !tok.eof())
       tok.next();
-    file_case *fcp = include_search_path.open_file_cautious(nm.contents());
+    file_case *fcp = include_search_path.open_file_cautious(nm.contents(),
+        fcp->mux_unpack);
     if (fcp != NULL)
       input_stack::push(new file_iterator(fcp, nm.contents()));
     else

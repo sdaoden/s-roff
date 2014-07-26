@@ -43,8 +43,13 @@ public:
   enum {
     mux_need_seek   = 1<<(_fc_freebit+0), // File must be seekable
     mux_need_binary = 1<<(_fc_freebit+1), // Need binary I/O
+    mux_unpack      = 1<<(_fc_freebit+2), // Do auto-check for FILE{.gz,.bz2..}
+    mux_no_unpack   = 1<<(_fc_freebit+3), // Do NOT auto-check
+    mux_mask        = ~fc_mask,
     mux_default     = fc_none,
-    mux_mask        = ~fc_mask
+    // Defines the global default strategy for dealing with packed files in case
+    // none of the above has been given explicitly by a callee
+    _mux_unpack_default = mux_unpack
   };
 
   file_case(FILE *fp, char const *path, uint32_t flags=fc_none);
