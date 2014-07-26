@@ -3234,7 +3234,7 @@ macro::macro()
 }
 
 macro::macro(const macro &m)
-: filename(m.filename), lineno(m.lineno), len(m.len),
+: request_or_macro(), filename(m.filename), lineno(m.lineno), len(m.len),
   empty_macro(m.empty_macro), is_a_diversion(m.is_a_diversion),
   is_a_string(m.is_a_string), p(m.p)
 {
