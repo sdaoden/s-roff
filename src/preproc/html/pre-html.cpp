@@ -416,7 +416,7 @@ class char_buffer {
 public:
   char_buffer();
   ~char_buffer();
-  int read_file(FILE *fp);
+  int read_file(file_case *fcp);
   int do_html(int argc, char *argv[]);
   int do_image(int argc, char *argv[]);
   void emit_troff_output(int device_format_selector);
@@ -457,10 +457,10 @@ char_buffer::~char_buffer()
  *              char_blocks.
  */
 
-int char_buffer::read_file(FILE *fp)
+int char_buffer::read_file(file_case *fcp)
 {
   int n;
-  while (!feof(fp)) {
+  while (!fcp->is_eof()) {
     if (tail == NULL) {
       tail = new char_block;
       head = tail;
@@ -473,14 +473,17 @@ int char_buffer::read_file(FILE *fp)
     }
     // at this point we have a tail which is ready for the next SIZE
     // bytes of the file
-    n = fread(tail->buffer, sizeof(char), char_block::SIZE-tail->used, fp);
-    if (n <= 0)
-      // error
-      return 0;
-    else
+    n = fcp->get_buf(tail->buffer, char_block::SIZE - tail->used);
+    if (n != 0)
       tail->used += n * sizeof(char);
+    else {
+      n = fcp->is_eof();
+      goto jleave;
+    }
   }
-  return 1;
+  n = 1;
+jleave:
+  return n;
 }
 
 /*
@@ -1808,25 +1811,25 @@ int main(int argc, char **argv)
 
 static int do_file(const char *filename)
 {
-  FILE *fp;
+  file_case *fcp;
 
   current_filename = filename;
   if (strcmp(filename, "-") == 0)
-    fp = stdin;
+    fcp = new file_case(stdin, "stdin",
+        fcp->fc_dont_close | fcp->fc_const_path /*| fcp->fc_have_stdio*/);
   else {
-    fp = fopen(filename, "r");
-    if (fp == 0) {
+    fcp = file_case::muxer(filename);
+    if (fcp == NULL) {
       error("can't open `%1': %2", filename, strerror(errno));
       return 0;
     }
   }
 
-  if (inputFile.read_file(fp)) {
+  if (inputFile.read_file(fcp)) {
     // XXX
   }
 
-  if (fp != stdin)
-    fclose(fp);
+  delete fcp;
   current_filename = NULL;
   return 1;
 }
