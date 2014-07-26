@@ -108,7 +108,7 @@ int text_file::next()
   for (;;) {
     int i = 0;
     for (;;) {
-      int c = getc(fcp->file());
+      int c = fcp->get_c();
       if (c == EOF)
 	break;
       if (invalid_input_char(c))

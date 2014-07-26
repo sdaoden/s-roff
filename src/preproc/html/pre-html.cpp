@@ -248,9 +248,9 @@ void sys_fatal(const char *s)
  *             global line buffer.
  */
 
-int get_line(FILE *f)
+int get_line(file_case *fcp)
 {
-  if (f == 0)
+  if (fcp == NULL)
     return 0;
   if (linebuf == 0) {
     linebuf = new char[128];
@@ -259,16 +259,16 @@ int get_line(FILE *f)
   int i = 0;
   // skip leading whitespace
   for (;;) {
-    int c = getc(f);
+    int c = fcp->get_c();
     if (c == EOF)
       return 0;
     if (c != ' ' && c != '\t') {
-      ungetc(c, f);
+      fcp->unget_c(c);
       break;
     }
   }
   for (;;) {
-    int c = getc(f);
+    int c = fcp->get_c();
     if (c == EOF)
       break;
     if (i + 1 >= linebufsize) {
@@ -298,7 +298,7 @@ static unsigned int get_resolution(void)
   file_case *fcp;
   if ((fcp = font_path.open_file("devps/DESC", fcp->fc_const_path)) == NULL)
     fatal("can't open devps/DESC");
-  while (get_line(fcp->file())) {
+  while (get_line(fcp)) {
     int n = sscanf(linebuf, "res %u", &res);
     if (n >= 1)
       goto jleave;

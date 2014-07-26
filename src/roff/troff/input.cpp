@@ -343,7 +343,7 @@ int file_iterator::fill(node **)
   ptr = p;
   unsigned char *e = p + BUF_SIZE;
   while (p < e) {
-    int c = getc(_fcp->file());
+    int c = _fcp->get_c();
     if (c == EOF)
       break;
     if (invalid_input_char(c))
@@ -370,13 +370,13 @@ int file_iterator::fill(node **)
 
 int file_iterator::peek()
 {
-  int c = getc(_fcp->file());
+  int c = _fcp->get_c();
   while (invalid_input_char(c)) {
     warning(WARN_INPUT, "invalid input character code %1", int(c));
-    c = getc(_fcp->file());
+    c = _fcp->get_c();
   }
   if (c != EOF)
-    ungetc(c, _fcp->file());
+    _fcp->unget_c(c);
   return c;
 }
 
@@ -6006,9 +6006,9 @@ int parse_bounding_box(char *p, bounding_box *bb)
 #define PS_LINE_MAX 255
 cset white_space("\n\r \t");
 
-int ps_get_line(char *buf, FILE *fp, const char* filename)
+int ps_get_line(char *buf, file_case *fcp, const char* filename)
 {
-  int c = getc(fp);
+  int c = fcp->get_c();
   if (c == EOF) {
     buf[0] = '\0';
     return 0;
@@ -6025,14 +6025,14 @@ int ps_get_line(char *buf, FILE *fp, const char* filename)
       error("PostScript file `%1' is non-conforming "
 	    "because length of line exceeds 255", filename);
     }
-    c = getc(fp);
+    c = fcp->get_c();
   }
   buf[i++] = '\n';
   buf[i] = '\0';
   if (c == '\r') {
-    c = getc(fp);
+    c = fcp->get_c();
     if (c != EOF && c != '\n')
-      ungetc(c, fp);
+      fcp->unget_c(c);
   }
   return 1;
 }
@@ -6045,14 +6045,14 @@ inline void assign_registers(int llx, int lly, int urx, int ury)
   ury_reg_contents = ury;
 }
 
-void do_ps_file(FILE *fp, const char* filename)
+void do_ps_file(file_case *fcp, const char* filename)
 {
   bounding_box bb;
   int bb_at_end = 0;
   char buf[PS_LINE_MAX];
   llx_reg_contents = lly_reg_contents =
     urx_reg_contents = ury_reg_contents = 0;
-  if (!ps_get_line(buf, fp, filename)) {
+  if (!ps_get_line(buf, fcp, filename)) {
     error("`%1' is empty", filename);
     return;
   }
@@ -6061,7 +6061,7 @@ void do_ps_file(FILE *fp, const char* filename)
 	  filename);
     return;
   }
-  while (ps_get_line(buf, fp, filename) != 0) {
+  while (ps_get_line(buf, fcp, filename) != 0) {
     // in header comments, `%X' (`X' any printable character except
     // whitespace) is possible too
     if (buf[0] == '%') {
@@ -6096,12 +6096,12 @@ void do_ps_file(FILE *fp, const char* filename)
     for (offset = 512; !last_try; offset *= 2) {
       int had_trailer = 0;
       int got_bb = 0;
-      if (offset > 32768 || fseek(fp, -offset, 2) == -1) {
+      if (offset > 32768 || fcp->seek(-offset, fcp->seek_end) == -1) {
 	last_try = 1;
-	if (fseek(fp, 0L, 0) == -1)
+	if (fcp->seek(0L, fcp->seek_set) == -1)
 	  break;
       }
-      while (ps_get_line(buf, fp, filename) != 0) {
+      while (ps_get_line(buf, fcp, filename) != 0) {
 	if (buf[0] == '%' && buf[1] == '%') {
 	  if (!had_trailer) {
 	    if (strncmp(buf + 2, "Trailer", 7) == 0)
@@ -6147,7 +6147,7 @@ void ps_bbox_request()
     file_case *fcp = include_search_path.open_file_cautious(nm.contents(),
         fcp->mux_need_seek | fcp->mux_need_binary);
     if (fcp != NULL) {
-      do_ps_file(fcp->file(), nm.contents());
+      do_ps_file(fcp, nm.contents());
       delete fcp;
     } else
       error("can't open `%1': %2", nm.contents(), strerror(errno));
@@ -7175,7 +7175,7 @@ void transparent_file()
     else {
       int bol = 1;
       for (;;) {
-        int c = getc(fcp->file());
+        int c = fcp->get_c();
         if (c == EOF)
           break;
         if (invalid_input_char(c))

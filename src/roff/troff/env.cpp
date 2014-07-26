@@ -3523,7 +3523,7 @@ class hyphen_trie : private trie {
   void do_delete(void *v);
   void insert_pattern(const char *pat, int patlen, int *num);
   void insert_hyphenation(dictionary *ex, const char *pat, int patlen);
-  int hpf_getc(FILE *f);
+  int hpf_getc(file_case *fcp);
 public:
   hyphen_trie() {}
   ~hyphen_trie() {}
@@ -3785,18 +3785,18 @@ void hyphen_trie::do_delete(void *v)
 
 */
 
-int hyphen_trie::hpf_getc(FILE *f)
+int hyphen_trie::hpf_getc(file_case *fcp)
 {
-  int c = getc(f);
+  int c = fcp->get_c();
   int c1;
   int cc = 0;
   if (c != '^')
     return c;
-  c = getc(f);
+  c = fcp->get_c();
   if (c != '^')
     goto fail;
-  c = getc(f);
-  c1 = getc(f);
+  c = fcp->get_c();
+  c1 = fcp->get_c();
   if (((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'))
       && ((c1 >= '0' && c1 <= '9') || (c1 >= 'a' && c1 <= 'f'))) {
     if (c >= '0' && c <= '9')
@@ -3810,7 +3810,7 @@ int hyphen_trie::hpf_getc(FILE *f)
     cc = c * 16 + c1;
   }
   else {
-    ungetc(c1, f);
+    fcp->unget_c(c1);
     if (c >= 0 && c <= 63)
       cc = c + 64;
     else if (c >= 64 && c <= 127)
@@ -3847,24 +3847,24 @@ void hyphen_trie::read_patterns_file(const char *name, int append,
     goto jleave;
   }
 
-  for (c = hpf_getc(fcp->file());;) {
+  for (c = hpf_getc(fcp);;) {
     for (;;) {
       if (c == '%') {		// skip comments
 	do {
-	  c = getc(fcp->file());
+	  c = fcp->get_c();
 	} while (c != EOF && c != '\n');
       }
       if (c == EOF || !csspace(c))
 	break;
-      c = hpf_getc(fcp->file());
+      c = hpf_getc(fcp);
     }
     if (c == EOF) {
       if (have_keyword || traditional)	// we are done
 	break;
       else {				// rescan file in `traditional' mode
-	rewind(fcp->file());
+	fcp->rewind();
 	traditional = 1;
-	c = hpf_getc(fcp->file());
+	c = hpf_getc(fcp);
 	continue;
       }
     }
@@ -3878,14 +3878,14 @@ void hyphen_trie::read_patterns_file(const char *name, int append,
 	  buf[i++] = c;
 	  num[i] = 0;
 	}
-	c = hpf_getc(fcp->file());
+	c = hpf_getc(fcp);
       } while (i < WORD_MAX && c != EOF && !csspace(c)
 	       && c != '%' && c != '{' && c != '}');
     }
     if (!traditional) {
       if (i >= 9 && !strncmp(buf + i - 9, "\\patterns", 9)) {
 	while (csspace(c))
-	  c = hpf_getc(fcp->file());
+	  c = hpf_getc(fcp);
 	if (c == '{') {
 	  if (have_patterns || have_hyphenation)
 	    error("\\patterns not allowed inside of %1 group",
@@ -3894,13 +3894,13 @@ void hyphen_trie::read_patterns_file(const char *name, int append,
 	    have_patterns = 1;
 	    have_keyword = 1;
 	  }
-	  c = hpf_getc(fcp->file());
+	  c = hpf_getc(fcp);
 	  continue;
 	}
       }
       else if (i >= 12 && !strncmp(buf + i - 12, "\\hyphenation", 12)) {
 	while (csspace(c))
-	  c = hpf_getc(fcp->file());
+	  c = hpf_getc(fcp);
 	if (c == '{') {
 	  if (have_patterns || have_hyphenation)
 	    error("\\hyphenation not allowed inside of %1 group",
@@ -3909,7 +3909,7 @@ void hyphen_trie::read_patterns_file(const char *name, int append,
 	    have_hyphenation = 1;
 	    have_keyword = 1;
 	  }
-	  c = hpf_getc(fcp->file());
+	  c = hpf_getc(fcp);
 	  continue;
 	}
       }
@@ -3930,19 +3930,19 @@ void hyphen_trie::read_patterns_file(const char *name, int append,
 	  if (i > 0)
 	    final_hyphenation = 1;
 	}
-	c = hpf_getc(fcp->file());
+	c = hpf_getc(fcp);
       }
       else if (c == '{') {
 	if (have_patterns || have_hyphenation)
 	  error("`{' not allowed within %1 group",
 		have_patterns ? "\\patterns" : "\\hyphenation");
-	c = hpf_getc(fcp->file()); // skipped if not starting \patterns
-				// or \hyphenation
+	c = hpf_getc(fcp); // skipped if not starting \patterns
+			// or \hyphenation
       }
     }
     else {
       if (c == '{' || c == '}')
-	c = hpf_getc(fcp->file());
+	c = hpf_getc(fcp);
     }
     if (i > 0) {
       if (have_patterns || final_pattern || traditional) {

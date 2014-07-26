@@ -1558,7 +1558,7 @@ void troff_output_file::really_copy_file(hunits x, vunits y,
       fcp->fc_const_path);
   if (fcp != NULL) {
     int c;
-    while ((c = getc(fcp->file())) != EOF)
+    while ((c = fcp->get_c()) != EOF)
       put(char(c));
     delete fcp;
   } else

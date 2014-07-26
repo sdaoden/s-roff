@@ -166,7 +166,7 @@ int do_file(const char *filename)
   current_lineno = 1;
   set_location();
   for (;;) {
-    int c = getc(fcp->file());
+    int c = fcp->get_c();
     if (c == EOF)
       break;
     switch (state) {
@@ -224,7 +224,7 @@ int do_file(const char *filename)
     case HAD_so:
       if (c == ' ' || c == '\n' || compatible_flag) {
 	string line;
-	for (; c != EOF && c != '\n'; c = getc(fcp->file()))
+	for (; c != EOF && c != '\n'; c = fcp->get_c())
 	  line += c;
 	current_lineno++;
 	line += '\n';
@@ -256,7 +256,7 @@ int do_file(const char *filename)
     case HAD_lf:
       if (c == ' ' || c == '\n' || compatible_flag) {
 	string line;
-	for (; c != EOF && c != '\n'; c = getc(fcp->file()))
+	for (; c != EOF && c != '\n'; c = fcp->get_c())
 	  line += c;
 	current_lineno++;
 	line += '\n';

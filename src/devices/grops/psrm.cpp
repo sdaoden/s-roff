@@ -323,7 +323,7 @@ void resource_manager::output_prolog(ps_output &out)
   fputs("%%BeginResource: ", outfp);
   procset_resource->print_type_and_name(outfp);
   putc('\n', outfp);
-  process_file(-1, fcp->file(), fcp->path(), outfp);
+  process_file(-1, fcp, outfp);
   fputs("%%EndResource\n", outfp);
 
   delete fcp;
@@ -377,7 +377,7 @@ void resource_manager::supply_resource(resource *r, int rank, FILE *outfp,
         putc('\n', outfp);
       }
     }
-    process_file(rank, fcp->file(), fcp->path(), outfp);
+    process_file(rank, fcp, outfp);
     delete fcp;
 
     if (outfp) {
@@ -406,10 +406,10 @@ void resource_manager::supply_resource(resource *r, int rank, FILE *outfp,
 
 #define PS_MAGIC "%!PS-Adobe-"
 
-static int ps_get_line(string &buf, FILE *fp)
+static int ps_get_line(string &buf, file_case *fcp)
 {
   buf.clear();
-  int c = getc(fp);
+  int c = fcp->get_c();
   if (c == EOF)
     return 0;
   current_lineno++;
@@ -417,14 +417,14 @@ static int ps_get_line(string &buf, FILE *fp)
     if (!valid_input_table[c])
       error("invalid input character code %1", int(c));
     buf += c;
-    c = getc(fp);
+    c = fcp->get_c();
   }
   buf += '\n';
   buf += '\0';
   if (c == '\r') {
-    c = getc(fp);
+    c = fcp->get_c();
     if (c != EOF && c != '\n')
-      ungetc(c, fp);
+      fcp->unget_c(c);
   }
   return 1;
 }
@@ -590,8 +590,8 @@ static const char *matches_comment(string &buf, const char *comment)
 
 // Return 1 if the line should be copied out.
 
-int resource_manager::do_begin_resource(const char *ptr, int, FILE *,
-					FILE *)
+int resource_manager::do_begin_resource(const char *ptr, int, file_case *,
+  FILE *)
 {
   resource *r = read_resource_arg(&ptr);
   if (r)
@@ -599,8 +599,8 @@ int resource_manager::do_begin_resource(const char *ptr, int, FILE *,
   return 1;
 }
 
-int resource_manager::do_include_resource(const char *ptr, int rank, FILE *,
-					  FILE *outfp)
+int resource_manager::do_include_resource(const char *ptr, int rank,
+  file_case *, FILE *outfp)
 {
   resource *r = read_resource_arg(&ptr);
   if (r) {
@@ -616,8 +616,8 @@ int resource_manager::do_include_resource(const char *ptr, int rank, FILE *,
   return 0;
 }
 
-int resource_manager::do_begin_document(const char *ptr, int, FILE *,
-					FILE *)
+int resource_manager::do_begin_document(const char *ptr, int, file_case *,
+  FILE *)
 {
   resource *r = read_file_arg(&ptr);
   if (r)
@@ -625,8 +625,8 @@ int resource_manager::do_begin_document(const char *ptr, int, FILE *,
   return 1;
 }
 
-int resource_manager::do_include_document(const char *ptr, int rank, FILE *,
-					  FILE *outfp)
+int resource_manager::do_include_document(const char *ptr, int rank,
+  file_case *, FILE *outfp)
 {
   resource *r = read_file_arg(&ptr);
   if (r)
@@ -634,8 +634,8 @@ int resource_manager::do_include_document(const char *ptr, int rank, FILE *,
   return 0;
 }
 
-int resource_manager::do_begin_procset(const char *ptr, int, FILE *,
-				       FILE *outfp)
+int resource_manager::do_begin_procset(const char *ptr, int, file_case *,
+  FILE *outfp)
 {
   resource *r = read_procset_arg(&ptr);
   if (r) {
@@ -649,8 +649,8 @@ int resource_manager::do_begin_procset(const char *ptr, int, FILE *,
   return 0;
 }
 
-int resource_manager::do_include_procset(const char *ptr, int rank, FILE *,
-					  FILE *outfp)
+int resource_manager::do_include_procset(const char *ptr, int rank,
+  file_case *, FILE *outfp)
 {
   resource *r = read_procset_arg(&ptr);
   if (r)
@@ -658,8 +658,8 @@ int resource_manager::do_include_procset(const char *ptr, int rank, FILE *,
   return 0;
 }
 
-int resource_manager::do_begin_file(const char *ptr, int, FILE *,
-				    FILE *outfp)
+int resource_manager::do_begin_file(const char *ptr, int, file_case *,
+  FILE *outfp)
 {
   resource *r = read_file_arg(&ptr);
   if (r) {
@@ -673,8 +673,8 @@ int resource_manager::do_begin_file(const char *ptr, int, FILE *,
   return 0;
 }
 
-int resource_manager::do_include_file(const char *ptr, int rank, FILE *,
-				      FILE *outfp)
+int resource_manager::do_include_file(const char *ptr, int rank, file_case *,
+  FILE *outfp)
 {
   resource *r = read_file_arg(&ptr);
   if (r)
@@ -682,8 +682,8 @@ int resource_manager::do_include_file(const char *ptr, int rank, FILE *,
   return 0;
 }
 
-int resource_manager::do_begin_font(const char *ptr, int, FILE *,
-				    FILE *outfp)
+int resource_manager::do_begin_font(const char *ptr, int, file_case *,
+  FILE *outfp)
 {
   resource *r = read_font_arg(&ptr);
   if (r) {
@@ -697,8 +697,8 @@ int resource_manager::do_begin_font(const char *ptr, int, FILE *,
   return 0;
 }
 
-int resource_manager::do_include_font(const char *ptr, int rank, FILE *,
-				      FILE *outfp)
+int resource_manager::do_include_font(const char *ptr, int rank, file_case *,
+  FILE *outfp)
 {
   resource *r = read_font_arg(&ptr);
   if (r) {
@@ -710,19 +710,20 @@ int resource_manager::do_include_font(const char *ptr, int rank, FILE *,
   return 0;
 }
 
-int resource_manager::change_to_end_resource(const char *, int, FILE *,
-					     FILE *outfp)
+int resource_manager::change_to_end_resource(const char *, int, file_case *,
+  FILE *outfp)
 {
   if (outfp)
     fputs("%%EndResource\n", outfp);
   return 0;
 }
 
-int resource_manager::do_begin_preview(const char *, int, FILE *fp, FILE *)
+int resource_manager::do_begin_preview(const char *, int, file_case *fcp,
+  FILE *)
 {
   string buf;
   do {
-    if (!ps_get_line(buf, fp)) {
+    if (!ps_get_line(buf, fcp)) {
       error("end of file in preview section");
       break;
     }
@@ -747,17 +748,17 @@ int read_one_of(const char **ptr, const char **s, int n)
   return -1;
 }
 
-void skip_possible_newline(FILE *fp, FILE *outfp)
+void skip_possible_newline(file_case *fcp, FILE *outfp)
 {
-  int c = getc(fp);
+  int c = fcp->get_c();
   if (c == '\r') {
     current_lineno++;
     if (outfp)
       putc(c, outfp);
-    int cc = getc(fp);
+    int cc = fcp->get_c();
     if (cc != '\n') {
       if (cc != EOF)
-	ungetc(cc, fp);
+        fcp->unget_c(cc);
     }
     else {
       if (outfp)
@@ -770,11 +771,11 @@ void skip_possible_newline(FILE *fp, FILE *outfp)
       putc(c, outfp);
   }
   else if (c != EOF)
-    ungetc(c, fp);
+    fcp->unget_c(c);
 }
 
-int resource_manager::do_begin_data(const char *ptr, int, FILE *fp,
-				    FILE *outfp)
+int resource_manager::do_begin_data(const char *ptr, int, file_case *fcp,
+  FILE *outfp)
 {
   while (white_space(*ptr))
     ptr++;
@@ -816,7 +817,7 @@ int resource_manager::do_begin_data(const char *ptr, int, FILE *fp,
     unsigned bytecount = 0;
     unsigned linecount = 0;
     do {
-      int c = getc(fp);
+      int c = fcp->get_c();
       if (c == EOF) {
 	error("end of file within data section");
 	return 0;
@@ -825,13 +826,13 @@ int resource_manager::do_begin_data(const char *ptr, int, FILE *fp,
 	putc(c, outfp);
       bytecount++;
       if (c == '\r') {
-	int cc = getc(fp);
+	int cc = fcp->get_c();
 	if (cc != '\n') {
 	  linecount++;
 	  current_lineno++;
 	}
 	if (cc != EOF)
-	  ungetc(c, fp);
+	  fcp->unget_c(cc);
       }
       else if (c == '\n') {
 	linecount++;
@@ -839,9 +840,9 @@ int resource_manager::do_begin_data(const char *ptr, int, FILE *fp,
       }
     } while ((unit == Bytes ? bytecount : linecount) < numberof);
   }
-  skip_possible_newline(fp, outfp);
+  skip_possible_newline(fcp, outfp);
   string buf;
-  if (!ps_get_line(buf, fp)) {
+  if (!ps_get_line(buf, fcp)) {
     error("missing %%%%EndData line");
     return 0;
   }
@@ -852,8 +853,8 @@ int resource_manager::do_begin_data(const char *ptr, int, FILE *fp,
   return 0;
 }
 
-int resource_manager::do_begin_binary(const char *ptr, int, FILE *fp,
-				      FILE *outfp)
+int resource_manager::do_begin_binary(const char *ptr, int, file_case *fcp,
+  FILE *outfp)
 {
   if (!outfp)
     return 0;
@@ -863,7 +864,7 @@ int resource_manager::do_begin_binary(const char *ptr, int, FILE *fp,
   if (outfp)
     fprintf(outfp, "%%%%BeginData: %u Binary Bytes\n", count);
   while (count != 0) {
-    int c = getc(fp);
+    int c = fcp->get_c();
     if (c == EOF) {
       error("end of file within binary section");
       return 0;
@@ -872,18 +873,18 @@ int resource_manager::do_begin_binary(const char *ptr, int, FILE *fp,
       putc(c, outfp);
     --count;
     if (c == '\r') {
-      int cc = getc(fp);
+      int cc = fcp->get_c();
       if (cc != '\n')
 	current_lineno++;
       if (cc != EOF)
-	ungetc(cc, fp);
+        fcp->unget_c(cc);
     }
     else if (c == '\n')
       current_lineno++;
   }
-  skip_possible_newline(fp, outfp);
+  skip_possible_newline(fcp, outfp);
   string buf;
-  if (!ps_get_line(buf, fp)) {
+  if (!ps_get_line(buf, fcp)) {
     error("missing %%%%EndBinary line");
     return 0;
   }
@@ -932,8 +933,7 @@ static unsigned parse_extensions(const char *ptr)
 // BeginResource: file should be postponed till we have seen
 // the first line of the file.
 
-void resource_manager::process_file(int rank, FILE *fp, const char *filename,
-				    FILE *outfp)
+void resource_manager::process_file(int rank, file_case *fcp, FILE *outfp)
 {
   // If none of these comments appear in the header section, and we are
   // just analyzing the file (ie outfp is 0), then we can return immediately.
@@ -952,7 +952,7 @@ void resource_manager::process_file(int rank, FILE *fp, const char *filename,
 			       / sizeof(header_comment_table[0]);
   struct comment_info {
     const char *name;
-    int (resource_manager::*proc)(const char *, int, FILE *, FILE *);
+    int (resource_manager::*proc)(const char *, int, file_case *, FILE *);
   };
 
   static comment_info comment_table[] = {
@@ -978,9 +978,9 @@ void resource_manager::process_file(int rank, FILE *fp, const char *filename,
   string buf;
   int saved_lineno = current_lineno;
   const char *saved_filename = current_filename;
-  current_filename = filename;
+  current_filename = fcp->path();
   current_lineno = 0;
-  if (!ps_get_line(buf, fp)) {
+  if (!ps_get_line(buf, fcp)) {
     current_filename = saved_filename;
     current_lineno = saved_lineno;
     return;
@@ -992,7 +992,7 @@ void resource_manager::process_file(int rank, FILE *fp, const char *filename,
 	if (!(broken_flags & STRIP_PERCENT_BANG)
 	    || buf[0] != '%' || buf[1] != '!')
 	  fputs(buf.contents(), outfp);
-      } while (ps_get_line(buf, fp));
+      } while (ps_get_line(buf, fcp));
     }
   }
   else {
@@ -1003,7 +1003,7 @@ void resource_manager::process_file(int rank, FILE *fp, const char *filename,
     int had_extensions_comment = 0;
     int had_language_level_comment = 0;
     for (;;) {
-      if (!ps_get_line(buf, fp))
+      if (!ps_get_line(buf, fcp))
 	break;
       int copy_this_line = 1;
       if (buf[0] == '%') {
@@ -1013,7 +1013,7 @@ void resource_manager::process_file(int rank, FILE *fp, const char *filename,
 	  for (i = 0; i < NCOMMENTS; i++)
 	    if ((ptr = matches_comment(buf, comment_table[i].name))) {
 	      copy_this_line
-		= (this->*(comment_table[i].proc))(ptr, rank, fp, outfp);
+		= (this->*(comment_table[i].proc))(ptr, rank, fcp, outfp);
 	      break;
 	    }
 	  if (i >= NCOMMENTS && in_header) {
@@ -1070,7 +1070,7 @@ void resource_manager::read_download_file()
     fatal("can't find `download'");
 
   char buf[512];
-  for (int lineno = 1; fgets(buf, sizeof(buf), fcp->file()) != NULL; ++lineno) {
+  for (int lineno = 1; fcp->get_line(buf, sizeof(buf)) != NULL; ++lineno) {
     char *p = strtok(buf, " \t\r\n");
     if (p == NULL || *p == '#')
       continue;

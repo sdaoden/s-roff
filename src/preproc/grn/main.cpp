@@ -519,10 +519,11 @@ conv(register FILE *fp,
 	return;
       }
       {
-      file_case *fcp;
-      if ((fcp = macro_path.open_file(gremlinfile, fcp->fc_const_path)) == NULL)
+      file_case *fcp = macro_path.open_file(gremlinfile,
+          fcp->fc_const_path | fcp->mux_need_stdio); /* TODO _need_stdio! */
+      if (fcp == NULL)
         return;
-      PICTURE = DBRead(fcp->file()); /* read picture file */
+      PICTURE = DBRead(fcp->file()); /* read picture file TODO _need_stdio! */
       delete fcp;
       }
       if (DBNullelt(PICTURE))

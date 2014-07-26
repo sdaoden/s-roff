@@ -28,6 +28,14 @@
 
 #include "file_case.h"
 
+#undef getc
+#undef _getc
+#ifdef HAVE_DECL_GETC_UNLOCKED
+# define _getc  getc_unlocked
+#else
+# define _getc  fgetc
+#endif
+
 // Support decompression XXX configure should say `no popen() - no unpacking'
 #ifdef POPEN_MISSING
 # undef HAVE_UNPACK
@@ -231,6 +239,51 @@ file_case::close(void)
   return rv;
 }
 
+bool
+file_case::is_eof(void) const
+{
+  return (feof(_file) != 0);
+}
+
+int
+file_case::get_c(void)
+{
+  return _getc(_file);
+}
+
+int
+file_case::unget_c(int c)
+{
+  return ungetc(c, _file);
+}
+
+char *
+file_case::get_line(char *buf, size_t buf_size)
+{
+  buf = fgets(buf, (int)buf_size, _file);
+  return buf;
+}
+
+size_t
+file_case::get_buf(void *buf, size_t buf_size)
+{
+  return fread(buf, 1, buf_size, _file);
+}
+
+void
+file_case::rewind(void)
+{
+  ::rewind(_file);
+}
+
+int
+file_case::seek(long offset, seek_whence whence)
+{
+  int w = (whence == seek_set ? SEEK_SET :
+      (whence == seek_cur ? SEEK_CUR : SEEK_END));
+  return fseek(_file, offset, w);
+}
+
 /*static*/ file_case *
 file_case::muxer(char const *path, uint32_t flags)
 {
@@ -269,6 +322,7 @@ file_case::muxer(char const *path, uint32_t flags)
   // Try a plain open
   errno = 0;
   if ((a.a_fp = fopen(a.a_path, a.a_mode)) != NULL) {
+    a.a_flags |= fc_have_stdio;
 #ifdef HAVE_UNPACK
 jnew:
 #endif

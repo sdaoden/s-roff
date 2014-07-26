@@ -793,7 +793,7 @@ void ps_printer::define_encoding(const char *encoding, int encoding_index)
 
   const int BUFFER_SIZE = 512;
   char buf[BUFFER_SIZE];
-  for (int lineno = 1; fgets(buf, BUFFER_SIZE, fcp->file()) != NULL; ++lineno) {
+  for (int lineno = 1; fcp->get_line(buf, BUFFER_SIZE) != NULL; ++lineno) {
     char *p = buf;
     while (csspace(*p))
       p++;
