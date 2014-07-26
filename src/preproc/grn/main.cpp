@@ -229,8 +229,8 @@ int compatibility_flag = FALSE;	/* TRUE if in compatibility mode */
 
 
 void getres();
-int doinput(FILE *fp);
-void conv(register FILE *fp, int baseline);
+int doinput(file_case *fcp);
+void conv(file_case *fcp, int baseline);
 void savestate();
 int has_polygon(register ELT *elist);
 void interpret(char *line);
@@ -258,14 +258,14 @@ int
 main(int argc,
      char **argv)
 {
-  setlocale(LC_NUMERIC, "C");
-  program_name = argv[0];
-  register FILE *fp;
-  register int k;
-  register char c;
-  register int gfil = 0;
+  /* FIXME GREMLIN: use getopt(), iterate sequentially (options, then files)! */
+  int k;
+  char c;
+  int gfil = 0;
   char *file[50];
   char *operand(int *argcp, char ***argvp);
+  setlocale(LC_NUMERIC, "C");
+  program_name = argv[0];
 
   while (--argc) {
     if (**++argv != '-')
@@ -326,22 +326,26 @@ main(int argc,
   }
 
   for (k = 0; k < gfil; k++) {
+    file_case *fcp;
     if (file[k] != NULL) {
-      if ((fp = fopen(file[k], "r")) == NULL)
-	fatal("can't open %1", file[k]);
+      if ((fcp = file_case::muxer(file[k])) == NULL)
+        fatal("can't open %1", file[k]);
     } else
-      fp = stdin;
+      fcp = new file_case(stdin, "stdin",
+          fcp->fc_dont_close | fcp->fc_const_path /*| fcp->fc_have_stdio*/);
 
-    while (doinput(fp)) {
+    while (doinput(fcp)) {
       if (*c1 == '.' && *c2 == 'G' && *c3 == 'S') {
 	if (compatibility_flag ||
 	    *c4 == '\n' || *c4 == ' ' || *c4 == '\0')
-	  conv(fp, linenum);
+	  conv(fcp, linenum);
 	else
 	  fputs(inputline, stdout);
       } else
 	fputs(inputline, stdout);
     }
+
+    delete fcp;
   }
 
   return 0;
@@ -417,9 +421,9 @@ getres()
  *----------------------------------------------------------------------------*/
 
 int
-doinput(FILE *fp)
+doinput(file_case *fcp)
 {
-  if (fgets(inputline, MAXINLINE, fp) == NULL)
+  if (fcp->get_line(inputline, MAXINLINE) == NULL)
     return 0;
   if (strchr(inputline, '\n'))	/* ++ only if it's a complete line */
     linenum++;
@@ -484,7 +488,7 @@ initpic()
  *----------------------------------------------------------------------------*/
 
 void
-conv(register FILE *fp,
+conv(file_case *fcp,
      int baseline)
 {
   register int done = 0;	/* flag to remember if finished */
@@ -502,7 +506,7 @@ conv(register FILE *fp,
   strcpy(GScommand, inputline);	/* save `.GS' line for later */
 
   do {
-    done = !doinput(fp);		/* test for EOF */
+    done = !doinput(fcp);		/* test for EOF */
     flyback = (*c3 == 'F');		/* and .GE or .GF */
     compat = (compatibility_flag ||
 	      *c4 == '\n' || *c4 == ' ' || *c4 == '\0');
