@@ -24,6 +24,7 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 #include "eqn_tab.h"
 #include "stringclass.h"
 #include "ptable.h"
+#include "file_case.h"
 
 
 // declarations to avoid friend name injection problems
@@ -335,14 +336,14 @@ public:
 };
 
 class file_input : public input {
-  FILE *fp;
+  file_case *_fcp;
   char *filename;
   int lineno;
   string line;
   const char *ptr;
   int read_line();
 public:
-  file_input(FILE *, const char *, input *);
+  file_input(file_case *, const char *, input *);
   ~file_input();
   int get();
   int peek();
@@ -396,17 +397,16 @@ int input::get_location(char **, int *)
   return 0;
 }
 
-file_input::file_input(FILE *f, const char *fn, input *p)
-: input(p), lineno(0), ptr("")
+file_input::file_input(file_case *fcp, const char *fn, input *p)
+: input(p), _fcp(fcp), lineno(0), ptr("")
 {
-  fp = f;
   filename = strsave(fn);
 }
 
 file_input::~file_input()
 {
   a_delete filename;
-  fclose(fp);
+  delete _fcp;
 }
 
 int file_input::read_line()
@@ -415,7 +415,7 @@ int file_input::read_line()
     line.clear();
     lineno++;
     for (;;) {
-      int c = getc(fp);
+      int c = _fcp->get_c();
       if (c == EOF)
 	break;
       else if (invalid_input_char(c))
@@ -927,13 +927,12 @@ void do_include()
   }
   token_buffer += '\0';
   const char *filename = token_buffer.contents();
-  errno = 0;
-  FILE *fp = fopen(filename, "r");
-  if (fp == 0) {
+  file_case *fcp = file_case::muxer(filename);
+  if (fcp == NULL) {
     lex_error("can't open included file `%1'", filename);
     return;
   }
-  current_input = new file_input(fp, filename, current_input);
+  current_input = new file_input(fcp, filename, current_input);
 }
 
 void ignore_definition()
