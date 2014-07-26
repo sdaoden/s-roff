@@ -581,7 +581,7 @@ HGArc(register int cx,
   resolution = (1.0 + groff_hypot(xs, ys) / res) * PointsPerInterval;
   /* mask = (1 << (int) log10(resolution + 1.0)) - 1; */
   (void) frexp(resolution, &m);		/* A bit more elegant than log10 */
-  for (mask = 1; mask < m; mask = mask << 1);
+  for (mask = 1; mask < m; mask <<= 1) {;}
   mask -= 1;
 
   epsilon = 1.0 / resolution;
