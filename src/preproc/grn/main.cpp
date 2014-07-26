@@ -327,12 +327,10 @@ main(int argc,
 
   for (k = 0; k < gfil; k++) {
     file_case *fcp;
-    if (file[k] != NULL) {
-      if ((fcp = file_case::muxer(file[k])) == NULL)
-        fatal("can't open %1", file[k]);
-    } else
-      fcp = new file_case(stdin, "stdin",
-          fcp->fc_dont_close | fcp->fc_const_path /*| fcp->fc_have_stdio*/);
+    if ((fcp = file_case::muxer(file[k])) == NULL) {
+      assert(file[k] != NULL);
+      fatal("can't open %1", file[k]);
+    }
 
     while (doinput(fcp)) {
       if (*c1 == '.' && *c2 == 'G' && *c3 == 'S') {

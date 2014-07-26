@@ -304,10 +304,8 @@ static void
 do_file(char const *filename)
 {
   file_case *fcp;
-  if (strcmp(filename, "-") == 0)
-    fcp = new file_case(stdin, "stdin",
-        fcp->fc_dont_close | fcp->fc_const_path /*| fcp->fc_have_stdio*/);
-  else if ((fcp = file_case::muxer(filename)) == NULL) {
+  if ((fcp = file_case::muxer(filename)) == NULL) {
+    assert(strcmp(filename, "-"));
     delete out;
     fatal("can't open `%1': %2", filename, strerror(errno));
   }
@@ -460,11 +458,10 @@ void do_whole_file(const char *filename)
 {
   // Do not set current_filename.
   file_case *fcp;
-  if (strcmp(filename, "-") == 0)
-    fcp = new file_case(stdin, "stdin",
-        fcp->fc_dont_close | fcp->fc_const_path /*| fcp->fc_have_stdio*/);
-  else if ((fcp = file_case::muxer(filename)) == NULL)
+  if ((fcp = file_case::muxer(filename)) == NULL) {
+    assert(strcmp(filename, "-"));
     fatal("can't open `%1': %2", filename, strerror(errno));
+  }
 
   lex_init(new file_input(fcp, filename));
   if (yyparse())

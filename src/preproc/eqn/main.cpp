@@ -399,23 +399,18 @@ int main(int argc, char **argv)
       delete fcp;
     }
   }
-  int i = optind;
-  if (i >= argc)
-    goto jstdin;
-  for (; i < argc; ++i) {
-    if (!strcmp(argv[i], "-")) {
-jstdin:
-      fcp = new file_case(stdin, "stdin",
-          fcp->fc_dont_close | fcp->fc_const_path /*| fcp->fc_have_stdio*/);
-      do_file(fcp, "-");
-    } else {
-      fcp = file_case::muxer(argv[i]);
-      if (fcp == NULL)
-        fatal("can't open `%1': %2", argv[i], strerror(errno));
-      do_file(fcp, argv[i]);
-    }
+
+  do /*while (optind < argc)*/ {
+    char const *name = argv[optind++];
+    fcp = file_case::muxer(name);
+    if (name == NULL)
+      name = "-";
+    if (fcp == NULL)
+      fatal("can't open `%1': %2", name, strerror(errno));
+    do_file(fcp, name);
     delete fcp;
-  }
+  } while (optind < argc);
+
   if (ferror(stdout) || fflush(stdout) < 0)
     fatal("output error");
   return 0;

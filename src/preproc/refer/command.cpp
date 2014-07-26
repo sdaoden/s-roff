@@ -149,18 +149,14 @@ int input_stack::peek_char()
 
 void input_stack::push_file(const char *fn)
 {
-  file_case *fcp;
-  if (strcmp(fn, "-") == 0) {
-    fcp = new file_case(stdin, "stdin",
-        fcp->fc_dont_close | fcp->fc_const_path /*| fcp->fc_have_stdio*/);
-    fn = "<standard input>";
-  } else {
-    fcp = file_case::muxer(fn);
-    if (fcp == NULL) {
-      error("can't open `%1': %2", fn, strerror(errno));
-      return;
-    }
+  file_case *fcp = file_case::muxer(fn);
+  if (fcp == NULL) {
+    assert(strcmp(fn, "-"));
+    error("can't open `%1': %2", fn, strerror(errno));
+    return;
   }
+  if (fn[0] == '-' && fn[1] == '\0')
+    fn = "<standard input>";
 
   string buf;
   int bol = 1;

@@ -7350,13 +7350,9 @@ void macro_source()
 static void process_input_file(const char *name)
 {
   file_case *fcp;
-  if (strcmp(name, "-") == 0) {
-    clearerr(stdin);
-    fcp = new file_case(stdin, "stdin",
-        fcp->fc_dont_close | fcp->fc_const_path);
-  } else {
-    if ((fcp = include_search_path.open_file_cautious(name)) == NULL)
-       fatal("can't open `%1': %2", name, strerror(errno));
+  if ((fcp = include_search_path.open_file_cautious(name)) == NULL) {
+    assert(strcmp(name, "-"));
+    fatal("can't open `%1': %2", name, strerror(errno));
    }
   input_stack::push(new file_iterator(fcp, name));
   tok.next();

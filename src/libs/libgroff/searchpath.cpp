@@ -154,16 +154,13 @@ file_case *search_path::open_file(char const *name, uint32_t flags)
 
 file_case *search_path::open_file_cautious(char const *name, uint32_t flags)
 {
-  assert(name != NULL);
-
   file_case *fcp;
   if (name == NULL || strcmp(name, "-") == 0) {
-    flags &= ~(fcp->fc_take_path);
-    flags |= fcp->fc_dont_close | fcp->fc_const_path | fcp->fc_have_stdio;
-    if (flags & fcp->mux_need_binary)
-      SET_BINARY(fileno(stdin));
-    fcp = new file_case(stdin, "stdin", flags);
-  } else if (IS_ABSOLUTE(name) || *dirs == '\0')
+    name = NULL;
+    goto jmuxer;
+  }
+  if (IS_ABSOLUTE(name) || *dirs == '\0')
+jmuxer:
     fcp = file_case::muxer(name, flags);
   else
     fcp = _try_iter(dirs, name, flags);

@@ -1814,15 +1814,11 @@ static int do_file(const char *filename)
   file_case *fcp;
 
   current_filename = filename;
-  if (strcmp(filename, "-") == 0)
-    fcp = new file_case(stdin, "stdin",
-        fcp->fc_dont_close | fcp->fc_const_path /*| fcp->fc_have_stdio*/);
-  else {
-    fcp = file_case::muxer(filename);
-    if (fcp == NULL) {
-      error("can't open `%1': %2", filename, strerror(errno));
-      return 0;
-    }
+  fcp = file_case::muxer(filename);
+  if (fcp == NULL) {
+    assert(strcmp(filename, "-"));
+    error("can't open `%1': %2", filename, strerror(errno));
+    return 0;
   }
 
   if (inputFile.read_file(fcp)) {

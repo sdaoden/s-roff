@@ -1600,24 +1600,19 @@ int main(int argc, char **argv)
 	 ".if !dTE .ds TE\n");
 
   file_case *fcp;
-  int i = optind;
-  if (i >= argc)
-    goto jstdin;
-  for (; i < argc; ++i) {
-    if (!strcmp(argv[i], "-")) {
-jstdin:
-      fcp = new file_case(stdin, "stdin",
-          fcp->fc_dont_close | fcp->fc_const_path /*| fcp->fc_have_stdio*/);
+  do /*while (optind < argc)*/ {
+    if ((current_filename = argv[optind++]) == NULL)
       current_filename = "-";
-    } else if ((fcp = file_case::muxer(current_filename = argv[i])) == NULL)
-      fatal("can't open `%1': %2", argv[i], strerror(errno));
+    fcp = file_case::muxer(current_filename);
+    if (fcp == NULL)
+      fatal("can't open `%1': %2", current_filename, strerror(errno));
 
     current_lineno = 1;
     printf(".lf 1 %s\n", current_filename);
     process_input_file(fcp);
 
     delete fcp;
-  }
+  } while (optind < argc);
 
   if (ferror(stdout) || fflush(stdout) < 0)
     fatal("output error");

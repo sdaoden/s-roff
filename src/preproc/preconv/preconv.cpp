@@ -1007,21 +1007,16 @@ check_coding_tag(file_case *fcp, string &data)
 int
 do_file(const char *filename)
 {
-  file_case *fcp;
-  string BOM, data;
   if (debug_flag)
     fprintf(stderr, "file `%s':\n", filename);
-  if (strcmp(filename, "-")) {
-    if ((fcp = file_case::muxer(filename, fcp->mux_need_binary)) == NULL) {
-      error("can't open `%1': %2", filename, strerror(errno));
-      return 0;
-    }
-  } else {
-    SET_BINARY(fileno(stdin));
-    fcp = new file_case(stdin, "stdin",
-        fcp->fc_dont_close | fcp->fc_const_path /*| fcp->fc_have_stdio*/);
+  file_case *fcp;
+  if ((fcp = file_case::muxer(filename, fcp->mux_need_binary)) == NULL) {
+    assert(strcmp(filename, "-"));
+    error("can't open `%1': %2", filename, strerror(errno));
+    return 0;
   }
 
+  string BOM, data;
   const char *BOM_encoding = get_BOM(fcp, BOM, data);
   // Determine the encoding.
   char *encoding;
