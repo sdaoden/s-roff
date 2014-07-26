@@ -18,6 +18,8 @@ for more details.
 You should have received a copy of the GNU General Public License along
 with groff; see the file COPYING.  If not, write to the Free Software
 Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+#ifndef _LIB_H
+#define _LIB_H
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -172,3 +174,36 @@ const double PI = 3.14159265358979323846;
 #define ad_delete(size) delete []
 #define a_delete delete []
 #endif /* !ARRAY_DELETE_NEEDS_SIZE */
+
+#ifdef HAVE_CC_INTTYPES_H
+# include <inttypes.h>
+#endif
+#if !defined UINT8_MAX && !defined uint8_t
+# undef int8_t
+typedef unsigned char     uint8_t;
+typedef signed char       int8_t;
+#endif
+#if !defined UINT32_MAX && !defined uint32_t
+# undef int32_t
+# if INT_MAX == 2147483647
+typedef unsigned int      uint32_t;
+typedef signed int        int32_t;
+# else
+typedef unsigned long int uint32_t;
+typedef signed long int   int32_t;
+# endif
+#endif
+
+#ifndef NELEM
+# define NELEM(X)             (sizeof(X) / sizeof((X)[0]))
+#endif
+
+#define CLASS_DISABLE_COPY(C) private: C(C const &); C &operator=(C const &)
+
+#ifndef NDEBUG
+# define INJECT(X)            X
+#else
+# define INJECT(X)
+#endif
+
+#endif /* _LIB_H */
