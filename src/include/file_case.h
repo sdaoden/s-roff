@@ -49,6 +49,7 @@ public:
     mux_unpack      = 1<<(_fc_freebit+2), // Do auto-check for FILE{.gz,.bz2..}
     mux_no_unpack   = 1<<(_fc_freebit+3), // Do NOT auto-check
     mux_need_stdio  = 1<<(_fc_freebit+4), // Only then may .file() be used
+    _mux_freebit    = _fc_freebit + 5,
     mux_mask        = ~fc_mask,
     mux_default     = fc_none,
     // Defines the global default strategy for dealing with packed files in case
@@ -79,7 +80,8 @@ public:
   int           seek(long offset, seek_whence whence=seek_set);
 
   // Factory muxer; note that fc_take_path will be honoured even on failure
-  static file_case *  muxer(char const *path, uint32_t flags=mux_default);
+  // If path is NULL or "-" we'll go for stdin
+  static file_case *  muxer(char const *path=NULL, uint32_t flags=mux_default);
 
   CLASS_DISABLE_COPY(file_case);
 };

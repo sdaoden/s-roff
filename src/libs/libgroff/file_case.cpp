@@ -394,13 +394,19 @@ file_case::seek(long offset, seek_whence whence)
 /*static*/ file_case *
 file_case::muxer(char const *path, uint32_t flags)
 {
+  enum {tmpbit = 1<<(_mux_freebit+0)};
+
   assert(!(flags & (fc_dont_close | fc_pipe)));
   assert(!(flags & (fc_const_path | fc_take_path)) ||
       !(flags & fc_const_path) != !(flags & fc_take_path));
   assert(!(flags & (mux_unpack | mux_no_unpack)) ||
       !(flags & mux_unpack) != !(flags & mux_no_unpack));
 
-  if (!(flags & (fc_const_path | fc_take_path))) {
+  if (path == NULL || (path[0] == '-' && path[1] == '\0')) {
+    path = "-";
+    flags &= ~fc_take_path;
+    flags |= fc_const_path | tmpbit;
+  } else if (!(flags & (fc_const_path | fc_take_path))) {
     path = strsave(path);
     flags |= fc_take_path;
   }
@@ -415,6 +421,16 @@ file_case::muxer(char const *path, uint32_t flags)
   a.a_mode = (flags & mux_need_binary) ? "rb" : "r";
   a.a_flags = flags;
   a.a_errno = 0;
+
+  // Shorthand: support "-" to mean stdin
+  if (flags & tmpbit) {
+    clearerr(stdin);
+    if (flags & mux_need_binary)
+      SET_BINARY(fileno(stdin));
+    a.a_fp = stdin;
+    a.a_flags |= fc_dont_close | fc_const_path | fc_have_stdio;
+    goto jnew;
+  }
 
   // If we support unpacking then check wether the path already includes
   // a packer's extension, i.e., explicitly.  Anyway unpack then, despite flags
@@ -431,12 +447,10 @@ file_case::muxer(char const *path, uint32_t flags)
   errno = 0;
   if ((a.a_fp = fopen(a.a_path, a.a_mode)) != NULL) {
     a.a_flags |= fc_have_stdio;
-#ifdef HAVE_UNPACK
 jnew:
-#endif
     assert((a.a_fp != NULL && a.a_layer == NULL) ||
       (a.a_fp == NULL && a.a_layer != NULL));
-    fcp = new file_case(a.a_fp, path, a.a_flags & ~mux_mask); // XXX real path?
+    fcp = new file_case(a.a_fp, path, a.a_flags & fc_mask); // XXX real path?
     fcp->_layer = a.a_layer;
     goto jleave;
   }
