@@ -25,6 +25,8 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 #include <stdlib.h>
 #include <errno.h>
 
+#include "file_case.h"
+
 #ifdef NEED_DECLARATION_RAND
 #undef rand
 extern "C" {
@@ -79,14 +81,14 @@ public:
 };
 
 class file_input : public input {
-  FILE *fp;
+  file_case *_fcp;
   const char *filename;
   int lineno;
   string line;
   const char *ptr;
   int read_line();
 public:
-  file_input(FILE *, const char *);
+  file_input(file_case *, const char *);
   ~file_input();
   int get();
   int peek();
