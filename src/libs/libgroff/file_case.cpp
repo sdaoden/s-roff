@@ -135,7 +135,7 @@ static bool
 _try_all_ext(args *ap)
 {
   for (zproc const *zp = _zprocs; zp < _zprocs + NELEM(_zprocs); ++zp) {
-    char *np = new char[zp->zp_cmd_len +1+ ap->a_path_len + zp->zp_ext_len +1];
+    char *np = new char[ap->a_path_len + zp->zp_ext_len +1];
 
     memcpy(np, ap->a_path, ap->a_path_len);
 
@@ -202,7 +202,7 @@ __run_zproc(args *ap, zproc const *zp)
 static args *
 __unpack(args *ap)
 {
-  size_t const buf_len = (BUFSIZ + 0) > 1 << 15 ? BUFSIZ : 1 << 15;
+  size_t const buf_len = (BUFSIZ + 0 > 1 << 15) ? BUFSIZ : 1 << 15;
   uint8_t *buf = new uint8_t[buf_len];
 
   // xtmpfile uses binary mode and fatal()s on error

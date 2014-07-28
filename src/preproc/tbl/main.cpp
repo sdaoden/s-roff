@@ -1604,8 +1604,10 @@ int main(int argc, char **argv)
     if ((current_filename = argv[optind++]) == NULL)
       current_filename = "-";
     fcp = file_case::muxer(current_filename);
-    if (fcp == NULL)
+    if (fcp == NULL) {
+      assert(strcmp(current_filename, "-"));
       fatal("can't open `%1': %2", current_filename, strerror(errno));
+    }
 
     current_lineno = 1;
     printf(".lf 1 %s\n", current_filename);
