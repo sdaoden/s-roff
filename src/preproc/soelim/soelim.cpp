@@ -157,7 +157,8 @@ int do_file(const char *filename)
   enum { START, MIDDLE, HAD_DOT, HAD_s, HAD_so, HAD_l, HAD_lf } state = START;
 
   file_case *fcp;
-  if ((fcp = include_search_path.open_file_cautious(filename)) == NULL) {
+  if ((fcp = include_search_path.open_file_cautious(filename,
+      fcp->mux_default | fcp->mux_unpack)) == NULL) {
     error("can't open `%1': %2", filename, strerror(errno));
     goto jleave;
   }
