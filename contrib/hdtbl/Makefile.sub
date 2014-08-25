@@ -81,7 +81,6 @@ GENFILES_=`echo $(GENFILES) | sed 's|examples/||g'`
 PROCESSEDEXAMPLEFILES_=`echo $(PROCESSEDEXAMPLEFILES) | sed 's|examples/||g'`
 
 CLEANADD=\
-  gnu.eps \
   $(PROCESSEDEXAMPLEFILES) \
   $(GENFILES) \
   examples/stamp \
@@ -99,17 +98,7 @@ CLEANADD=\
 
 all: $(PROCESSEDEXAMPLEFILES) stamp-strip
 
-$(PROCESSEDEXAMPLEFILES): gnu.eps examples/stamp
-
-gnu.eps:
-	if test -f $(top_srcdir)/doc/gnu.eps; then \
-	  cp $(top_srcdir)/doc/gnu.eps . ; \
-	elif test -f $(top_builddir)/doc/gnu.eps; then \
-	  cp $(top_builddir)/doc/gnu.eps . ; \
-	else \
-	  xpmtoppm $(top_srcdir)/doc/gnu.xpm | pnmdepth 15 | \
-	    $(pnmtops_nosetpage) -noturn -rle >$@ ; \
-	fi
+$(PROCESSEDEXAMPLEFILES): examples/stamp
 
 examples/stamp:
 	test -d examples || $(mkinstalldirs) examples
@@ -123,7 +112,7 @@ stamp-strip: $(STRIPFILES)
 	touch $@
 
 install_data: $(STRIPFILES) $(EXAMPLEFILES) $(GENFILES) \
-              $(PROCESSEDEXAMPLEFILES) gnu.eps stamp-strip
+              $(PROCESSEDEXAMPLEFILES) stamp-strip
 	-test -d $(DESTDIR)$(tmacdir) || $(mkinstalldirs) $(DESTDIR)$(tmacdir)
 	for f in $(STRIPFILES); do \
 	  rm -f $(DESTDIR)$(tmacdir)/$$f; \
@@ -140,7 +129,6 @@ install_data: $(STRIPFILES) $(EXAMPLEFILES) $(GENFILES) \
 	  rm -f $(DESTDIR)$(exampledir)/hdtbl/$$f; \
 	  $(INSTALL_DATA) examples/$$f $(DESTDIR)$(exampledir)/hdtbl/$$f; \
 	done
-	$(INSTALL_DATA) gnu.eps $(DESTDIR)$(exampledir)/hdtbl/gnu.eps
 
 uninstall_sub:
 	-for f in $(STRIPFILES); do \
@@ -150,5 +138,4 @@ uninstall_sub:
                   $(GENFILES_); do \
 	  rm -f $(DESTDIR)$(exampledir)/hdtbl/$$f; \
 	done
-	-rm $(DESTDIR)$(exampledir)/hdtbl/gnu.eps
 	-rmdir $(DESTDIR)$(exampledir)/hdtbl

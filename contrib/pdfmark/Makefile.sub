@@ -31,7 +31,6 @@ PDFDOCFILES=\
   pdfmark.pdf
 
 CLEANADD=\
-  gnu.eps \
   $(PDFDOCFILES) \
   $(CMDFILES) \
   pdf[0-9]*
@@ -66,17 +65,7 @@ all: pdfroff $(make_pdfdoc)
 
 $(PDFDOCFILES): pdfroff
 
-pdfdoc: gnu.eps $(PDFDOCFILES)
-
-gnu.eps:
-	if test -f $(top_srcdir)/doc/gnu.eps; then \
-	  cp $(top_srcdir)/doc/gnu.eps . ; \
-	elif test -f $(top_builddir)/doc/gnu.eps; then \
-	  cp $(top_builddir)/doc/gnu.eps . ; \
-	else \
-	  xpmtoppm $(top_srcdir)/doc/gnu.xpm | pnmdepth 15 | \
-	    $(pnmtops_nosetpage) -noturn -rle >$@ ; \
-	fi
+pdfdoc: $(PDFDOCFILES)
 
 pdfroff: pdfroff.sh $(SH_DEPS_SED_SCRIPT)
 	$(RM) $@

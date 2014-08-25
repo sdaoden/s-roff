@@ -37,7 +37,6 @@ Included in this package, are:
   spdf.tmac    -- a rudimentary set of bindings for ms macros
   pdfmark.ms   -- preliminary documentation
   cover.ms     -- a template for the documentation cover sheet
-  gnu.eps      -- the groff logo, copied from the groff distribution
   Makefile     -- makefile, for formatting the documentation
   README       -- this file
   PROBLEMS     -- a list of known problems

@@ -43,7 +43,7 @@
 .de CE
 .DE
 .sp |17.5c
-.PSPIC gnu.eps
+.PSPIC logo.eps
 .nr PS 19
 .CD
 .fam H
