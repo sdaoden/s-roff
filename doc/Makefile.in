@@ -82,7 +82,7 @@ GROFF=GROFF_COMMAND_PREFIX=''; \
 
 imagedir=img
 
-.SUFFIXES: .me .ms .ps .html .txt .texinfo .dvi .pdf .xhtml
+.SUFFIXES: .me .ms .ps .txt .texinfo .pdf
 .PHONY: all prepare_examples clean distclean realclean extraclean
 
 # For simplicity, we always call grn and eqn.
@@ -91,53 +91,32 @@ imagedir=img
 .me.ps:
 	$(GROFF) -Tps -ge -me >$@
 
-.ms.html:
-	$(GROFF) -P-p -P-b -P-I`basename $< | sed -e 's|.ms$$||'` \
-		 -P-D$(imagedir) -P-V -Thtml -ms >$@
 .ms.txt:
 	$(GROFF) -Tascii -ms -mwww >$@
 .ms.ps:
 	$(GROFF) -Tps -ms -mwww >$@
 
-.texinfo.dvi:
-	$(TEXI2DVI) -e $<
 .texinfo.pdf:
 	$(TEXI2DVI) -e --pdf $<
-.texinfo.html:
-	$(MAKEINFO) --enable-encoding -I$(srcdir) --html --no-split $< \
-	&& $(SHELL) $(srcdir)/fixinfo.sh $@
-
 
 all: prepare_examples
 
 prepare_examples: grnexmpl.g groff.css
 	test -f grnexmpl.g || cp $(srcdir)/grnexmpl.g .
-	test -f groff.css || cp $(srcdir)/groff.css .
 
 groff.info: groff.texinfo
 	$(MAKEINFO) --enable-encoding -I$(srcdir) $(srcdir)/groff.texinfo
-
-pic.html: pic.ms
-	$(GROFF) -P-p -P-I`basename $< | sed -e 's|.ms$$||'` \
-                 -P-D$(imagedir) -P-j`basename $< | sed -e 's|.ms$$||'` \
-                 -Thtml -P-V -ms >$@
-
-webpage.html: webpage.ms groff.css
-	$(GROFF) -P-j`basename $< | sed -e 's|.ms$$||'` \
-                 -P-nrpb -P-I`basename $< | sed -e 's|.ms$$||'` \
-                 -P-D$(imagedir) -Thtml -ms >$@
 
 webpage.ps:
 
 grnexmpl.ps: grnexmpl.me grnexmpl.g
 
-
 clean:
-	-rm -f *.ps *.html *.txt core
-	-rm -f *.aux *.dvi *.pdf *.log *.toc texput.log
+	-rm -f *.ps *.txt core
+	-rm -f *.aux *.pdf *.log *.toc texput.log
 	-rm -f *.cp *.cps *.cv *.cn *.es *.ess *.fn *.fns *.ky *.kys \
                *.ma *.mas *.op *.ops *.pg *.pgs *.rq *.rqs *.st *.sts \
-               *.tp *.tps *.tr *.vr *.vrs *.xhtml
+               *.tp *.tps *.tr *.vr *.vrs
 	-rm -rf img
 
 distclean: clean

@@ -56,44 +56,19 @@ PROCESSEDDOCFILES=\
   meintro.ps \
   pic.ps
 
-HTMLDOCFILES=\
-  pic.html
-
-HTMLDOCFILESALL=\
-  pic*.html
-
-HTMLDOCIMAGEFILES=\
-  pic*
-
 EXAMPLEFILES=\
-  webpage.ms \
-  groff.css \
   grnexmpl.g \
   grnexmpl.me
 
 PROCESSEDEXAMPLEFILES=\
-  webpage.ps \
   grnexmpl.ps
 
-HTMLEXAMPLEFILES=\
-  webpage.html
-
-HTMLEXAMPLEFILESALL=\
-  webpage*.html
-
-HTMLEXAMPLEIMAGEFILES=\
-  webpage*
-
 imagedir=img
-htmldocimagedir=$(htmldocdir)/$(imagedir)
-exampleimagedir=$(exampledir)/$(imagedir)
 
 CLEANADD=\
   $(PROCESSEDDOCFILES) \
   $(PROCESSEDEXAMPLEFILES) \
-  $(HTMLEXAMPLEFILESALL) \
-  $(HTMLDOCFILESALL) \
-  groff.aux groff.cp* groff.dvi groff.es* groff.fn* groff.html groff.ky* \
+  groff.aux groff.cp* groff.dvi groff.es* groff.fn* groff.ky* \
   groff.log groff.ma* groff.op* groff.pdf groff.pg* groff.ps groff.rq* \
   groff.st* groff.toc groff.tp groff.vr* \
   examples.stamp
@@ -107,51 +82,32 @@ CLEANNOTSRCDIRADD=\
   groff \
   groff-*
 
-.SUFFIXES: .me .ms .ps .html
+.SUFFIXES: .me .ms .ps
 
 # For simplicity, we always call grn and eqn.
 .me.ps:
 	$(GROFF) -Tps -ge -me >$@
-
-.ms.html:
-	$(GROFF) -P-p -P-b -P-I`basename $< | sed -e 's|.ms$$||'` \
-		 -P-D$(imagedir) -P-V -Thtml -ms >$@
 .ms.ps:
 	$(GROFF) -Tps -ms -mwww >$@
 
 
 all: groff.info $(PROCESSEDDOCFILES) prepare_examples \
-     $(PROCESSEDEXAMPLEFILES) $(make_html)
-
-html: $(HTMLDOCFILES) $(HTMLEXAMPLEFILES)
+     $(PROCESSEDEXAMPLEFILES)
 
 prepare_examples: examples.stamp
 
 examples.stamp: grnexmpl.g groff.css
 	test -f grnexmpl.g || cp $(srcdir)/grnexmpl.g .
-	test -f groff.css || cp $(srcdir)/groff.css .
 	echo timestamp > $@
 
 groff.info: groff.texinfo
 	$(MAKEINFO) --enable-encoding -I$(srcdir) $(srcdir)/groff.texinfo
 
-pic.html: pic.ms
-	$(GROFF) -P-p -P-I`basename $< | sed -e 's|.ms$$||'` \
-                 -P-D$(imagedir) -P-j`basename $< | sed -e 's|.ms$$||'` \
-                 -Thtml -P-V -ms >$@
-
-webpage.html: webpage.ms groff.css
-	$(GROFF) -P-j`basename $< | sed -e 's|.ms$$||'` \
-                 -P-nrpb -P-I`basename $< | sed -e 's|.ms$$||'` \
-                 -P-D$(imagedir) -Thtml -ms >$@
-
-webpage.ps:
-
 grnexmpl.ps: grnexmpl.me grnexmpl.g
 
 distfiles: groff.info
 
-install_data: groff.info $(DOCFILES) $(PROCESSEDDOCFILES) $(make_install_html) \
+install_data: groff.info $(DOCFILES) $(PROCESSEDDOCFILES) \
               $(EXAMPLEFILES) $(PROCESSEDEXAMPLEFILES)
 	-test -d $(DESTDIR)$(infodir) || $(mkinstalldirs) $(DESTDIR)$(infodir)
 # Prefer info files in builddir over srcdir; we test for
@@ -185,30 +141,6 @@ install_data: groff.info $(DOCFILES) $(PROCESSEDDOCFILES) $(make_install_html) \
 	  $(INSTALL_DATA) $$f $(DESTDIR)$(exampledir)/$$f; \
 	done
 
-install_html: $(HTMLDOCFILES) $(HTMLEXAMPLEFILES)
-	-test -d $(DESTDIR)$(htmldocdir) \
-	  || $(mkinstalldirs) $(DESTDIR)$(htmldocdir)
-	for f in `ls $(HTMLDOCFILESALL)`; do \
-	  rm -f $(DESTDIR)$(htmldocdir)/$$f; \
-	  $(INSTALL_DATA) $$f $(DESTDIR)$(htmldocdir)/$$f; \
-	done
-	-test -d $(DESTDIR)$(htmldocimagedir) \
-	  || $(mkinstalldirs) $(DESTDIR)$(htmldocimagedir)
-	rm -f $(DESTDIR)$(htmldocimagedir)/$(HTMLDOCIMAGEFILES)
-	$(INSTALL_DATA) $(imagedir)/$(HTMLDOCIMAGEFILES) \
-	  $(DESTDIR)$(htmldocimagedir)
-	-test -d $(DESTDIR)$(exampledir) \
-	  || $(mkinstalldirs) $(DESTDIR)$(exampledir)
-	for f in `ls $(HTMLEXAMPLEFILESALL)`; do \
-	  rm -f $(DESTDIR)$(exampledir)/$$f; \
-	  $(INSTALL_DATA) $$f $(DESTDIR)$(exampledir)/$$f; \
-	done
-	-test -d $(DESTDIR)$(exampleimagedir) \
-	  || $(mkinstalldirs) $(DESTDIR)$(exampleimagedir)
-	rm -f $(DESTDIR)$(exampleimagedir)/$(HTMLEXAMPLEIMAGEFILES)
-	$(INSTALL_DATA) $(imagedir)/$(HTMLEXAMPLEIMAGEFILES) \
-	  $(DESTDIR)$(exampleimagedir)
-
 uninstall_sub:
 	-for f in groff `ls groff.info*`; do \
 	  rm -f $(DESTDIR)$(infodir)/$$f; \
@@ -218,14 +150,6 @@ uninstall_sub:
 	-for f in $(DOCFILES) $(PROCESSEDDOCFILES); do \
 	  rm -f $(DESTDIR)$(docdir)/$$f; \
 	done
-	-for f in `ls $(HTMLDOCFILESALL)`; do \
-	  rm -f $(DESTDIR)$(htmldocdir)/$$f; \
-	done
-	-rm -f $(DESTDIR)$(htmldocimagedir)/$(HTMLDOCIMAGEFILES)
-	-rmdir $(DESTDIR)$(htmldocimagedir)
-	-for f in $(EXAMPLEFILES) $(PROCESSEDEXAMPLEFILES) \
-	          `ls $(HTMLEXAMPLEFILESALL)`; do \
+	-for f in $(EXAMPLEFILES) $(PROCESSEDEXAMPLEFILES); do \
 	  rm -f $(DESTDIR)$(exampledir)/$$f; \
 	done
-	-rm -f $(DESTDIR)$(exampleimagedir)/$(HTMLEXAMPLEIMAGEFILES)
-	-rmdir $(DESTDIR)$(exampleimagedir)
