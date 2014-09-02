@@ -65,11 +65,11 @@ inline FILE *ps_output::get_file()
 
 enum resource_type {
   RESOURCE_FONT,
-  RESOURCE_PROCSET,
   RESOURCE_FILE,
   RESOURCE_ENCODING,
   RESOURCE_FORM,
-  RESOURCE_PATTERN
+  RESOURCE_PATTERN,
+  RESOURCE_PROCSET
   };
 
 struct resource;

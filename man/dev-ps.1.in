@@ -468,7 +468,7 @@ for example by beginning with the following lines
 %%EndComments
 .br
 .B
-%%IncludeResource: font Garamond
+%%IncludeResource: Font Garamond
 .
 .LP
 In this case both Garamond and Garamond-Outline would need to be listed

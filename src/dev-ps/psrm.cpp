@@ -81,25 +81,27 @@ char valid_input_table[256]= {
 #endif
 };
 
-const char *extension_table[] = {
+static char const _extension_table[16] = {
   "DPS",
   "CMYK",
   "Composite",
   "FileSystem",
 };
 
-const int NEXTENSIONS = sizeof(extension_table)/sizeof(extension_table[0]);
-
-const char *resource_table[] = {
-  "font",
-  "procset",
-  "file",
-  "encoding",
-  "form",
-  "pattern",
+/* PS Reference Manual 3: table 3.7: Regular resources.
+ * Note: according to section 3.3.8: Name Objects:
+ *    A name is unique. Any two name objects defined by the same sequence of
+ *    characters are identical copies of each other. Name equality is based on
+ *    an exact match between the corresponding characters defining each name.
+ *    The case of letters must match, so the names A and a are different */
+static char const _resource_table[16] = {
+  "Font",
+  "File", // XXX WHAT IS THIS?
+  "Encoding",
+  "Form",
+  "Pattern",
+  "ProcSet",
 };
-
-const int NRESOURCES = sizeof(resource_table)/sizeof(resource_table[0]);
 
 static int read_uint_arg(const char **pp, unsigned *res)
 {
@@ -160,7 +162,7 @@ resource::~resource()
 
 void resource::print_type_and_name(FILE *outfp)
 {
-  fputs(resource_table[type], outfp);
+  fputs(_resource_table[type], outfp);
   putc(' ', outfp);
   print_ps_string(name, outfp);
   if (type == RESOURCE_PROCSET) {
@@ -347,7 +349,7 @@ void resource_manager::supply_resource(resource *r, int rank, FILE *outfp,
   if (r->flags & resource::BUSY) {
     r->name += '\0';
     fatal("loop detected in dependency graph for %1 `%2'",
-	  resource_table[r->type],
+	  _resource_table[r->type],
 	  r->name.contents());
   }
   r->flags |= resource::BUSY;
@@ -557,11 +559,11 @@ resource *resource_manager::read_resource_arg(const char **ptr)
     return 0;
   }
   int ri;
-  for (ri = 0; ri < NRESOURCES; ri++)
-    if (strlen(resource_table[ri]) == size_t(*ptr - name)
-	&& memcmp(resource_table[ri], name, *ptr - name) == 0)
+  for (ri = 0; ri < NELEM(_resource_table); ri++)
+    if (strlen(_resource_table[ri]) == size_t(*ptr - name)
+	&& memcmp(_resource_table[ri], name, *ptr - name) == 0)
       break;
-  if (ri >= NRESOURCES) {
+  if (ri >= NELEM(_resource_table)) {
     error("unknown resource type");
     return 0;
   }
@@ -913,13 +915,13 @@ static unsigned parse_extensions(const char *ptr)
       ++ptr;
     } while (*ptr != '\0' && !white_space(*ptr));
     int i;
-    for (i = 0; i < NEXTENSIONS; i++)
-      if (strlen(extension_table[i]) == size_t(ptr - name)
-	  && memcmp(extension_table[i], name, ptr - name) == 0) {
+    for (i = 0; i < NELEM(_extension_table); i++)
+      if (strlen(_extension_table[i]) == size_t(ptr - name)
+	  && memcmp(_extension_table[i], name, ptr - name) == 0) {
 	flags |= (1 << i);
 	break;
       }
-    if (i >= NEXTENSIONS) {
+    if (i >= NELEM(_extension_table)) {
       string s(name, ptr - name);
       s += '\0';
       error("unknown extension `%1'", s.contents());
@@ -1153,10 +1155,10 @@ void resource_manager::print_extensions_comment(FILE *outfp)
 {
   if (extensions) {
     fputs("%%Extensions:", outfp);
-    for (int i = 0; i < NEXTENSIONS; i++)
+    for (int i = 0; i < NELEM(_extension_table); i++)
       if (extensions & (1 << i)) {
 	putc(' ', outfp);
-	fputs(extension_table[i], outfp);
+	fputs(_extension_table[i], outfp);
       }
     putc('\n', outfp);
   }
