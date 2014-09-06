@@ -1,25 +1,100 @@
-Unicode input:
+
+- Get rid of all the short options which choose preprocessors, instead
+  use a multiplexer
+
+-- Offer a builtin mode which guesses required preprocessors, maybe add
+   configuration file option which can be used to specify global
+   / per-user additions by means of COMMAND-PAIR=PREPROC-PATH.
+   Of course also add to the command-line multiplexer option this
+   possibility..
+
+   This "auto" preprocessor should then reconsider it's guesses on
+   a per-file base!?
+
+   I really would like to get rid of the necessity to parse all files
+   with all defined preprocessors completely.  Instead we should, once
+   we see the starting command, hand over to a known builtin
+   preprocessor and parse only that much until we see the end command.
+   So convert all builtin preprocessors to libraries and offer jumpin
+   points for that purpose only, let the standalone versions be simple
+   wrappers.  S-roff can use dlopen(3) if available, otherwise don't
+   offer this optimization but continue to use the full-parse as usual,
+   that must be supported anyway for non-builtin preprocessors.
+   (XXX For [s-]troff we may not do so until the user has chosen the
+   preprocessor on the command line, since..)
+
+-- Introduce a new command that can be used to select the preprocessors
+   explicitly, e.g., ".preprocessors tbl,eqn" etc.
+   If so, how to deal with included files?  Offer "-" mode which turns
+   off preprocessors for a specific file?
+
+   I think the best would be some kind of "shebang", for compatibilities
+   sake it must be comment-based, as in '.\"!troff eqn tbl enc=latin1'?
+   For example, newer man(1)s read the first line of the manual and
+   check for a syntax <^'\" >followed by concat of [egprtv]+ (and in
+   fact  *join in* $MANROFFSEQ environment [egprtv]+)
+                while getopts 'egprtv' preproc_arg; do
+                        case "${preproc_arg}" in
+                        e)      pipeline="$pipeline | $EQN" ;;
+                        g)      GRAP  ;; # Ignore for compatibility.
+                        p)      pipeline="$pipeline | $PIC" ;;
+                        r)      pipeline="$pipeline | $REFER" ;;
+                        t)      pipeline="$pipeline | $TBL" ;;
+                        v)      pipeline="$pipeline | $VGRIND" ;;
+                        *)      usage ;;
+                        esac
+
+   This is good, but pretty much crypto and nothing for normal users.
+   But extending this, why not check for <'\" preprocess: tbl eqn"> etc.?
+   And as above.
+   And this is also documented in groff_tmac.man.  But do not bet on
+   this.
+
+- Be sensible in respect to locale environment a.k.a. -Tlocale and offer
+  per-file input encodings, chooseable via a new command.
+  If so, how to deal with included files?  Offer "-" mode which turns
+  off character set conversion for a specific file?
+  Anyway, extend file_case to allow "stacking in" a character
+  conversion.
+
+-- Get rid of preconv(1) again, this will simply be a layer of
+   file_case.  Yet still allow to specify some encoding on the command
+   line.
+
+- What about extending searchpath:: (and file_case) so that an archive
+  could be opened as such, think .dmg, .JAR or tar (pax) and/or even
+  better SQLite3?
+
+= Unicode input:
   Making groff 21bit input-clean.
+-> Use S-CText and make the entire toolchain UTF-8 -based and -clean.
+  This could be implemented through file_case, too, and when it finally
+  is possible usage of the \[uXX] escapes could be cut down drastically.
 
-Make -Tlj4 work with -X.
+-- This also includes hyphenation etc.
 
-Guess man5ext and man7ext variables.
+- Directly support TTF/OTF fonts.
 
-Provide man.sun implementing .TX.
+- Offer more typographic control a.k.a paragraph-wise formatting, but in
+  a way that remains compatibility with trap handling.  Is this
+  possible (maybe a stripped down try-and-error forward path bouquet
+  algorithm as suggested by Doug McIlroy is feasible?).
 
-Improve GROFF_PRINT macro in aclocal.m4.
+= Make -Tlj4 work with -X
 
-Provide a `check' target.
+= Guess man5ext and man7ext variables
 
-Provide a `bindist' target.
+= Provide man.sun implementing .TX
 
-Implement tmac.bib in terms of tmac.s.
+= Provide a `check' target
 
-Support long options using GNU getopt.
+= Implement tmac.bib in terms of tmac.s
 
-Catch the following error in -me:
-.(z
-.(l C
-.)z
+= Catch the following error in -me:
+  .(z
+  .(l C
+  .)z
 
-Arrows for next/previous page from R5 xditview.
+= Arrows for next/previous page from R5 xditview
+
+# s-ts-mode
