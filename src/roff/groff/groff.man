@@ -429,12 +429,6 @@ postprocessor is
 .BR \%post-grohtml ).
 .
 .TP
-lj4
-HP LaserJet4 compatible (or other PCL5 compatible) printers (postprocessor
-is
-.BR grolj4 ).
-.
-.TP
 ps
 PostScript output (postprocessor is
 .BR grops ).
@@ -1068,10 +1062,6 @@ HTML output.
 Text output using the ISO \%Latin-1 (ISO \%8859-1) character set; see
 .BR \%iso_8859_1 (7).
 .
-.TP 
-.B lj4
-HP LaserJet4-compatible (or other PCL5-compatible) printers.
-.
 .TP
 .B ps
 PostScript output; suitable for printers and previewers like
@@ -1128,10 +1118,6 @@ The default device is
 .
 .I groff
 provides 3\~hardware postprocessors:
-.
-.TP
-.BR \%grolj4 (@MAN1EXT@)
-for printers compatible to the HP LaserJet\~4 and PCL5,
 .
 .TP
 .BR \%grotty (@MAN1EXT@)
@@ -1222,10 +1208,6 @@ The
 .I groff
 X viewer, the \f[CR]GNU\f[] version of
 .BR xditview .
-.
-.TP
-.BR \%hpftodit (@MAN1EXT@)
-Create font description files for lj4 device.
 .
 .TP
 .BR \%@g@indxbib (@MAN1EXT@)
@@ -1809,8 +1791,6 @@ The intermediate output language:
 Postprocessors for the output devices:
 .BR \%grodvi (@MAN1EXT@),
 .BR \%grohtml (@MAN1EXT@),
-.BR \%grolj4 (@MAN1EXT@),
-.BR \%lj4_font (@MAN5EXT@),
 .BR \%grops (@MAN1EXT@),
 .BR \%grotty (@MAN1EXT@).
 .
@@ -1837,7 +1817,6 @@ The following utilities are available:
 .BR \%grap2graph (@MAN1EXT@),
 .BR \%groffer (@MAN1EXT@),
 .BR \%gxditview (@MAN1EXT@),
-.BR \%hpftodit (@MAN1EXT@),
 .BR \%@g@indxbib (@MAN1EXT@),
 .BR \%lkbib (@MAN1EXT@),
 .BR \%@g@lookbib (@MAN1EXT@),

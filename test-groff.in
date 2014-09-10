@@ -39,7 +39,6 @@ $builddir/preproc/html$SEP\
 $builddir/devices/grops$SEP\
 $builddir/devices/grodvi$SEP\
 $builddir/devices/grotty$SEP\
-$builddir/devices/grolj4$SEP\
 $builddir/devices/grolbp$SEP\
 $builddir/devices/grohtml$SEP\
 $builddir/devices/xditview
