@@ -12,6 +12,7 @@ sdefine dyad %accent {up 52 "\s[\En[.s]/2u]\(<>\s0"}%
 
 sdefine cdot %type "binary" \(md%
 
+.\" Removed, but just leave them in here, just in case someone readds..
 ifdef X75 ! define X %1% !
 ifdef X100 ! define X %1% !
 ifdef X75-12 ! define X %1% !

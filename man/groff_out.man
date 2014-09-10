@@ -155,9 +155,6 @@ this output for the postprocessors.
 This parser is smarter on whitespace and implements obsolete elements
 for compatibility, otherwise both formats are the same.
 .
-Both formats can be viewed directly with
-.BR \%gxditview (@MAN1EXT@).
-.
 .
 .P
 The main purpose of the
@@ -1454,18 +1451,7 @@ spaces; this made such output almost unreadable.
 For modern high-resolution devices, this command does not make sense
 because the width of the glyphs can become much larger than two
 decimal digits.
-.
-In
-.BR groff ,
-this is only used for the devices
-.BR X75 ,
-.BR X75-12 ,
-.BR X100 ,
-and
-.BR X100-12 .
-.
-For other devices,
-the commands
+The commands
 .B t
 and\~\c
 .B u
@@ -1630,57 +1616,7 @@ This output can be fed into the postprocessor
 .BR grotty (@MAN1EXT@)
 to get a formatted text document.
 .
-.
-.IP \[bu] 2m 
-Classical style output
-.
-.
 .RS
-.P
-As a computer monitor has a very low resolution compared to modern
-printers the
-.I intermediate output
-for the X\~devices can use the jump-and-write command with its 2-digit
-displacements.
-.
-.
-.P
-.EX
-\fBshell>\fP "hell world" | groff -Z -T X100
-.EE
-.
-.
-.P
-.nf
-.ft CB
-x T X100
-x res 100 1 1
-x init
-p1
-x font 5 TR
-f5
-s10
-V16
-H100
-.I "# write text with old-style jump-and-write command"
-.ft CB
-ch07e07l03lw06w11o07r05l03dh7
-n16 0
-x trailer
-V1100
-x stop
-.ft P
-.fi
-.RE
-.
-.
-.P
-This output can be fed into the postprocessor
-.BR \%xditview (1x)
-or
-.BR \%gxditview (@MAN1EXT@)
-for displaying in\~X.
-.
 .
 .P
 Due to the obsolete jump-and-write command, the text clusters in the
@@ -1902,13 +1838,6 @@ for historical aspects and the general structure of roff systems.
 .BR groff_diff (@MAN7EXT@)
 The differences between the intermediate output in groff and classical
 troff.
-.
-.
-.TP
-.BR gxditview (@MAN1EXT@)
-Viewer for the
-.I intermediate
-.IR output .
 .
 .
 .P

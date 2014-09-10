@@ -315,28 +315,6 @@ because
 .B groff
 does not prepend any dashes before passing it to the postprocessor.
 .
-For example, to pass a title to the
-.B \%gxditview
-postprocessor, the shell command
-.
-.RS
-.IP
-.EX
-groff -X -P -title -P 'groff it' \f[I]foo\f[]
-.EE
-.RE
-.
-.IP
-is equivalent to
-.
-.RS
-.IP
-.EX
-groff -X -Z \f[I]foo\f[] | \
-gxditview -title 'groff it' -
-.EE
-.RE
-.
 .
 .TP
 .B \-R
@@ -464,28 +442,6 @@ Unicode character set in \%UTF-8 encoding.
 .
 .
 .IP
-The following arguments select
-.B \%gxditview
-as the `postprocessor' (it is rather a viewing program):
-.
-.RS
-.RS
-.TP
-X75
-75\|dpi resolution, 10\|pt document base font.
-.TP
-X75-12
-75\|dpi resolution, 12\|pt document base font.
-.TP
-X100
-100\|dpi resolution, 10\|pt document base font.
-.TP
-X100-12
-100\|dpi resolution, 12\|pt document base font.
-.RE
-.RE
-.
-.IP
 The default device is
 .BR @DEVICE@ .
 .
@@ -517,52 +473,6 @@ Output the pipeline that would be run by
 (as a wrapper program) on the standard output, but do not execute it.
 If given more than once,
 the commands are both printed on the standard error and run.
-.
-.
-.TP
-.B \-X
-Use
-.B \%gxditview
-instead of using the usual postprocessor to (pre)view a document.
-.
-The printing spooler behavior as outlined with options
-.B \-l
-and
-.B \-L 
-is carried over to 
-.BR \%gxditview (@MAN1EXT@)
-by determining an argument for the
-.B \-printCommand
-option of
-.BR \%gxditview (@MAN1EXT@).
-.
-This sets the default
-.B Print
-action and the corresponding menu entry to that value.
-.
-.B \-X
-only produces good results with
-.BR \-Tps ,
-.BR \-TX75 ,
-.BR \-TX75-12 ,
-.BR \-TX100 ,
-and
-.BR \-TX100-12 .
-.
-The default resolution for previewing
-.B \-Tps
-output is 75\|dpi; this can be changed by passing the
-.B \-resolution
-option to
-.BR \%gxditview ,
-for example
-.
-.RS
-.IP
-.EX
-groff -X -P-resolution -P100 -man foo.1
-.EE
-.RE
 .
 .
 .TP
@@ -1077,35 +987,11 @@ encoding; see
 .B xhtml
 XHTML output.
 .
-.TP
-.B X75
-75dpi X Window System output suitable for the previewers
-.BR \%xditview (1x)
-and
-.BR \%gxditview (@MAN1EXT@).
-.
-A variant for a 12\|pt document base font is
-.BR \%X75-12 .
-.
-.TP
-.B X100
-100dpi X Window System output suitable for the previewers
-.BR \%xditview (1x)
-and
-.BR \%gxditview (@MAN1EXT@).
-.
-A variant for a 12\|pt document base font is
-.BR \%X100-12 .
-.
 .P
 The postprocessor to be used for a device is specified by the
 .B postpro
 command in the device description file; see
 .BR \%groff_font (@MAN5EXT@).
-.
-This can be overridden with the
-.B -X
-option.
 .
 .P
 The default device is
@@ -1176,40 +1062,6 @@ font description files for use with
 Create font description files for PostScript device.
 .
 .TP
-.BR \%eqn2graph (@MAN1EXT@)
-Convert an
-.B eqn
-image into a cropped image.
-.
-.TP
-.BR \%gdiffmk (@MAN1EXT@)
-Mark differences between
-.IR groff ,
-.IR nroff ,
-or
-.I troff
-files.
-.
-.TP
-.BR \%grap2graph (@MAN1EXT@)
-Convert a
-.B grap
-diagram into a cropped bitmap image.
-.
-.TP
-.BR \%groffer (@MAN1EXT@)
-General viewer program for
-.I groff
-files and man pages.
-.
-.TP
-.BR \%gxditview (@MAN1EXT@)
-The
-.I groff
-X viewer, the \f[CR]GNU\f[] version of
-.BR xditview .
-.
-.TP
 .BR \%@g@indxbib (@MAN1EXT@)
 Make inverted index for bibliographic databases.
 .
@@ -1231,25 +1083,8 @@ Create PDF documents using
 Translate a PostScript font in .pfb format to \f[CR]ASCII\f[].
 .
 .TP
-.BR \%pic2graph (@MAN1EXT@)
-Convert a
-.B pic
-diagram into a cropped image.
-.
-.TP
 .BR \%tfmtodit (@MAN1EXT@)
 Create font description files for TeX DVI device.
-.
-.TP
-.BR \%xditview (1x)
-.I roff
-viewer distributed with X window.
-.
-.TP
-.BR \%xtotroff (@MAN1EXT@)
-Convert X font metrics into \f[CR]GNU\f[]
-.I troff
-font metrics.
 .
 .
 .\" --------------------------------------------------------------------
@@ -1748,12 +1583,6 @@ Introduction, history and further readings:
 .BR roff (@MAN7EXT@).
 .
 .TP
-Viewer for groff files:
-.BR \%groffer (@MAN1EXT@),
-.BR \%gxditview (@MAN1EXT@),
-.BR \%xditview (1x).
-.
-.TP
 Wrapper programs for formatters:
 .BR \%groff (@MAN1EXT@),
 .BR \%grog (@MAN1EXT@).
@@ -1813,10 +1642,8 @@ The following utilities are available:
 .BR \%addftinfo (@MAN1EXT@),
 .BR \%afmtodit (@MAN1EXT@),
 .BR \%eqn2graph (@MAN1EXT@),
-.BR \%gdiffmk (@MAN1EXT@),
 .BR \%grap2graph (@MAN1EXT@),
 .BR \%groffer (@MAN1EXT@),
-.BR \%gxditview (@MAN1EXT@),
 .BR \%@g@indxbib (@MAN1EXT@),
 .BR \%lkbib (@MAN1EXT@),
 .BR \%@g@lookbib (@MAN1EXT@),
@@ -1824,7 +1651,6 @@ The following utilities are available:
 .BR \%pfbtops (@MAN1EXT@),
 .BR \%pic2graph (@MAN1EXT@),
 .BR \%tfmtodit (@MAN1EXT@),
-.BR \%xtotroff (@MAN1EXT@).
 .
 .\" --------------------------------------------------------------------
 .\" Emacs setup
