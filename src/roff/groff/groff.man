@@ -429,12 +429,6 @@ postprocessor is
 .BR \%post-grohtml ).
 .
 .TP
-lbp
-Canon CAPSL printers (\%LBP-4 and \%LBP-8 series laser printers;
-postprocessor is
-.BR grolbp ).
-.
-.TP
 lj4
 HP LaserJet4 compatible (or other PCL5 compatible) printers (postprocessor
 is
@@ -1074,10 +1068,6 @@ HTML output.
 Text output using the ISO \%Latin-1 (ISO \%8859-1) character set; see
 .BR \%iso_8859_1 (7).
 .
-.TP
-.B lbp
-Output for Canon CAPSL printers (\%LBP-4 and \%LBP-8 series laser printers).
-.
 .TP 
 .B lj4
 HP LaserJet4-compatible (or other PCL5-compatible) printers.
@@ -1138,10 +1128,6 @@ The default device is
 .
 .I groff
 provides 3\~hardware postprocessors:
-.
-.TP
-.BR \%grolbp (@MAN1EXT@)
-for some Canon printers,
 .
 .TP
 .BR \%grolj4 (@MAN1EXT@)
@@ -1823,7 +1809,6 @@ The intermediate output language:
 Postprocessors for the output devices:
 .BR \%grodvi (@MAN1EXT@),
 .BR \%grohtml (@MAN1EXT@),
-.BR \%grolbp (@MAN1EXT@),
 .BR \%grolj4 (@MAN1EXT@),
 .BR \%lj4_font (@MAN5EXT@),
 .BR \%grops (@MAN1EXT@),
