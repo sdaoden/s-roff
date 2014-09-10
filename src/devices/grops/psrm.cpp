@@ -20,6 +20,7 @@ with groff; see the file COPYING.  If not, write to the Free Software
 Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 
 #include "driver.h"
+#include "file_case.h"
 #include "stringclass.h"
 #include "cset.h"
 
@@ -305,7 +306,6 @@ void resource_manager::output_prolog(ps_output &out)
 {
   FILE *outfp = out.get_file();
   out.end_line();
-  char *path;
   if (!getenv("GROPS_PROLOGUE")) {
     string e = "GROPS_PROLOGUE";
     e += '=';
@@ -315,16 +315,18 @@ void resource_manager::output_prolog(ps_output &out)
       fatal("putenv failed");
   }
   char *prologue = getenv("GROPS_PROLOGUE");
-  FILE *fp = font::open_file(prologue, &path);
-  if (!fp)
+
+  file_case *fcp = font::open_file(prologue);
+  if (fcp == NULL)
     fatal("can't find `%1'", prologue);
+
   fputs("%%BeginResource: ", outfp);
   procset_resource->print_type_and_name(outfp);
   putc('\n', outfp);
-  process_file(-1, fp, path, outfp);
-  fclose(fp);
-  a_delete path;
+  process_file(-1, fcp->file(), fcp->path(), outfp);
   fputs("%%EndResource\n", outfp);
+
+  delete fcp;
 }
 
 void resource_manager::import_file(const char *filename, ps_output &out)
@@ -347,65 +349,54 @@ void resource_manager::supply_resource(resource *r, int rank, FILE *outfp,
   r->flags |= resource::BUSY;
   if (rank > r->rank)
     r->rank = rank;
-  char *path = 0;		// pacify compiler
-  FILE *fp = 0;
-  if (r->filename != 0) {
+
+  file_case *fcp = NULL;
+  if (r->filename != NULL) {
     if (r->type == RESOURCE_FONT) {
-      fp = font::open_file(r->filename, &path);
-      if (!fp) {
-	error("can't find `%1'", r->filename);
-	a_delete r->filename;
-	r->filename = 0;
-      }
+      if ((fcp = font::open_file(r->filename)) == NULL)
+        error("can't find `%1'", r->filename);
+    } else {
+      if ((fcp = include_search_path.open_file_cautious(r->filename)) == NULL)
+        error("can't open `%1': %2", r->filename, strerror(errno));
     }
-    else {
-      errno = 0;
-      fp = include_search_path.open_file_cautious(r->filename);
-      if (!fp) {
-	error("can't open `%1': %2", r->filename, strerror(errno));
-	a_delete r->filename;
-	r->filename = 0;
-      }
-      else
-	path = r->filename;
+    if (fcp == NULL) {
+      a_delete r->filename;
+      r->filename = NULL;
     }
   }
-  if (fp) {
+
+  if (fcp != NULL) {
     if (outfp) {
       if (r->type == RESOURCE_FILE && is_document) {
-	fputs("%%BeginDocument: ", outfp);
-	print_ps_string(r->name, outfp);
-	putc('\n', outfp);
-      }
-      else {
-	fputs("%%BeginResource: ", outfp);
-	r->print_type_and_name(outfp);
-	putc('\n', outfp);
+        fputs("%%BeginDocument: ", outfp);
+        print_ps_string(r->name, outfp);
+        putc('\n', outfp);
+      } else {
+        fputs("%%BeginResource: ", outfp);
+        r->print_type_and_name(outfp);
+        putc('\n', outfp);
       }
     }
-    process_file(rank, fp, path, outfp);
-    fclose(fp);
-    if (r->type == RESOURCE_FONT)
-      a_delete path;
+    process_file(rank, fcp->file(), fcp->path(), outfp);
+    delete fcp;
+
     if (outfp) {
       if (r->type == RESOURCE_FILE && is_document)
-	fputs("%%EndDocument\n", outfp);
+        fputs("%%EndDocument\n", outfp);
       else
-	fputs("%%EndResource\n", outfp);
+        fputs("%%EndResource\n", outfp);
     }
     r->flags |= resource::SUPPLIED;
-  }
-  else {
+  } else {
     if (outfp) {
       if (r->type == RESOURCE_FILE && is_document) {
-	fputs("%%IncludeDocument: ", outfp);
-	print_ps_string(r->name, outfp);
-	putc('\n', outfp);
-      }
-      else {
-	fputs("%%IncludeResource: ", outfp);
-	r->print_type_and_name(outfp);
-	putc('\n', outfp);
+        fputs("%%IncludeDocument: ", outfp);
+        print_ps_string(r->name, outfp);
+        putc('\n', outfp);
+      } else {
+        fputs("%%IncludeResource: ", outfp);
+        r->print_type_and_name(outfp);
+        putc('\n', outfp);
       }
     }
     r->flags |= resource::NEEDED;
@@ -1074,24 +1065,22 @@ void resource_manager::process_file(int rank, FILE *fp, const char *filename,
 
 void resource_manager::read_download_file()
 {
-  char *path = 0;
-  FILE *fp = font::open_file("download", &path);
-  if (!fp)
+  file_case *fcp = font::open_file("download");
+  if (fcp == NULL)
     fatal("can't find `download'");
+
   char buf[512];
-  int lineno = 0;
-  while (fgets(buf, sizeof(buf), fp)) {
-    lineno++;
+  for (int lineno = 1; fgets(buf, sizeof(buf), fcp->file()) != NULL; ++lineno) {
     char *p = strtok(buf, " \t\r\n");
-    if (p == 0 || *p == '#')
+    if (p == NULL || *p == '#')
       continue;
     char *q = strtok(0, " \t\r\n");
-    if (!q)
-      fatal_with_file_and_line(path, lineno, "missing filename");
+    if (q == NULL)
+      fatal_with_file_and_line(fcp->path(), lineno, "missing filename");
     lookup_font(p)->filename = strsave(q);
   }
-  a_delete path;
-  fclose(fp);
+
+  delete fcp;
 }
 
 // XXX Can we share some code with ps_output::put_string()?

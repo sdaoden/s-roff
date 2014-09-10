@@ -22,6 +22,7 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 #include "eqn.h"
 #include "stringclass.h"
 #include "device.h"
+#include "file_case.h"
 #include "searchpath.h"
 #include "macropath.h"
 #include "htmlhint.h"
@@ -390,12 +391,11 @@ int main(int argc, char **argv)
 	   device);
   }
   if (load_startup_file) {
-    char *path;
-    FILE *fp = config_macro_path.open_file(STARTUP_FILE, &path);
-    if (fp) {
-      do_file(fp, path);
-      fclose(fp);
-      a_delete path;
+    file_case *fcp;
+    if ((fcp = config_macro_path.open_file(STARTUP_FILE, fcp->fc_const_path)
+        ) != NULL) {
+      do_file(fcp->file(), fcp->path());
+      delete fcp;
     }
   }
   if (optind >= argc)

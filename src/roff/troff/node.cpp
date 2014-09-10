@@ -33,6 +33,7 @@ extern int debug_state;
 #include "stringclass.h"
 #include "mtsm.h"
 #include "env.h"
+#include "file_case.h"
 #include "request.h"
 #include "node.h"
 #include "token.h"
@@ -1552,16 +1553,17 @@ void troff_output_file::really_copy_file(hunits x, vunits y,
   moveto(x, y);
   flush_tbuf();
   do_motion();
-  errno = 0;
-  FILE *ifp = include_search_path.open_file_cautious(filename);
-  if (ifp == 0)
-    error("can't open `%1': %2", filename, strerror(errno));
-  else {
+
+  file_case *fcp = include_search_path.open_file_cautious(filename,
+      fcp->fc_const_path);
+  if (fcp != NULL) {
     int c;
-    while ((c = getc(ifp)) != EOF)
+    while ((c = getc(fcp->file())) != EOF)
       put(char(c));
-    fclose(ifp);
-  }
+    delete fcp;
+  } else
+    error("can't open `%1': %2", filename, strerror(errno));
+
   force_motion = 1;
   current_size = 0;
   current_tfont = 0;

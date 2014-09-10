@@ -27,6 +27,7 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
  */
 
 #include "driver.h"
+#include "file_case.h"
 #include "stringclass.h"
 #include "cset.h"
 #include "nonposix.h"
@@ -785,28 +786,27 @@ void ps_printer::define_encoding(const char *encoding, int encoding_index)
   int i;
   for (i = 0; i < 256; i++)
     vec[i] = 0;
-  char *path;
-  FILE *fp = font::open_file(encoding, &path);
-  if (fp == 0)
+
+  file_case *fcp = font::open_file(encoding);
+  if (fcp == NULL)
     fatal("can't open encoding file `%1'", encoding);
-  int lineno = 1;
+
   const int BUFFER_SIZE = 512;
   char buf[BUFFER_SIZE];
-  while (fgets(buf, BUFFER_SIZE, fp) != 0) {
+  for (int lineno = 1; fgets(buf, BUFFER_SIZE, fcp->file()) != NULL; ++lineno) {
     char *p = buf;
     while (csspace(*p))
       p++;
     if (*p != '#' && *p != '\0' && (p = strtok(buf, WS)) != 0) {
       char *q = strtok(0, WS);
-      int n = 0;		// pacify compiler
+      int n = 0; // pacify compiler
       if (q == 0 || sscanf(q, "%d", &n) != 1 || n < 0 || n >= 256)
-	fatal_with_file_and_line(path, lineno, "bad second field");
+        fatal_with_file_and_line(fcp->path(), lineno, "bad second field");
       vec[n] = new char[strlen(p) + 1];
       strcpy(vec[n], p);
     }
-    lineno++;
   }
-  a_delete path;
+
   out.put_literal_symbol(make_encoding_name(encoding_index))
      .put_delimiter('[');
   for (i = 0; i < 256; i++) {
@@ -819,7 +819,8 @@ void ps_printer::define_encoding(const char *encoding, int encoding_index)
   }
   out.put_delimiter(']')
      .put_symbol("def");
-  fclose(fp);
+
+  delete fcp;
 }
 
 void ps_printer::reencode_font(ps_font *f)

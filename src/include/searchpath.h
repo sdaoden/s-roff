@@ -19,14 +19,18 @@ You should have received a copy of the GNU General Public License along
 with groff; see the file COPYING.  If not, write to the Free Software
 Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 
+#include "file_case.h"
+
 class search_path {
   char *dirs;
   unsigned init_len;
 public:
-  search_path(const char *envvar, const char *standard,
-	      int add_home, int add_current);
+  search_path(const char *envvar, const char *standard, int add_home,
+    int add_current);
   ~search_path();
-  void command_line_dir(const char *);
-  FILE *open_file(const char *, char **);
-  FILE *open_file_cautious(const char *, char ** = 0, const char * = 0);
+
+  void        command_line_dir(char const *);
+  file_case * open_file(char const *name, uint32_t f=file_case::mux_default);
+  file_case * open_file_cautious(char const *name,
+                uint32_t f=file_case::mux_default);
 };

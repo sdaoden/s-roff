@@ -27,6 +27,7 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 #include <errno.h>
 #include "errarg.h"
 #include "error.h"
+#include "file_case.h"
 #include "stringclass.h"
 #include "nonposix.h"
 #include "searchpath.h"
@@ -152,23 +153,20 @@ void do_so(const char *line)
 
 int do_file(const char *filename)
 {
-  char *file_name_in_path = 0;
-  FILE *fp = include_search_path.open_file_cautious(filename,
-						    &file_name_in_path);
-  int err = errno;
-  string whole_filename(file_name_in_path ? file_name_in_path : filename);
-  whole_filename += '\0';
-  a_delete file_name_in_path;
-  if (fp == 0) {
-    error("can't open `%1': %2", whole_filename.contents(), strerror(err));
-    return 0;
+  int rv = 0;
+  enum { START, MIDDLE, HAD_DOT, HAD_s, HAD_so, HAD_l, HAD_lf } state = START;
+
+  file_case *fcp;
+  if ((fcp = include_search_path.open_file_cautious(filename)) == NULL) {
+    error("can't open `%1': %2", filename, strerror(errno));
+    goto jleave;
   }
-  current_filename = whole_filename.contents();
+
+  current_filename = fcp->path();
   current_lineno = 1;
   set_location();
-  enum { START, MIDDLE, HAD_DOT, HAD_s, HAD_so, HAD_l, HAD_lf } state = START;
   for (;;) {
-    int c = getc(fp);
+    int c = getc(fcp->file());
     if (c == EOF)
       break;
     switch (state) {
@@ -226,7 +224,7 @@ int do_file(const char *filename)
     case HAD_so:
       if (c == ' ' || c == '\n' || compatible_flag) {
 	string line;
-	for (; c != EOF && c != '\n'; c = getc(fp))
+	for (; c != EOF && c != '\n'; c = getc(fcp->file()))
 	  line += c;
 	current_lineno++;
 	line += '\n';
@@ -258,7 +256,7 @@ int do_file(const char *filename)
     case HAD_lf:
       if (c == ' ' || c == '\n' || compatible_flag) {
 	string line;
-	for (; c != EOF && c != '\n'; c = getc(fp))
+	for (; c != EOF && c != '\n'; c = getc(fcp->file()))
 	  line += c;
 	current_lineno++;
 	line += '\n';
@@ -277,6 +275,7 @@ int do_file(const char *filename)
       assert(0);
     }
   }
+
   switch (state) {
   case HAD_DOT:
     fputs(".\n", stdout);
@@ -299,8 +298,10 @@ int do_file(const char *filename)
   case START:
     break;
   }
-  if (fp != stdin)
-    fclose(fp);
+
+  delete fcp;
   current_filename = 0;
-  return 1;
+  rv = 1;
+jleave:
+  return rv;
 }

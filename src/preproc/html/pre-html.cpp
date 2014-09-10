@@ -31,6 +31,7 @@
 #include <errno.h>
 #include "errarg.h"
 #include "error.h"
+#include "file_case.h"
 #include "stringclass.h"
 #include "posix.h"
 #include "defs.h"
@@ -293,22 +294,19 @@ int get_line(FILE *f)
 
 static unsigned int get_resolution(void)
 {
-  char *pathp;
-  FILE *f;
   unsigned int res;
-  f = font_path.open_file("devps/DESC", &pathp);
-  a_delete pathp;
-  if (f == 0)
+  file_case *fcp;
+  if ((fcp = font_path.open_file("devps/DESC", fcp->fc_const_path)) == NULL)
     fatal("can't open devps/DESC");
-  while (get_line(f)) {
+  while (get_line(fcp->file())) {
     int n = sscanf(linebuf, "res %u", &res);
-    if (n >= 1) {
-      fclose(f);
-      return res;
-    }
+    if (n >= 1)
+      goto jleave;
   }
   fatal("can't find `res' keyword in devps/DESC");
-  return 0;
+jleave:
+  delete fcp;
+  return res;
 }
 
 /*

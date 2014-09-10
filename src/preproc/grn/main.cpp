@@ -74,6 +74,7 @@
 #include "gprint.h"
 
 #include "device.h"
+#include "file_case.h"
 #include "font.h"
 #include "searchpath.h"
 #include "macropath.h"
@@ -486,7 +487,6 @@ void
 conv(register FILE *fp,
      int baseline)
 {
-  register FILE *gfp = NULL;	/* input file pointer */
   register int done = 0;	/* flag to remember if finished */
   register ELT *e;		/* current element pointer */
   ELT *PICTURE;			/* whole picture data base pointer */
@@ -518,13 +518,13 @@ conv(register FILE *fp,
 	  error("at line %1: no picture filename.\n", baseline);
 	return;
       }
-      char *path;
-      gfp = macro_path.open_file(gremlinfile, &path);
-      if (!gfp)
-	return;
-      PICTURE = DBRead(gfp);	/* read picture file */
-      fclose(gfp);
-      a_delete path;
+      {
+      file_case *fcp;
+      if ((fcp = macro_path.open_file(gremlinfile, fcp->fc_const_path)) == NULL)
+        return;
+      PICTURE = DBRead(fcp->file()); /* read picture file */
+      delete fcp;
+      }
       if (DBNullelt(PICTURE))
 	return;			/* If a request is made to make the  */
 				/* picture fit into a specific area, */
