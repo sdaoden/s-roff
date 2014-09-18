@@ -1,46 +1,38 @@
-// -*- C++ -*-
-/* Copyright (C) 1989-2000, 2001, 2002, 2003, 2004, 2005, 2006
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 2006
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
+#include "config.h"
+#include "tty-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-#include "driver.h"
 #include "device.h"
+#include "driver.h"
 #include "ptable.h"
 
 typedef signed char schar;
 
-declare_ptable(schar)
-implement_ptable(schar)
-
-extern "C" const char *Version_string;
+declare_ptable(schar) /* TODO */
+implement_ptable(schar) /* TODO */
 
 #define putstring(s) fputs(s, stdout)
-
-#ifndef SHRT_MIN
-#define SHRT_MIN (-32768)
-#endif
-
-#ifndef SHRT_MAX
-#define SHRT_MAX 32767
-#endif
-
-#define TAB_WIDTH 8
 
 // A character of the output device fits in a 32-bit word.
 typedef unsigned int output_character;
@@ -80,31 +72,12 @@ enum {
 static unsigned char bold_underline_mode_option = BOLD_MODE|UNDERLINE_MODE;
 static unsigned char bold_underline_mode;
 
-#ifndef IS_EBCDIC_HOST
-#define CSI "\033["
-#else
-#define CSI "\047["
-#endif
-
-// SGR handling (ISO 6429)
-#define SGR_BOLD CSI "1m"
-#define SGR_NO_BOLD CSI "22m"
-#define SGR_ITALIC CSI "3m"
-#define SGR_NO_ITALIC CSI "23m"
-#define SGR_UNDERLINE CSI "4m"
-#define SGR_NO_UNDERLINE CSI "24m"
-#define SGR_REVERSE CSI "7m"
-#define SGR_NO_REVERSE CSI "27m"
-// many terminals can't handle `CSI 39 m' and `CSI 49 m' to reset
-// the foreground and background color, respectively; we thus use
-// `CSI 0 m' exclusively
-#define SGR_DEFAULT CSI "0m"
-
-#define DEFAULT_COLOR_IDX -1
-
-class tty_font : public font {
+class tty_font
+: public font
+{
   tty_font(const char *);
   unsigned char mode;
+
 public:
   ~tty_font();
   unsigned char get_mode() { return mode; }
@@ -154,8 +127,10 @@ void tty_font::handle_x_command(int argc, const char **argv)
 }
 #endif
 
-class tty_glyph {
+class tty_glyph
+{
   static tty_glyph *free_list;
+
 public:
   tty_glyph *next;
   int w;
@@ -196,7 +171,9 @@ void tty_glyph::operator delete(void *p)
   }
 }
 
-class tty_printer : public printer {
+class tty_printer
+: public printer
+{
   int is_utf8;
   tty_glyph **lines;
   int nlines;
@@ -219,6 +196,7 @@ class tty_printer : public printer {
   void line(int, int, int, int, color *, color *);
   void draw_line(int *, int, const environment *);
   void draw_polygon(int *, int, const environment *);
+
 public:
   tty_printer(const char *);
   ~tty_printer();
@@ -389,7 +367,7 @@ void tty_printer::add_char(output_character c, int w,
     fatal("horizontal position not a multiple of horizontal resolution");
 #endif
   int hpos = h / font::hor;
-  if (hpos < SHRT_MIN || hpos > SHRT_MAX) {
+  if (hpos < HPOS_MIN || hpos > HPOS_MAX) {
     error("character with ridiculous horizontal position discarded");
     return;
   }
@@ -870,7 +848,7 @@ int main(int argc, char **argv)
 {
   program_name = argv[0];
   static char stderr_buf[BUFSIZ];
-  if (getenv("GROFF_NO_SGR"))
+  if (getenv(U_ROFF_NO_SGR))
     old_drawing_scheme = 1;
   setbuf(stderr, stderr_buf);
   int c;
@@ -883,7 +861,7 @@ int main(int argc, char **argv)
 	 != EOF)
     switch(c) {
     case 'v':
-      printf("GNU grotty (groff) version %s\n", Version_string);
+      puts(L_D_TTY " (" T_ROFF ") v" VERSION);
       exit(0);
       break;
     case 'i':
@@ -958,6 +936,8 @@ int main(int argc, char **argv)
 
 static void usage(FILE *stream)
 {
-  fprintf(stream, "usage: %s [-bBcdfhioruUv] [-F dir] [files ...]\n",
+  fprintf(stream, "Synopsis: %s [-bBcdfhioruUv] [-F dir] [files ...]\n",
 	  program_name);
 }
+
+// s-it2-mode

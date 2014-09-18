@@ -1,5 +1,9 @@
 .ig
-Copyright (C) 1989-2000, 2001, 2002, 2003, 2005, 2006
+@ @L_D_TTY@.1
+
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
+Copyright (C) 1989 - 2006
   Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
@@ -18,17 +22,17 @@ translations approved by the Free Software Foundation instead of in
 the original English.
 ..
 .
-.do nr grotty_C \n[.C]
+.do nr tty_C \n[.C]
 .cp 0
 .
-.TH GROTTY @MAN1EXT@ "@MDATE@" "Groff Version @VERSION@"
+.TH @U_D_TTY@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
 .SH NAME
-grotty \- groff driver for typewriter-like devices
+@L_D_TTY@ \- @T_ROFF@ driver for typewriter-like devices
 .
 .
 .SH SYNOPSIS
-.B grotty
+.B @L_D_TTY@
 [
 .B \-bBcdfhioruUv
 ] [
@@ -44,14 +48,14 @@ option and its parameter.
 .
 .SH DESCRIPTION
 .
-.B grotty
-translates the output of GNU
-.B troff
+.B @L_D_TTY@
+translates the output of
+.B @L_TROFF@
 into a form suitable for typewriter-like devices.
 Normally
-.B grotty
+.B @L_D_TTY@
 should be invoked by using the
-.B groff
+.B @L_ROFF@
 command
 with a
 .BR \-Tascii ,
@@ -64,20 +68,16 @@ and
 .B \-Tutf8
 on EBCDIC based hosts.
 If no files are given,
-.B grotty
+.B @L_D_TTY@
 reads the standard input.
 A filename of
 .B \-
-also causes
-.B grotty
-to read the standard input.
+also causes usage of standard input.
 Output is written to the standard output.
 .
 .LP
-By default,
-.B grotty
-emits SGR escape sequences (from ISO 6429, also called ANSI color escapes)
-to change text attributes (bold, italic, colors).
+By default SGR escape sequences (from ISO 6429, also called ANSI color
+escapes) are emitted to change text attributes (bold, italic, colors).
 This makes it possible to have eight different background and
 foreground colors; additionally, bold and italic
 attributes can be used \f[BI]at the same time\f[] (by using the BI font).
@@ -107,7 +107,7 @@ by the sequence
 .IR c '.
 At the same time, color output is disabled.
 The same effect can be achieved by setting either the
-.B GROFF_NO_SGR
+.B @U_ROFF_NO_SGR@
 environment variable or using the `sgr' X command (see below).
 .
 .LP
@@ -115,45 +115,13 @@ For SGR support, it is necessary to use the
 .B \-R
 option of
 .BR less (1)
-to disable the interpretation of
-.BR grotty 's
-old output format.
+to disable the interpretation of the old output format.
 Consequently, all programs which use
 .B less
 as the pager program have to pass this option to it.
-For
-.BR man (1)
-in particular, either add
-.B \-R
-to the
-.B $PAGER
-environment variable, e.g.\&
-.
-.RS
-.LP
-.B PAGER="/usr/bin/less -R"
-.br
-.B export PAGER
-.RE
-.LP
-.
-or use the
-.B \-P
-option of
-.B man
-to set the pager executable and its options, or modify the configuration
-file of
-.B man
-in a similar fashion.
-Note that with some
-.BR man (1)
-versions, you have to use the
-.B $MANPAGER
-environment variable instead.
 .
 .LP
-.BR grotty 's
-old output format can be displayed on a terminal
+The old output format can be displayed on a terminal
 by piping through
 .BR ul (1).
 Pagers such as
@@ -174,7 +142,7 @@ when piping into
 There is no need to filter the output through
 .BR col (1)
 since
-.B grotty
+.B @L_D_TTY@
 never outputs reverse line feeds.
 .
 .LP
@@ -219,9 +187,7 @@ isn't used.
 .
 .TP
 .B \-c
-Use
-.BR grotty 's
-old output format (see above).
+Use the old output format (see above).
 This also disables color output.
 .
 .TP
@@ -230,22 +196,19 @@ Ignore all
 .B \[rs]D
 commands.
 Without this
-.B grotty
-renders
 .B \[rs]D'l\|.\|.\|.\&'
 commands that have at least one zero argument
 (and so are either horizontal or vertical)
-using
+are rendered using
 .BR \- ,
 .BR | ,
 and
 .B +
 characters.
-In a similar way,
-.B grotty
-handles
+In a similar way
 .B \[rs]D'p\|.\|.\|.\&'
-commands which consist entirely of horizontal and vertical lines.
+commands are handled which consist entirely of horizontal and vertical
+lines.
 .
 .
 .TP
@@ -316,7 +279,7 @@ Print the version number.
 .
 .SH USAGE
 .
-.B grotty
+.B @L_D_TTY@
 understands a single X command produced using the
 .B \[rs]X
 escape sequence.
@@ -333,7 +296,7 @@ use the old drawing scheme for bold and underline.
 .
 .TP
 .SM
-.B GROFF_NO_SGR
+.B @U_ROFF_NO_SGR@
 If set, the old drawing scheme for bold and underline (using the
 backspace character) is active.
 Colors are disabled.
@@ -341,28 +304,28 @@ Colors are disabled.
 .
 .TP
 .SM
-.B GROFF_FONT_PATH
+.B @U_ROFF_FONT_PATH@
 A list of directories in which to search for the
 .BI dev name
 directory in addition to the default ones.
 .
 See
-.BR @g@troff (@MAN1EXT@)
+.BR @L_TROFF@ (@MAN1EXT@)
 and
-.BR \%groff_font (@MAN5EXT@)
+.BR \%@L_ROFF@_font (@MAN5EXT@)
 for more details.
 .
 .
 .SH FILES
 .
 .TP
-.B @FONTDIR@/devascii/DESC
+.B @FONTDIR@/ascii/DESC
 Device description file for
 .B ascii
 device.
 .
 .TP
-.BI @FONTDIR@/devascii/ F
+.BI @FONTDIR@/ascii/ F
 Font description file for font
 .I F
 of
@@ -370,13 +333,13 @@ of
 device.
 .
 .TP
-.B @FONTDIR@/devlatin1/DESC
+.B @FONTDIR@/latin1/DESC
 Device description file for
 .B latin1
 device.
 .
 .TP
-.BI @FONTDIR@/devlatin1/ F
+.BI @FONTDIR@/latin1/ F
 Font description file for font
 .I F
 of
@@ -384,13 +347,13 @@ of
 device.
 .
 .TP
-.B @FONTDIR@/devutf8/DESC
+.B @FONTDIR@/utf8/DESC
 Device description file for
 .B utf8
 device.
 .
 .TP
-.BI @FONTDIR@/devutf8/ F
+.BI @FONTDIR@/utf8/ F
 Font description file for font
 .I F
 of
@@ -398,13 +361,13 @@ of
 device.
 .
 .TP
-.B @FONTDIR@/devcp1047/DESC
+.B @FONTDIR@/cp1047/DESC
 Device description file for
 .B cp1047
 device.
 .
 .TP
-.BI @FONTDIR@/devcp1047/ F
+.BI @FONTDIR@/cp1047/ F
 Font description file for font
 .I F
 of
@@ -414,23 +377,22 @@ device.
 .TP
 .B @MACRODIR@/tty.tmac
 Macros for use with
-.BR grotty .
+.BR @L_D_TTY@ .
 .
 .TP
 .B @MACRODIR@/tty-char.tmac
-Additional klugdey character definitions for use with
-.BR grotty .
+Additional klugdey character definitions.
 .
 .LP
 Note that on EBCDIC hosts, only files for the
 .B cp1047
-device is installed.
+device are installed.
 .
 .
 .SH BUGS
 .
 .LP
-.B grotty
+.B @L_D_TTY@
 is intended only for simple documents.
 .
 .LP
@@ -448,28 +410,26 @@ cannot be printed.
 .
 .LP
 Color handling is different compared to
-.BR grops (@MAN1EXT@).
+.BR @L_D_PS@ (@MAN1EXT@).
 .B \[rs]M
 doesn't set the fill color for closed graphic objects (which
-.B grotty
+.B @L_D_TTY@
 doesn't support anyway) but changes the background color of the character
 cell, affecting all subsequent operations.
 .
 .
 .SH "SEE ALSO"
 .
-.BR groff (@MAN1EXT@),
-.BR @g@troff (@MAN1EXT@),
-.BR groff_out (@MAN5EXT@),
-.BR groff_font (@MAN5EXT@),
-.BR groff_char (@MAN7EXT@),
+.BR @L_ROFF@ (@MAN1EXT@),
+.BR @L_TROFF@ (@MAN1EXT@),
+.BR @L_ROFF@_out (@MAN5EXT@),
+.BR @L_ROFF@_font (@MAN5EXT@),
+.BR @L_ROFF@_char (@MAN7EXT@),
 .BR ul (1),
 .BR more (1),
 .BR man (1),
 .BR less (1)
 .
-.cp \n[grotty_C]
+.cp \n[tty_C]
 .
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
+.\" s-ts-mode
