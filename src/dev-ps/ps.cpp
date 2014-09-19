@@ -1,24 +1,23 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2000, 2001, 2002, 2003, 2004, 2005,
-                 2006, 2007
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
-
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000 - 2007
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 
 /*
  * PostScript documentation:
@@ -26,23 +25,25 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
  *   http://partners.adobe.com/public/developer/en/ps/5001.DSC_Spec.pdf
  */
 
-#include "driver.h"
-#include "file_case.h"
-#include "stringclass.h"
-#include "cset.h"
-#include "nonposix.h"
-#include "paper.h"
+#include "config.h"
+#include "ps-config.h"
 
-#include "ps.h"
 #include <time.h>
 
-#ifdef NEED_DECLARATION_PUTENV
+#include "cset.h"
+#include "driver.h"
+#include "file_case.h"
+#include "nonposix.h"
+#include "paper.h"
+#include "stringclass.h"
+
+#include "ps.h"
+
+#ifdef NEED_DECLARATION_PUTENV /* FIXME lib.h, or posix.h, or whatever! */
 extern "C" {
   int putenv(const char *);
 }
 #endif /* NEED_DECLARATION_PUTENV */
-
-extern "C" const char *Version_string;
 
 // search path defaults to the current directory
 search_path include_search_path(0, 0, 0, 1);
@@ -63,14 +64,6 @@ unsigned broken_flags = 0;
 
 // Non-zero means we need the CMYK extension for PostScript Level 1
 static int cmyk_flag = 0;
-
-#define DEFAULT_LINEWIDTH 40	/* in ems/1000 */
-#define MAX_LINE_LENGTH 72
-#define FILL_MAX 1000
-
-const char *const dict_name = "grops";
-const char *const defs_dict_name = "DEFS";
-const int DEFS_DICT_SPARE = 50;
 
 double degrees(double r)
 {
@@ -486,7 +479,9 @@ subencoding::~subencoding()
   a_delete subfont;
 }
 
-struct style {
+class style
+{
+public:
   font *f;
   subencoding *sub;
   int point_size;
@@ -521,7 +516,9 @@ int style::operator!=(const style &s) const
   return !(*this == s);
 }
 
-class ps_printer : public printer {
+class ps_printer
+: public printer
+{
   FILE *tempfp;
   ps_output out;
   int res;
@@ -649,7 +646,7 @@ int ps_printer::set_encoding_index(ps_font *f)
     if (p->p != f) {
       char *encoding = ((ps_font *)p->p)->encoding;
       int encoding_index = ((ps_font *)p->p)->encoding_index;
-      if (encoding != 0 && encoding_index >= 0 
+      if (encoding != 0 && encoding_index >= 0
 	  && strcmp(f->encoding, encoding) == 0) {
 	return f->encoding_index = encoding_index;
       }
@@ -778,7 +775,7 @@ static char *make_subencoding_name(int subencoding_index)
   return buf;
 }
 
-const char *const WS = " \t\n\r";
+const char *const WS = " \t\n\r"; // FIXME
 
 void ps_printer::define_encoding(const char *encoding, int encoding_index)
 {
@@ -1307,7 +1304,7 @@ void ps_printer::media_set()
    *    ProcessColorModel
    *  etc.
    */
-  if (!(broken_flags & (USE_PS_ADOBE_2_0|NO_PAPERSIZE))) { 
+  if (!(broken_flags & (USE_PS_ADOBE_2_0|NO_PAPERSIZE))) {
     out.begin_comment("BeginFeature:")
        .comment_arg("*PageSize")
        .comment_arg(media_name())
@@ -1383,9 +1380,9 @@ ps_printer::~ps_printer()
        .comment_arg("CMYK")
        .end_comment();
   out.begin_comment("Creator:")
-     .comment_arg("groff")
+     .comment_arg(T_ROFF)
      .comment_arg("version")
-     .comment_arg(Version_string)
+     .comment_arg(VERSION)
      .end_comment();
   {
     fputs("%%CreationDate: ", out.get_file());
@@ -1431,7 +1428,7 @@ ps_printer::~ps_printer()
   }
   out.begin_comment("Orientation:")
      .comment_arg(landscape_flag ? "Landscape" : "Portrait")
-     .end_comment(); 
+     .end_comment();
   if (ncopies != 1) {
     out.end_line();
     fprintf(out.get_file(), "%%%%Requirements: numcopies(%d)\n", ncopies);
@@ -1457,15 +1454,15 @@ ps_printer::~ps_printer()
   media_set();
 #endif
   rm.document_setup(out);
-  out.put_symbol(dict_name)
+  out.put_symbol(DICT_NAME)
      .put_symbol("begin");
   if (ndefs > 0)
     ndefs += DEFS_DICT_SPARE;
-  out.put_literal_symbol(defs_dict_name)
+  out.put_literal_symbol(DEFS_DICT_NAME)
      .put_number(ndefs + 1)
      .put_symbol("dict")
      .put_symbol("def");
-  out.put_symbol(defs_dict_name)
+  out.put_symbol(DEFS_DICT_NAME)
      .put_symbol("begin");
   out.put_literal_symbol("u")
      .put_delimiter('{')
@@ -1786,7 +1783,7 @@ static void usage(FILE *stream);
 
 int main(int argc, char **argv)
 {
-  setlocale(LC_NUMERIC, "C");
+  setlocale(LC_NUMERIC, "C"); /* FIXME */
   program_name = argv[0];
   string env;
   static char stderr_buf[BUFSIZ];
@@ -1832,7 +1829,7 @@ int main(int argc, char **argv)
 	error("invalid custom paper size `%1' ignored", optarg);
       break;
     case 'P':
-      env = "GROPS_PROLOGUE";
+      env = U_D_PS_PROLOGUE;
       env += '=';
       env += optarg;
       env += '\0';
@@ -1840,7 +1837,7 @@ int main(int argc, char **argv)
 	fatal("putenv failed");
       break;
     case 'v':
-      printf("GNU grops (groff) version %s\n", Version_string);
+      puts(L_D_PS " (" T_ROFF ") v" VERSION);
       exit(0);
       break;
     case 'w':
@@ -1874,7 +1871,9 @@ int main(int argc, char **argv)
 static void usage(FILE *stream)
 {
   fprintf(stream,
-"usage: %s [-glmv] [-b n] [-c n] [-w n] [-I dir] [-P prologue]\n"
+"Synopsis: %s [-glmv] [-b n] [-c n] [-w n] [-I dir] [-P prologue]\n"
 "       [-F dir] [files ...]\n",
     program_name);
 }
+
+// s-it2-mode

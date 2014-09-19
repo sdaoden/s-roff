@@ -1,38 +1,40 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2000, 2001, 2002, 2003, 2004
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000 - 2004
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
+#include "config.h"
+#include "ps-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
+#include "cset.h"
 #include "driver.h"
 #include "file_case.h"
 #include "stringclass.h"
-#include "cset.h"
 
 #include "ps.h"
 
-#ifdef NEED_DECLARATION_PUTENV
+#ifdef NEED_DECLARATION_PUTENV /* FIXME */
 extern "C" {
   int putenv(const char *);
 }
 #endif /* NEED_DECLARATION_PUTENV */
-
-#define GROPS_PROLOGUE "prologue"
 
 static void print_ps_string(const string &s, FILE *outfp);
 
@@ -122,7 +124,9 @@ static int read_uint_arg(const char **pp, unsigned *res)
   return 1;
 }
 
-struct resource {
+class resource
+{
+public:
   resource *next;
   resource_type type;
   string name;
@@ -170,9 +174,9 @@ resource_manager::resource_manager()
 : extensions(0), language_level(0), resource_list(0)
 {
   read_download_file();
-  string procset_name("grops");
-  extern const char *version_string;
-  extern const char *revision_string;
+  string procset_name(L_D_PS);
+  extern const char *version_string; /* FIXME */
+  extern const char *revision_string; /* FIXME */
   unsigned revision_uint;
   if (!read_uint_arg(&revision_string, &revision_uint))
     revision_uint = 0;
@@ -306,15 +310,15 @@ void resource_manager::output_prolog(ps_output &out)
 {
   FILE *outfp = out.get_file();
   out.end_line();
-  if (!getenv("GROPS_PROLOGUE")) {
-    string e = "GROPS_PROLOGUE";
+  char const *prologue;
+  if ((prologue = getenv(U_D_PS_PROLOGUE)) == NULL) {
+    string e = U_D_PS_PROLOGUE;
     e += '=';
-    e += GROPS_PROLOGUE;
+    e += (prologue = PROLOGUE_DEFAULT);
     e += '\0';
     if (putenv(strsave(e.contents())))
       fatal("putenv failed");
   }
-  char *prologue = getenv("GROPS_PROLOGUE");
 
   file_case *fcp = font::open_file(prologue);
   if (fcp == NULL)
@@ -403,8 +407,6 @@ void resource_manager::supply_resource(resource *r, int rank, FILE *outfp,
   }
   r->flags &= ~resource::BUSY;
 }
-
-#define PS_MAGIC "%!PS-Adobe-"
 
 static int ps_get_line(string &buf, file_case *fcp)
 {
@@ -947,7 +949,7 @@ void resource_manager::process_file(int rank, file_case *fcp, FILE *outfp)
     "DocumentNeededFiles:",
     "DocumentSuppliedFiles:",
   };
-  
+
   const int NHEADER_COMMENTS = sizeof(header_comment_table)
 			       / sizeof(header_comment_table[0]);
   struct comment_info {
@@ -973,7 +975,7 @@ void resource_manager::process_file(int rank, file_case *fcp, FILE *outfp)
     { "BeginData:", &resource_manager::do_begin_data },
     { "BeginBinary:", &resource_manager::do_begin_binary },
   };
-  
+
   const int NCOMMENTS = sizeof(comment_table)/sizeof(comment_table[0]);
   string buf;
   int saved_lineno = current_lineno;
@@ -1165,3 +1167,5 @@ void resource_manager::print_language_level_comment(FILE *outfp)
   if (language_level)
     fprintf(outfp, "%%%%LanguageLevel: %u\n", language_level);
 }
+
+// s-it2-mode

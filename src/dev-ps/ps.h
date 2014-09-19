@@ -1,25 +1,40 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2002, 2003
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2002 - 2003
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+#ifndef _PS_H
+#define _PS_H
 
-This file is part of groff.
+#include "config.h"
+#include "ps-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
+#include "searchpath.h"
 
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
+class ps_output
+{
+  FILE *fp;
+  int col;
+  int max_line_length;		// not including newline
+  int need_space;
+  int fixed_point;
 
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-class ps_output {
 public:
   ps_output(FILE *, int max_line_length);
   ps_output &put_string(const char *, int);
@@ -41,12 +56,6 @@ public:
   ps_output &put_delimiter(char);
   ps_output &special(const char *);
   FILE *get_file();
-private:
-  FILE *fp;
-  int col;
-  int max_line_length;		// not including newline
-  int need_space;
-  int fixed_point;
 };
 
 inline FILE *ps_output::get_file()
@@ -67,16 +76,8 @@ struct resource;
 
 extern string an_empty_string;
 
-class resource_manager {
-public:
-  resource_manager();
-  ~resource_manager();
-  void import_file(const char *filename, ps_output &);
-  void need_font(const char *name);
-  void print_header_comments(ps_output &);
-  void document_setup(ps_output &);
-  void output_prolog(ps_output &);
-private:
+class resource_manager
+{
   unsigned extensions;
   unsigned language_level;
   resource *procset_resource;
@@ -110,6 +111,15 @@ private:
   int do_begin_preview(const char *ptr, int rank, file_case *fcp, FILE *ofp);
   int do_begin_data(const char *ptr, int rank, file_case *fcp, FILE *ofp);
   int do_begin_binary(const char *ptr, int rank, file_case *fcp, FILE *ofp);
+
+public:
+  resource_manager();
+  ~resource_manager();
+  void import_file(const char *filename, ps_output &);
+  void need_font(const char *name);
+  void print_header_comments(ps_output &);
+  void document_setup(ps_output &);
+  void output_prolog(ps_output &);
 };
 
 extern unsigned broken_flags;
@@ -124,6 +134,7 @@ enum {
   NO_PAPERSIZE = 020
 };
 
-#include "searchpath.h"
-
 extern search_path include_search_path;
+
+#endif // _PS_H
+// s-it2-mode

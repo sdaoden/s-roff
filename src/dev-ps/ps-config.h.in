@@ -1,0 +1,17 @@
+/*@ Configurable stuff */
+#ifndef _PS_CONFIG_H
+#define _PS_CONFIG_H
+
+#define DEFAULT_LINEWIDTH 40	// in ems/1000
+#define MAX_LINE_LENGTH   72
+#define FILL_MAX          1000
+
+#define DICT_NAME         "grops"
+#define DEFS_DICT_NAME    "DEFS"
+#define DEFS_DICT_SPARE   50
+
+#define PS_MAGIC          "%!PS-Adobe-"
+#define PROLOGUE_DEFAULT  "prologue"
+
+#endif // _PS_CONFIG_H
+// s-it2-mode
