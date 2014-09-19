@@ -1,30 +1,27 @@
-// -*- C++ -*-
-
-// <groff_src_dir>/src/libs/libdriver/printer.cpp
-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2001, 2002, 2003, 2004, 2005, 2006
-   Free Software Foundation, Inc.
-   Written by James Clark (jjc@jclark.com)
-
-   Last update: 02 Mar 2005
-
-   This file is part of groff.
-
-   groff is free software; you can redistribute it and/or modify it
-   under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
-   groff is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with groff; see the file COPYING.  If not, write to the Free
-   Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
-   02110-1301, USA.
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2001 - 2006
+ *    Free Software Foundation, Inc.
+ *    Written by James Clark (jjc@jclark.com)
+ *
+ *    groff is free software; you can redistribute it and/or modify it
+ *    under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation; either version 2, or (at your option)
+ *    any later version.
+ *
+ *    groff is distributed in the hope that it will be useful, but
+ *    WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *    General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with groff; see the file COPYING.  If not, write to the Free
+ *    Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
+ *    02110-1301, USA.
 */
+
+#include "config.h"
 
 #include "driver.h"
 
@@ -48,7 +45,7 @@
   */
 
   static int
-  check_for_output_error (FILE* stream)
+  check_for_output_error (FILE* stream) /* FIXME in lib-roff, then?? */
   {
     /* First, clean up any prior error context on the output stream */
     if (ferror (stream))
@@ -57,7 +54,7 @@
     errno = 0;
     /* Flush the output stream, so we can capture any error context, other
        than the specific case we wish to suppress.
-       
+
        Microsoft doesn't document it, but the error code for the specific
        context we are trying to suppress seems to be EINVAL -- a strange
        choice, since it is not normally associated with fflush(); of course,
@@ -172,7 +169,7 @@ void printer::change_fill_color(const environment * const)
 {
 }
 
-void printer::set_ascii_char(unsigned char c, const environment *env, 
+void printer::set_ascii_char(unsigned char c, const environment *env,
 			     int *widthp)
 {
   char  buf[2];
@@ -265,3 +262,5 @@ font *printer::get_font_from_index(int fontno)
   else
     return(0);
 }
+
+// s-it2-mode

@@ -1,236 +1,106 @@
-// -*- C++ -*-
+/*@ This file implements the parser for the intermediate roff output, see
+ *@ XYroff_out(5), and does the printout for the given device.
+ *@ All parsed information is processed within the function do_file().
+ *@ A device postprocessor just needs to fill in the methods for the class
+ *@ `printer' (or rather a derived class) without having to worry about the
+ *@ syntax of the intermediate output format.  Consequently, the programming of
+ *@ roff postprocessors is similar to the development of device drivers.
+ *
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2001 - 2006, 2008
+ *    Free Software Foundation, Inc.
+ *
+ *    Written by James Clark (jjc@jclark.com)
+ *    Major rewrite 2001 by Bernd Warken (bwarken@mayn.de)
+ *
+ *    groff is free software; you can redistribute it and/or modify it
+ *    under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation; either version 2, or (at your option)
+ *    any later version.
+ *
+ *    groff is distributed in the hope that it will be useful, but
+ *    WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *    General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with groff; see the file COPYING.  If not, write to the Free
+ *    Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
+ *    02110-1301, USA.
+ */
 
-// <groff_src_dir>/src/libs/libdriver/input.cpp
-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2001, 2002, 2003, 2004, 2005,
-                 2006, 2008
-   Free Software Foundation, Inc.
-
-   Written by James Clark (jjc@jclark.com)
-   Major rewrite 2001 by Bernd Warken (bwarken@mayn.de)
-
-   Last update: 04 Jan 2008
-
-   This file is part of groff, the GNU roff text processing system.
-
-   groff is free software; you can redistribute it and/or modify it
-   under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
-   groff is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with groff; see the file COPYING.  If not, write to the Free
-   Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
-   02110-1301, USA.
-*/
-
-/* Description
-
-   This file implements the parser for the intermediate groff output,
-   see groff_out(5), and does the printout for the given device.
-
-   All parsed information is processed within the function do_file().
-   A device postprocessor just needs to fill in the methods for the class
-   `printer' (or rather a derived class) without having to worry about
-   the syntax of the intermediate output format.  Consequently, the
-   programming of groff postprocessors is similar to the development of
-   device drivers.
-
-   The prototyping for this file is done in driver.h (and error.h).
-*/
-
-/* Changes of the 2001 rewrite of this file.
-
-   The interface to the outside and the handling of the global
-   variables was not changed, but internally many necessary changes
-   were performed.
-
-   The main aim for this rewrite is to provide a first step towards
-   making groff fully compatible with classical troff without pain.
-
-   Bugs fixed
-   - Unknown subcommands of `D' and `x' are now ignored like in the
-     classical case, but a warning is issued.  This was also
-     implemented for the other commands.
-   - A warning is emitted if `x stop' is missing.
-   - `DC' and `DE' commands didn't position to the right end after
-     drawing (now they do), see discussion below.
-   - So far, `x stop' was ignored.  Now it terminates the processing
-     of the current intermediate output file like the classical troff.
-   - The command `c' didn't check correctly on white-space.
-   - The environment stack wasn't suitable for the color extensions
-     (replaced by a class).
-   - The old groff parser could only handle a prologue with the first
-     3 lines having a fixed structure, while classical troff specified
-     the sequence of the first 3 commands without further
-     restrictions.  Now the parser is smart about additional
-     white space, comments, and empty lines in the prologue.
-   - The old parser allowed space characters only as syntactical
-     separators, while classical troff had tab characters as well.
-     Now any sequence of tabs and/or spaces is a syntactical
-     separator between commands and/or arguments.
-   - Range checks for numbers implemented.
-
-   New and improved features
-   - The color commands `m' and `DF' are added.
-   - The old color command `Df' is now converted and delegated to `DFg'.
-   - The command `F' is implemented as `use intended file name'.  It
-     checks whether its argument agrees with the file name used so far,
-     otherwise a warning is issued.  Then the new name is remembered
-     and used for the following error messages.
-   - For the positioning after drawing commands, an alternative, easier
-     scheme is provided, but not yet activated; it can be chosen by
-     undefining the preprocessor macro STUPID_DRAWING_POSITIONING.
-     It extends the rule of the classical troff output language in a
-     logical way instead of the rather strange actual positioning.
-     For details, see the discussion below.
-   - For the `D' commands that only set the environment, the calling of
-     pr->send_draw() was removed because this doesn't make sense for
-     the `DF' commands; the (changed) environment is sent with the
-     next command anyway.
-   - Error handling was clearly separated into warnings and fatal.
-   - The error behavior on additional arguments for `D' and `x'
-     commands with a fixed number of arguments was changed from being
-     ignored (former groff) to issue a warning and ignore (now), see
-     skip_line_x().  No fatal was chosen because both string and
-     integer arguments can occur.
-   - The gtroff program issues a trailing dummy integer argument for
-     some drawing commands with an odd number of arguments to make the
-     number of arguments even, e.g. the DC and Dt commands; this is
-     honored now.
-   - All D commands with a variable number of args expect an even
-     number of trailing integer arguments, so fatal on error was
-     implemented.
-   - Disable environment stack and the commands `{' and `}' by making
-     them conditional on macro USE_ENV_STACK; actually, this is
-     undefined by default.  There isn't any known application for these
-     features.
-
-   Cosmetics
-   - Nested `switch' commands are avoided by using more functions.
-     Dangerous 'fall-through's avoided.
-   - Commands and functions are sorted alphabetically (where possible).
-   - Dynamic arrays/buffers are now implemented as container classes.
-   - Some functions had an ugly return structure; this has been
-     streamlined by using classes.
-   - Use standard C math functions for number handling, so getting rid
-     of differences to '0'.
-   - The macro `IntArg' has been created for an easier transition
-     to guaranteed 32 bits integers (`int' is enough for GNU, while
-     ANSI only guarantees `long int' to have a length of 32 bits).
-   - The many usages of type `int' are differentiated by using `Char',
-     `bool', and `IntArg' where appropriate.
-   - To ease the calls of the local utility functions, the parser
-     variables `current_file', `npages', and `current_env'
-     (formerly env) were made global to the file (formerly they were
-     local to the do_file() function)
-   - Various comments were added.
-
-   TODO
-   - Get rid of the stupid drawing positioning.
-   - Can the `Dt' command be completely handled by setting environment
-     within do_file() instead of sending to pr?
-   - Integer arguments must be >= 32 bits, use conditional #define.
-   - Add scaling facility for classical device independence and
-     non-groff devices.  Classical troff output had a quasi device
-     independence by scaling the intermediate output to the resolution
-     of the postprocessor device if different from the one specified
-     with `x T', groff have not.  So implement full quasi device
-     indepedence, including the mapping of the strange classical
-     devices to the postprocessor device (seems to be reasonably
-     easy).
-   - The external, global pointer variables are not optimally handled.
-     - The global variables `current_filename',
-       `current_source_filename', and `current_lineno' are only used for
-       error reporting.  So implement a static class `Error'
-       (`::' calls).
-     - The global `device' is the name used during the formatting
-       process; there should be a new variable for the device name used
-       during the postprocessing.
-  - Implement the B-spline drawing `D~' for all graphical devices.
-  - Make `environment' a class with an overflow check for its members
-    and a delete method to get rid of delete_current_env().
-  - Implement the `EnvStack' to use `new' instead of `malloc'.
-  - The class definitions of this document could go into a new file.
-  - The comments in this section should go to a `Changelog' or some
-    `README' file in this directory.
-*/
+#include "config.h"
 
 /*
-  Discussion of the positioning by drawing commands
-
-  There was some confusion about the positioning of the graphical
-  pointer at the printout after having executed a `D' command.
-  The classical troff manual of Ossanna & Kernighan specified,
-
-    `The position after a graphical object has been drawn is
-     at its end; for circles and ellipses, the "end" is at the
-     right side.'
-
-  From this, it follows that
-  - all open figures (args, splines, and lines) should position at their
-    final point.
-  - all circles and ellipses should position at their right-most point
-    (as if 2 halves had been drawn).
-  - all closed figures apart from circles and ellipses shouldn't change
-    the position because they return to their origin.
-  - all setting commands should not change position because they do not
-    draw any graphical object.
-
-  In the case of the open figures, this means that the horizontal
-  displacement is the sum of all odd arguments and the vertical offset
-  the sum of all even arguments, called the alternate arguments sum
-  displacement in the following.
-
-  Unfortunately, groff did not implement this simple rule.  The former
-  documentation in groff_out(5) differed from the source code, and
-  neither of them is compatible with the classical rule.
-
-  The former groff_out(5) specified to use the alternative arguments
-  sum displacement for calculating the drawing positioning of
-  non-classical commands, including the `Dt' command (setting-only)
-  and closed polygons.  Applying this to the new groff color commands
-  will lead to disaster.  For their arguments can take large values (>
-  65000).  On low resolution devices, the displacement of such large
-  values will corrupt the display or kill the printer.  So the
-  nonsense specification has come to a natural end anyway.
-
-  The groff source code, however, had no positioning for the
-  setting-only commands (esp. `Dt'), the right-end positioning for
-  outlined circles and ellipses, and the alternative argument sum
-  displacement for all other commands (including filled circles and
-  ellipses).
-
-  The reason why no one seems to have suffered from this mayhem so
-  far is that the graphical objects are usually generated by
-  preprocessors like pic that do not depend on the automatic
-  positioning.  When using the low level `\D' escape sequences or `D'
-  output commands, the strange positionings can be circumvented by
-  absolute positionings or by tricks like `\Z'.
-
-  So doing an exorcism on the strange, incompatible displacements might
-  not harm any existing documents, but will make the usage of the
-  graphical escape sequences and commands natural.
-
-  That's why the rewrite of this file returned to the reasonable,
-  classical specification with its clear end-of-drawing rule that is
-  suitable for all cases.  But a macro STUPID_DRAWING_POSITIONING is
-  provided for testing the funny former behavior.
-
-  The new rule implies the following behavior.
-  - Setting commands (`Dt', `Df', `DF') and polygons (`Dp' and `DP')
-    do not change position now.
-  - Filled circles and ellipses (`DC' and `DE') position at their
-    most right point (outlined ones `Dc' and `De' did this anyway).
-  - As before, all open graphical objects position to their final
-    drawing point (alternate sum of the command arguments).
-
-*/
+ * Discussion of the positioning by drawing commands
+ *
+ * There was some confusion about the positioning of the graphical
+ * pointer at the printout after having executed a `D' command.
+ * The classical troff manual of Ossanna & Kernighan specified,
+ *
+ *   `The position after a graphical object has been drawn is
+ *    at its end; for circles and ellipses, the "end" is at the
+ *    right side.'
+ *
+ * From this, it follows that
+ * - all open figures (args, splines, and lines) should position at their
+ *   final point.
+ * - all circles and ellipses should position at their right-most point
+ *   (as if 2 halves had been drawn).
+ * - all closed figures apart from circles and ellipses shouldn't change
+ *   the position because they return to their origin.
+ * - all setting commands should not change position because they do not
+ *   draw any graphical object.
+ *
+ * In the case of the open figures, this means that the horizontal
+ * displacement is the sum of all odd arguments and the vertical offset
+ * the sum of all even arguments, called the alternate arguments sum
+ * displacement in the following.
+ *
+ * Unfortunately, groff did not implement this simple rule.  The former
+ * documentation in groff_out(5) differed from the source code, and
+ * neither of them is compatible with the classical rule.
+ *
+ * The former groff_out(5) specified to use the alternative arguments
+ * sum displacement for calculating the drawing positioning of
+ * non-classical commands, including the `Dt' command (setting-only)
+ * and closed polygons.  Applying this to the new groff color commands
+ * will lead to disaster.  For their arguments can take large values (>
+ * 65000).  On low resolution devices, the displacement of such large
+ * values will corrupt the display or kill the printer.  So the
+ * nonsense specification has come to a natural end anyway.
+ *
+ * The groff source code, however, had no positioning for the
+ * setting-only commands (esp. `Dt'), the right-end positioning for
+ * outlined circles and ellipses, and the alternative argument sum
+ * displacement for all other commands (including filled circles and
+ * ellipses).
+ *
+ * The reason why no one seems to have suffered from this mayhem so
+ * far is that the graphical objects are usually generated by
+ * preprocessors like pic that do not depend on the automatic
+ * positioning.  When using the low level `\D' escape sequences or `D'
+ * output commands, the strange positionings can be circumvented by
+ * absolute positionings or by tricks like `\Z'.
+ *
+ * So doing an exorcism on the strange, incompatible displacements might
+ * not harm any existing documents, but will make the usage of the
+ * graphical escape sequences and commands natural.
+ *
+ * That's why the rewrite of this file returned to the reasonable,
+ * classical specification with its clear end-of-drawing rule that is
+ * suitable for all cases.  But a macro STUPID_DRAWING_POSITIONING is
+ * provided for testing the funny former behavior.
+ *
+ * The new rule implies the following behavior.
+ * - Setting commands (`Dt', `Df', `DF') and polygons (`Dp' and `DP')
+ *   do not change position now.
+ * - Filled circles and ellipses (`DC' and `DE') position at their
+ *   most right point (outlined ones `Dc' and `De' did this anyway).
+ * - As before, all open graphical objects position to their final
+ *   drawing point (alternate sum of the command arguments).
+ */
 
 #ifndef STUPID_DRAWING_POSITIONING
 // uncomment next line if all non-classical D commands shall position
@@ -245,11 +115,10 @@
 #include "driver.h"
 #include "device.h"
 
-#include <stdlib.h>
-#include <errno.h>
 #include <ctype.h>
+#include <errno.h>
 #include <math.h>
-
+#include <stdlib.h>
 
 /**********************************************************************
                            local types
@@ -265,10 +134,12 @@ typedef int IntArg;
 typedef unsigned int ColorArg;
 
 // Array for IntArg values.
-class IntArray {
+class IntArray
+{
   size_t num_allocated;
   size_t num_stored;
   IntArg *data;
+
 public:
   IntArray(void);
   IntArray(const size_t);
@@ -285,8 +156,10 @@ public:
 };
 
 // Characters read from the input queue.
-class Char {
+class Char
+{
   int data;
+
 public:
   Char(void) : data('\0') {}
   Char(const int c) : data(c) {}
@@ -303,10 +176,12 @@ public:
 };
 
 // Buffer for string arguments (Char, not char).
-class StringBuf {
+class StringBuf
+{
   size_t num_allocated;
   size_t num_stored;
   Char *data;			// not terminated by '\0'
+
 public:
   StringBuf(void);		// allocate without storing
   ~StringBuf(void);
@@ -319,10 +194,12 @@ public:
 };
 
 #ifdef USE_ENV_STACK
-class EnvStack {
+class EnvStack
+{
   environment **data;
   size_t num_allocated;
   size_t num_stored;
+
 public:
   EnvStack(void);
   ~EnvStack(void);
@@ -337,7 +214,7 @@ public:
  **********************************************************************/
 
 // exported as extern by error.h (called from driver.h)
-// needed for error messages (see ../libgroff/error.cpp)
+// needed for error messages (see ../lib-roff/error.cpp)
 const char *current_filename = 0; // printable name of the current file
 				  // printable name of current source file
 const char *current_source_filename = 0;
@@ -351,8 +228,7 @@ printer *pr;
 // Note:
 //
 //   We rely on an implementation of the `new' operator which aborts
-//   gracefully if it can't allocate memory (e.g. from libgroff/new.cpp).
-
+//   gracefully if it can't allocate memory (e.g. from lib-roff/new.cpp).
 
 /**********************************************************************
                         static local variables
@@ -377,7 +253,6 @@ environment *current_env = 0;
 const size_t
 envp_size = sizeof(environment *);
 #endif // USE_ENV_STACK
-
 
 /**********************************************************************
                         function declarations
@@ -431,7 +306,6 @@ void parse_color_command(color *);
 				// color sub(sub)commands m and DF
 void parse_D_command(void);	// graphical subcommands
 bool parse_x_command(void);	// device controller subcommands
-
 
 /**********************************************************************
                          class methods
@@ -580,7 +454,6 @@ StringBuf::reset(void)
                         utility functions
  **********************************************************************/
 
-//////////////////////////////////////////////////////////////////////
 /* color_from_Df_command:
    Process the gray shade setting command Df.
 
@@ -597,7 +470,6 @@ color_from_Df_command(IntArg Df_gray)
   return ColorArg((1000-Df_gray) * COLORARG_MAX / 1000); // scaling
 }
 
-//////////////////////////////////////////////////////////////////////
 /* delete_current_env():
    Delete global variable current_env and its pointer members.
 
@@ -611,7 +483,6 @@ void delete_current_env(void)
   current_env = 0;
 }
 
-//////////////////////////////////////////////////////////////////////
 /* fatal_command():
    Emit error message about invalid command and abort.
 */
@@ -621,7 +492,6 @@ fatal_command(char command)
   fatal("`%1' command invalid before first `p' command", command);
 }
 
-//////////////////////////////////////////////////////////////////////
 /* get_char():
    Retrieve the next character from the input queue.
 
@@ -633,7 +503,6 @@ get_char(void)
   return (Char) getc(current_file);
 }
 
-//////////////////////////////////////////////////////////////////////
 /* get_color_arg():
    Retrieve an argument suitable for the color commands m and DF.
 
@@ -650,7 +519,6 @@ get_color_arg(void)
   return (ColorArg) x;
 }
 
-//////////////////////////////////////////////////////////////////////
 /* get_D_fixed_args():
    Get a fixed number of integer arguments for D commands.
 
@@ -677,7 +545,6 @@ get_D_fixed_args(const size_t number)
   return args;
 }
 
-//////////////////////////////////////////////////////////////////////
 /* get_D_fixed_args_odd_dummy():
    Get a fixed number of integer arguments for D commands and optionally
    ignore a dummy integer argument if the requested number is odd.
@@ -709,7 +576,6 @@ get_D_fixed_args_odd_dummy(const size_t number)
   return args;
 }
 
-//////////////////////////////////////////////////////////////////////
 /* get_D_variable_args():
    Get a variable even number of integer arguments for D commands.
 
@@ -736,7 +602,6 @@ get_D_variable_args()
   return args;
 }
 
-//////////////////////////////////////////////////////////////////////
 /* get_extended_arg():
    Retrieve extended arg for `x X' command.
 
@@ -771,7 +636,6 @@ get_extended_arg(void)
   return buf.make_string();
 }
 
-//////////////////////////////////////////////////////////////////////
 /* get_integer_arg(): Retrieve integer argument.
 
    Skip leading spaces and tabs, collect an optional '-' and all
@@ -811,7 +675,6 @@ get_integer_arg(void)
   return (IntArg) number;
 }
 
-//////////////////////////////////////////////////////////////////////
 /* get_possibly_integer_args():
    Parse the rest of the input line as a list of integer arguments.
 
@@ -887,7 +750,6 @@ get_possibly_integer_args()
   return args;
 }
 
-//////////////////////////////////////////////////////////////////////
 /* get_string_arg():
    Retrieve string arg.
 
@@ -913,7 +775,6 @@ get_string_arg(void)
   return buf.make_string();
 }
 
-//////////////////////////////////////////////////////////////////////
 /* is_space_or_tab():
    Test a character if it is a space or tab.
 
@@ -927,7 +788,6 @@ is_space_or_tab(const Char c)
   return (c == Char(' ') || c == Char('\t')) ? true : false;
 }
 
-//////////////////////////////////////////////////////////////////////
 /* next_arg_begin():
    Return first character of next argument.
 
@@ -955,7 +815,6 @@ next_arg_begin(void)
   }
 }
 
-//////////////////////////////////////////////////////////////////////
 /* next_command():
    Find the first character of the next command.
 
@@ -985,7 +844,6 @@ next_command(void)
   }
 }
 
-//////////////////////////////////////////////////////////////////////
 /* odd():
    Test whether argument is an odd number.
 
@@ -999,7 +857,6 @@ odd(const int n)
   return (n & 1) ? true : false;
 }
 
-//////////////////////////////////////////////////////////////////////
 /* position_to_end_of_args():
    Move graphical pointer to end of drawn figure.
 
@@ -1021,7 +878,6 @@ position_to_end_of_args(const IntArray * const args)
     current_env->vpos += (*args)[i];
 }
 
-//////////////////////////////////////////////////////////////////////
 /* remember_filename():
    Set global variable current_filename.
 
@@ -1047,7 +903,6 @@ remember_filename(const char *filename)
   strncpy((char *)current_filename, (char *)fname, len);
 }
 
-//////////////////////////////////////////////////////////////////////
 /* remember_source_filename():
    Set global variable current_source_filename.
 
@@ -1073,7 +928,6 @@ remember_source_filename(const char *filename)
   strncpy((char *)current_source_filename, (char *)fname, len);
 }
 
-//////////////////////////////////////////////////////////////////////
 /* send_draw():
    Call draw method of printer class.
 
@@ -1087,7 +941,6 @@ send_draw(const Char subcmd, const IntArray * const args)
   pr->draw((int) subcmd, (IntArg *)args->get_data(), n, current_env);
 }
 
-//////////////////////////////////////////////////////////////////////
 /* skip_line():
    Go to next line within the input queue.
 
@@ -1110,7 +963,6 @@ skip_line(void)
   }
 }
 
-//////////////////////////////////////////////////////////////////////
 /* skip_line_checked ():
    Check that there aren't any arguments left on the rest of the line,
    then skip line.
@@ -1142,7 +994,6 @@ skip_line_checked(void)
   return ok;
 }
 
-//////////////////////////////////////////////////////////////////////
 /* skip_line_fatal ():
    Fatal error if arguments left, otherwise skip line.
 
@@ -1160,7 +1011,6 @@ skip_line_fatal(void)
   }
 }
 
-//////////////////////////////////////////////////////////////////////
 /* skip_line_warn ():
    Skip line, but warn if arguments are left on actual line.
 
@@ -1178,7 +1028,6 @@ skip_line_warn(void)
   }
 }
 
-//////////////////////////////////////////////////////////////////////
 /* skip_line_D ():
    Skip line in `D' commands.
 
@@ -1195,7 +1044,6 @@ skip_line_D(void)
   // or: skip_line();
 }
 
-//////////////////////////////////////////////////////////////////////
 /* skip_line_x ():
    Skip line in `x' commands.
 
@@ -1212,7 +1060,6 @@ skip_line_x(void)
   // or: skip_line();
 }
 
-//////////////////////////////////////////////////////////////////////
 /* skip_to_end_of_line():
    Go to the end of the current line.
 
@@ -1235,7 +1082,6 @@ skip_to_end_of_line(void)
   }
 }
 
-//////////////////////////////////////////////////////////////////////
 /* unget_char(c):
    Restore character c onto input queue.
 
@@ -1254,12 +1100,10 @@ unget_char(const Char c)
   }
 }
 
-
 /**********************************************************************
                        parser subcommands
  **********************************************************************/
 
-//////////////////////////////////////////////////////////////////////
 /* parse_color_command:
    Process the commands m and DF, but not Df.
 
@@ -1306,7 +1150,6 @@ parse_color_command(color *col)
   } // end of color subcommands
 }
 
-//////////////////////////////////////////////////////////////////////
 /* parse_D_command():
    Parse the subcommands of graphical command D.
 
@@ -1430,7 +1273,6 @@ parse_D_command()
   } // end of D subcommands
 }
 
-//////////////////////////////////////////////////////////////////////
 /* parse_x_command():
    Parse subcommands of the device control command x.
 
@@ -1537,12 +1379,10 @@ parse_x_command(void)
   return stopped;
 }
 
-
 /**********************************************************************
                      exported part (by driver.h)
  **********************************************************************/
 
-////////////////////////////////////////////////////////////////////////
 /* do_file():
    Parse and postprocess groff intermediate output.
 
@@ -1594,7 +1434,7 @@ do_file(const char *filename)
     IntArg int_arg;
 
     // 1st command `x T'
-    command = next_command();	
+    command = next_command();
     if ((int) command == EOF)
       return;
     if ((int) command != 'x')
@@ -1834,3 +1674,5 @@ do_file(const char *filename)
     warning("no final `x stop' command");
   delete_current_env();
 }
+
+// s-it2-mode
