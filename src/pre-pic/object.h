@@ -1,23 +1,29 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2002, 2004, 2007
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2002, 2004, 2007
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+#ifndef _OBJECT_H
+#define _OBJECT_H
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+#include "config.h"
+#include "pic-config.h"
 
 struct place;
 
@@ -34,11 +40,13 @@ enum object_type {
   TEXT_OBJECT,
   BLOCK_OBJECT,
   MARK_OBJECT
-  };
+};
 
 struct bounding_box;
 
-struct object {
+class object
+{
+public:
   object *prev;
   object *next;
   object();
@@ -76,12 +84,14 @@ struct place {
 
 struct string_list;
 
-class path {
+class path
+{
   position pos;
   corner crn;
   string_list *label_list;
   path *ypath;
   int is_position;
+
 public:
   path(corner = 0);
   path(position);
@@ -93,7 +103,9 @@ public:
   int follow(const place &, place *) const;
 };
 
-struct object_list {
+class object_list
+{
+public:
   object *head;
   object *tail;
   object_list();
@@ -109,7 +121,7 @@ enum direction {
   UP_DIRECTION,
   LEFT_DIRECTION,
   DOWN_DIRECTION
-  };
+};
 
 struct graphics_state {
   double x, y;
@@ -121,8 +133,9 @@ struct saved_state : public graphics_state {
   PTABLE(place) *tbl;
 };
 
-
-struct text_item {
+class text_item
+{
+public:
   text_item *next;
   char *text;
   adjustment adj;
@@ -159,7 +172,9 @@ const unsigned long IS_OUTLINED        =  040000000;
 const unsigned long IS_XSLANTED        = 0100000000;
 const unsigned long IS_YSLANTED        = 0200000000;
 
-struct segment {
+class segment
+{
+public:
   int is_absolute;
   position pos;
   segment *next;
@@ -170,7 +185,9 @@ class rectangle_object;
 class graphic_object;
 class linear_object;
 
-struct object_spec {
+class object_spec
+{
+public:
   unsigned long flags;
   object_type type;
   object_list oblist;
@@ -216,7 +233,6 @@ struct object_spec {
 			 direction *dirp);
 };
 
-
 object *make_object(object_spec *, position *, direction *);
 
 object *make_mark_object();
@@ -227,3 +243,5 @@ void define_variable(const char *name, double val);
 
 void print_picture(object *);
 
+#endif // _OBJECT_H
+// s-it2-mode

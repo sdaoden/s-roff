@@ -1,25 +1,33 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2001, 2007
-     Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2001, 2007
+ *      Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+#ifndef _OUTPUT_H
+#define _OUTPUT_H
 
-This file is part of groff.
+#include "config.h"
+#include "pic-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-struct line_type {
+class line_type
+{
+public:
   enum { invisible, solid, dotted, dashed } type;
   double dash_width;
   double thickness;		// the thickness is in points
@@ -27,13 +35,14 @@ struct line_type {
   line_type();
 };
 
-
-class output {
+class output
+{
 protected:
   char *args;
   double desired_height;	// zero if no height specified
   double desired_width;		// zero if no depth specified
   double compute_scale(double, const position &, const position &);
+
 public:
   output();
   virtual ~output();
@@ -69,16 +78,16 @@ public:
 
 extern output *out;
 
-/* #define FIG_SUPPORT 1 */
-#define TEX_SUPPORT 1
-
 output *make_troff_output();
 
 #ifdef TEX_SUPPORT
 output *make_tex_output();
 output *make_tpic_output();
-#endif /* TEX_SUPPORT */
+#endif
 
 #ifdef FIG_SUPPORT
 output *make_fig_output();
-#endif /* FIG_SUPPORT */
+#endif
+
+#endif // _OUTPUT_H
+// s-it2-mode

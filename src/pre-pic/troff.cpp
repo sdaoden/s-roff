@@ -1,32 +1,36 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2000, 2001, 2002, 2003, 2005
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000 - 2003, 2005 Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
+#include "config.h"
+#include "pic-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-#include "pic.h"
 #include "common.h"
-
+#include "pic.h"
 
 const double RELATIVE_THICKNESS = -1.0;
 const double BAD_THICKNESS = -2.0;
 
-class simple_output : public common_output {
+class simple_output
+: public common_output
+{
   virtual void simple_line(const position &, const position &) = 0;
   virtual void simple_spline(const position &, const position *, int n) = 0;
   virtual void simple_arc(const position &, const position &,
@@ -40,6 +44,7 @@ class simple_output : public common_output {
   virtual void reset_color() = 0;
   virtual char *get_last_filled() = 0;
   void dot(const position &, const line_type &) = 0;
+
 public:
   void start_picture(double sc, const position &ll, const position &ur) = 0;
   void finish_picture() = 0;
@@ -210,7 +215,9 @@ void simple_output::ellipse(const position &cent, const distance &dim,
   }
 }
 
-class troff_output : public simple_output {
+class troff_output
+: public simple_output
+{
   const char *last_filename;
   position upper_left;
   double height;
@@ -219,6 +226,7 @@ class troff_output : public simple_output {
   double last_fill;
   char *last_filled;		// color
   char *last_outlined;		// color
+
 public:
   troff_output();
   ~troff_output();
@@ -263,15 +271,6 @@ inline position troff_output::transform(const position &pos)
   return position((pos.x - upper_left.x)/scale,
 		  (upper_left.y - pos.y)/scale);
 }
-
-#define FILL_REG "00"
-
-// If this register > 0, then pic will generate \X'ps: ...' commands
-// if the aligned attribute is used.
-#define GROPS_REG "0p"
-
-// If this register is defined, geqn won't produce `\x's.
-#define EQN_NO_EXTRA_SPACE_REG "0x"
 
 void troff_output::start_picture(double sc,
 				 const position &ll, const position &ur)
@@ -428,7 +427,7 @@ void troff_output::text(const position &center, text_piece *v, int n,
   if (driver_extension_flag && ang != 0.0) {
     rotate_flag = 1;
     position c = transform(center);
-    printf(".if \\n(" GROPS_REG " \\{\\\n"
+    printf(".if \\n(" LDPS_REG " \\{\\\n"
 	   "\\h'%.3fi'"
 	   "\\v'%.3fi'"
 	   "\\X'ps: exec gsave currentpoint 2 copy translate %.4f rotate neg exch neg exch translate'"
@@ -551,7 +550,7 @@ void troff_output::dot(const position &cent, const line_type &lt)
 	   "\\v'%.3fi+%.2fm'"
 	   ".\n.sp -1\n",
 	   c.x,
-	   c.y, 
+	   c.y,
 	   DOT_AXIS);
   }
 }
@@ -565,3 +564,5 @@ void troff_output::set_location(const char *s, int n)
     last_filename = s;
   }
 }
+
+// s-it2-mode

@@ -1,47 +1,44 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2000, 2002, 2003, 2004, 2006,
-     2007  Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000, 2002 - 2004, 2006, 2007
+ *     Free Software Foundation, Inc.
+ *     Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
+#include "config.h"
+#include "pic-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-#include "pic.h"
-#include "ptable.h"
 #include "object.h"
+#include "pic.h"
 #include "pic_tab.h"
+#include "ptable.h"
 
 declare_ptable(char)
 implement_ptable(char)
 
 PTABLE(char) macro_table;
 
-// First character of the range representing $1-$<MAX_ARG>.
-// All of them must be invalid input characters.
-#ifndef IS_EBCDIC_HOST
-#define ARG1 0x80
-#define MAX_ARG 32
-#else
-#define ARG1 0x30
-#define MAX_ARG 16
-#endif
-
-class macro_input : public input {
+class macro_input
+: public input
+{
   char *s;
   char *p;
+
 public:
   macro_input(const char *);
   ~macro_input();
@@ -49,12 +46,15 @@ public:
   int peek();
 };
 
-class argument_macro_input : public input {
+class argument_macro_input
+: public input
+{
   char *s;
   char *p;
   char *ap;
   int argc;
   char *argv[MAX_ARG];
+
 public:
   argument_macro_input(const char *, int, char **);
   ~argument_macro_input();
@@ -62,7 +62,8 @@ public:
   int peek();
 };
 
-input::input() : next(0)
+input::input()
+: next(0)
 {
 }
 
@@ -98,7 +99,7 @@ int file_input::read_line()
 	lex_error("invalid input character code %1", c);
       else {
 	line += char(c);
-	if (c == '\n') 
+	if (c == '\n')
 	  break;
       }
     }
@@ -218,7 +219,7 @@ int argument_macro_input::get()
   }
   if (p == 0)
     return EOF;
-  while ((unsigned char)*p >= ARG1 
+  while ((unsigned char)*p >= ARG1
 	 && (unsigned char)*p <= ARG1 + MAX_ARG - 1) {
     int i = (unsigned char)*p++ - ARG1;
     if (i < argc && argv[i] != 0 && argv[i][0] != '\0') {
@@ -253,9 +254,11 @@ int argument_macro_input::peek()
   return (unsigned char)*p;
 }
 
-class input_stack {
+class input_stack
+{
   static input *current_input;
   static int bol_flag;
+
 public:
   static void push(input *);
   static void clear();
@@ -335,15 +338,19 @@ int input_stack::peek_char()
   return EOF;
 }
 
-class char_input : public input {
+class char_input
+: public input
+{
   int c;
+
 public:
   char_input(int);
   int get();
   int peek();
 };
 
-char_input::char_input(int n) : c((unsigned char)n)
+char_input::char_input(int n)
+: c((unsigned char)n)
 {
 }
 
@@ -460,7 +467,7 @@ int lookup_keyword(const char *str, int len)
   static struct keyword {
     const char *name;
     int token;
-  } table[] = {
+  } /* FIXME const */table[] = {
     { "Here", HERE },
     { "above", ABOVE },
     { "aligned", ALIGNED },
@@ -560,13 +567,13 @@ int lookup_keyword(const char *str, int len)
     { "xslanted", XSLANTED },
     { "yslanted", YSLANTED },
   };
-  
+
   const keyword *start = table;
-  const keyword *end = table + sizeof(table)/sizeof(table[0]);
+  const keyword *end = table + NELEM(table);
   while (start < end) {
     // start <= target < end
     const keyword *mid = start + (end - start)/2;
-    
+
     int cmp = docmp(str, len, mid->name, strlen(mid->name));
     if (cmp == 0)
       return mid->token;
@@ -949,7 +956,7 @@ int get_token(int lookup_flag)
     case '7':
     case '8':
     case '9':
-      {   
+      {
 	int overflow = 0;
 	n = 0;
 	for (;;) {
@@ -1358,8 +1365,9 @@ void do_undef()
   macro_table.define(token_buffer.contents(), 0);
 }
 
-
-class for_input : public input {
+class for_input
+: public input
+{
   char *var;
   char *body;
   double from;
@@ -1368,6 +1376,7 @@ class for_input : public input {
   double by;
   const char *p;
   int done_newline;
+
 public:
   for_input(char *, double, double, int, double, char *);
   ~for_input();
@@ -1456,7 +1465,6 @@ void do_for(char *var, double from, double to, int by_is_multiplicative,
 				  by_is_multiplicative, by, body));
 }
 
-
 void do_copy(const char *filename)
 {
   file_case *fcp = file_case::muxer(filename);
@@ -1467,7 +1475,9 @@ void do_copy(const char *filename)
   input_stack::push(new file_input(fcp, filename));
 }
 
-class copy_thru_input : public input {
+class copy_thru_input
+: public input
+{
   int done;
   char *body;
   char *until;
@@ -1476,8 +1486,10 @@ class copy_thru_input : public input {
   int argv[MAX_ARG];
   int argc;
   string line;
+
   int get_line();
   virtual int inget() = 0;
+
 public:
   copy_thru_input(const char *b, const char *u);
   ~copy_thru_input();
@@ -1485,8 +1497,11 @@ public:
   int peek();
 };
 
-class copy_file_thru_input : public copy_thru_input {
+class copy_file_thru_input
+: public copy_thru_input
+{
   input *in;
+
 public:
   copy_file_thru_input(input *, const char *b, const char *u);
   ~copy_file_thru_input();
@@ -1512,7 +1527,9 @@ int copy_file_thru_input::inget()
     return in->get();
 }
 
-class copy_rest_thru_input : public copy_thru_input {
+class copy_rest_thru_input
+: public copy_thru_input
+{
 public:
   copy_rest_thru_input(const char *, const char *u);
   int inget();
@@ -1547,7 +1564,6 @@ copy_thru_input::copy_thru_input(const char *b, const char *u)
   p = 0;
   until = strsave(u);
 }
-
 
 copy_thru_input::~copy_thru_input()
 {
@@ -1647,10 +1663,13 @@ int copy_thru_input::get_line()
   return argc > 0 || c == '\n';
 }
 
-class simple_file_input : public input {
+class simple_file_input
+: public input
+{
   const char *filename;
   int lineno;
   file_case *_fcp;
+
 public:
   simple_file_input(file_case *, const char *);
   ~simple_file_input();
@@ -1700,7 +1719,6 @@ int simple_file_input::get_location(const char **fnp, int *lnp)
   *lnp = lineno;
   return 1;
 }
-
 
 void copy_file_thru(const char *filename, const char *body, const char *until)
 {
@@ -2032,3 +2050,4 @@ void yyerror(const char *s)
   }
 }
 
+// s-it2-mode

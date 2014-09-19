@@ -1,30 +1,49 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2003 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2003 Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-#include "pic.h"
-
+#include "config.h"
+#include "pic-config.h"
 #ifdef TEX_SUPPORT
 
 #include "common.h"
+#include "pic.h"
 
-class tex_output : public common_output {
+class tex_output
+: public common_output
+{
+  position upper_left;
+  double height;
+  double width;
+  double scale;
+  double pen_size;
+
+  void point(const position &);
+  void dot(const position &, const line_type &);
+  void solid_arc(const position &cent, double rad, double start_angle,
+		 double end_angle, const line_type &lt);
+  position transform(const position &);
+
+protected:
+  virtual void set_pen_size(double ps);
+
 public:
   tex_output();
   ~tex_output();
@@ -47,20 +66,6 @@ public:
   char *get_last_filled();
   char *get_outline_color();
   int supports_filled_polygons();
-private:
-  position upper_left;
-  double height;
-  double width;
-  double scale;
-  double pen_size;
-
-  void point(const position &);
-  void dot(const position &, const line_type &);
-  void solid_arc(const position &cent, double rad, double start_angle,
-		 double end_angle, const line_type &lt);
-  position transform(const position &);
-protected:
-  virtual void set_pen_size(double ps);
 };
 
 // convert inches to milliinches
@@ -97,7 +102,7 @@ void tex_output::set_pen_size(double ps)
     ps = -1.0;
   if (ps != pen_size) {
     pen_size = ps;
-    printf("    \\special{pn %d}%%\n", 
+    printf("    \\special{pn %d}%%\n",
 	   ps < 0.0 ? DEFAULT_PEN_SIZE : int(ps*(1000.0/72.0) + .5));
   }
 }
@@ -252,7 +257,7 @@ void tex_output::solid_arc(const position &cent, double rad,
 	 (-end_angle > -start_angle) ? (double)M_PI * 2 - start_angle
 	 			     : -start_angle);
 }
-  
+
 void tex_output::arc(const position &start, const position &cent,
 		     const position &end, const line_type &lt)
 {
@@ -397,14 +402,17 @@ char *tex_output::get_outline_color()
   return NULL;
 }
 
-class tpic_output : public tex_output {
+class tpic_output
+: public tex_output
+{
+  int default_pen_size;
+  int prev_default_pen_size;
+
+  void set_pen_size(double ps);
+
 public:
   tpic_output();
   void command(const char *, const char *, int);
-private:
-  void set_pen_size(double ps);
-  int default_pen_size;
-  int prev_default_pen_size;
 };
 
 tpic_output::tpic_output()
@@ -455,5 +463,6 @@ output *make_tpic_output()
 {
   return new tpic_output;
 }
- 
-#endif
+
+#endif // TEX_SUPPORT
+// s-it2-mode

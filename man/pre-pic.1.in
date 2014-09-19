@@ -1,6 +1,9 @@
 .ig
-Copyright (C) 1989-2000, 2001, 2002, 2003, 2004, 2007
-  Free Software Foundation, Inc.
+@ @L_P_PIC@.1
+
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
+Copyright (C) 1989 - 2004, 2007 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -17,7 +20,6 @@ versions, except that this permission notice may be included in
 translations approved by the Free Software Foundation instead of in
 the original English.
 ..
-.
 .
 .\" Like TP, but if specified indent is more than half
 .\" the current line-length - indent, use the default indent.
@@ -43,17 +45,16 @@ the original English.
 .tr \(ts"
 .
 .
-.TH @G@PIC @MAN1EXT@ "@MDATE@" "Groff Version @VERSION@"
-.
+.TH @U_P_PIC@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
 .SH NAME
 .
-@g@pic \- compile pictures for troff or TeX
+@L_P_PIC@ \- compile pictures for troff or TeX
 .
 .
 .SH SYNOPSIS
 .
-.B @g@pic
+.B @L_P_PIC@
 [
 .B \-nvCSU
 ]
@@ -62,7 +63,7 @@ the original English.
 \&.\|.\|.\&
 ]
 .br
-.B @g@pic
+.B @L_P_PIC@
 .B \-t
 [
 .B \-cvzCSU
@@ -75,9 +76,6 @@ the original English.
 .
 .SH DESCRIPTION
 .
-This manual page describes the GNU version of
-.BR pic ,
-which is part of the groff document formatting system.
 .B pic
 compiles descriptions of pictures embedded within
 .B troff
@@ -139,11 +137,11 @@ Unsafe mode; revert the default option
 .
 .TP
 .B \-n
-Don't use the groff extensions to the troff drawing commands.
+Don't use the @L_ROFF@ extensions to the troff drawing commands.
 You should use this if you are using a postprocessor that doesn't support
 these extensions.
 The extensions are described in
-.BR groff_out (@MAN5EXT@).
+.BR @L_ROFF@_out (@MAN5EXT@).
 The
 .B \-n
 option also causes
@@ -218,8 +216,8 @@ is device-independent.
 .
 .SH USAGE
 .
-This section describes only the differences between GNU
-.B pic
+This section describes only the differences between
+.B @L_P_PIC@
 and the original version of
 .BR pic .
 Many of these differences also apply to newer versions of Unix
@@ -753,8 +751,8 @@ line can have a second argument specifying a maximum height for
 the picture.
 If the width of zero is specified the width will be ignored in computing
 the scaling factor for the picture.
-Note that GNU
-.B pic
+Note that
+.B @L_P_PIC@
 will always scale a picture by the same amount vertically as well as
 horizontally.
 This is different from the
@@ -866,13 +864,13 @@ All three keywords expect a suffix specifying the color, for example
 .LP
 Currently, color support isn't available in \*(tx mode.
 Predefined color names for
-.B groff
+.B @L_ROFF@
 are in the device macro files, for example
 .BR ps.tmac ;
 additional colors can be defined with the
 .B .defcolor
 request (see the manual page of
-.BR @g@troff (@MAN1EXT@)
+.BR @L_TROFF@ (@MAN1EXT@)
 for more details).
 .LP
 To change the name of the vbox in \*(tx mode, set the pseudo-variable
@@ -924,7 +922,7 @@ Objects can have an
 .B aligned
 attribute.
 This will only work if the postprocessor is
-.BR grops .
+.BR @L_D_PS@ .
 Any text associated with an object having the
 .B aligned
 attribute will be rotated about the center of the object
@@ -974,7 +972,7 @@ text.
 .
 .LP
 It is necessary to feed this file into
-.B groff
+.B @L_ROFF@
 without adding any page information, so you must check which
 .B .PS
 and
@@ -983,7 +981,7 @@ requests are actually called.
 For example, the mm macro package adds a page number, which is very
 annoying.
 At the moment, calling standard
-.B groff
+.B @L_ROFF@
 without any macro package works.
 Alternatively, you can define your own requests, e.g. to do nothing:
 .LP
@@ -999,12 +997,12 @@ Alternatively, you can define your own requests, e.g. to do nothing:
 .RE
 .
 .LP
-.B groff
+.B @L_ROFF@
 itself does not provide direct conversion into other graphics file
 formats.
 But there are lots of possibilities if you first transform your picture
 into PostScript\*R format using the
-.B groff
+.B @L_ROFF@
 option
 .BR -Tps .
 Since this
@@ -1069,8 +1067,8 @@ macros.
 .
 .SH "SEE ALSO"
 .
-.BR @g@troff (@MAN1EXT@),
-.BR groff_out (@MAN5EXT@),
+.BR @L_TROFF@ (@MAN1EXT@),
+.BR @L_ROFF@_out (@MAN5EXT@),
 .BR tex (1),
 .BR gs (1),
 .BR ps2eps (1),
@@ -1103,7 +1101,7 @@ W. Richard Stevens - Examples of picMacros
 .SH BUGS
 .
 Input characters that are invalid for
-.B groff
+.B @L_ROFF@
 (i.e., those with
 .SM ASCII
 code 0, or 013 octal, or between 015 and 037 octal, or between 0200 and 0237
@@ -1116,6 +1114,4 @@ which interprets 0 as black and 1 as white.
 .LP
 PostScript\*R is a registered trademark of Adobe Systems Incorporation.
 .
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
+.\" s-ts-mode

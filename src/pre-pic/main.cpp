@@ -1,30 +1,33 @@
-// -*- C++ -*-
-/* Copyright (C) 1989-1992, 2000, 2001, 2002, 2003, 2006
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000 - 2003, 2006
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+#include "config.h"
+#include "pic-config.h"
 
 #include "file_case.h"
 
 #include "pic.h"
 
 extern int yyparse();
-extern "C" const char *Version_string;
 
 output *out;
 char *graphname;		// the picture box name in TeX mode
@@ -45,12 +48,15 @@ static int had_parse_error = 0;
 
 static void do_file(char const *filename);
 
-class top_input : public input {
+class top_input
+: public input
+{
   file_case *_fcp;
   int bol;
   int eof;
   int push_back[3];
   int start_lineno;
+
 public:
   top_input(file_case *);
   int get();
@@ -241,7 +247,7 @@ void do_picture(file_case *fcp)
         c = fcp->get_c();
       } while (c != EOF && c != '\n');
     }
-    if (c == '\n') 
+    if (c == '\n')
       current_lineno++;
     if (filename.length() == 0)
       error("missing filename after `<'");
@@ -475,7 +481,7 @@ void do_whole_file(const char *filename)
 
 void usage(FILE *stream)
 {
-  fprintf(stream, "usage: %s [ -nvCSU ] [ filename ... ]\n", program_name);
+  fprintf(stream, "Synopsis: %s [ -nvCSU ] [ filename ... ]\n", program_name);
 #ifdef TEX_SUPPORT
   fprintf(stream, "       %s -t [ -cvzCSU ] [ filename ... ]\n", program_name);
 #endif
@@ -484,8 +490,8 @@ void usage(FILE *stream)
 #endif
 }
 
-#if defined(__MSDOS__) || defined(__EMX__)
-static char *fix_program_name(char *arg, char *dflt)
+#if defined(__MSDOS__) || defined(__EMX__) /* FIXME */
+static char *fix_program_name(char *arg, char *dflt) /* FIXME: if, then lib! */
 {
   if (!arg)
     return dflt;
@@ -498,7 +504,7 @@ static char *fix_program_name(char *arg, char *dflt)
       prog++;
       break;
     }
-  }	
+  }
   char *ext = strchr(prog, '.');
   if (ext)
     *ext = '\0';
@@ -578,7 +584,7 @@ int main(int argc, char **argv)
       break;
     case 'v':
       {
-	printf("GNU pic (groff) version %s\n", Version_string);
+	puts(L_P_PIC " (" T_ROFF ") v" VERSION);
 	exit(0);
 	break;
       }
@@ -642,3 +648,4 @@ int main(int argc, char **argv)
   return had_parse_error;
 }
 
+// s-it2-mode

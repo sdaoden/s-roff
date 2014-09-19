@@ -1,27 +1,31 @@
-/* Copyright (C) 1989, 1990, 1991, 1992, 2000, 2001, 2002, 2003, 2004, 2005,
-                 2006, 2007
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000 - 2007 Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 %{
+#include "config.h"
+#include "pic-config.h"
+
+#include "object.h"
 #include "pic.h"
 #include "ptable.h"
-#include "object.h"
 
 extern int delim_flag;
 extern void copy_rest_thru(const char *, const char *);
@@ -30,9 +34,6 @@ extern void push_body(const char *);
 extern void do_for(char *var, double from, double to,
 		   int by_is_multiplicative, double by, char *body);
 extern void do_lookahead();
-
-/* Maximum number of characters produced by printf("%g") */
-#define GDIGITS 14
 
 int yylex();
 void yyerror(const char *);
@@ -59,9 +60,7 @@ const char *ordinal_postfix(int n);
 const char *object_type_name(object_type type);
 char *format_number(const char *form, double n);
 char *do_sprintf(const char *form, const double *v, int nv);
-
 %}
-
 
 %union {
 	char *str;
@@ -134,7 +133,7 @@ char *do_sprintf(const char *form, const double *v, int nv);
 %token AND
 %token HERE
 %token DOT_N
-%token DOT_E	
+%token DOT_E
 %token DOT_W
 %token DOT_S
 %token DOT_NE
@@ -226,7 +225,7 @@ parses properly. */
 %left XSLANTED YSLANTED
 %left LABEL
 
-%left VARIABLE NUMBER '(' SIN COS ATAN2 LOG EXP SQRT K_MAX K_MIN INT RAND SRAND LAST 
+%left VARIABLE NUMBER '(' SIN COS ATAN2 LOG EXP SQRT K_MAX K_MIN INT RAND SRAND LAST
 %left ORDINAL HERE '`'
 
 %left BOX CIRCLE ELLIPSE ARC LINE ARROW SPLINE '['
@@ -374,7 +373,7 @@ placeless_element:
 		}
 	| COPY TEXT THRU
 		{ delim_flag = 2; }
-	  DELIMITED 
+	  DELIMITED
 		{ delim_flag = 0; }
 	  until
 		{
@@ -404,7 +403,7 @@ placeless_element:
 		  delim_flag = 0;
 		  if (yychar < 0)
 		    do_lookahead();
-		  do_for($2, $4, $6, $7.is_multiplicative, $7.val, $10); 
+		  do_for($2, $4, $6, $7.is_multiplicative, $7.val, $10);
 		}
 	| simple_if
 		{
@@ -478,7 +477,7 @@ print_args:
 	;
 
 print_arg:
-  	expr							%prec ','
+	expr							%prec ','
 		{
 		  $$.str = new char[GDIGITS + 1];
 		  sprintf($$.str, "%g", $1);
@@ -513,14 +512,14 @@ until:
 	| UNTIL TEXT
 		{ $$ = $2.str; }
 	;
-	
+
 any_expr:
 	expr
 		{ $$ = $1; }
 	| text_expr
 		{ $$ = $1; }
 	;
-	
+
 text_expr:
 	text EQUALEQUAL text
 		{
@@ -692,7 +691,7 @@ object_spec:
 					   $3.filename, $3.lineno);
 		  a_delete $3.str;
 		}
-	| '[' 
+	| '['
 		{
 		  saved_state *p = new saved_state;
 		  $<pstate>$ = p;
@@ -875,7 +874,7 @@ object_spec:
 		  $$->segment_pos.y += $3.y;
 		}
 	| object_spec THEN
-  		{
+		{
 		  $$ = $1;
 		  if (!($$->flags & HAS_SEGMENT))
 		    switch ($$->dir) {
@@ -974,7 +973,7 @@ object_spec:
 		  strcpy($$->outlined, $3.str);
 		}
 	| object_spec CHOP
-  		{
+		{
 		  $$ = $1;
 		  // line chop chop means line chop 0 chop 0
 		  if ($$->flags & IS_DEFAULT_CHOPPED) {
@@ -1152,10 +1151,10 @@ sprintf_args:
 	;
 
 position:
-  	position_not_place
+	position_not_place
 		{ $$ = $1; }
 	| place
-  		{
+		{
 		  position pos = $1;
 		  $$.x = pos.x;
 		  $$.y = pos.y;
@@ -1297,7 +1296,7 @@ ordinal:
 optional_ordinal_last:
 	LAST
 		{ $$ = 1; }
-  	| ordinal LAST
+	| ordinal LAST
 		{ $$ = $1; }
 	;
 
@@ -1336,7 +1335,7 @@ nth_primitive:
 
 object_type:
 	BOX
-  		{ $$ = BOX_OBJECT; }
+		{ $$ = BOX_OBJECT; }
 	| CIRCLE
 		{ $$ = CIRCLE_OBJECT; }
 	| ELLIPSE
@@ -1356,7 +1355,7 @@ object_type:
 	;
 
 label_path:
- 	'.' LABEL
+	'.' LABEL
 		{ $$ = new path($2); }
 	| label_path '.' LABEL
 		{
@@ -1370,7 +1369,7 @@ relative_path:
 		{ $$ = new path($1); }
 	/* give this a lower precedence than LEFT and RIGHT so that
 	   [A: box] with .A left == [A: box] with (.A left) */
-  	| label_path						%prec TEXT
+	| label_path						%prec TEXT
 		{ $$ = $1; }
 	| label_path corner
 		{
@@ -1417,7 +1416,7 @@ path:
 corner:
 	DOT_N
 		{ $$ = &object::north; }
-	| DOT_E	
+	| DOT_E
 		{ $$ = &object::east; }
 	| DOT_W
 		{ $$ = &object::west; }
@@ -1437,7 +1436,7 @@ corner:
 		{ $$ = &object::start; }
 	| DOT_END
 		{ $$ = &object::end; }
-  	| TOP
+	| TOP
 		{ $$ = &object::north; }
 	| BOTTOM
 		{ $$ = &object::south; }
@@ -1493,12 +1492,12 @@ expr:
 	| NUMBER
 		{ $$ = $1; }
 	| place DOT_X
-  		{
+		{
 		  if ($1.obj != 0)
 		    $$ = $1.obj->origin().x;
 		  else
 		    $$ = $1.x;
-		}			
+		}
 	| place DOT_Y
 		{
 		  if ($1.obj != 0)
@@ -1677,7 +1676,7 @@ static struct {
   const char *name;
   double val;
   int scaled;		     // non-zero if val should be multiplied by scale
-} defaults_table[] = {
+} /* FIXME const*/defaults_table[] = {
   { "arcrad", .25, 1 },
   { "arrowht", .1, 1 },
   { "arrowwid", .05, 1 },
@@ -1745,7 +1744,7 @@ void define_variable(const char *name, double val)
     // When the scale changes, reset all scaled pre-defined variables to
     // their default values.
     for (unsigned int i = 0;
-	 i < sizeof(defaults_table)/sizeof(defaults_table[0]); i++) 
+	 i < sizeof(defaults_table)/sizeof(defaults_table[0]); i++)
       if (defaults_table[i].scaled)
 	define_variable(defaults_table[i].name, val*defaults_table[i].val);
   }
@@ -1921,3 +1920,5 @@ char *do_sprintf(const char *form, const double *v, int nv)
   result += '\0';
   return strsave(result.contents());
 }
+
+// s-it2-mode

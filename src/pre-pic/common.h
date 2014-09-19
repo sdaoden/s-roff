@@ -1,26 +1,33 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 1993, 2003, 2007
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1993, 2003, 2007
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+#ifndef _COMMON_H
+#define _COMMON_H
 
-This file is part of groff.
+#include "config.h"
+#include "pic-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-class common_output : public output {
-private:
+class common_output
+: public output
+{
   void dash_line(const position &start, const position &end,
 		 const line_type &lt, double dash_width, double gap_width,
 		 double *offsetp);
@@ -32,6 +39,7 @@ private:
   void dot_arc(const position &cent, double rad,
 	       double start_angle, double end_angle, const line_type &lt,
 	       double gap_width, double *offsetp);
+
 protected:
   virtual void dot(const position &, const line_type &) = 0;
   void ellipse_arc(const position &, const position &,
@@ -55,6 +63,7 @@ protected:
 			 const line_type &);
   void filled_rounded_box(const position &, const distance &, double,
 			  double);
+
 public:
   void start_picture(double sc, const position &ll, const position &ur) = 0;
   void finish_picture() = 0;
@@ -79,3 +88,5 @@ public:
 int compute_arc_center(const position &start, const position &cent,
 		       const position &end, position *result);
 
+#endif // _COMMON_H
+// s-it2-mode

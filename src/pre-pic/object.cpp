@@ -1,28 +1,30 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2001, 2002, 2003, 2004, 2005,
-                 2006, 2007
-     Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2001 - 2007 Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
+#include "config.h"
+#include "pic-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
+#include "object.h"
 #include "pic.h"
 #include "ptable.h"
-#include "object.h"
 
 void print_object_list(object *);
 
@@ -129,7 +131,6 @@ position::position() : x(0.0), y(0.0)
 position::position(double a, double b) : x(a), y(b)
 {
 }
-
 
 int operator==(const position &a, const position &b)
 {
@@ -393,7 +394,7 @@ segment::segment(const position &a, int n, segment *p)
 }
 
 text_item::text_item(char *t, const char *fn, int ln)
-: next(0), text(t), filename(fn), lineno(ln) 
+: next(0), text(t), filename(fn), lineno(ln)
 {
   adj.h = CENTER_ADJUST;
   adj.v = NONE_ADJUST;
@@ -444,10 +445,13 @@ object_spec::~object_spec()
   a_delete outlined;
 }
 
-class command_object : public object {
+class command_object
+: public object
+{
   char *s;
   const char *filename;
   int lineno;
+
 public:
   command_object(char *, const char *, int);
   ~command_object();
@@ -475,7 +479,9 @@ object *make_command_object(char *s, const char *fn, int ln)
   return new command_object(s, fn, ln);
 }
 
-class mark_object : public object {
+class mark_object
+: public object
+{
 public:
   mark_object();
   object_type type();
@@ -546,14 +552,18 @@ text_piece::~text_piece()
   a_delete text;
 }
 
-class graphic_object : public object {
+class graphic_object
+: public object
+{
   int ntext;
   text_piece *text;
   int aligned;
+
 protected:
   line_type lt;
   char *outline_color;
   char *color_fill;
+
 public:
   graphic_object();
   ~graphic_object();
@@ -669,10 +679,13 @@ graphic_object::~graphic_object()
     ad_delete(ntext) text;
 }
 
-class rectangle_object : public graphic_object {
+class rectangle_object
+: public graphic_object
+{
 protected:
   position cent;
   position dim;
+
 public:
   rectangle_object(const position &);
   double width() { return dim.x; }
@@ -708,7 +721,15 @@ void rectangle_object::move_by(const position &a)
   cent += a;
 }
 
-class closed_object : public rectangle_object {
+class closed_object
+: public rectangle_object
+{
+protected:
+  double fill;			// < 0 if not filled
+  double xslanted;		// !=0 if x is slanted
+  double yslanted;		// !=0 if y is slanted
+  char *color_fill;		// = 0 if not colored
+
 public:
   closed_object(const position &);
   object_type type() = 0;
@@ -716,11 +737,6 @@ public:
   void set_xslanted(double);
   void set_yslanted(double);
   void set_fill_color(char *fill);
-protected:
-  double fill;			// < 0 if not filled
-  double xslanted;		// !=0 if x is slanted
-  double yslanted;		// !=0 if y is slanted
-  char *color_fill;		// = 0 if not colored
 };
 
 closed_object::closed_object(const position &pos)
@@ -734,13 +750,13 @@ void closed_object::set_fill(double f)
   fill = f;
 }
 
-/* accept positive and negative values */ 
+/* accept positive and negative values */
 void closed_object::set_xslanted(double s)
 {
   //assert(s >= 0.0);
   xslanted = s;
 }
-/* accept positive and negative values */ 
+/* accept positive and negative values */
 void closed_object::set_yslanted(double s)
 {
   //assert(s >= 0.0);
@@ -752,9 +768,12 @@ void closed_object::set_fill_color(char *f)
   color_fill = strsave(f);
 }
 
-class box_object : public closed_object {
+class box_object
+: public closed_object
+{
   double xrad;
   double yrad;
+
 public:
   box_object(const position &, double);
   object_type type() { return BOX_OBJECT; }
@@ -905,9 +924,12 @@ int object_spec::position_rectangle(rectangle_object *p,
   return 1;
 }
 
-class block_object : public rectangle_object {
+class block_object
+: public rectangle_object
+{
   object_list oblist;
   PTABLE(place) *tbl;
+
 public:
   block_object(const position &, const object_list &ol, PTABLE(place) *t);
   ~block_object();
@@ -961,7 +983,6 @@ void block_object::move_by(const position &a)
     p->move_by(a);
   adjust_objectless_places(tbl, a);
 }
-
 
 place *block_object::find_label(const char *name)
 {
@@ -1030,8 +1051,9 @@ graphic_object *object_spec::make_text(position *curpos, direction *dirp)
   return p;
 }
 
-
-class ellipse_object : public closed_object {
+class ellipse_object
+: public closed_object
+{
 public:
   ellipse_object(const position &);
   position north_east() { return position(cent.x + dim.x/(M_SQRT2*2.0),
@@ -1089,7 +1111,9 @@ graphic_object *object_spec::make_ellipse(position *curpos, direction *dirp)
   return p;
 }
 
-class circle_object : public ellipse_object {
+class circle_object
+: public ellipse_object
+{
 public:
   circle_object(double);
   object_type type() { return CIRCLE_OBJECT; }
@@ -1130,9 +1154,12 @@ graphic_object *object_spec::make_circle(position *curpos, direction *dirp)
   return p;
 }
 
-class move_object : public graphic_object {
+class move_object
+: public graphic_object
+{
   position strt;
   position en;
+
 public:
   move_object(const position &s, const position &e);
   position origin() { return en; }
@@ -1202,7 +1229,7 @@ graphic_object *object_spec::make_move(position *curpos, direction *dirp)
   for (segment *s = segment_list; s; s = s->next)
     if (s->is_absolute)
       endpos = s->pos;
-    else 
+    else
       endpos += s->pos;
   have_last_move = 1;
   last_move = endpos - startpos;
@@ -1211,13 +1238,16 @@ graphic_object *object_spec::make_move(position *curpos, direction *dirp)
   return p;
 }
 
-class linear_object : public graphic_object {
+class linear_object
+: public graphic_object
+{
 protected:
   char arrow_at_start;
   char arrow_at_end;
   arrow_head_type aht;
   position strt;
   position en;
+
 public:
   linear_object(const position &s, const position &e);
   position start() { return strt; }
@@ -1228,10 +1258,13 @@ public:
   void add_arrows(int at_start, int at_end, const arrow_head_type &);
 };
 
-class line_object : public linear_object {
+class line_object
+: public linear_object
+{
 protected:
   position *v;
   int n;
+
 public:
   line_object(const position &s, const position &e, position *, int);
   ~line_object();
@@ -1247,13 +1280,17 @@ public:
   void move_by(const position &);
 };
 
-class arrow_object : public line_object {
+class arrow_object
+: public line_object
+{
 public:
   arrow_object(const position &, const position &, position *, int);
   object_type type() { return ARROW_OBJECT; }
 };
 
-class spline_object : public line_object {
+class spline_object
+: public line_object
+{
 public:
   spline_object(const position &, const position &, position *, int);
   object_type type() { return SPLINE_OBJECT; }
@@ -1348,7 +1385,7 @@ void line_object::move_by(const position &pos)
   for (int i = 0; i < n; i++)
     v[i] += pos;
 }
-  
+
 void spline_object::update_bounding_box(bounding_box *p)
 {
   p->encompass(strt);
@@ -1464,7 +1501,7 @@ linear_object *object_spec::make_line(position *curpos, direction *dirp)
     if ((flags & IS_SAME) && (type == LINE_OBJECT || type == ARROW_OBJECT)
 	&& have_last_line)
       segment_pos = last_line;
-    else 
+    else
       switch (dir) {
       case UP_DIRECTION:
 	segment_pos.y = segment_height;
@@ -1564,10 +1601,13 @@ linear_object *object_spec::make_line(position *curpos, direction *dirp)
   return p;
 }
 
-class arc_object : public linear_object {
+class arc_object
+: public linear_object
+{
   int clockwise;
   position cent;
   double rad;
+
 public:
   arc_object(int, const position &, const position &, const position &);
   position origin() { return cent; }
@@ -1661,7 +1701,6 @@ position arc_object::south_west()
   result.y -= rad/M_SQRT2;
   return result;
 }
-
 
 void arc_object::print()
 {
@@ -1782,7 +1821,7 @@ void arc_object::update_bounding_box(bounding_box *p)
   }
 }
 
-// We ignore the with attribute. The at attribute always refers to the center.
+// We ignore the width attribute. The at attribute always refers to the center.
 
 linear_object *object_spec::make_arc(position *curpos, direction *dirp)
 {
@@ -1947,7 +1986,9 @@ object *object_spec::make_object(position *curpos, direction *dirp)
   return obj;
 }
 
-struct string_list {
+class string_list
+{
+public:
   string_list *next;
   char *str;
   string_list(char *);
@@ -1963,7 +2004,7 @@ string_list::~string_list()
 {
   a_delete str;
 }
-  
+
 /* A path is used to hold the argument to the `with' attribute.  For
    example, `.nw' or `.A.s' or `.A'.  The major operation on a path is to
    take a place and follow the path through the place to place within the
@@ -2074,3 +2115,4 @@ void print_picture(object *obj)
   out->finish_picture();
 }
 
+// s-it2-mode
