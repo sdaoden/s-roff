@@ -1,50 +1,45 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2001, 2004
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2001, 2004
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
+#include "config.h"
 #include "lib.h"
 
 #include <stdlib.h>
 #include <errno.h>
 
-#include "posix.h"
 #include "cset.h"
 #include "cmap.h"
+#include "defs.h"
 #include "errarg.h"
 #include "error.h"
-
+#include "index.h"
+#include "nonposix.h"
+#include "posix.h"
 #include "refid.h"
 #include "search.h"
-#include "index.h"
-#include "defs.h"
 
-#include "nonposix.h"
-
-// Interface to mmap.
-extern "C" {
-  void *mapread(int fd, int len);
-  int unmap(void *, int len);
-}
+#include "bib.h"
 
 #if 0
-const 
+const
 #endif
 int minus_one = -1;
 
@@ -52,7 +47,9 @@ int verify_flag = 0;
 
 struct word_list;
 
-class index_search_item : public search_item {
+class index_search_item
+: public search_item
+{
   search_item *out_of_date_files;
   index_header header;
   char *buffer;
@@ -76,6 +73,7 @@ class index_search_item : public search_item {
   const char *munge_filename(const char *);
   void read_common_words_file();
   void add_out_of_date_file(int fd, const char *filename, int fid);
+
 public:
   index_search_item(const char *, int);
   ~index_search_item();
@@ -87,7 +85,9 @@ public:
   friend class index_search_item_iterator;
 };
 
-class index_search_item_iterator : public search_item_iterator {
+class index_search_item_iterator
+: public search_item_iterator
+{
   index_search_item *indx;
   search_item_iterator *out_of_date_files_iter;
   search_item *next_out_of_date_file;
@@ -99,6 +99,7 @@ class index_search_item_iterator : public search_item_iterator {
   char *query;
   int get_tag(int tagno, const linear_searcher &, const char **, int *,
 	      reference_id *);
+
 public:
   index_search_item_iterator(index_search_item *, const char *);
   ~index_search_item_iterator();
@@ -135,13 +136,15 @@ index_search_item::~index_search_item()
   }
 }
 
-class file_closer {
+class file_closer
+{
   int *fdp;
+
 public:
   file_closer(int &fd) : fdp(&fd) { }
   ~file_closer() { close(*fdp); }
 };
- 
+
 // Tell the compiler that a variable is intentionally unused.
 inline void unused(void *) { }
 
@@ -295,7 +298,6 @@ search_item *make_index_search_item(const char *filename, int fid)
     return item;
   }
 }
-
 
 index_search_item_iterator::index_search_item_iterator(index_search_item *ind,
 						       const char *q)
@@ -638,3 +640,5 @@ void index_search_item::check_files()
     }
   }
 }
+
+// s-it2-mode

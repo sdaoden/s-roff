@@ -1,43 +1,47 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2000, 2001
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000, 2001
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
+#include "config.h"
 #include "lib.h"
 
-#include <stdlib.h>
 #include <assert.h>
 #include <errno.h>
+#include <stdlib.h>
 
-#include "posix.h"
-#include "errarg.h"
-#include "error.h"
 #include "cset.h"
 #include "cmap.h"
+#include "errarg.h"
+#include "error.h"
 #include "nonposix.h"
+#include "posix.h"
 
 #include "refid.h"
 #include "search.h"
 
-class file_buffer {
+class file_buffer
+{
   char *buffer;
   char *bufend;
+
 public:
   file_buffer();
   ~file_buffer();
@@ -51,7 +55,9 @@ typedef unsigned char uchar;
 static uchar map[256];
 static uchar inv_map[256][3];
 
-struct map_init {
+class map_init // FIXME static initializer ctor
+{
+public:
   map_init();
 };
 
@@ -77,11 +83,12 @@ map_init::map_init()
   }
 }
 
-
-class bmpattern {
+class bmpattern
+{
   char *pat;
   int len;
   int delta[256];
+
 public:
   bmpattern(const char *pattern, int pattern_length);
   ~bmpattern();
@@ -152,7 +159,6 @@ inline int bmpattern::length() const
   return len;
 }
 
-
 static const char *find_end(const char *bufend, const char *p);
 
 const char *linear_searcher::search_and_check(const bmpattern *key,
@@ -203,7 +209,6 @@ static const char *find_end(const char *bufend, const char *p)
   return p;
 }
 
-
 int linear_searcher::check_match(const char *buf, const char *bufend,
 				 const char *match, int matchlen,
 				 const char **cont, const char **start) const
@@ -247,7 +252,7 @@ int linear_searcher::check_match(const char *buf, const char *bufend,
 	    || (match[-2] == '%' && match[-3] == '\n')))
       return 0;
   }
-    
+
   const char *p = match;
   int had_percent = 0;
   for (;;) {
@@ -424,8 +429,11 @@ int linear_searcher::search(const char *buffer, const char *bufend,
   return 0;
 }
 
-class linear_search_item : public search_item {
+class linear_search_item
+: public search_item
+{
   file_buffer fbuf;
+
 public:
   linear_search_item(const char *filename, int fid);
   ~linear_search_item();
@@ -434,9 +442,12 @@ public:
   friend class linear_search_item_iterator;
 };
 
-class linear_search_item_iterator : public search_item_iterator {
+class linear_search_item_iterator
+: public search_item_iterator
+{
   linear_search_item *lsi;
   int pos;
+
 public:
   linear_search_item_iterator(linear_search_item *, const char *query);
   ~linear_search_item_iterator();
@@ -501,3 +512,5 @@ int linear_search_item_iterator::next(const linear_searcher &searcher,
   else
     return 0;
 }
+
+// s-it2-mode
