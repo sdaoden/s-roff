@@ -1,5 +1,9 @@
 .ig
-Copyright (C) 1999-2000, 2001, 2002, 2003, 2004, 2006, 2007
+@ @L_D_HTML@.1
+
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
+Copyright (C) 1999 - 2004, 2006 - 2007
   Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of this
@@ -27,20 +31,20 @@ the original English.
 ..
 .
 .
-.TH GROHTML @MAN1EXT@ "@MDATE@" "Groff Version @VERSION@"
+.TH @U_D_HTML@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
 .
 .SH NAME
-grohtml \- html driver for groff
+@L_D_HTML@ \- html driver for @T_ROFF@
 .
 .
 .SH SYNOPSIS
 .nr a \n(.j
 .ad l
 .nr i \n(.i
-.in +\w'\fBgrohtml 'u
+.in +\w'\fB@L_D_HTML@ 'u
 .ti \niu
-.B grohtml
+.B @L_D_HTML@
 .
 .de OP
 .  ie \\n(.$-1 .RI "[\ \fB\\$1\fP" "\\$2" "\ ]"
@@ -66,36 +70,28 @@ grohtml \- html driver for groff
 .
 .SH DESCRIPTION
 The
-.B grohtml
+.B @L_D_HTML@
 front end (which consists of a preprocessor,
-.BR pre-grohtml ,
+.BR @L_D_PREHTML@ ,
 and a device driver,
-.BR post-grohtml )
-translates the output of GNU
-.B troff
-to html.
+.BR @L_D_POSTHTML@ )
+translates the output of @L_TROFF@ to html.
 Users should always invoke
-.B grohtml
-via the groff command with a
+.B @L_D_HTML@
+via the @L_ROFF@ command with a
 .B \-Thtml
 option.
 If no files are given,
-.B grohtml
+.B @L_D_HTML@
 will read the standard input.
 A filename of
 .B \-
-will also cause
-.B grohtml
-to read the standard input.
+will also cause usage of the standard input.
 Html output is written to the standard output.
-When
-.B grohtml
-is run by
-.B groff
-options can be passed to
-.B grohtml
-using
-.BR groff 's
+When run via
+.B @L_ROFF@
+options can be passed to using
+.BR @L_ROFF@ 's
 .B \-P
 option.
 .
@@ -114,9 +110,7 @@ needs to support the
 and
 .B \%\-dGraphicAlphaBits
 options in order to exploit antialiasing.
-A value of\~0 stops
-.B grohtml
-from issuing antialiasing commands to
+A value of\~0 stops issuing antialiasing commands to
 .BR gs .
 .
 .TP
@@ -125,23 +119,21 @@ Initialize the background color to white.
 .
 .TP
 .BI \-D dir
-Inform
-.B grohtml
-to place all image files into directory
+Place all image files into directory
 .IR dir .
 .
 .TP
 .B \-e
 This option should not be directly invoked by the user as it is
 an internal option utilized by
-.B groff
+.B @L_ROFF@
 when
 .B \-Thtml
 or
 .B \-Txhtml
 is specified.
 It is used by the
-.B grohtml
+.B @L_DHTML@
 preprocessor to determine whether
 .B eqn
 should attempt to produce MathML (if
@@ -170,9 +162,7 @@ needs to support the
 and
 .B \%\-dGraphicAlphaBits
 options in order to exploit antialiasing.
-A value of\~0 stops
-.B grohtml
-from issuing antialiasing commands to
+Stop issuing antialiasing commands to
 .BR gs .
 .
 .TP
@@ -196,16 +186,14 @@ indicates 200 pixels per inch.
 .TP
 .BI \-I stem
 Determine the image stem name.
-If omitted grohtml uses
-.BI \%grohtml- XXX
+If omitted @L_D_HTML@ uses
+.BI \%@L_D_HTML@ - XXX
 .RI ( XXX
 is the process ID).
 .
 .TP
 .BI \-j filename
-Inform
-.B grohtml
-to split the html output into multiple files.
+Split the html output into multiple files.
 The
 .I filename
 is the stem and specified section headings
@@ -232,8 +220,7 @@ Specify the vertical offset of images in points.
 .TP
 .B \-p
 Display page rendering progress to stderr.
-.B grohtml
-only displays a page number when an image is required.
+Only a page number is displayed when an image is required.
 .
 .TP
 .B \-r
@@ -275,11 +262,10 @@ should be either the digit\~\c
 or the letter\~\c
 .B x
 which indicates whether
-.B grohtml
-should generate HTML\~4 or XHTML, respectively.
+HTML\~4 or XHTML, respectively, is to be generated.
 This option should not be directly invoked by the user as it is
 an internal option utilized by
-.B groff
+.B @L_ROFF@
 when
 .B \-Thtml
 or
@@ -288,7 +274,7 @@ is specified.
 .
 .TP
 .B \-y
-Produce a right-justified groff signature at the end of the document.
+Produce a right-justified @L_ROFF@ signature at the end of the document.
 This is only generated if the
 .B \-V
 flag is also specified.
@@ -305,8 +291,8 @@ mounted at font positions 1 to\~4.
 .
 .
 .SH DEPENDENCIES
-.B grohtml
-is dependent upon the png utilities
+.B @L_D_HTML@
+depends upon the png utilities
 .RB ( \%pnmcut ,
 .BR \%pnmcrop ,
 .BR \%pnmtopng )
@@ -329,33 +315,24 @@ encountered.
 .SH ENVIRONMENT
 .TP
 .SM
-.B GROFF_FONT_PATH
+.B @U_ROFF@_FONT_PATH
 A list of directories in which to search for the
 .BI dev name
 directory in addition to the default ones.
 .
 See
-.BR @g@troff (@MAN1EXT@)
+.BR @L_TROFF@ (@MAN1EXT@)
 and
-.BR \%groff_font (@MAN5EXT@)
+.BR \%@L_ROFF@_font (@MAN5EXT@)
 for more details.
 .
 .
-.SH BUGS
-.B Grohtml
-has been completely redesigned and rewritten.
-It is still beta code.
-.
-.
 .SH "SEE ALSO"
-.BR afmtodit (@MAN1EXT@),
-.BR groff (@MAN1EXT@),
-.BR @g@troff (@MAN1EXT@),
-.BR psbb (@MAN1EXT@),
-.BR groff_out (@MAN5EXT@),
-.BR groff_font (@MAN5EXT@),
-.BR groff_char (@MAN7EXT@)
+.BR @L_AFMTODIT@ (@MAN1EXT@),
+.BR @L_ROFF@ (@MAN1EXT@),
+.BR @L_TROFF@ (@MAN1EXT@),
+.BR @L_ROFF@_out (@MAN5EXT@),
+.BR @L_ROFF@_font (@MAN5EXT@),
+.BR @L_ROFF@_char (@MAN7EXT@)
 .
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
+.\" s-ts-mode

@@ -1,88 +1,67 @@
-// -*- C++ -*-
-/* Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 2000 - 2007
  * Free Software Foundation, Inc.
  *
  *  Gaius Mulley (gaius@glam.ac.uk) wrote post-html.cpp
  *  but it owes a huge amount of ideas and raw code from
  *  James Clark (jjc@jclark.com) grops/ps.cpp.
  */
-
 /*
-This file is part of groff.
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
+#include "config.h"
+#include "html-config.h"
 
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
+#include <fcntl.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
 
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 
+#include "cset.h"
 #include "driver.h"
 #include "stringclass.h"
-#include "cset.h"
+
 #include "html.h"
 #include "html-text.h"
 #include "html-table.h"
 
-#include <time.h>
-
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
-#include <stdio.h>
-#include <fcntl.h>
-#include <string.h>
-
-extern "C" const char *Version_string;
-
-#if !defined(TRUE)
-#   define TRUE  (1==1)
-#endif
-#if !defined(FALSE)
-#   define FALSE (1==0)
-#endif
-
-#define MAX_LINE_LENGTH                60            /* maximum characters we want in a line      */
-#define SIZE_INCREMENT                  2            /* font size increment <big> = +2            */
-#define CENTER_TOLERANCE                2            /* how many pixels off center do we allow    */
-#define ANCHOR_TEMPLATE         "heading"            /* if simple anchor is set we use this       */
-#define UNICODE_DESC_START           0x80            /* all character entities above this are     */
-                                                     /* either encoded by their glyph names or if */
-                                                     /* there is no name then we use &#nnn;       */
 typedef enum {CENTERED, LEFT, RIGHT, INLINE} TAG_ALIGNMENT;
 typedef enum {col_tag, tab_tag, tab0_tag, none} colType;
-
-#undef DEBUG_TABLES
-// #define DEBUG_TABLES
-
-/*
- *  prototypes
- */
 
 const char *get_html_translation (font *f, const string &name);
 static const char *get_html_entity(unsigned int code);
 int char_translate_to_html (font *f, char *buf, int buflen, unsigned char ch, int b, int and_single);
 
-
-static int auto_links = TRUE;                        /* by default we enable automatic links at  */
+static int auto_links = true;                        /* by default we enable automatic links at  */
                                                      /* top of the document.                     */
-static int auto_rule  = TRUE;                        /* by default we enable an automatic rule   */
+static int auto_rule  = true;                        /* by default we enable an automatic rule   */
                                                      /* at the top and bottom of the document    */
-static int simple_anchors = FALSE;                   /* default to anchors with heading text     */
-static int manufacture_headings = FALSE;             /* default is to use the Hn html headings,  */
+static int simple_anchors = false;                   /* default to anchors with heading text     */
+static int manufacture_headings = false;             /* default is to use the Hn html headings,  */
                                                      /* rather than manufacture our own.         */
 static color *default_background = NULL;             /* has user requested initial bg color?     */
 static string job_name;                              /* if set then the output is split into     */
                                                      /* multiple files with `job_name'-%d.html   */
-static int multiple_files = FALSE;                   /* must we the output be divided into       */
+static int multiple_files = false;                   /* must we the output be divided into       */
                                                      /* multiple html files, one for each        */
                                                      /* heading?                                 */
 static int base_point_size = 0;                      /* which troff font size maps onto html     */
@@ -90,11 +69,10 @@ static int base_point_size = 0;                      /* which troff font size ma
 static int split_level = 2;                          /* what heading level to split at?          */
 static string head_info;                             /* user supplied information to be placed   */
                                                      /* into <head> </head>                      */
-static int valid_flag = FALSE;                       /* has user requested a valid flag at the   */
+static int valid_flag = false;                       /* has user requested a valid flag at the   */
                                                      /* end of each page?                        */
-static int groff_sig = FALSE;                        /* "This document was produced using"       */
+static int roff_sig = false;                         /* "This document was produced using"       */
 html_dialect dialect = html4;                        /* which html dialect should grohtml output */
-
 
 /*
  *  start with a few favorites
@@ -119,7 +97,7 @@ static int max (int a, int b)
 }
 
 /*
- *  is_intersection - returns TRUE if range a1..a2 intersects with b1..b2
+ *  is_intersection - returns true if range a1..a2 intersects with b1..b2
  */
 
 static int is_intersection (int a1, int a2, int b1, int b2)
@@ -129,7 +107,7 @@ static int is_intersection (int a1, int a2, int b1, int b2)
 }
 
 /*
- *  is_digit - returns TRUE if character, ch, is a digit.
+ *  is_digit - returns true if character, ch, is a digit.
  */
 
 static int is_digit (char ch)
@@ -156,12 +134,17 @@ struct file {
  */
 
 file::file (FILE *f)
-  : fp(f), next(NULL), new_output_file(FALSE),
-    require_links(FALSE), output_file_name("")
+  : fp(f), next(NULL), new_output_file(false),
+    require_links(false), output_file_name("")
 {
 }
 
-class files {
+class files
+{
+  file       *head;
+  file       *tail;
+  file       *ptr;
+
 public:
               files              ();
   FILE       *get_file           (void);
@@ -174,10 +157,6 @@ public:
   int         is_new_output_file (void);
   string      file_name          (void);
   string      next_file_name     (void);
-private:
-  file       *head;
-  file       *tail;
-  file       *ptr;
 };
 
 /*
@@ -245,7 +224,7 @@ void files::set_file_name (string name)
 {
   if (ptr != NULL) {
     ptr->output_file_name = name;
-    ptr->new_output_file = TRUE;
+    ptr->new_output_file = true;
   }
 }
 
@@ -257,11 +236,11 @@ void files::set_file_name (string name)
 void files::set_links_required (void)
 {
   if (ptr != NULL)
-    ptr->require_links = TRUE;
+    ptr->require_links = true;
 }
 
 /*
- *  are_links_required - returns TRUE if this section of the file
+ *  are_links_required - returns true if this section of the file
  *                       requires that links should be issued.
  */
 
@@ -269,11 +248,11 @@ int files::are_links_required (void)
 {
   if (ptr != NULL)
     return ptr->require_links;
-  return FALSE;
+  return false;
 }
 
 /*
- *  is_new_output_file - returns TRUE if this component of the file
+ *  is_new_output_file - returns true if this component of the file
  *                       is the start of a new output file.
  */
 
@@ -281,7 +260,7 @@ int files::is_new_output_file (void)
 {
   if (ptr != NULL)
     return ptr->new_output_file;
-  return FALSE;
+  return false;
 }
 
 /*
@@ -310,7 +289,9 @@ string files::next_file_name (void)
  *  the class and methods for styles
  */
 
-struct style {
+class style
+{
+public:
   font        *f;
   int          point_size;
   int          font_no;
@@ -348,7 +329,9 @@ int style::operator!=(const style &s) const
  *  the class and methods for retaining ascii text
  */
 
-struct char_block {
+class char_block
+{
+public:
   enum { SIZE = 256 };
   char         *buffer;
   int           used;
@@ -448,7 +431,15 @@ char *char_buffer::add_string (const string &s)
  *  the classes and methods for maintaining glyph positions.
  */
 
-class text_glob {
+class text_glob
+{
+  text_glob           (style *s, const char *str, int length,
+		       int min_vertical , int min_horizontal,
+		       int max_vertical , int max_horizontal,
+		       bool is_troff_command,
+		       bool is_auto_image, bool is_special_command,
+		       bool is_a_line    , int  thickness);
+
 public:
   void text_glob_html      (style *s, char *str, int length,
 			    int min_vertical, int min_horizontal,
@@ -466,7 +457,7 @@ public:
   void text_glob_tag       (style *s, char *str, int length,
 			    int min_vertical, int min_horizontal,
 			    int max_vertical, int max_horizontal);
-		       
+
   text_glob                (void);
   ~text_glob               (void);
   int  is_a_line           (void);
@@ -507,14 +498,6 @@ public:
   int             is_line;              // is the command a <line>?
   int             thickness;            // the thickness of a line
   html_table     *tab;                  // table description
-
-private:
-  text_glob           (style *s, const char *str, int length,
-		       int min_vertical , int min_horizontal,
-		       int max_vertical , int max_horizontal,
-		       bool is_troff_command,
-		       bool is_auto_image, bool is_special_command,
-		       bool is_a_line    , int  thickness);
 };
 
 text_glob::text_glob (style *s, const char *str, int length,
@@ -532,7 +515,7 @@ text_glob::text_glob (style *s, const char *str, int length,
 
 text_glob::text_glob ()
   : text_string(NULL), text_length(0), minv(-1), minh(-1), maxv(-1), maxh(-1),
-    is_tag(FALSE), is_special(FALSE), is_line(FALSE), thickness(0), tab(NULL)
+    is_tag(false), is_special(false), is_line(false), thickness(0), tab(NULL)
 {
 }
 
@@ -552,7 +535,7 @@ void text_glob::text_glob_html (style *s, char *str, int length,
 {
   text_glob *g = new text_glob(s, str, length,
 			       min_vertical, min_horizontal, max_vertical, max_horizontal,
-			       FALSE, FALSE, FALSE, FALSE, 0);
+			       false, false, false, false, 0);
   *this = *g;
   delete g;
 }
@@ -570,7 +553,7 @@ void text_glob::text_glob_special (style *s, char *str, int length,
 {
   text_glob *g = new text_glob(s, str, length,
 			       min_vertical, min_horizontal, max_vertical, max_horizontal,
-			       FALSE, FALSE, TRUE, FALSE, 0);
+			       false, false, true, false, 0);
   *this = *g;
   delete g;
 }
@@ -586,7 +569,7 @@ void text_glob::text_glob_line (style *s,
 {
   text_glob *g = new text_glob(s, "", 0,
 			       min_vertical, min_horizontal, max_vertical, max_horizontal,
-			       FALSE, FALSE, FALSE, TRUE, thickness_value);
+			       false, false, false, true, thickness_value);
   *this = *g;
   delete g;
 }
@@ -620,7 +603,7 @@ void text_glob::text_glob_auto_image(style *s, char *str, int length,
 {
   text_glob *g = new text_glob(s, str, length,
 			       min_vertical, min_horizontal, max_vertical, max_horizontal,
-			       TRUE, TRUE, FALSE, FALSE, 0);
+			       true, true, false, false, 0);
   *this = *g;
   delete g;
 }
@@ -635,13 +618,13 @@ void text_glob::text_glob_tag (style *s, char *str, int length,
 {
   text_glob *g = new text_glob(s, str, length,
 			       min_vertical, min_horizontal, max_vertical, max_horizontal,
-			       TRUE, FALSE, FALSE, FALSE, 0);
+			       true, false, false, false, 0);
   *this = *g;
   delete g;
 }
 
 /*
- *  is_a_line - returns TRUE if glob should be converted into an <hr>
+ *  is_a_line - returns true if glob should be converted into an <hr>
  */
 
 int text_glob::is_a_line (void)
@@ -650,7 +633,7 @@ int text_glob::is_a_line (void)
 }
 
 /*
- *  is_a_tag - returns TRUE if glob contains a troff directive.
+ *  is_a_tag - returns true if glob contains a troff directive.
  */
 
 int text_glob::is_a_tag (void)
@@ -659,7 +642,7 @@ int text_glob::is_a_tag (void)
 }
 
 /*
- *  is_eol - returns TRUE if glob contains the tag eol
+ *  is_eol - returns true if glob contains the tag eol
  */
 
 int text_glob::is_eol (void)
@@ -668,7 +651,7 @@ int text_glob::is_eol (void)
 }
 
 /*
- *  is_eol_ce - returns TRUE if glob contains the tag eol.ce
+ *  is_eol_ce - returns true if glob contains the tag eol.ce
  */
 
 int text_glob::is_eol_ce (void)
@@ -677,7 +660,7 @@ int text_glob::is_eol_ce (void)
 }
 
 /*
- *  is_tl - returns TRUE if glob contains the tag .tl
+ *  is_tl - returns true if glob contains the tag .tl
  */
 
 int text_glob::is_tl (void)
@@ -686,7 +669,7 @@ int text_glob::is_tl (void)
 }
 
 /*
- *  is_eo_tl - returns TRUE if glob contains the tag eo.tl
+ *  is_eo_tl - returns true if glob contains the tag eo.tl
  */
 
 int text_glob::is_eo_tl (void)
@@ -695,7 +678,7 @@ int text_glob::is_eo_tl (void)
 }
 
 /*
- *  is_nf - returns TRUE if glob contains the tag .fi 0
+ *  is_nf - returns true if glob contains the tag .fi 0
  */
 
 int text_glob::is_nf (void)
@@ -706,7 +689,7 @@ int text_glob::is_nf (void)
 }
 
 /*
- *  is_fi - returns TRUE if glob contains the tag .fi 1
+ *  is_fi - returns true if glob contains the tag .fi 1
  */
 
 int text_glob::is_fi (void)
@@ -717,7 +700,7 @@ int text_glob::is_fi (void)
 }
 
 /*
- *  is_eo_h - returns TRUE if glob contains the tag .eo.h
+ *  is_eo_h - returns true if glob contains the tag .eo.h
  */
 
 int text_glob::is_eo_h (void)
@@ -726,7 +709,7 @@ int text_glob::is_eo_h (void)
 }
 
 /*
- *  is_ce - returns TRUE if glob contains the tag .ce
+ *  is_ce - returns true if glob contains the tag .ce
  */
 
 int text_glob::is_ce (void)
@@ -736,7 +719,7 @@ int text_glob::is_ce (void)
 }
 
 /*
- *  is_in - returns TRUE if glob contains the tag .in
+ *  is_in - returns true if glob contains the tag .in
  */
 
 int text_glob::is_in (void)
@@ -746,7 +729,7 @@ int text_glob::is_in (void)
 }
 
 /*
- *  is_po - returns TRUE if glob contains the tag .po
+ *  is_po - returns true if glob contains the tag .po
  */
 
 int text_glob::is_po (void)
@@ -756,7 +739,7 @@ int text_glob::is_po (void)
 }
 
 /*
- *  is_ti - returns TRUE if glob contains the tag .ti
+ *  is_ti - returns true if glob contains the tag .ti
  */
 
 int text_glob::is_ti (void)
@@ -766,7 +749,7 @@ int text_glob::is_ti (void)
 }
 
 /*
- *  is_ll - returns TRUE if glob contains the tag .ll
+ *  is_ll - returns true if glob contains the tag .ll
  */
 
 int text_glob::is_ll (void)
@@ -776,7 +759,7 @@ int text_glob::is_ll (void)
 }
 
 /*
- *  is_col - returns TRUE if glob contains the tag .col
+ *  is_col - returns true if glob contains the tag .col
  */
 
 int text_glob::is_col (void)
@@ -786,7 +769,7 @@ int text_glob::is_col (void)
 }
 
 /*
- *  is_tab_ts - returns TRUE if glob contains the tag .tab_ts
+ *  is_tab_ts - returns true if glob contains the tag .tab_ts
  */
 
 int text_glob::is_tab_ts (void)
@@ -795,7 +778,7 @@ int text_glob::is_tab_ts (void)
 }
 
 /*
- *  is_tab_te - returns TRUE if glob contains the tag .tab_te
+ *  is_tab_te - returns true if glob contains the tag .tab_te
  */
 
 int text_glob::is_tab_te (void)
@@ -804,7 +787,7 @@ int text_glob::is_tab_te (void)
 }
 
 /*
- *  is_ta - returns TRUE if glob contains the tag .ta
+ *  is_ta - returns true if glob contains the tag .ta
  */
 
 int text_glob::is_ta (void)
@@ -814,7 +797,7 @@ int text_glob::is_ta (void)
 }
 
 /*
- *  is_tab - returns TRUE if glob contains the tag tab
+ *  is_tab - returns true if glob contains the tag tab
  */
 
 int text_glob::is_tab (void)
@@ -824,7 +807,7 @@ int text_glob::is_tab (void)
 }
 
 /*
- *  is_tab0 - returns TRUE if glob contains the tag tab0
+ *  is_tab0 - returns true if glob contains the tag tab0
  */
 
 int text_glob::is_tab0 (void)
@@ -834,7 +817,7 @@ int text_glob::is_tab0 (void)
 }
 
 /*
- *  is_auto_img - returns TRUE if the glob contains an automatically
+ *  is_auto_img - returns true if the glob contains an automatically
  *                generated image.
  */
 
@@ -844,7 +827,7 @@ int text_glob::is_auto_img (void)
 }
 
 /*
- *  is_br - returns TRUE if the glob is a tag containing a .br
+ *  is_br - returns true if the glob is a tag containing a .br
  *          or an implied .br. Note that we do not include .nf or .fi
  *          as grohtml will place a .br after these commands if they
  *          should break the line.
@@ -928,7 +911,9 @@ html_table *text_glob::get_table (void)
  *  assume this is not the case.
  */
 
-struct element_list {
+class element_list
+{
+public:
   element_list *right;
   element_list *left;
   text_glob    *datum;
@@ -967,7 +952,12 @@ element_list::~element_list ()
     delete datum;
 }
 
-class list {
+class list
+{
+  element_list *head;
+  element_list *tail;
+  element_list *ptr;
+
 public:
        list             ();
       ~list             ();
@@ -989,10 +979,6 @@ public:
   text_glob            *move_right_get_data (void);
   text_glob            *move_left_get_data  (void);
   text_glob            *get_data            (void);
-private:
-  element_list *head;
-  element_list *tail;
-  element_list *ptr;
 };
 
 /*
@@ -1022,7 +1008,7 @@ list::~list()
 }
 
 /*
- *  is_less - returns TRUE if a is left of b if on the same line or
+ *  is_less - returns true if a is left of b if on the same line or
  *            if a is higher up the page than b.
  */
 
@@ -1030,9 +1016,9 @@ int list::is_less (element_list *a, element_list *b)
 {
   // was if (is_intersection(a->minv+1, a->maxv-1, b->minv+1, b->maxv-1)) {
   if (a->lineno < b->lineno) {
-    return( TRUE );
+    return( true );
   } else if (a->lineno > b->lineno) {
-    return( FALSE );
+    return( false );
   } else if (is_intersection(a->minv, a->maxv, b->minv, b->maxv)) {
     return( a->minh < b->minh );
   } else {
@@ -1103,7 +1089,7 @@ void list::sub_move_right (void)
     head = NULL;
     if (tail != NULL)
       delete tail;
-    
+
     tail = NULL;
     ptr  = NULL;
   } else {
@@ -1136,7 +1122,7 @@ void list::start_from_tail (void)
 }
 
 /*
- *  is_empty - returns TRUE if the list has no elements.
+ *  is_empty - returns true if the list has no elements.
  */
 
 int list::is_empty (void)
@@ -1145,7 +1131,7 @@ int list::is_empty (void)
 }
 
 /*
- *  is_equal_to_tail - returns TRUE if the ptr equals the tail.
+ *  is_equal_to_tail - returns true if the ptr equals the tail.
  */
 
 int list::is_equal_to_tail (void)
@@ -1154,7 +1140,7 @@ int list::is_equal_to_tail (void)
 }
 
 /*
- *  is_equal_to_head - returns TRUE if the ptr equals the head.
+ *  is_equal_to_head - returns true if the ptr equals the head.
  */
 
 int list::is_equal_to_head (void)
@@ -1228,7 +1214,7 @@ void list::insert (text_glob *in)
   else {
     if (ptr == NULL)
       ptr = head;
-    
+
     element_list *t = new element_list(in, ptr->lineno, ptr->minv, ptr->minh, ptr->maxv, ptr->maxh);
     if (ptr == tail)
       tail = t;
@@ -1255,7 +1241,8 @@ void list::move_to (text_glob *in)
  *  page class and methods
  */
 
-class page {
+class page
+{
 public:
                               page            (void);
   void                        add             (style *s, const string &str,
@@ -1479,8 +1466,11 @@ void page::dump_page(void)
  *  font classes and methods
  */
 
-class html_font : public font {
+class html_font
+: public font
+{
   html_font(const char *);
+
 public:
   int encoding_index;
   char *encoding;
@@ -1512,7 +1502,8 @@ html_font::~html_font()
  *  a simple class to contain the header to this document
  */
 
-class title_desc {
+class title_desc
+{
 public:
           title_desc ();
          ~title_desc ();
@@ -1525,7 +1516,7 @@ public:
 
 
 title_desc::title_desc ()
-  : has_been_written(FALSE), has_been_found(FALSE), with_h1(FALSE)
+  : has_been_written(false), has_been_found(false), with_h1(false)
 {
 }
 
@@ -1533,7 +1524,8 @@ title_desc::~title_desc ()
 {
 }
 
-class header_desc {
+class header_desc
+{
 public:
                             header_desc ();
                            ~header_desc ();
@@ -1617,24 +1609,8 @@ struct assert_pos {
   const char *id;
 };
 
-class assert_state {
-public:
-        assert_state ();
-        ~assert_state ();
-
-  void  addx (const char *c, const char *i, const char *v,
-	      const char *f, const char *l);
-  void  addy (const char *c, const char *i, const char *v,
-	      const char *f, const char *l);
-  void  build(const char *c, const char *v,
-	      const char *f, const char *l);
-  void  check_br (int br);
-  void  check_ce (int ce);
-  void  check_fi (int fi);
-  void  check_sp (int sp);
-  void  reset    (void);
-
-private:
+class assert_state
+{
   int check_br_flag;
   int check_ce_flag;
   int check_fi_flag;
@@ -1668,6 +1644,22 @@ private:
   int check_value_error (int c, int v, const char *s,
 			 const char *name,
 			 const char *f, const char *l, int flag);
+
+public:
+        assert_state ();
+        ~assert_state ();
+
+  void  addx (const char *c, const char *i, const char *v,
+	      const char *f, const char *l);
+  void  addy (const char *c, const char *i, const char *v,
+	      const char *f, const char *l);
+  void  build(const char *c, const char *v,
+	      const char *f, const char *l);
+  void  check_br (int br);
+  void  check_ce (int ce);
+  void  check_fi (int fi);
+  void  check_sp (int sp);
+  void  reset    (void);
 };
 
 assert_state::assert_state ()
@@ -1775,14 +1767,15 @@ void assert_state::compare(assert_pos *t,
     v++;
   while ((*s) == '=')
     s++;
-  
+
   if (strcmp(v, s) != 0) {
     if (f == NULL)
       f = "stdin";
     if (l == NULL)
       l = "<none>";
-    fprintf(stderr, "%s:%s: grohtml assertion failed at id%s expecting %s and was given %s\n",
-	    f, l, t->id, s, v);
+    fprintf(stderr,
+      "%s:%s: " L_D_HTML " assertion failed at id%s: should %s, got %s\n",
+      f, l, t->id, s, v);
   }
 }
 
@@ -1799,7 +1792,8 @@ void assert_state::close (const char *c)
   else if (strcmp(c, "ce") == 0)
     check_ce_flag = 0;
   else
-    fprintf(stderr, "internal error: unrecognised tag in grohtml (%s)\n", c);
+    fprintf(stderr, "internal error: unrecognised tag in " L_D_HTML " (%s)\n",
+      c);
 }
 
 const char *replace_negate_str (const char *before, char *after)
@@ -1890,7 +1884,8 @@ int assert_state::check_value_error (int c, int v, const char *s,
       f = "stdin";
     if (l == NULL)
       l = "<none>";
-    fprintf(stderr, "%s:%s:grohtml (troff state) assertion failed, expected %s to be %s but found it to contain %d\n",
+    fprintf(stderr,
+      "%s:%s: " L_D_HTML " assertion failed, <%s>: should %s, got %d\n",
 	    f, l, name, s, v);
     return 0;
   }
@@ -1942,7 +1937,9 @@ void assert_state::check_ce (int ce)
     check_value(val_ce, ce, "ce", file_ce, line_ce, &check_ce_flag);
 }
 
-class html_printer : public printer {
+class html_printer
+: public printer
+{
   files                file_list;
   simple_output        html;
   int                  res;
@@ -2144,7 +2141,7 @@ void html_printer::set_style(const style &sty)
 }
 
 /*
- *  is_bold - returns TRUE if font, f, is bold.
+ *  is_bold - returns true if font, f, is bold.
  */
 
 int html_printer::is_bold (font *f)
@@ -2248,8 +2245,8 @@ void html_printer::emit_raw (text_glob *g)
     current_paragraph->do_emittext(g->text_string, g->text_length);
     current_paragraph->done_para();
     next_tag        = INLINE;
-    supress_sub_sup = TRUE;
-    seen_space      = FALSE;
+    supress_sub_sup = true;
+    seen_space      = false;
     restore_troff_indent();
   }
 }
@@ -2275,7 +2272,7 @@ void html_printer::handle_tag_within_title (text_glob *g)
 void html_printer::do_center (char *arg)
 {
   next_center = atoi(arg);
-  seen_center = TRUE;
+  seen_center = true;
 }
 
 /*
@@ -2309,7 +2306,7 @@ void html_printer::do_left_image (void)
 }
 
 /*
- *  exists - returns TRUE if filename exists.
+ *  exists - returns true if filename exists.
  */
 
 static int exists (const char *filename)
@@ -2317,10 +2314,10 @@ static int exists (const char *filename)
   FILE *fp = fopen(filename, "r");
 
   if (fp == 0) {
-    return( FALSE );
+    return( false );
   } else {
     fclose(fp);
-    return( TRUE );
+    return( true );
   }
 }
 
@@ -2356,7 +2353,7 @@ static string &generate_img_src (const char *filename)
 void html_printer::do_auto_image (text_glob *g, const char *filename)
 {
   string buffer = generate_img_src(filename);
-  
+
   if (! buffer.empty()) {
     /*
      *  utilize emit_raw by creating a new text_glob.
@@ -2392,20 +2389,20 @@ void html_printer::do_title (void)
   int           removed_from_head;
 
   if (page_number == 1) {
-    int found_title_start  = FALSE;
+    int found_title_start  = false;
     if (! page_contents->glyphs.is_empty()) {
       page_contents->glyphs.sub_move_right();       /* move onto next word */
       do {
 	t = page_contents->glyphs.get_data();
-	removed_from_head = FALSE;
+	removed_from_head = false;
 	if (t->is_auto_img()) {
 	  string img = generate_img_src((char *)(t->text_string + 20));
 
 	  if (! img.empty()) {
 	    if (found_title_start)
 	      title.text += " ";
-	    found_title_start = TRUE;
-	    title.has_been_found = TRUE;
+	    found_title_start = true;
+	    title.has_been_found = true;
 	    title.text += img;
 	  }
 	  page_contents->glyphs.sub_move_right(); 	  /* move onto next word */
@@ -2414,7 +2411,7 @@ void html_printer::do_title (void)
 	} else if (t->is_eo_tl()) {
 	  /* end of title found
 	   */
-	  title.has_been_found = TRUE;
+	  title.has_been_found = true;
 	  return;
 	} else if (t->is_a_tag()) {
 	  handle_tag_within_title(t);
@@ -2428,8 +2425,8 @@ void html_printer::do_title (void)
 			       (page_contents->glyphs.is_equal_to_head()));
 	} else {
 	  title.text += string(t->text_string, t->text_length);
-	  found_title_start    = TRUE;
-	  title.has_been_found = TRUE;
+	  found_title_start    = true;
+	  title.has_been_found = true;
 	  page_contents->glyphs.sub_move_right(); 	  /* move onto next word */
 	  removed_from_head = ((!page_contents->glyphs.is_empty()) &&
 			       (page_contents->glyphs.is_equal_to_head()));
@@ -2497,7 +2494,7 @@ void html_printer::write_header (void)
 
     // firstly we must terminate any font and type faces
     current_paragraph->done_para();
-    supress_sub_sup = TRUE;
+    supress_sub_sup = true;
 
     if (cutoff_heading+2 > header.header_level) {
       // now we save the header so we can issue a list of links
@@ -2612,10 +2609,10 @@ void html_printer::do_heading (char *arg)
 	string img=generate_img_src((char *)(g->text_string + 20));
 
 	if (! img.empty()) {
-	  simple_anchors = TRUE;  // we cannot use full heading anchors with images
+	  simple_anchors = true;  // we cannot use full heading anchors with images
 	  if (horiz < g->minh)
 	    header.header_buffer += " ";
-	  
+
 	  header.header_buffer += img;
 	}
       }
@@ -2655,13 +2652,13 @@ void html_printer::do_heading (char *arg)
 }
 
 /*
- *  is_courier_until_eol - returns TRUE if we can see a whole line which is courier
+ *  is_courier_until_eol - returns true if we can see a whole line which is courier
  */
 
 int html_printer::is_courier_until_eol (void)
 {
   text_glob *orig = page_contents->glyphs.get_data();
-  int result      = TRUE;
+  int result      = true;
   text_glob *g;
 
   if (! page_contents->glyphs.is_equal_to_tail()) {
@@ -2669,12 +2666,12 @@ int html_printer::is_courier_until_eol (void)
     do {
       g = page_contents->glyphs.get_data();
       if (! g->is_a_tag() && (! is_font_courier(g->text_style.f)))
-	result = FALSE;
+	result = false;
       page_contents->glyphs.move_right();
     } while (result &&
 	     (! page_contents->glyphs.is_equal_to_head()) &&
 	     (! g->is_fi()) && (! g->is_eol()));
-    
+
     /*
      *  now restore our previous position.
      */
@@ -2694,7 +2691,7 @@ void html_printer::do_linelength (char *arg)
     max_linelength = atoi(arg);
 
   next_linelength = atoi(arg);
-  seen_linelength = TRUE;
+  seen_linelength = true;
 }
 
 /*
@@ -2704,7 +2701,7 @@ void html_printer::do_linelength (char *arg)
 void html_printer::do_pageoffset (char *arg)
 {
   next_pageoffset = atoi(arg);
-  seen_pageoffset = TRUE;
+  seen_pageoffset = true;
 }
 
 /*
@@ -2726,7 +2723,7 @@ int html_printer::get_troff_indent (void)
 void html_printer::do_indentation (char *arg)
 {
   next_indent = atoi(arg);
-  seen_indent = TRUE;
+  seen_indent = true;
 }
 
 /*
@@ -2770,9 +2767,9 @@ void html_printer::do_indent (int in, int pageoff, int linelen)
   if ((device_indent != -1) &&
       (pageoffset+device_indent != in+pageoff)) {
 
-    int space = current_paragraph->retrieve_para_space() || seen_space;    
+    int space = current_paragraph->retrieve_para_space() || seen_space;
     current_paragraph->done_para();
-      
+
     device_indent = in;
     pageoffset  = pageoff;
     if (linelen <= max_linelength)
@@ -2841,9 +2838,9 @@ void html_printer::do_pointsize (char *arg)
 void html_printer::do_fill (char *arg)
 {
   int on = atoi(arg);
-      
+
   output_hpos = get_troff_indent()+pageoffset;
-  supress_sub_sup = TRUE;
+  supress_sub_sup = true;
 
   if (fill_on != on) {
     if (on)
@@ -2875,12 +2872,12 @@ void html_printer::do_eol (void)
 void html_printer::do_check_center(void)
 {
   if (seen_center) {
-    seen_center = FALSE;
+    seen_center = false;
     if (next_center > 0) {
       if (end_center == 0) {
 	int space = current_paragraph->retrieve_para_space() || seen_space;
 	current_paragraph->done_para();
-	supress_sub_sup = TRUE;
+	supress_sub_sup = true;
 	if (dialect == html4)
 	  current_paragraph->do_para("align=\"center\"", space);
 	else
@@ -2896,7 +2893,7 @@ void html_printer::do_check_center(void)
 	   */
 	  int space = current_paragraph->retrieve_para_space() || seen_space;
 	  current_paragraph->done_para();
-	  supress_sub_sup = TRUE;
+	  supress_sub_sup = true;
 	  if (dialect == html4)
 	    current_paragraph->do_para("align=\"center\"", space);
 	  else
@@ -2914,7 +2911,7 @@ void html_printer::do_check_center(void)
       if (end_center > 0) {
 	seen_space = seen_space || current_paragraph->retrieve_para_space();
 	current_paragraph->done_para();
-	supress_sub_sup = TRUE;
+	supress_sub_sup = true;
 	current_paragraph->do_para("", seen_space);
       }
     end_center = next_center;
@@ -2931,11 +2928,11 @@ void html_printer::do_eol_ce (void)
     if (end_center > 1)
       if (current_paragraph->emitted_text())
 	current_paragraph->do_break();
-    
+
     end_center--;
     if (end_center == 0) {
       current_paragraph->done_para();
-      supress_sub_sup = TRUE;
+      supress_sub_sup = true;
     }
   }
 }
@@ -2950,20 +2947,20 @@ void html_printer::do_flush (void)
 }
 
 /*
- *  do_links - moves onto a new temporary file and sets auto_links to FALSE.
+ *  do_links - moves onto a new temporary file and sets auto_links to false.
  */
 
 void html_printer::do_links (void)
 {
   html.end_line();                      // flush line
-  auto_links = FALSE;   /* from now on only emit under user request */
+  auto_links = false;   /* from now on only emit under user request */
   file_list.add_new_file(xtmpfile());
   file_list.set_links_required();
   html.set_file(file_list.get_file());
 }
 
 /*
- *  insert_split_file - 
+ *  insert_split_file -
  */
 
 void html_printer::insert_split_file (void)
@@ -2995,7 +2992,7 @@ void html_printer::insert_split_file (void)
 void html_printer::do_job_name (char *name)
 {
   if (! multiple_files) {
-    multiple_files = TRUE;
+    multiple_files = true;
     while (name != NULL && (*name != (char)0) && (*name == ' '))
       name++;
     job_name = name;
@@ -3022,13 +3019,13 @@ void html_printer::do_head (char *name)
 
 void html_printer::do_break (void)
 {
-  int seen_temp_indent = FALSE;
+  int seen_temp_indent = false;
 
   current_paragraph->do_break();
   if (end_tempindent > 0) {
     end_tempindent--;
     if (end_tempindent > 0)
-      seen_temp_indent = TRUE;
+      seen_temp_indent = true;
   }
   if (seen_indent || seen_pageoffset || seen_linelength || seen_temp_indent) {
     if (seen_indent && (! seen_temp_indent))
@@ -3040,11 +3037,11 @@ void html_printer::do_break (void)
     do_indent(get_troff_indent(), next_pageoffset, next_linelength);
   }
   seen_indent     = seen_temp_indent;
-  seen_linelength = FALSE;
-  seen_pageoffset = FALSE;
+  seen_linelength = false;
+  seen_pageoffset = false;
   do_check_center();
   output_hpos     = get_troff_indent()+pageoffset;
-  supress_sub_sup = TRUE;
+  supress_sub_sup = true;
 }
 
 void html_printer::do_space (char *arg)
@@ -3055,14 +3052,14 @@ void html_printer::do_space (char *arg)
   as.check_sp(seen_space);
 #if 0
   if (n>0 && table)
-    table->set_space(TRUE);
+    table->set_space(true);
 #endif
 
   while (n>0) {
     current_paragraph->do_space();
     n--;
   }
-  supress_sub_sup = TRUE;
+  supress_sub_sup = true;
 }
 
 /*
@@ -3088,9 +3085,9 @@ void html_printer::do_tab_ts (text_glob *g)
 #if 0
     t->emit_table_header(seen_space);
 #else
-    t->emit_table_header(FALSE);
+    t->emit_table_header(false);
     row_space = current_paragraph->retrieve_para_space() || seen_space;
-    seen_space = FALSE;
+    seen_space = false;
 #endif
   }
 
@@ -3205,15 +3202,15 @@ void html_printer::troff_tag (text_glob *g)
     do_auto_image(g, a);
   } else if (strncmp(t, ".ce", 3) == 0) {
     char *a = (char *)t+3;
-    supress_sub_sup = TRUE;
+    supress_sub_sup = true;
     do_center(a);
   } else if (g->is_tl()) {
-    supress_sub_sup = TRUE;
-    title.with_h1 = TRUE;
+    supress_sub_sup = true;
+    title.with_h1 = true;
     do_title();
   } else if (strncmp(t, ".html-tl", 8) == 0) {
-    supress_sub_sup = TRUE;
-    title.with_h1 = FALSE;
+    supress_sub_sup = true;
+    title.with_h1 = false;
     do_title();
   } else if (strncmp(t, ".fi", 3) == 0) {
     char *a = (char *)t+3;
@@ -3248,7 +3245,7 @@ void html_printer::troff_tag (text_glob *g)
     char *a = (char *)t+5;
     do_head(a);
   } else if (strcmp(t, ".no-auto-rule") == 0) {
-    auto_rule = FALSE;
+    auto_rule = false;
   } else if (strcmp(t, ".tab-ts") == 0) {
     do_tab_ts(g);
   } else if (strcmp(t, ".tab-te") == 0) {
@@ -3278,7 +3275,7 @@ void html_printer::do_math (text_glob *g)
 }
 
 /*
- *  is_in_middle - returns TRUE if the positions left..right are in the center of the page.
+ *  is_in_middle - returns true if the positions left..right are in the center of the page.
  */
 
 int html_printer::is_in_middle (int left, int right)
@@ -3343,12 +3340,12 @@ int html_printer::calc_nf (text_glob *g, int nf)
 {
   if (g != NULL) {
     if (g->is_fi()) {
-      as.check_fi(TRUE);
-      return FALSE;
+      as.check_fi(true);
+      return false;
     }
     if (g->is_nf()) {
-      as.check_fi(FALSE);
-      return TRUE;
+      as.check_fi(false);
+      return true;
     }
   }
   as.check_fi(! nf);
@@ -3470,7 +3467,7 @@ void html_printer::remove_tabs (void)
 	page_contents->glyphs.move_right();
     } while ((! page_contents->glyphs.is_equal_to_head()) &&
 	     (! g->is_eol()));
-    
+
     /*
      *  now restore our previous position.
      */
@@ -3482,13 +3479,13 @@ void html_printer::remove_tabs (void)
 void html_printer::remove_courier_tabs (void)
 {
   text_glob  *g;
-  int line_start = TRUE;
-  int nf         = FALSE;
+  int line_start = true;
+  int nf         = false;
 
   if (! page_contents->glyphs.is_empty()) {
     page_contents->glyphs.start_from_head();
     as.reset();
-    line_start = TRUE;
+    line_start = true;
     do {
       g = page_contents->glyphs.get_data();
       handle_state_assertion(g);
@@ -3512,9 +3509,9 @@ void html_printer::insert_tab0_foreach_tab (void)
 {
   text_glob  *start_of_line  = NULL;
   text_glob  *g              = NULL;
-  int seen_tab               = FALSE;
-  int seen_col               = FALSE;
-  int nf                     = FALSE;
+  int seen_tab               = false;
+  int seen_col               = false;
+  int nf                     = false;
 
   if (! page_contents->glyphs.is_empty()) {
     page_contents->glyphs.start_from_head();
@@ -3526,10 +3523,10 @@ void html_printer::insert_tab0_foreach_tab (void)
       nf = calc_nf(g, nf);
 
       if (g->is_tab())
-	seen_tab = TRUE;
-      
+	seen_tab = true;
+
       if (g->is_col())
-	seen_col = TRUE;
+	seen_col = true;
 
       if (g->is_br() || (nf && g->is_eol())) {
 	do {
@@ -3549,8 +3546,8 @@ void html_printer::insert_tab0_foreach_tab (void)
 	  page_contents->glyphs.move_to(g);
 	}
 
-	seen_tab = FALSE;
-	seen_col = FALSE;
+	seen_tab = false;
+	seen_col = false;
 	start_of_line = g;
       }
       page_contents->glyphs.move_right();
@@ -3569,7 +3566,7 @@ void html_printer::insert_tab0_foreach_tab (void)
 void html_printer::update_min_max (colType type_of_col, int *minimum, int *maximum, text_glob *g)
 {
   switch (type_of_col) {
-    
+
   case tab_tag:
     break;
   case tab0_tag:
@@ -3615,15 +3612,15 @@ void html_printer::lookahead_for_tables (void)
   text_glob  *last           = NULL;
   colType     type_of_col    = none;
   int         left           = 0;
-  int         found_col      = FALSE;
-  int         seen_text      = FALSE;
+  int         found_col      = false;
+  int         seen_text      = false;
   int         ncol           = 0;
   int         colmin         = 0;		// pacify compiler
   int         colmax         = 0;		// pacify compiler
   html_table *tbl            = new html_table(&html, -1);
   const char *tab_defs       = NULL;
   char        align          = 'L';
-  int         nf             = FALSE;
+  int         nf             = false;
   int         old_pageoffset = pageoffset;
 
   remove_courier_tabs();
@@ -3646,14 +3643,14 @@ void html_printer::lookahead_for_tables (void)
       }
 
       start_of_line = g;
-      seen_text = FALSE;
+      seen_text = false;
       ncol = 0;
       left = next_horiz_pos(g, nf);
       if (found_col)
 	last = g;
-      found_col = FALSE;
+      found_col = false;
     }
-    
+
     do {
 #if defined(DEBUG_TABLES)
       fprintf(stderr, " [") ;
@@ -3679,7 +3676,7 @@ void html_printer::lookahead_for_tables (void)
 	  last = NULL;
 	}
 	type_of_col = col_tag;
-	found_col = TRUE;
+	found_col = true;
 	ncol = g->get_arg();
 	align = 'L';
 	colmin = 0;
@@ -3714,17 +3711,17 @@ void html_printer::lookahead_for_tables (void)
 	update_min_max(type_of_col, &colmin, &colmax, g);
 
       if ((! g->is_a_tag()) || g->is_tab())
-	seen_text = TRUE;
+	seen_text = true;
 
       if ((g->is_col() || g->is_tab() || g->is_tab0())
 	  && (start_of_line != NULL) && (start_of_table == NULL)) {
 	start_of_table = insert_tab_ts(start_of_line);
 	start_of_line = NULL;
-	seen_text = FALSE;
+	seen_text = false;
       } else if (g->is_ce() && (start_of_table != NULL)) {
 	add_table_end("*** CE ***");
 	start_of_table->remember_table(tbl);
- 	tbl = new html_table(&html, -1);
+	tbl = new html_table(&html, -1);
 	start_of_table = NULL;
 	last = NULL;
       } else if (g->is_ta()) {
@@ -3761,7 +3758,7 @@ void html_printer::lookahead_for_tables (void)
 	  last = NULL;
 	}
       }
-      
+
       /*
        *  move onto next glob, check whether we are starting a new line
        */
@@ -3773,7 +3770,7 @@ void html_printer::lookahead_for_tables (void)
 	  page_contents->glyphs.start_from_head();
 	  as.reset();
 	  last = g;
-	  found_col = FALSE;
+	  found_col = false;
 	}
       } else if (g->is_br() || (nf && g->is_eol())) {
 	do {
@@ -3782,12 +3779,12 @@ void html_printer::lookahead_for_tables (void)
 	  nf = calc_nf(g, nf);
 	} while ((g != NULL) && (g->is_br() || (nf && g->is_eol())));
 	start_of_line = g;
-	seen_text = FALSE;
+	seen_text = false;
 	ncol = 0;
 	left = next_horiz_pos(g, nf);
 	if (found_col)
 	  last = g;
-	found_col = FALSE;
+	found_col = false;
       }
     } while ((g != NULL) && (! page_contents->glyphs.is_equal_to_head()));
 
@@ -3804,7 +3801,7 @@ void html_printer::lookahead_for_tables (void)
       insert_tab_te();
       start_of_table->remember_table(tbl);
       tbl = NULL;
-      page_contents->insert_tag(string("*** LAST ***"));      
+      page_contents->insert_tag(string("*** LAST ***"));
     }
   }
   if (tbl != NULL) {
@@ -3821,7 +3818,7 @@ void html_printer::lookahead_for_tables (void)
 
 void html_printer::flush_page (void)
 {
-  supress_sub_sup = TRUE;
+  supress_sub_sup = true;
   flush_sbuf();
   page_contents->dump_page();
   lookahead_for_tables();
@@ -3830,7 +3827,7 @@ void html_printer::flush_page (void)
   flush_globs();
   current_paragraph->done_para();
   current_paragraph->flush_text();
-  
+
   // move onto a new page
   delete page_contents;
 #if defined(DEBUG_TABLES)
@@ -3864,13 +3861,13 @@ void html_printer::determine_space (text_glob *g)
 }
 
 /*
- *  is_line_start - returns TRUE if we are at the start of a line.
+ *  is_line_start - returns true if we are at the start of a line.
  */
 
 int html_printer::is_line_start (int nf)
 {
-  int line_start  = FALSE;
-  int result      = TRUE;
+  int line_start  = false;
+  int result      = true;
   text_glob *orig = page_contents->glyphs.get_data();
   text_glob *g;
 
@@ -3880,9 +3877,9 @@ int html_printer::is_line_start (int nf)
       g = page_contents->glyphs.get_data();
       result = g->is_a_tag();
       if (g->is_fi())
-	nf = FALSE;
+	nf = false;
       else if (g->is_nf())
-	nf = TRUE;
+	nf = true;
       line_start = g->is_col() || g->is_br() || (nf && g->is_eol());
     } while ((!line_start) && (result));
     /*
@@ -3895,7 +3892,7 @@ int html_printer::is_line_start (int nf)
 }
 
 /*
- *  is_font_courier - returns TRUE if the font, f, is courier.
+ *  is_font_courier - returns true if the font, f, is courier.
  */
 
 int html_printer::is_font_courier (font *f)
@@ -3905,7 +3902,7 @@ int html_printer::is_font_courier (font *f)
 
     return( (fontname != 0) && (fontname[0] == 'C') );
   }
-  return FALSE;
+  return false;
 }
 
 /*
@@ -4047,7 +4044,7 @@ void html_printer::do_font (text_glob *g)
 }
 
 /*
- *  start_subscript - returns TRUE if, g, looks like a subscript start.
+ *  start_subscript - returns true if, g, looks like a subscript start.
  */
 
 int html_printer::start_subscript (text_glob *g)
@@ -4062,7 +4059,7 @@ int html_printer::start_subscript (text_glob *g)
 }
 
 /*
- *  start_superscript - returns TRUE if, g, looks like a superscript start.
+ *  start_superscript - returns true if, g, looks like a superscript start.
  */
 
 int html_printer::start_superscript (text_glob *g)
@@ -4077,7 +4074,7 @@ int html_printer::start_superscript (text_glob *g)
 }
 
 /*
- *  end_subscript - returns TRUE if, g, looks like the end of a subscript.
+ *  end_subscript - returns true if, g, looks like the end of a subscript.
  */
 
 int html_printer::end_subscript (text_glob *g)
@@ -4092,7 +4089,7 @@ int html_printer::end_subscript (text_glob *g)
 }
 
 /*
- *  end_superscript - returns TRUE if, g, looks like the end of a superscript.
+ *  end_superscript - returns true if, g, looks like the end of a superscript.
  */
 
 int html_printer::end_superscript (text_glob *g)
@@ -4141,7 +4138,7 @@ void html_printer::do_end_para (text_glob *g)
   output_vpos     = g->minv;
   output_hpos     = g->maxh;
   output_vpos_max = g->maxv;
-  supress_sub_sup = FALSE;
+  supress_sub_sup = false;
 }
 
 /*
@@ -4156,7 +4153,7 @@ void html_printer::emit_html (text_glob *g)
   output_vpos     = g->minv;
   output_hpos     = g->maxh;
   output_vpos_max = g->maxv;
-  supress_sub_sup = FALSE;
+  supress_sub_sup = false;
 }
 
 /*
@@ -4179,12 +4176,12 @@ void html_printer::flush_sbuf()
 		       line_number,
 		       sbuf_vpos-sbuf_style.point_size*r/72, sbuf_start_hpos,
 		       sbuf_vpos                           , sbuf_end_hpos);
-	     
+
     output_hpos = sbuf_end_hpos;
     output_vpos = sbuf_vpos;
     last_sbuf_length = 0;
     sbuf_prev_hpos = sbuf_end_hpos;
-    overstrike_detected = FALSE;
+    overstrike_detected = false;
     sbuf.clear();
   }
 }
@@ -4260,7 +4257,7 @@ html_printer::html_printer()
 : html(0, MAX_LINE_LENGTH),
   no_of_printed_pages(0),
   last_sbuf_length(0),
-  overstrike_detected(FALSE),
+  overstrike_detected(false),
   output_hpos(-1),
   output_vpos(-1),
   output_vpos_max(-1),
@@ -4268,14 +4265,14 @@ html_printer::html_printer()
   inside_font_style(0),
   page_number(0),
   header_indent(-1),
-  supress_sub_sup(TRUE),
+  supress_sub_sup(true),
   cutoff_heading(100),
   indent(NULL),
   table(NULL),
   end_center(0),
   end_tempindent(0),
   next_tag(INLINE),
-  fill_on(TRUE),
+  fill_on(true),
   max_linelength(-1),
   linelength(0),
   pageoffset(0),
@@ -4285,18 +4282,18 @@ html_printer::html_printer()
   pointsize(base_point_size),
   line_number(0),
   background(default_background),
-  seen_indent(FALSE),
+  seen_indent(false),
   next_indent(0),
-  seen_pageoffset(FALSE),
+  seen_pageoffset(false),
   next_pageoffset(0),
-  seen_linelength(FALSE),
+  seen_linelength(false),
   next_linelength(0),
-  seen_center(FALSE),
+  seen_center(false),
   next_center(0),
   seen_space(0),
   seen_break(0),
   current_column(0),
-  row_space(FALSE)
+  row_space(false)
 {
   file_list.add_new_file(xtmpfile());
   html.set_file(file_list.get_file());
@@ -4344,10 +4341,10 @@ void html_printer::add_to_sbuf (glyph *g, const string &s)
       html_glyph = get_html_entity(sbuf_style.f->get_code(g));
     else
       html_glyph = NULL;
-    
+
     if ((html_glyph == NULL) && (code >= UNICODE_DESC_START))
       html_glyph = to_unicode(code);
-  } else 
+  } else
     html_glyph = get_html_translation(sbuf_style.f, s);
 
   last_sbuf_length = sbuf.length();
@@ -4370,7 +4367,7 @@ int html_printer::sbuf_continuation (glyph *g, const char *name,
     add_to_sbuf(g, name);
     sbuf_prev_hpos = sbuf_end_hpos;
     sbuf_end_hpos += w + sbuf_kern;
-    return TRUE;
+    return true;
   } else {
     if ((env->hpos >= sbuf_end_hpos) &&
 	((sbuf_kern == 0) || (sbuf_end_hpos - sbuf_kern != env->hpos))) {
@@ -4382,11 +4379,11 @@ int html_printer::sbuf_continuation (glyph *g, const char *name,
 	add_to_sbuf(g, name);
 	sbuf_prev_hpos = sbuf_end_hpos;
 	sbuf_end_hpos = env->hpos + w;
-	return TRUE;
+	return true;
       }
     }
   }
-  return FALSE ;
+  return false ;
 }
 
 /*
@@ -4665,11 +4662,11 @@ static const char *get_html_entity (unsigned int code)
     }
   }
 }
- 
+
 /*
- *  overstrike - returns TRUE if the glyph (i, name) is going to overstrike
+ *  overstrike - returns true if the glyph (i, name) is going to overstrike
  *               a previous glyph in sbuf.
- *               If TRUE the font is changed to bold and the previous sbuf
+ *               If true the font is changed to bold and the previous sbuf
  *               is flushed.
  */
 
@@ -4685,19 +4682,19 @@ int html_printer::overstrike(glyph *g, const char *name, const environment *env,
       sbuf.set_length(last_sbuf_length);
       add_to_sbuf(g, name);
       sbuf_end_hpos = env->hpos + w;
-      return TRUE;
+      return true;
     } else {
       /* first time we have detected an overstrike in the sbuf */
       sbuf.set_length(last_sbuf_length); /* remove previous glyph */
       if (! is_bold(sbuf_style.f))
 	flush_sbuf();
-      overstrike_detected = TRUE;
+      overstrike_detected = true;
       add_to_sbuf(g, name);
       sbuf_end_hpos = env->hpos + w;
-      return TRUE;
+      return true;
     }
   }
-  return FALSE ;
+  return false ;
 }
 
 /*
@@ -4720,7 +4717,7 @@ void html_printer::set_char(glyph *g, font *f, const environment *env,
       && (sbuf_continuation(g, name, env, w)
 	  || overstrike(g, name, env, w)))
     return;
-  
+
   flush_sbuf();
   if (sbuf_style.f == NULL)
     sbuf_style = sty;
@@ -4819,7 +4816,7 @@ void html_printer::write_title (int in_head)
       html.put_string(title.text);
       html.put_string("</title>").nl().nl();
     } else {
-      title.has_been_written = TRUE;
+      title.has_been_written = true;
       if (title.with_h1) {
 	if (dialect == xhtml)
 	  html.put_string("<h1>");
@@ -4867,7 +4864,7 @@ void html_printer::begin_page(int n)
   output_vpos_max        = -1;
   current_paragraph      = new html_text(&html, dialect);
   do_indent(get_troff_indent(), pageoffset, linelength);
-  current_paragraph->do_para("", FALSE);
+  current_paragraph->do_para("", false);
 }
 
 void html_printer::end_page(int)
@@ -4920,27 +4917,27 @@ void html_printer::emit_link (const string &to, const char *name)
 void html_printer::write_navigation (const string &top, const string &prev,
 				     const string &next, const string &current)
 {
-  int need_bar = FALSE;
+  int need_bar = false;
 
   if (multiple_files) {
     current_paragraph->done_para();
     write_rule();
-    if (groff_sig)
+    if (roff_sig)
       fputs("\n\n<table width=\"100%\" border=\"0\" rules=\"none\"\n"
 	    "frame=\"void\" cellspacing=\"1\" cellpadding=\"0\">\n"
 	    "<colgroup><col class=\"left\"></col><col class=\"right\"></col></colgroup>\n"
 	    "<tr><td class=\"left\">", stdout);
-    handle_valid_flag(FALSE);
+    handle_valid_flag(false);
     fputs("[ ", stdout);
     if ((strcmp(prev.contents(), "") != 0) && prev != top && prev != current) {
       emit_link(prev, "prev");
-      need_bar = TRUE;
+      need_bar = true;
     }
     if ((strcmp(next.contents(), "") != 0) && next != top && next != current) {
       if (need_bar)
 	fputs(" | ", stdout);
       emit_link(next, "next");
-      need_bar = TRUE;
+      need_bar = true;
     }
     if (top != "<standard input>" && (strcmp(top.contents(), "") != 0) && top != current) {
       if (need_bar)
@@ -4949,14 +4946,12 @@ void html_printer::write_navigation (const string &top, const string &prev,
     }
     fputs(" ]\n", stdout);
 
-    if (groff_sig) {
-      fputs("</td><td class=\"right\"><i><small>"
-	    "This document was produced using "
-	    "<a href=\"http://www.gnu.org/software/groff/\">"
-	    "groff-", stdout);
-      fputs(Version_string, stdout);
-      fputs("</a>.</small></i></td></tr></table>\n", stdout);
-    }
+    if (roff_sig)
+      fputs("</td><td class=\"right\"><small>"
+	      "This document was produced using "
+	      "<a href=\"" ROFF_URL "\">" T_ROFF " v" VERSION
+        "</a>.</small></td></tr></table>\n",
+        stdout);
     write_rule();
   }
 }
@@ -4994,7 +4989,7 @@ void html_printer::do_file_components (void)
       fatal("fseek on temporary file failed");
     html.copy_file(file_list.get_file());
     fclose(file_list.get_file());
-    
+
     file_list.move_next();
     if (file_list.is_new_output_file()) {
 #ifdef LONG_FOR_TIME_T
@@ -5017,11 +5012,7 @@ void html_printer::do_file_components (void)
       if (dialect == xhtml)
 	writeHeadMetaStyle();
 
-      html.begin_comment("Creator     : ")
-	.put_string("groff ")
-	.put_string("version ")
-	.put_string(Version_string)
-	.end_comment();
+  html.begin_comment("Creator     : " T_ROFF " version " VERSION).end_comment();
 
       t = time(0);
       html.begin_comment("CreationDate: ")
@@ -5040,7 +5031,7 @@ void html_printer::do_file_components (void)
       write_navigation(top, prev, next, current);
     }
     if (file_list.are_links_required())
-      header.write_headings(stdout, TRUE);
+      header.write_headings(stdout, true);
   }
   if (fragment_no > 1)
     write_navigation(top, prev, next, current);
@@ -5048,20 +5039,18 @@ void html_printer::do_file_components (void)
     current_paragraph->done_para();
     write_rule();
     if (valid_flag) {
-      if (groff_sig)
+      if (roff_sig)
 	fputs("\n\n<table width=\"100%\" border=\"0\" rules=\"none\"\n"
 	      "frame=\"void\" cellspacing=\"1\" cellpadding=\"0\">\n"
 	      "<colgroup><col class=\"left\"></col><col class=\"right\"></col></colgroup>\n"
 	      "<tr><td class=\"left\">", stdout);
-      handle_valid_flag(TRUE);
-      if (groff_sig) {
-	fputs("</td><td class=\"right\"><i><small>"
-	      "This document was produced using "
-	      "<a href=\"http://www.gnu.org/software/groff/\">"
-	      "groff-", stdout);
-	fputs(Version_string, stdout);
-	fputs("</a>.</small></i></td></tr></table>\n", stdout);
-      }
+      handle_valid_flag(true);
+      if (roff_sig)
+        fputs("</td><td class=\"right\"><small>"
+          "This document was produced using "
+          "<a href=\"" ROFF_URL "\">" T_ROFF " v" VERSION
+          "</a>.</small></td></tr></table>\n",
+          stdout);
       write_rule();
     }
   }
@@ -5080,7 +5069,7 @@ void html_printer::writeHeadMetaStyle (void)
     fputs("<html>\n", stdout);
     fputs("<head>\n", stdout);
     fputs("<meta name=\"generator\" "
-	  "content=\"groff -Thtml, see www.gnu.org\">\n", stdout);
+	  "content=\"" L_ROFF " -Thtml, see " ROFF_URL "\">\n", stdout);
     fputs("<meta http-equiv=\"Content-Type\" "
 	  "content=\"text/html; charset=US-ASCII\">\n", stdout);
     fputs("<meta name=\"Content-Style\" content=\"text/css\">\n", stdout);
@@ -5096,7 +5085,7 @@ void html_printer::writeHeadMetaStyle (void)
 	  stdout);
     fputs("<head>\n", stdout);
     fputs("<meta name=\"generator\" "
-	  "content=\"groff -Txhtml, see www.gnu.org\"/>\n", stdout);
+	  "content=\"" L_ROFF " -Txhtml, see " ROFF_URL "\"/>\n", stdout);
     fputs("<meta http-equiv=\"Content-Type\" "
 	  "content=\"text/html; charset=US-ASCII\"/>\n", stdout);
     fputs("<meta name=\"Content-Style\" content=\"text/css\"/>\n", stdout);
@@ -5130,11 +5119,7 @@ html_printer::~html_printer()
   if (dialect == xhtml)
     writeHeadMetaStyle();
 
-  html.begin_comment("Creator     : ")
-    .put_string("groff ")
-    .put_string("version ")
-    .put_string(Version_string)
-    .end_comment();
+  html.begin_comment("Creator     : " T_ROFF " version " VERSION).end_comment();
 
   t = time(0);
   html.begin_comment("CreationDate: ")
@@ -5144,14 +5129,14 @@ html_printer::~html_printer()
   if (dialect == html4)
     writeHeadMetaStyle();
 
-  write_title(TRUE);
+  write_title(true);
   head_info += '\0';
   fputs(head_info.contents(), stdout);
   fputs("</head>\n", stdout);
   do_body();
 
-  write_title(FALSE);
-  header.write_headings(stdout, FALSE);
+  write_title(false);
+  header.write_headings(stdout, false);
   write_rule();
 #if defined(DEBUGGING)
   html.begin_comment("Total number of pages: ").put_string(i_to_a(no_of_printed_pages)).end_comment();
@@ -5224,7 +5209,8 @@ char *make_val (char *s, int v, char *id, char *f, char *l)
 	f = (char *)"stdin";
       if (l == NULL)
 	l = (char *)"<none>";
-      fprintf(stderr, "%s:%s: grohtml assertion failed at id%s expecting %d and was given %s\n",
+      fprintf(stderr,
+        "%s:%s: " L_D_HTML " assertion failed at id%s; should: %d; got: %s\n",
 	      f, l, id, v, s);
     }
     return s;
@@ -5302,7 +5288,7 @@ void html_printer::special(char *s, const environment *env, char type)
       font *f=sbuf_style.f;
 
       if (f == NULL) {
-	int found=FALSE;
+	int found=false;
 
 	f = font::load_font("TR", &found);
       }
@@ -5314,7 +5300,7 @@ void html_printer::special(char *s, const environment *env, char type)
 				    line_number,
 				    env->vpos-env->size*r/72, env->hpos,
 				    env->vpos               , env->hpos,
-				    FALSE);
+				    false);
 
       /*
        * assume that the html command has no width, if it does then
@@ -5330,7 +5316,7 @@ void html_printer::special(char *s, const environment *env, char type)
       string t;
 
       if (f == NULL) {
-	int found=FALSE;
+	int found=false;
 
 	f = font::load_font("TR", &found);
       }
@@ -5353,7 +5339,7 @@ void html_printer::special(char *s, const environment *env, char type)
 				    line_number,
 				    env->vpos-env->size*r/72, env->hpos,
 				    env->vpos               , env->hpos,
-				    TRUE);
+				    true);
 
       /*
        * assume that the html command has no width, if it does then
@@ -5490,7 +5476,7 @@ int main(int argc, char **argv)
       break;
     case 'h':
       /* do not use the Hn headings of html, but manufacture our own */
-      manufacture_headings = TRUE;
+      manufacture_headings = true;
       break;
     case 'i':
       /* handled by pre-html */
@@ -5499,14 +5485,14 @@ int main(int argc, char **argv)
       /* handled by pre-html */
       break;
     case 'j':
-      multiple_files = TRUE;
+      multiple_files = true;
       job_name = optarg;
       break;
     case 'l':
-      auto_links = FALSE;
+      auto_links = false;
       break;
     case 'n':
-      simple_anchors = TRUE;
+      simple_anchors = true;
       break;
     case 'o':
       /* handled by pre-html */
@@ -5515,7 +5501,7 @@ int main(int argc, char **argv)
       /* handled by pre-html */
       break;
     case 'r':
-      auto_rule = FALSE;
+      auto_rule = false;
       break;
     case 's':
       base_point_size = atoi(optarg);
@@ -5524,23 +5510,23 @@ int main(int argc, char **argv)
       split_level = atoi(optarg) + 1;
       break;
     case 'v':
-      printf("GNU post-grohtml (groff) version %s\n", Version_string);
+      puts(L_D_HTML " (" T_ROFF ") v" VERSION);
       exit(0);
       break;
     case 'V':
-      valid_flag = TRUE;
+      valid_flag = true;
       break;
     case 'x':
       if (strcmp(optarg, "x") == 0) {
 	dialect = xhtml;
-	simple_anchors = TRUE;
+	simple_anchors = true;
       } else if (strcmp(optarg, "4") == 0)
 	dialect = html4;
       else
 	printf("unsupported html dialect %s (defaulting to html4)\n", optarg);
       break;
     case 'y':
-      groff_sig = TRUE;
+      roff_sig = true;
       break;
     case CHAR_MAX + 1: // --help
       usage(stdout);
@@ -5564,6 +5550,10 @@ int main(int argc, char **argv)
 
 static void usage(FILE *stream)
 {
-  fprintf(stream, "usage: %s [-vbelnhVy] [-D dir] [-I image_stem] [-F dir] [-x x] [files ...]\n",
+  fprintf(stream,
+    "Synopsis: %s [-vbelnhVy] [-D dir] "
+      "[-I image_stem] [-F dir] [-x x] [files ...]\n",
 	  program_name);
 }
+
+// s-it2-mode

@@ -1,48 +1,40 @@
-// -*- C++ -*-
-/* Copyright (C) 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+/*@ Implementation of html_table.h.
  *
- *  Gaius Mulley (gaius@glam.ac.uk) wrote html-table.cpp
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
  *
- *  html-table.h
+ * Copyright (C) 2002 - 2005, 2007 Free Software Foundation, Inc.
+ * Written by Gaius Mulley (gaius@glam.ac.uk)
+ */
+/*
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
  *
- *  provides the methods necessary to handle indentation and tab
- *  positions using html tables.
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-/*
-This file is part of groff.
+#include "config.h"
+#include "html-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
+#include <ctype.h>
 
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
+#include "cset.h"
 #include "driver.h"
 #include "stringclass.h"
-#include "cset.h"
-#include "html-table.h"
-#include "ctype.h"
+
 #include "html.h"
+#include "html-table.h"
 #include "html-text.h"
 
-#if !defined(TRUE)
-#   define TRUE  (1==1)
-#endif
-#if !defined(FALSE)
-#   define FALSE (1==0)
-#endif
-
 extern html_dialect dialect;
-
 
 tabs::tabs ()
   : tab(NULL)
@@ -77,7 +69,7 @@ void tabs::clear (void)
 }
 
 /*
- *  compatible - returns TRUE if the tab stops in, s, do
+ *  compatible - returns true if the tab stops in, s, do
  *               not conflict with the current tab stops.
  *               The new tab stops are _not_ placed into
  *               this class.
@@ -90,7 +82,7 @@ int tabs::compatible (const char *s)
   tab_position *last = tab;
 
   if (last == NULL)
-    return FALSE;  // no tab stops defined
+    return false;  // no tab stops defined
 
   // move over tag name
   while ((*s != (char)0) && !isspace(*s))
@@ -113,11 +105,11 @@ int tabs::compatible (const char *s)
     while ((*s != (char)0) && !isspace(*s))
       s++;
     if (last->alignment != align || last->position != total)
-      return FALSE;
+      return false;
 
     last = last->next;
   }
-  return TRUE;
+  return true;
 }
 
 /*
@@ -161,7 +153,7 @@ void tabs::init (const char *s)
     }
     last->alignment = align;
     last->position = total;
-    last->next = NULL;    
+    last->next = NULL;
   }
 }
 
@@ -242,7 +234,7 @@ void tabs::dump_tabs (void)
  */
 
 html_table::html_table (simple_output *op, int linelen)
-  : out(op), columns(NULL), linelength(linelen), last_col(NULL), start_space(FALSE)
+  : out(op), columns(NULL), linelength(linelen), last_col(NULL), start_space(false)
 {
   tab_stops = new tabs();
 }
@@ -252,7 +244,7 @@ html_table::~html_table ()
   cols *c;
   if (tab_stops != NULL)
     delete tab_stops;
-  
+
   c = columns;
   while (columns != NULL) {
     columns = columns->next;
@@ -400,7 +392,7 @@ void html_table::emit_colspan (void)
 	.put_number(is_gap(b))
 	.put_string("%\" class=\"center\"></col>")
 	.nl();
-    
+
     width = (get_right(c)*100 + get_effective_linelength()/2)
 	      / get_effective_linelength()
              - (c->left*100 + get_effective_linelength()/2)
@@ -483,7 +475,7 @@ void html_table::emit_col (int n)
       b = columns;
     else
       b = last_col;
-    
+
     // have we a gap?
     if (last_col != NULL) {
       emit_td(is_gap(b), "></td>");
@@ -534,7 +526,7 @@ void html_table::finish_row (void)
   if (last_col != NULL) {
     for (c = last_col->next; c != NULL; c = c->next)
       n = c->no;
-    
+
     if (n > 0)
       emit_col(n);
 #if 1
@@ -562,7 +554,7 @@ void html_table::emit_new_row (void)
     out->put_string("\"");
   }
   out->put_string(">").nl();
-  start_space = FALSE;
+  start_space = false;
   last_col = NULL;
 }
 
@@ -573,7 +565,7 @@ void html_table::emit_finish_table (void)
 }
 
 /*
- *  add_column - adds a column. It returns FALSE if hstart..hend
+ *  add_column - adds a column. It returns false if hstart..hend
  *               crosses into a different columns.
  */
 
@@ -606,7 +598,7 @@ cols *html_table::get_column (int coln)
 
 /*
  *  insert_column - inserts a column, coln.
- *                  It returns TRUE if it does not bump into
+ *                  It returns true if it does not bump into
  *                  another column.
  */
 
@@ -621,7 +613,7 @@ int html_table::insert_column (int coln, int hstart, int hend, char align)
     c = c->next;
   }
   if (l != NULL && l->no>coln && hend > l->left)
-    return FALSE;	// new column bumps into previous one
+    return false;	// new column bumps into previous one
 
   l = NULL;
   c = columns;
@@ -631,11 +623,11 @@ int html_table::insert_column (int coln, int hstart, int hend, char align)
   }
 
   if ((l != NULL) && (hstart < l->right))
-    return FALSE;	// new column bumps into previous one
-  
+    return false;	// new column bumps into previous one
+
   if ((l != NULL) && (l->next != NULL) &&
       (l->next->left < hend))
-    return FALSE;  // new column bumps into next one
+    return false;  // new column bumps into next one
 
   n = new cols;
   if (l == NULL) {
@@ -649,13 +641,13 @@ int html_table::insert_column (int coln, int hstart, int hend, char align)
   n->right = hend;
   n->no = coln;
   n->alignment = align;
-  return TRUE;
+  return true;
 }
 
 /*
  *  modify_column - given a column, c, modify the width to
  *                  contain hstart..hend.
- *                  It returns TRUE if it does not clash with
+ *                  It returns true if it does not clash with
  *                  the next or previous column.
  */
 
@@ -667,10 +659,10 @@ int html_table::modify_column (cols *c, int hstart, int hend, char align)
     l = l->next;
 
   if ((l != NULL) && (hstart < l->right))
-    return FALSE;	// new column bumps into previous one
-  
+    return false;	// new column bumps into previous one
+
   if ((c->next != NULL) && (c->next->left < hend))
-    return FALSE;  // new column bumps into next one
+    return false;  // new column bumps into next one
 
   if (c->left > hstart)
     c->left = hstart;
@@ -680,7 +672,7 @@ int html_table::modify_column (cols *c, int hstart, int hend, char align)
 
   c->alignment = align;
 
-  return TRUE;
+  return true;
 }
 
 /*
@@ -840,10 +832,11 @@ void html_indent::end (void)
 /*
  *  get_reg - collects the registers as supplied during initialization.
  */
-
 void html_indent::get_reg (int *ind, int *pageoffset, int *linelength)
 {
   *ind = in;
   *pageoffset = pg;
   *linelength = ll;
 }
+
+// s-it2-mode

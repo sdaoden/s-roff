@@ -1,0 +1,27 @@
+/*@ Configurable stuff */
+#ifndef _HTML_CONFIG_H
+#define _HTML_CONFIG_H
+
+//#define DEBUG_TABLES
+//#define DEBUGGING
+
+// Maximum characters we want in a line
+#define MAX_LINE_LENGTH     60
+
+// Font size increment <big> = +2
+#define SIZE_INCREMENT      2
+
+// How many pixels off center do we allow
+#define CENTER_TOLERANCE    2
+
+// If simple anchor is set we use this
+#define ANCHOR_TEMPLATE     "heading"
+
+#define STYLE_VERTICAL_SPACE "1em"
+
+// All character entities above this are either encoded by their glyph names
+// or if there is no name then we use &#nnn;
+#define UNICODE_DESC_START  0x80
+
+#endif // _HTML_CONFIG_H
+// s-it2-mode

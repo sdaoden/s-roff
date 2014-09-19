@@ -1,66 +1,52 @@
-// -*- C++ -*-
-/* Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007
+/*@ Provide a troff like state machine interface which generates html text.
+ *
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 2000 - 2005, 2007
  * Free Software Foundation, Inc.
  *
  *  Gaius Mulley (gaius@glam.ac.uk) wrote html-text.cpp
+ */
+/*
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
  *
- *  html-text.cpp
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
  *
- *  provide a troff like state machine interface which
- *  generates html text.
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-/*
-This file is part of groff.
+#include "config.h"
+#include "html-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
+#include "cset.h"
 #include "driver.h"
 #include "stringclass.h"
-#include "cset.h"
-
-#if !defined(TRUE)
-#   define TRUE  (1==1)
-#endif
-#if !defined(FALSE)
-#   define FALSE (1==0)
-#endif
-
 
 #include "html-text.h"
 
-#undef DEBUGGING
-// #define DEBUGGING
-
-html_text::html_text (simple_output *op, html_dialect d) :
-  stackptr(NULL), lastptr(NULL), out(op), dialect(d),
-  space_emitted(TRUE), current_indentation(-1),
-  pageoffset(-1), linelength(-1), blank_para(TRUE),
-  start_space(FALSE)
+html_text::html_text(simple_output *op, html_dialect d)
+: stackptr(NULL), lastptr(NULL), out(op), dialect(d),
+  space_emitted(true), current_indentation(-1),
+  pageoffset(-1), linelength(-1), blank_para(true),
+  start_space(false)
 {
 }
 
-html_text::~html_text ()
+html_text::~html_text()
 {
   flush_text();
 }
 
-
-#if defined(DEBUGGING)
-static int debugStack = FALSE;
-
+#ifdef DEBUGGING
+static int debugStack = false;
 
 /*
  *  turnDebug - flip the debugStack boolean and return the new value.
@@ -104,7 +90,7 @@ void html_text::dump_stack_element (tag_definition *p)
       fprintf(stderr, "<COLOR (default)>");
     else {
       unsigned int r, g, b;
-      
+
       p->col.get_rgb(&r, &g, &b);
       fprintf(stderr, "<COLOR %x %x %x>", r/0x101, g/0x101, b/0x101);
     }
@@ -133,10 +119,10 @@ void html_text::dump_stack (void)
   fprintf(stderr, "\n");
   fflush(stderr);
 }
+
 #else
 void html_text::dump_stack (void) {}
-#endif
-
+#endif // DEBUGGING
 
 /*
  *  end_tag - shuts down the tag.
@@ -155,13 +141,13 @@ void html_text::end_tag (tag_definition *t)
 		     t->indent = NULL;
                      out->put_string("</p>");
 		   }
-		   out->enable_newlines(FALSE);
-                   blank_para = TRUE; break;
+		   out->enable_newlines(false);
+                   blank_para = true; break;
   case SUB_TAG:    out->put_string("</sub>"); break;
   case SUP_TAG:    out->put_string("</sup>"); break;
   case TT_TAG:     out->put_string("</tt>"); break;
-  case PRE_TAG:    out->put_string("</pre>"); out->enable_newlines(TRUE);
-                   blank_para = TRUE;
+  case PRE_TAG:    out->put_string("</pre>"); out->enable_newlines(true);
+                   blank_para = true;
                    if (t->indent != NULL)
 		     delete t->indent;
 		   t->indent = NULL;
@@ -198,13 +184,13 @@ void html_text::issue_tag (const char *tagname, const char *arg,
     out->put_string(" ");
     out->put_string(arg);
   }
-  if (space == TRUE) {
+  if (space == true) {
     out->put_string(" style=\"margin-top: ");
     out->put_string(STYLE_VERTICAL_SPACE);
     out->put_string("\"");
   }
 #if 0
-  if (space == TRUE || space == FALSE)
+  if (space == true || space == false)
     out->put_string(" valign=\"top\"");
 #endif
   out->put_string(">");
@@ -254,11 +240,11 @@ void html_text::start_tag (tag_definition *t)
                      issue_tag("\n<p", (char *)t->arg1, start_space);
 		   }
 
-                   out->enable_newlines(TRUE); break;
+                   out->enable_newlines(true); break;
   case SUB_TAG:    issue_tag("<sub", (char *)t->arg1); break;
   case SUP_TAG:    issue_tag("<sup", (char *)t->arg1); break;
   case TT_TAG:     issue_tag("<tt", (char *)t->arg1); break;
-  case PRE_TAG:    out->enable_newlines(TRUE);
+  case PRE_TAG:    out->enable_newlines(true);
                    out->nl(); out->put_string("<pre");
 		   if (t->indent == NULL)
 		     issue_tag("", (char *)t->arg1, start_space);
@@ -266,7 +252,7 @@ void html_text::start_tag (tag_definition *t)
 		     t->indent->begin(start_space);
 		     issue_tag("", (char *)t->arg1);
 		   }
-                   out->enable_newlines(FALSE); break;
+                   out->enable_newlines(false); break;
   case SMALL_TAG:  if (! is_in_pre ())
                      issue_tag("<small", (char *)t->arg1);
                    break;
@@ -289,7 +275,7 @@ void html_text::start_tag (tag_definition *t)
 
 void html_text::flush_text (void)
 {
-  int notext=TRUE;
+  int notext=true;
   tag_definition *p=stackptr;
 
   while (stackptr != 0) {
@@ -305,7 +291,7 @@ void html_text::flush_text (void)
 }
 
 /*
- *  is_present - returns TRUE if tag is already present on the stack.
+ *  is_present - returns true if tag is already present on the stack.
  */
 
 int html_text::is_present (HTML_TAG t)
@@ -314,14 +300,14 @@ int html_text::is_present (HTML_TAG t)
 
   while (p != NULL) {
     if (t == p->type)
-      return TRUE;
+      return true;
     p = p->next;
   }
-  return FALSE;
+  return false;
 }
 
 /*
- *  uses_indent - returns TRUE if the current paragraph is using a
+ *  uses_indent - returns true if the current paragraph is using a
  *                html table to effect an indent.
  */
 
@@ -331,10 +317,10 @@ int html_text::uses_indent (void)
 
   while (p != NULL) {
     if (p->indent != NULL)
-      return TRUE;
+      return true;
     p = p->next;
   }
-  return FALSE;
+  return false;
 }
 
 extern void stop();
@@ -350,7 +336,7 @@ void html_text::do_push (tag_definition *p)
 #if defined(DEBUGGING)
   if (t == PRE_TAG)
     stop();
-  debugStack = TRUE;
+  debugStack = true;
   fprintf(stderr, "\nentering do_push (");
   dump_stack_element(p);
   fprintf(stderr, ")\n");
@@ -393,7 +379,7 @@ void html_text::push_para (HTML_TAG t, void *arg, html_indent *in)
 
   p->type         = t;
   p->arg1         = arg;
-  p->text_emitted = FALSE;
+  p->text_emitted = false;
   p->indent       = in;
 
   if (t == PRE_TAG && is_present(PRE_TAG))
@@ -414,7 +400,7 @@ void html_text::push_para (color *c)
   p->type         = COLOR_TAG;
   p->arg1         = NULL;
   p->col          = *c;
-  p->text_emitted = FALSE;
+  p->text_emitted = false;
   p->indent       = NULL;
 
   do_push(p);
@@ -470,7 +456,7 @@ void html_text::do_pre (void)
 }
 
 /*
- *  is_in_pre - returns TRUE if we are currently within a preformatted
+ *  is_in_pre - returns true if we are currently within a preformatted
  *              <pre> block.
  */
 
@@ -509,8 +495,8 @@ char *html_text::shutdown (HTML_TAG t)
   if (is_present(t)) {
     tag_definition *p    =stackptr;
     tag_definition *temp =NULL;
-    int notext           =TRUE;
-    
+    int notext           =true;
+
     dump_stack();
     while ((stackptr != NULL) && (stackptr->type != t)) {
       notext = (notext && (! stackptr->text_emitted));
@@ -525,7 +511,7 @@ char *html_text::shutdown (HTML_TAG t)
       stackptr = stackptr->next;
       if (stackptr == NULL)
 	lastptr = NULL;
-    
+
       /*
        *  push tag onto temp stack
        */
@@ -649,7 +635,7 @@ void html_text::check_emit_text (tag_definition *t)
 {
   if ((t != NULL) && (! t->text_emitted)) {
     check_emit_text(t->next);
-    t->text_emitted = TRUE;
+    t->text_emitted = true;
     start_tag(t);
   }
 }
@@ -661,7 +647,7 @@ void html_text::check_emit_text (tag_definition *t)
 void html_text::do_emittext (const char *s, int length)
 {
   if ((! is_present(P_TAG)) && (! is_present(PRE_TAG)))
-    do_para("", FALSE);
+    do_para("", false);
 
   if (is_present(BREAK_TAG)) {
     int text = remove_break();
@@ -678,8 +664,8 @@ void html_text::do_emittext (const char *s, int length)
     check_emit_text(stackptr);
 
   out->put_string(s, length);
-  space_emitted = FALSE;
-  blank_para = FALSE;
+  space_emitted = false;
+  blank_para = false;
 }
 
 /*
@@ -691,7 +677,7 @@ void html_text::do_para (const char *arg, html_indent *in, int space)
   if (! is_present(P_TAG)) {
     if (is_present(PRE_TAG)) {
       html_indent *i = remove_indent(PRE_TAG);
-      done_pre();    
+      done_pre();
       if ((arg == NULL || (strcmp(arg, "") == 0)) &&
 	  (i == in || in == NULL))
 	in = i;
@@ -729,9 +715,9 @@ void html_text::do_para (simple_output *op, const char *arg1,
 char *html_text::done_para (void)
 {
   char *result;
-  space_emitted = TRUE;
+  space_emitted = true;
   result = shutdown(P_TAG);
-  start_space = FALSE;
+  start_space = false;
   return result;
 }
 
@@ -762,7 +748,7 @@ html_indent *html_text::remove_indent (HTML_TAG tag)
 
 void html_text::remove_para_space (void)
 {
-  start_space = FALSE;
+  start_space = false;
 }
 
 /*
@@ -774,12 +760,12 @@ void html_text::do_space (void)
   if (is_in_pre()) {
     do_emittext("", 0);
     out->force_nl();
-    space_emitted = TRUE;
+    space_emitted = true;
   } else {
     html_indent *i = remove_indent(P_TAG);
 
-    do_para(done_para(), i, TRUE);
-    space_emitted = TRUE;
+    do_para(done_para(), i, true);
+    space_emitted = true;
   }
 }
 
@@ -794,7 +780,7 @@ void html_text::do_break (void)
       if (! is_present(BREAK_TAG))
 	push_para(BREAK_TAG);
 
-  space_emitted = TRUE;
+  space_emitted = true;
 }
 
 /*
@@ -805,12 +791,12 @@ void html_text::do_newline (void)
 {
   if (is_present(PRE_TAG)) {
     do_emittext("\n", 1);
-    space_emitted = TRUE;
+    space_emitted = true;
   }
 }
 
 /*
- *  emitted_text - returns FALSE if white space has just been written.
+ *  emitted_text - returns false if white space has just been written.
  */
 
 int html_text::emitted_text (void)
@@ -819,7 +805,7 @@ int html_text::emitted_text (void)
 }
 
 /*
- *  ever_emitted_text - returns TRUE if we have ever emitted text in this
+ *  ever_emitted_text - returns true if we have ever emitted text in this
  *                      paragraph.
  */
 
@@ -829,7 +815,7 @@ int html_text::ever_emitted_text (void)
 }
 
 /*
- *  starts_with_space - returns TRUE if we started this paragraph with a .sp
+ *  starts_with_space - returns true if we started this paragraph with a .sp
  */
 
 int html_text::starts_with_space (void)
@@ -838,20 +824,20 @@ int html_text::starts_with_space (void)
 }
 
 /*
- *  retrieve_para_space - returns TRUE, if the paragraph starts with
+ *  retrieve_para_space - returns true, if the paragraph starts with
  *                        a space and text has not yet been emitted.
- *                        If TRUE is returned, then the, start_space,
- *                        variable is set to FALSE.
+ *                        If true is returned, then the, start_space,
+ *                        variable is set to false.
  */
 
 int html_text::retrieve_para_space (void)
 {
   if (start_space && blank_para) {
-    start_space = FALSE;
-    return TRUE;
+    start_space = false;
+    return true;
   }
   else
-    return FALSE;
+    return false;
 }
 
 /*
@@ -865,7 +851,7 @@ void html_text::emit_space (void)
   else
     out->space_or_newline();
 
-  space_emitted = TRUE;
+  space_emitted = true;
 }
 
 /*
@@ -877,7 +863,7 @@ void html_text::remove_def (tag_definition *t)
   tag_definition *p    = stackptr;
   tag_definition *l    = 0;
   tag_definition *q    = 0;
-    
+
   while ((p != 0) && (p != t)) {
     l = p;
     p = p->next;
@@ -907,7 +893,7 @@ void html_text::remove_def (tag_definition *t)
 void html_text::remove_tag (HTML_TAG tag)
 {
   tag_definition *p = stackptr;
-    
+
   while ((p != 0) && (p->type != tag)) {
     p = p->next;
   }
@@ -935,7 +921,7 @@ void html_text::remove_sub_sup (void)
 
 /*
  *  remove_break - break tags are not balanced thus remove it once it has been emitted.
- *                 It returns TRUE if text was emitted before the <br> was issued.
+ *                 It returns true if text was emitted before the <br> was issued.
  */
 
 int html_text::remove_break (void)
@@ -969,11 +955,11 @@ int html_text::remove_break (void)
    */
   while (q != 0) {
     if (q->text_emitted)
-      return TRUE;
+      return true;
     else
       q = q->next;
   }
-  return FALSE;
+  return false;
 }
 
 /*
@@ -1062,3 +1048,5 @@ void html_text::do_sub (void)
 {
   push_para(SUB_TAG);
 }
+
+// s-it2-mode

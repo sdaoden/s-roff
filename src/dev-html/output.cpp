@@ -1,55 +1,45 @@
-// -*- C++ -*-
-/* Copyright (C) 2000, 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
+/*@ Provide the simple low level output routines needed by html.cpp.
+ *
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 2000 - 2001, 2003 - 2005 Free Software Foundation, Inc.
  *
  *  Gaius Mulley (gaius@glam.ac.uk) wrote output.cpp
  *  but it owes a huge amount of ideas and raw code from
  *  James Clark (jjc@jclark.com) grops/ps.cpp.
+ */
+/*
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
  *
- *  output.cpp
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
  *
- *  provide the simple low level output routines needed by html.cpp
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-/*
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-#include "driver.h"
-#include "stringclass.h"
-#include "cset.h"
+#include "config.h"
+#include "html-config.h"
 
 #include <time.h>
-#include "html.h"
 
 #ifdef HAVE_UNISTD_H
-#include <unistd.h>
+# include <unistd.h>
 #endif
 
-#undef DEBUGGING
-// #define DEBUGGING
+#include "cset.h"
+#include "driver.h"
+#include "stringclass.h"
 
-#if !defined(TRUE)
-#   define TRUE  (1==1)
-#endif
-#if !defined(FALSE)
-#   define FALSE (1==0)
-#endif
+#include "html.h"
 
-
-#if defined(DEBUGGING)
+#ifdef DEBUGGING
 #  define FPUTC(X,Y)   do { fputc((X),(Y)); fputc((X), stderr); fflush(stderr); } while (0)
 #  define FPUTS(X,Y)   do { fputs((X),(Y)); fputs((X), stderr); fflush(stderr); } while (0)
 #  define PUTC(X,Y)    do { putc((X),(Y)); putc((X), stderr); fflush(stderr); } while (0)
@@ -58,7 +48,6 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 #  define FPUTS(X,Y)   do { fputs((X),(Y)); } while (0)
 #  define PUTC(X,Y)    do { putc((X),(Y)); } while (0)
 #endif
-
 
 /*
  *  word - initialise a word and set next to NULL
@@ -365,3 +354,5 @@ void simple_output::flush_last_word (void)
     }
   }
 }
+
+// s-it2-mode

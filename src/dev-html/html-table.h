@@ -1,35 +1,30 @@
-// -*- C++ -*-
-/* Copyright (C) 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+/*@ Provides the methods necessary to handle indentation and tab
+ *@ positions using html tables.
  *
- *  Gaius Mulley (gaius@glam.ac.uk) wrote html-table.h
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
  *
- *  html-table.h
- *
- *  provides the methods necessary to handle indentation and tab
- *  positions using html tables.
+ * Copyright (C) 2002 - 2005, 2007 Free Software Foundation, Inc.
+ * Written by Gaius Mulley (gaius@glam.ac.uk)
  */
-
 /*
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+#ifndef _HTML_TABLE_H
+#define _HTML_TABLE_H
 
 #include "html.h"
-
-#if !defined(HTML_TABLE_H)
-#define HTML_TABLE_H
 
 typedef struct tab_position {
   char alignment;
@@ -37,8 +32,11 @@ typedef struct tab_position {
   struct tab_position *next;
 } tab_position;
 
+class tabs
+{
+  void  delete_list (void);
+  tab_position *tab;
 
-class tabs {
 public:
          tabs         ();
         ~tabs         ();
@@ -50,10 +48,6 @@ public:
   int   get_tab_pos   (int n);
   char  get_tab_align (int n);
   void  dump_tabs     (void);
-
-private:
-  void  delete_list (void);
-  tab_position *tab;
 };
 
 /*
@@ -67,7 +61,15 @@ typedef struct cols {
   struct cols *next;
 } cols;
 
-class html_table {
+class html_table
+{
+  cols          *columns;      /* column entries */
+  int            linelength;
+  cols          *last_col;     /* last column started */
+  int            start_space;  /* have we seen a `.sp' tag? */
+
+  void  remove_cols (cols *c);
+
 public:
       html_table          (simple_output *op, int linelen);
      ~html_table          (void);
@@ -98,13 +100,6 @@ public:
 
   tabs          *tab_stops;    /* tab stop positions */
   simple_output *out;
-private:
-  cols          *columns;      /* column entries */
-  int            linelength;
-  cols          *last_col;     /* last column started */
-  int            start_space;  /* have we seen a `.sp' tag? */
-
-  void  remove_cols (cols *c);
 };
 
 /*
@@ -113,7 +108,15 @@ private:
  *  This table is only emitted if the paragraph is emitted.
  */
 
-class html_indent {
+class html_indent
+{
+  void end    (void);
+  int         is_used;
+  int         pg;        // values of the registers as passed via initialization
+  int         ll;
+  int         in;
+  html_table *table;
+
 public:
   html_indent  (simple_output *op, int ind, int pageoffset, int linelength);
   ~html_indent (void);
@@ -121,14 +124,7 @@ public:
   void get_reg (int *ind, int *pageoffset, int *linelength);
 
   // the indent is shutdown when it is deleted
-
-private:
-  void end    (void);
-  int         is_used;
-  int         pg;        // values of the registers as passed via initialization
-  int         ll;
-  int         in;
-  html_table *table;
 };
 
-#endif
+#endif // _HTML_TABLE_H
+// s-it2-mode
