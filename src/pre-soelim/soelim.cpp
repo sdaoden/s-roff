@@ -1,52 +1,54 @@
-// -*- C++ -*-
-/* Copyright (C) 1989-1992, 2000, 2001, 2003, 2004, 2005
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000, 2001, 2003 - 2005
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
+#include "config.h"
+#include "soelim-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-#include "lib.h"
-
-#include <ctype.h>
 #include <assert.h>
-#include <stdlib.h>
+#include <ctype.h>
 #include <errno.h>
+#include <stdlib.h>
+
 #include "errarg.h"
 #include "error.h"
 #include "file_case.h"
-#include "stringclass.h"
+#include "lib.h"
 #include "nonposix.h"
 #include "searchpath.h"
+#include "stringclass.h"
 
 // The include search path initially contains only the current directory.
-static search_path include_search_path(0, 0, 0, 1);
+static search_path include_search_path(0, 0, 0, 1); // FIXME
 
 int compatible_flag = 0;
 int raw_flag = 0;
 int tex_flag = 0;
 
-extern "C" const char *Version_string;
-
 int do_file(const char *);
-
 
 void usage(FILE *stream)
 {
-  fprintf(stream, "usage: %s [ -Crtv ] [ -I dir ] [ files ]\n", program_name);
+  fprintf(stream, "Synopsis: %s [ -Crtv ] [ -I dir ] [ files ]\n",
+    program_name);
 }
 
 int main(int argc, char **argv)
@@ -61,7 +63,7 @@ int main(int argc, char **argv)
   while ((opt = getopt_long(argc, argv, "CI:rtv", long_options, NULL)) != EOF)
     switch (opt) {
     case 'v':
-      printf("GNU soelim (groff) version %s\n", Version_string);
+      puts(L_P_SOELIM " (" T_ROFF ") v" VERSION);
       exit(0);
       break;
     case 'C':
@@ -306,3 +308,5 @@ int do_file(const char *filename)
 jleave:
   return rv;
 }
+
+// s-it2-mode

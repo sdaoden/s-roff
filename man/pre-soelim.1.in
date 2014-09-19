@@ -1,6 +1,10 @@
-'\" p
+'\" p -- preprocess: pic(1)
 .ig
-Copyright (C) 1989-2000, 2001, 2003, 2004, 2006, 2008
+@ L_P_SOELIM@.1
+
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
+Copyright (C) 1989 - 2001, 2003, 2004, 2006, 2008
 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
@@ -21,17 +25,17 @@ the original English.
 .
 .mso pic.tmac
 .
-.TH @G@SOELIM @MAN1EXT@ "@MDATE@" "Groff Version @VERSION@"
+.TH @U_P_SOELIM@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
 .
 .SH NAME
 .
-@g@soelim \- interpret .so requests in groff input
+@L_P_SOELIM@ \- interpret .so requests in @T_ROFF@ input
 .
 .
 .SH SYNOPSIS
 .
-.SY @g@soelim
+.SY @L_P_SOELIM@
 .OP \-Crtv
 .OP \-I dir
 .RI [ files
@@ -46,7 +50,7 @@ command line option and its parameter.
 .
 .SH DESCRIPTION
 .
-.B @g@soelim
+.B @L_P_SOELIM@
 reads
 .I files
 and replaces lines of the form
@@ -59,11 +63,11 @@ It is useful if files included with
 .B .so
 need to be preprocessed.
 Normally,
-.B @g@soelim
+.B @L_P_SOELIM@
 should be invoked with the
 .B \-s
 option of
-.BR groff .
+.BR @L_TROFF .
 .
 .PP
 To embed `\[rs]' in the file name, write `\[rs]\[rs]' or `\[rs]e'.
@@ -71,18 +75,18 @@ To embed a space, write `\[rs]\ '.
 Any other escape sequence in
 .I file
 makes
-.B soelim
+.B @L_P_SOELIM@
 ignore the whole line.
 .
 .PP
 Note that there must be no whitespace between the leading dot and the two
 characters `s' and `o'.
 Otherwise, only
-.B groff
+.B @L_ROFF@
 interprets the
 .B .so
 request (and
-.B soelim
+.B @L_P_SOELIM@
 ignores it).
 .
 .
@@ -114,7 +118,7 @@ No directory search is performed for files with an absolute file name.
 .B \-r
 Do not add
 .B .lf
-requests (for general use, with non-groff files).
+requests (for general use, with non-roff files).
 .
 .TP
 .B \-t
@@ -130,7 +134,7 @@ Print the version number.
 .
 .SH USAGE
 .
-The normal processing sequence of groff is this:
+The normal processing sequence of @T_ROFF@ is this:
 .
 .PP
 .ie t \{\
@@ -183,9 +187,9 @@ That is, files sourced with
 are normally read
 .I only
 by
-.B troff
+.B @L_TROFF@
 (the actual formatter).
-.B soelim
+.B @L_P_SOELIM@
 is
 .I not
 required for
@@ -197,7 +201,7 @@ If a file to be sourced should also be preprocessed, it must already be read
 .I before
 the input file passes through the preprocessor.
 This is handled by
-.BR soelim :
+.BR @L_P_SOELIM@ :
 .
 .PP
 .ie t \{\
@@ -244,8 +248,6 @@ box invisible width 0.5 height 0.4 "output" "file"
 .
 .SH "SEE ALSO"
 .
-.BR groff (@MAN1EXT@)
+.BR @L_ROFF@ (@MAN1EXT@)
 .
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
+.\" s-ts-mode
