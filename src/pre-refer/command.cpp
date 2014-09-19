@@ -1,39 +1,48 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2001, 2002, 2004, 2006
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2001, 2002, 2004, 2006
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
+#include "config.h"
+#include "refer-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-#include "refer.h"
+#include "file_case.h"
 #include "refid.h"
 #include "search.h"
-#include "file_case.h"
+
 #include "command.h"
+#include "refer.h"
 
 cset cs_field_name = csalpha;
 
-class input_item {
+class input_item
+{
+  friend class input_stack;
+
   input_item *next;
   char *filename;
   int first_lineno;
   string buffer;
   const char *ptr;
   const char *end;
+
 public:
   input_item(string &, const char *, int = 1);
   ~input_item();
@@ -41,8 +50,6 @@ public:
   int peek_char();
   void skip_char();
   int get_location(const char **, int *);
-
-  friend class input_stack;
 };
 
 input_item::input_item(string &s, const char *fn, int ln)
@@ -95,8 +102,10 @@ int input_item::get_location(const char **filenamep, int *linenop)
   return 1;
 }
 
-class input_stack {
+class input_stack
+{
   static input_item *top;
+
 public:
   static void init();
   static int get_char();
@@ -635,7 +644,7 @@ struct S {
   const char *name;
   command_t func;
   const char *arg_types;
-} command_table[] = {
+} command_table[] = { // FIXME const
   { "include", include_command, "s" },
   { "echo", echo_command, "s*" },
   { "capitalize", capitalize_command, "f?" },
@@ -806,3 +815,5 @@ void process_commands(string &s, const char *file, int lineno)
   input_stack::push_string(s, file, lineno);
   command_loop();
 }
+
+// s-it2-mode

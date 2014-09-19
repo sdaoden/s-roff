@@ -1,0 +1,10 @@
+/*@ Configurable stuff */
+#ifndef _REFER_CONFIG_H
+#define _REFER_CONFIG_H
+
+#define TOKEN_TABLE_SIZE  1009
+// I believe in Icelandic thorn sorts after z.
+#define THORN_SORT_KEY    "{"
+
+#endif // _REFER_CONFIG_H
+// s-it2-mode

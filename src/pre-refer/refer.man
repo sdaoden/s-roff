@@ -1,5 +1,9 @@
 .ig
-Copyright (C) 1989-2000, 2001, 2002, 2003, 2004, 2005, 2006
+@ @L_P_REFER@.1
+
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
+Copyright (C) 1989 - 2006
   Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
@@ -18,13 +22,11 @@ translations approved by the Free Software Foundation instead of in
 the original English.
 ..
 .
-.
 .de TQ
 .  br
 .  ns
 .  TP \\$1
 ..
-.
 .
 .\" Like TP, but if specified indent is more than half
 .\" the current line-length - indent, use the default indent.
@@ -32,29 +34,27 @@ the original English.
 .  ie \\n(.$=0:((0\\$1)*2u>(\\n(.lu-\\n(.iu)) .TP
 .  el .TP "\\$1"
 .
-.
 ..
 .\" The BSD man macros can't handle " in arguments to font change macros,
 .\" so use \(ts instead of ".
 .tr \(ts"
 .
 .
-.TH @G@REFER @MAN1EXT@ "@MDATE@" "Groff Version @VERSION@"
+.TH @U_P_REFER@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
 .
 .
 .SH NAME
-@g@refer \- preprocess bibliographic references for groff
-.
+@L_P_REFER@ \- preprocess bibliographic references for @T_ROFF@
 .
 .
 .SH SYNOPSIS
 .nr a \n(.j
 .ad l
 .nr i \n(.i
-.in +\w'\fB@g@refer 'u
+.in +\w'\fB@L_P_REFER@ 'u
 .ti \niu
-.B @g@refer
+.B @L_P_REFER@
 .
 .de OP
 .  ie \\n(.$-1 .RI "[\ \fB\\$1\fP" "\\$2" "\ ]"
@@ -83,10 +83,7 @@ parameter.
 .
 .
 .SH DESCRIPTION
-This file documents the GNU version of
-.BR refer ,
-which is part of the groff document formatting system.
-.B refer
+.B @L_P_REFER@
 copies the contents of
 .IR filename \|.\|.\|.\&
 to the standard output,
@@ -112,16 +109,16 @@ A combination of these alternatives is also possible.
 .
 .LP
 For each citation,
-.B refer
+.B @L_P_REFER@
 can produce a mark in the text.
 This mark consists of some label which can be separated from
 the text and from other labels in various ways.
 For each reference it also outputs
-.B groff
+.B @T_ROFF@
 commands that can be used by a macro package to produce a formatted
 reference for each citation.
 The output of
-.B refer
+.B @L_P_REFER@
 must therefore be processed using a suitable macro package.
 The
 .B \-ms
@@ -168,12 +165,12 @@ These options are supported mainly for compatibility with Unix refer.
 It is usually more convenient to use commands.
 .
 .LP
-.B refer
+.B @L_P_REFER@
 generates
 .B .lf
 lines so that filenames and line numbers in messages produced
 by commands that read
-.B refer
+.B @L_P_REFER@
 output will be correct;
 it also interprets lines beginning with
 .B .lf
@@ -181,7 +178,7 @@ so that filenames and line numbers in the messages and
 .B .lf
 lines that it produces will be accurate even if the input has been
 preprocessed by a command such as
-.BR @g@soelim (@MAN1EXT@).
+.BR @L_P_SOELIM@ (@MAN1EXT@).
 .
 .
 .
@@ -874,7 +871,7 @@ For each
 if an index
 .IB filename @INDEX_SUFFIX@
 created by
-.BR @g@indxbib (@MAN1EXT@)
+.BR @L_INDXBIB@ (@MAN1EXT@)
 exists, then it will be searched instead;
 each index can cover multiple databases.
 .
@@ -912,7 +909,7 @@ field in the reference.
 The default database should be searched.
 This is the default behaviour, so the negative version of
 this command is more useful.
-.B refer
+.B @L_P_REFER@
 determines whether the default database should be searched
 on the first occasion that it needs to do a search.
 Thus a
@@ -1473,9 +1470,9 @@ If set, overrides the default database.
 .
 .
 .SH "SEE ALSO"
-.BR @g@indxbib (@MAN1EXT@),
-.BR @g@lookbib (@MAN1EXT@),
-.BR lkbib (@MAN1EXT@)
+.BR @L_INDXBIB@ (@MAN1EXT@),
+.BR @L_LOOKBIB@ (@MAN1EXT@),
+.BR @L_LKBIB@ (@MAN1EXT@)
 .br
 .
 .
@@ -1487,6 +1484,4 @@ expressions are ignored inside
 .BI . char
 expressions.
 .
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
+.\" s-ts-mode

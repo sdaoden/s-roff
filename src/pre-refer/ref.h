@@ -1,22 +1,28 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2005 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2005 Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+#ifndef _REF_H
+#define _REF_H
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+#include "config.h"
+#include "refer-config.h"
 
 // declarations to avoid friend name injection problems
 int compare_reference(const reference &, const reference &);
@@ -31,22 +37,28 @@ struct label_info;
 enum label_type { NORMAL_LABEL, SHORT_LABEL };
 const int N_LABEL_TYPES = 2;
 
-struct substring_position {
+class substring_position
+{
+public:
   int start;
   int length;
   substring_position() : start(-1) { }
 };
 
-class int_set {
+class int_set
+{
   string v;
+
 public:
   int_set() { }
   void set(int i);
   int get(int i) const;
 };
 
-class reference {
-private:
+class reference
+{
+  enum { NULL_FIELD_INDEX = 255 };
+
   unsigned h;
   reference_id rid;
   int merged;
@@ -54,8 +66,7 @@ private:
   int no;
   string *field;
   int nfields;
-  unsigned char field_index[256];
-  enum { NULL_FIELD_INDEX = 255 };
+  unsigned char field_index[NULL_FIELD_INDEX + 1];
   string label;
   substring_position separator_pos;
   string short_label;
@@ -74,6 +85,7 @@ private:
   const char *get_sort_field(int i, int si, int ssi, const char **endp) const;
   int merge_labels_by_parts(reference **, int, label_type, string &);
   int merge_labels_by_number(reference **, int, label_type, string &);
+
 public:
   reference(const char * = 0, int = -1, reference_id * = 0);
   ~reference();
@@ -126,3 +138,6 @@ void reverse_name(const char *ptr, const char *end, string &result);
 void uppercase(const char *ptr, const char *end, string &result);
 void lowercase(const char *ptr, const char *end, string &result);
 void abbreviate_name(const char *ptr, const char *end, string &result);
+
+#endif // _REF_H
+// s-it2-mode

@@ -1,28 +1,32 @@
-/* -*- C++ -*-
-   Copyright (C) 1989, 1990, 1991, 1992, 2000, 2004, 2007
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
-
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ *    Copyright (C) 1989 - 1992, 2000, 2004, 2007
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
 %{
+#include "config.h"
+#include "refer-config.h"
+
+#include "refid.h"
 
 #include "refer.h"
-#include "refid.h"
 #include "ref.h"
 #include "token.h"
 
@@ -32,7 +36,9 @@ int yyparse();
 
 static const char *format_serial(char c, int n);
 
-struct label_info {
+class label_info
+{
+public:
   int start;
   int length;
   int count;
@@ -42,31 +48,39 @@ struct label_info {
 
 label_info *lookup_label(const string &label);
 
-struct expression {
+class expression
+{
+public:
   enum {
     // Does the tentative label depend on the reference?
-    CONTAINS_VARIABLE = 01, 
+    CONTAINS_VARIABLE = 01,
     CONTAINS_STAR = 02,
     CONTAINS_FORMAT = 04,
     CONTAINS_AT = 010
   };
+
   virtual ~expression() { }
   virtual void evaluate(int, const reference &, string &,
 			substring_position &) = 0;
   virtual unsigned analyze() { return 0; }
 };
 
-class at_expr : public expression {
+class at_expr
+: public expression
+{
 public:
   at_expr() { }
   void evaluate(int, const reference &, string &, substring_position &);
   unsigned analyze() { return CONTAINS_VARIABLE|CONTAINS_AT; }
 };
 
-class format_expr : public expression {
+class format_expr
+: public expression
+{
   char type;
   int width;
   int first_number;
+
 public:
   format_expr(char c, int w = 0, int f = 1)
     : type(c), width(w), first_number(f) { }
@@ -74,25 +88,34 @@ public:
   unsigned analyze() { return CONTAINS_FORMAT; }
 };
 
-class field_expr : public expression {
+class field_expr
+: public expression
+{
   int number;
   char name;
+
 public:
   field_expr(char nm, int num) : number(num), name(nm) { }
   void evaluate(int, const reference &, string &, substring_position &);
   unsigned analyze() { return CONTAINS_VARIABLE; }
 };
 
-class literal_expr : public expression {
+class literal_expr
+: public expression
+{
   string s;
+
 public:
   literal_expr(const char *ptr, int len) : s(ptr, len) { }
   void evaluate(int, const reference &, string &, substring_position &);
 };
 
-class unary_expr : public expression {
+class unary_expr
+: public expression
+{
 protected:
   expression *expr;
+
 public:
   unary_expr(expression *e) : expr(e) { }
   ~unary_expr() { delete expr; }
@@ -102,15 +125,20 @@ public:
 
 // This caches the analysis of an expression.
 
-class analyzed_expr : public unary_expr {
+class analyzed_expr
+: public unary_expr
+{
   unsigned flags;
+
 public:
   analyzed_expr(expression *);
   void evaluate(int, const reference &, string &, substring_position &);
   unsigned analyze() { return flags; }
 };
 
-class star_expr : public unary_expr {
+class star_expr
+: public unary_expr
+{
 public:
   star_expr(expression *e) : unary_expr(e) { }
   void evaluate(int, const reference &, string &, substring_position &);
@@ -122,18 +150,24 @@ public:
 
 typedef void map_func(const char *, const char *, string &);
 
-class map_expr : public unary_expr {
+class map_expr
+: public unary_expr
+{
   map_func *func;
+
 public:
   map_expr(expression *e, map_func *f) : unary_expr(e), func(f) { }
   void evaluate(int, const reference &, string &, substring_position &);
 };
-  
+
 typedef const char *extractor_func(const char *, const char *, const char **);
 
-class extractor_expr : public unary_expr {
+class extractor_expr
+: public unary_expr
+{
   int part;
   extractor_func *func;
+
 public:
   enum { BEFORE = +1, MATCH = 0, AFTER = -1 };
   extractor_expr(expression *e, extractor_func *f, int pt)
@@ -141,23 +175,31 @@ public:
   void evaluate(int, const reference &, string &, substring_position &);
 };
 
-class truncate_expr : public unary_expr {
+class truncate_expr
+: public unary_expr
+{
   int n;
+
 public:
-  truncate_expr(expression *e, int i) : unary_expr(e), n(i) { } 
+  truncate_expr(expression *e, int i) : unary_expr(e), n(i) { }
   void evaluate(int, const reference &, string &, substring_position &);
 };
 
-class separator_expr : public unary_expr {
+class separator_expr
+: public unary_expr
+{
 public:
   separator_expr(expression *e) : unary_expr(e) { }
   void evaluate(int, const reference &, string &, substring_position &);
 };
 
-class binary_expr : public expression {
+class binary_expr
+: public expression
+{
 protected:
   expression *expr1;
   expression *expr2;
+
 public:
   binary_expr(expression *e1, expression *e2) : expr1(e1), expr2(e2) { }
   ~binary_expr() { delete expr1; delete expr2; }
@@ -167,29 +209,38 @@ public:
   }
 };
 
-class alternative_expr : public binary_expr {
+class alternative_expr
+: public binary_expr
+{
 public:
   alternative_expr(expression *e1, expression *e2) : binary_expr(e1, e2) { }
   void evaluate(int, const reference &, string &, substring_position &);
 };
 
-class list_expr : public binary_expr {
+class list_expr
+: public binary_expr
+{
 public:
   list_expr(expression *e1, expression *e2) : binary_expr(e1, e2) { }
   void evaluate(int, const reference &, string &, substring_position &);
 };
 
-class substitute_expr : public binary_expr {
+class substitute_expr
+: public binary_expr
+{
 public:
   substitute_expr(expression *e1, expression *e2) : binary_expr(e1, e2) { }
   void evaluate(int, const reference &, string &, substring_position &);
 };
 
-class ternary_expr : public expression {
+class ternary_expr
+: public expression
+{
 protected:
   expression *expr1;
   expression *expr2;
   expression *expr3;
+
 public:
   ternary_expr(expression *e1, expression *e2, expression *e3)
     : expr1(e1), expr2(e2), expr3(e3) { }
@@ -202,7 +253,9 @@ public:
   }
 };
 
-class conditional_expr : public ternary_expr {
+class conditional_expr
+: public ternary_expr
+{
 public:
   conditional_expr(expression *e1, expression *e2, expression *e3)
     : ternary_expr(e1, e2, e3) { }
@@ -216,7 +269,6 @@ static expression *parsed_short_label = 0;
 static expression *parse_result;
 
 string literals;
-
 %}
 
 %union {
@@ -272,7 +324,7 @@ alternative:
 		{ $$ = new alternative_expr($1, $3); }
 	| alternative '&' list
 		{ $$ = new conditional_expr($1, $3, 0); }
-	;	
+	;
 
 list:
 	substitute
@@ -315,7 +367,7 @@ string:
 		    break;
 		  }
 		}
-	
+
 	| '%' digits
 		{
 		  $$ = new format_expr('0', $2.ndigits, $2.val);
@@ -383,8 +435,7 @@ digits:
 	| digits TOKEN_DIGIT
 		{ $$.ndigits = $1.ndigits + 1; $$.val = $1.val*10 + $2; }
 	;
-	
-      
+
 flag:
 	/* empty */
 		{ $$ = 0; }
@@ -399,7 +450,7 @@ flag:
 /* bison defines const to be empty unless __STDC__ is defined, which it
 isn't under cfront */
 
-#ifdef const
+#ifdef const // FIXME
 #undef const
 #endif
 
@@ -407,14 +458,14 @@ const char *spec_ptr;
 const char *spec_end;
 const char *spec_cur;
 
-static char uppercase_array[] = {
+static char uppercase_array[] = { // FIXME const
   'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
   'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
   'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
   'Y', 'Z',
 };
-  
-static char lowercase_array[] = {
+
+static char lowercase_array[] = { // FIXME const
   'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
   'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
   'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
@@ -909,7 +960,7 @@ const substring_position &reference::get_separator_pos(label_type type) const
 const string &reference::get_label(label_type type) const
 {
   if (type == SHORT_LABEL && short_label_flag)
-    return short_label; 
+    return short_label;
   else
     return label;
 }
@@ -922,7 +973,7 @@ int reference::merge_labels_by_parts(reference **v, int n, label_type type,
   const string &lb = get_label(type);
   const substring_position &sp = get_separator_pos(type);
   if (sp.start < 0
-      || sp.start != v[0]->get_separator_pos(type).start 
+      || sp.start != v[0]->get_separator_pos(type).start
       || memcmp(lb.contents(), v[0]->get_label(type).contents(),
 		sp.start) != 0)
     return 0;
@@ -1107,7 +1158,6 @@ int same_author_name(const reference &r1, const reference &r2, int n)
   return ae1 - as1 == ae2 - as2 && memcmp(as1, as2, ae1 - as1) == 0;
 }
 
-
 void int_set::set(int i)
 {
   assert(i >= 0);
@@ -1191,3 +1241,5 @@ int reference::get_nauthors() const
   }
   return nauthors;
 }
+
+// s-it2-mode

@@ -1,31 +1,33 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2001 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2001 Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+#include "config.h"
+#include "refer-config.h"
 
 #include "refer.h"
 #include "token.h"
 
-#define TOKEN_TABLE_SIZE 1009
-// I believe in Icelandic thorn sorts after z.
-#define THORN_SORT_KEY "{"
-
-struct token_table_entry {
+class token_table_entry
+{
+public:
   const char *tok;
   token_info ti;
   token_table_entry();
@@ -115,7 +117,6 @@ int token_info::sortify_non_empty(const char *start, const char *end) const
   return 0;
 }
 
-
 void token_info::lower_case(const char *start, const char *end,
 			    string &result) const
 {
@@ -172,8 +173,7 @@ static void store_token(const char *tok, token_type typ,
   token_table[n].ti.set(typ, sk, oc);
 }
 
-
-token_info default_token_info;
+token_info default_token_info; // FIXME
 
 const token_info *lookup_token(const char *start, const char *end)
 {
@@ -296,7 +296,6 @@ static void init_two_char_letter(char l1, char l2, char u1, char u2,
   buf[2] = l1;
   buf[3] = l2;
   store_letter(strsave(buf), p, sk);
-  
 }
 
 static void init_special_chars()
@@ -319,7 +318,7 @@ static void init_special_chars()
   init_two_char_letter('o', 'a', 'o', 'A', "a");
   init_two_char_letter('T', 'p', 'T', 'P', THORN_SORT_KEY);
   init_two_char_letter('-', 'd', '-', 'D');
-  
+
   store_token("\\(ss", TOKEN_LOWER, 0, "SS");
   store_token("\\[ss]", TOKEN_LOWER, 0, "SS");
 
@@ -366,7 +365,7 @@ struct token_initer {
   token_initer();
 };
 
-static token_initer the_token_initer;
+static token_initer the_token_initer; // FIXME static ctor init
 
 token_initer::token_initer()
 {
@@ -376,3 +375,5 @@ token_initer::token_initer()
   init_strings();
   default_token_info.set(TOKEN_OTHER);
 }
+
+// s-it2-mode

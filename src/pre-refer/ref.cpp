@@ -1,27 +1,32 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2001, 2003, 2008
-   Free Software Foundation, Inc.
-Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2001, 2003, 2008
+ *    Free Software Foundation, Inc.
+ *     Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
+#include "config.h"
+#include "refer-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-     
-#include "refer.h"
 #include "refid.h"
+
 #include "ref.h"
+#include "refer.h"
 #include "token.h"
 
 static const char *find_day(const char *, const char *, const char **);
@@ -29,7 +34,7 @@ static int find_month(const char *start, const char *end);
 static void abbreviate_names(string &);
 
 #define DEFAULT_ARTICLES "the\000a\000an"
-     
+
 string articles(DEFAULT_ARTICLES, sizeof(DEFAULT_ARTICLES));
 
 // Multiple occurrences of fields are separated by FIELD_SEPARATOR.
@@ -40,7 +45,7 @@ const char *AUTHOR_FIELDS = "AQ";
 
 enum { OTHER, JOURNAL_ARTICLE, BOOK, ARTICLE_IN_BOOK, TECH_REPORT, BELL_TM };
 
-const char *reference_types[] = {
+const char *reference_types[] = { // FIXME const
   "other",
   "journal-article",
   "book",
@@ -49,7 +54,7 @@ const char *reference_types[] = {
   "bell-tm",
 };
 
-static string temp_fields[256];
+static string temp_fields[256]; // FIXME
 
 reference::reference(const char *start, int len, reference_id *ridp)
 : h(0), merged(0), no(-1), field(0), nfields(0), label_ptr(0),
@@ -238,7 +243,7 @@ void reference::delete_field(unsigned char c)
     if (field_index[i] != NULL_FIELD_INDEX)
       field_index[i] -= 1;
 }
-    
+
 void reference::compute_hash_code()
 {
   if (!rid.is_null())
@@ -316,7 +321,7 @@ void sortify_other(const char *s, int len, string &key)
 void sortify_title(const char *s, int len, string &key)
 {
   const char *end = s + len;
-  for (; s < end && (*s == ' ' || *s == '\n'); s++) 
+  for (; s < end && (*s == ' ' || *s == '\n'); s++)
     ;
   const char *ptr = s;
   for (;;) {
@@ -536,7 +541,7 @@ int same_reference(const reference &r1, const reference &r2)
     return 0;
   if (r1.nfields != r2.nfields)
     return 0;
-  int i = 0; 
+  int i = 0;
   for (i = 0; i < 256; i++)
     if (r1.field_index != r2.field_index)
       return 0;
@@ -818,7 +823,7 @@ void reference::output(FILE *fp)
 	      // should check for overflow
 	      n = n*10 + reverse_fields[j] - '0';
 	  }
-	  else 
+	  else
 	    n = INT_MAX;
 	  reverse_names(f, n);
 	}
@@ -931,7 +936,7 @@ static const char *find_day(const char *start, const char *end,
 
 static int find_month(const char *start, const char *end)
 {
-  static const char *months[] = {
+  static const char *months[] = { // FIXME const
     "january",
     "february",
     "march",
@@ -1161,3 +1166,4 @@ const char *reference::get_sort_field(int i, int si, int ssi,
   return start;
 }
 
+// s-it2-mode

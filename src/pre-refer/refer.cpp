@@ -1,33 +1,36 @@
-// -*- C++ -*-
-/* Copyright (C) 1989-1992, 2000, 2001, 2002, 2004, 2006
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000 - 2002, 2004, 2006
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
+#include "config.h"
+#include "refer-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-#include "refer.h"
-#include "refid.h"
-#include "ref.h"
-#include "token.h"
-#include "search.h"
 #include "file_case.h"
-#include "command.h"
+#include "refid.h"
+#include "search.h"
 
-extern "C" const char *Version_string;
+#include "command.h"
+#include "ref.h"
+#include "refer.h"
+#include "token.h"
 
 const char PRE_LABEL_MARKER = '\013';
 const char POST_LABEL_MARKER = '\014';
@@ -74,7 +77,6 @@ string et_al = " et al";
 int et_al_min_elide = 2;
 // Use et al only if the total number of authors is at least this.
 int et_al_min_total = 3;
-
 
 int compatible_flag = 0;
 
@@ -124,7 +126,7 @@ int main(int argc, char **argv)
        !finished_options && argc > 0 && argv[0][0] == '-'
        && argv[0][1] != '\0';
        argv++, argc--) {
-    const char *opt = argv[0] + 1; 
+    const char *opt = argv[0] + 1;
     while (opt != 0 && *opt != '\0') {
       switch (*opt) {
       case 'C':
@@ -349,7 +351,7 @@ int main(int argc, char **argv)
 	}
 	if (strcmp(opt,"-version")==0) {
       case 'v':
-	  printf("GNU refer (groff) version %s\n", Version_string);
+	  puts(L_P_REFER " (" T_ROFF ") v " VERSION);
 	  exit(0);
 	  break;
 	}
@@ -393,7 +395,7 @@ int main(int argc, char **argv)
 static void usage(FILE *stream)
 {
   fprintf(stream,
-"usage: %s [-benvCPRS] [-aN] [-cXYZ] [-fN] [-iXYZ] [-kX] [-lM,N] [-p file]\n"
+"Synopsis: %s [-benvCPRS] [-aN] [-cXYZ] [-fN] [-iXYZ] [-kX] [-lM,N] [-p file]\n"
 "       [-sXYZ] [-tN] [-BL.M] [files ...]\n",
 	  program_name);
 }
@@ -823,7 +825,6 @@ static void output_citation_group(reference **v, int n, label_type type,
   }
 }
 
-
 label_processing_state::label_processing_state(reference **p, int n, FILE *f)
 : state(NORMAL), count(0), rptr(p), rcount(n), fp(f)
 {
@@ -923,13 +924,9 @@ void label_processing_state::process(int c)
   }
 }
 
-extern "C" {
-
-int rcompare(const void *p1, const void *p2)
+static int rcompare(const void *p1, const void *p2)
 {
   return compare_reference(**(reference **)p1, **(reference **)p2);
-}
-
 }
 
 void output_references()
@@ -951,7 +948,7 @@ void output_references()
     assert(j == nreferences);
     for (; j < hash_table_size; j++)
       reference_hash_table[j] = 0;
-    qsort(reference_hash_table, nreferences, sizeof(reference*), rcompare);
+    qsort(reference_hash_table, nreferences, sizeof(reference*), &rcompare);
     for (i = 0; i < nreferences; i++)
       reference_hash_table[i]->set_number(i);
     compute_labels(reference_hash_table, nreferences);
@@ -1207,7 +1204,7 @@ void do_bib(const char *filename)
 
 // from the Dragon Book
 
-unsigned hash_string(const char *s, int len)
+unsigned hash_string(const char *s, int len) // FIXME Torek's hash (lib-roff!)
 {
   const char *end = s + len;
   unsigned h = 0, g;
@@ -1222,12 +1219,12 @@ unsigned hash_string(const char *s, int len)
   return h;
 }
 
-int next_size(int n)
+int next_size(int n) // FIXME PRIME LOOKUP -> lib-roff!!
 {
-  static const int table_sizes[] = { 
+  static const int table_sizes[] = {
     101, 503, 1009, 2003, 3001, 4001, 5003, 10007, 20011, 40009,
     80021, 160001, 500009, 1000003, 2000003, 4000037, 8000009,
-    16000057, 32000011, 64000031, 128000003, 0 
+    16000057, 32000011, 64000031, 128000003, 0
   };
 
   const int *p;
@@ -1237,3 +1234,4 @@ int next_size(int n)
   return *p;
 }
 
+// s-it2-mode
