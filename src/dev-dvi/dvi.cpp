@@ -1,32 +1,33 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2000, 2001, 2002, 2003, 2004, 2006,
-                 2007
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@ DVI output device.
+ *
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000 - 2004, 2006 - 2007
+ * Free Software Foundation, Inc.
+ *    Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+#include "config.h"
+#include "dvi-config.h"
 
 #include "driver.h"
 #include "nonposix.h"
 #include "paper.h"
 
-extern "C" const char *Version_string;
-
-#define DEFAULT_LINEWIDTH 40
 static int linewidth = DEFAULT_LINEWIDTH;
 
 static int draw_flag = 1;
@@ -35,29 +36,19 @@ static int landscape_flag = 0;
 static double user_paper_length = 0;
 static double user_paper_width = 0;
 
-/* These values were chosen because:
-
-(MULTIPLIER*SIZESCALE)/(RES*UNITWIDTH) == 1/(2^20 * 72.27)
-
-and 57816 is an exact multiple of both 72.27*SIZESCALE and 72.
-
-The width in the groff font file is the product of MULTIPLIER and the
-width in the tfm file. */
-
-#define RES 57816
-#define RES_7227 (RES/7227)
-#define UNITWIDTH 131072
-#define SIZESCALE 100
-#define MULTIPLIER 1
-
-class dvi_font : public font {
+class dvi_font
+: public font
+{
   dvi_font(const char *);
+
 public:
   int checksum;
   int design_size;
+
   ~dvi_font();
   void handle_unknown_font_command(const char *command, const char *arg,
 				   const char *filename, int lineno);
+
   static dvi_font *load_dvi_font(const char *);
 };
 
@@ -105,15 +96,17 @@ void dvi_font::handle_unknown_font_command(const char *command,
   }
 }
 
-#define FONTS_MAX 256
-
-struct output_font {
+class output_font
+{
+public:
   dvi_font *f;
   int point_size;
   output_font() : f(0) { }
 };
 
-class dvi_printer : public printer {
+class dvi_printer
+: public printer
+{
   FILE *fp;
   int max_drift;
   int byte_count;
@@ -132,12 +125,14 @@ class dvi_printer : public printer {
   int pushed_h;
   int pushed_v;
   int have_pushed;
+
   void preamble();
   void postamble();
   void define_font(int);
   void set_font(int);
   void possibly_begin_line();
   void set_color(color *);
+
 protected:
   enum {
     id_byte = 2,
@@ -170,6 +165,7 @@ protected:
   void out_signed(unsigned char, int);
   void out_unsigned(unsigned char, int);
   void do_special(const char *);
+
 public:
   dvi_printer();
   ~dvi_printer();
@@ -182,11 +178,13 @@ public:
   void draw(int, int *, int, const environment *);
 };
 
-
-class draw_dvi_printer : public dvi_printer {
+class draw_dvi_printer
+: public dvi_printer
+{
   int output_pen_size;
   void set_line_thickness(const environment *);
   void fill_next(const environment *);
+
 public:
   draw_dvi_printer();
   ~draw_dvi_printer();
@@ -217,7 +215,6 @@ dvi_printer::~dvi_printer()
   postamble();
 }
 
-
 draw_dvi_printer::draw_dvi_printer()
 : output_pen_size(-1)
 {
@@ -226,7 +223,6 @@ draw_dvi_printer::draw_dvi_printer()
 draw_dvi_printer::~draw_dvi_printer()
 {
 }
-
 
 void dvi_printer::out1(int n)
 {
@@ -264,7 +260,6 @@ void dvi_printer::out_string(const char *s)
   while (*s != 0)
     out1(*s++);
 }
-
 
 void dvi_printer::end_of_line()
 {
@@ -493,8 +488,8 @@ void dvi_printer::postamble()
   out1(id_byte);
   for (i = 0; i < 4 || byte_count % 4 != 0; i++)
     out1(filler);
-}  
-  
+}
+
 void dvi_printer::begin_page(int i)
 {
   page_count++;
@@ -910,7 +905,7 @@ static void usage(FILE *stream);
 
 int main(int argc, char **argv)
 {
-  setlocale(LC_NUMERIC, "C");
+  setlocale(LC_NUMERIC, "C"); // FIXME this is the default, noone else sets it!?
   program_name = argv[0];
   static char stderr_buf[BUFSIZ];
   setbuf(stderr, stderr_buf);
@@ -942,7 +937,7 @@ int main(int argc, char **argv)
       break;
     case 'v':
       {
-	printf("GNU grodvi (groff) version %s\n", Version_string);
+	puts(L_D_DVI " (" T_ROFF ") v" VERSION);
 	exit(0);
 	break;
       }
@@ -976,6 +971,8 @@ int main(int argc, char **argv)
 
 static void usage(FILE *stream)
 {
-  fprintf(stream, "usage: %s [-dv] [-F dir] [-w n] [files ...]\n",
+  fprintf(stream, "Synopsis: %s [-dv] [-F dir] [-w n] [files ...]\n",
 	  program_name);
 }
+
+// s-it2-mode
