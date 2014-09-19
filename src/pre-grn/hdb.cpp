@@ -1,4 +1,4 @@
- /* Last non-groff version: hdb.c  1.8 (Berkeley) 84/10/20
+/* Last non-groff version: hdb.c  1.8 (Berkeley) 84/10/20
  *
  * Copyright -C- 1982 Barry S. Roitblat
  *
@@ -6,16 +6,17 @@
  * gremlin picture editor.
  */
 
-#include <stdlib.h>
-#include "gprint.h"
-#include <string.h>
+#include "config.h"
+#include grn-config.h"
+
 #include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "errarg.h"
 #include "error.h"
 
-#define MAXSTRING 128
-#define MAXSTRING_S "127"
+#include "gprint.h"
 
 /* imports from main.cpp */
 
@@ -30,9 +31,7 @@ extern void savebounds(double x, double y);
 extern POINT *PTInit();
 extern POINT *PTMakePoint(double x, double y, POINT ** pplist);
 
-
 int DBGetType(register char *s);
-
 
 /*
  * This routine returns a pointer to an initialized database element which
@@ -69,7 +68,6 @@ DBCreateElt(int type,
   *db = temp;
   return (temp);
 }				/* end CreateElt */
-
 
 /*
  * This routine reads the specified file into a database and returns a
@@ -198,7 +196,6 @@ DBRead(register FILE *file)
   return (elist);
 }				/* end DBRead */
 
-
 /*
  * Interpret element type in string s.
  * Old file format consisted of integer element types.
@@ -222,7 +219,7 @@ DBGetType(register char *s)
       if (s[5] == '\n')
 	return (CURVE);
       switch (s[7]) {
-      case 'S': 
+      case 'S':
 	return(BSPLINE);
       case 'E':
 	fprintf(stderr,
@@ -343,4 +340,4 @@ xscanf(FILE *f,
 }
 #endif	/* UW_FASTSCAN */
 
-/* EOF */
+// s-it2-mode

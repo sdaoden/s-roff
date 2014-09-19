@@ -4,18 +4,16 @@
  * to troff input.
  */
 
+#include "config.h"
+#include "eqn-config.h"
+
 #include "lib.h"
 
 #include "gprint.h"
 
-#define MAXVECT	40
-#define MAXPOINTS	200
-#define LINELENGTH	1
-#define PointsPerInterval 64
 #define pi		3.14159265358979324
 #define twopi		(2.0 * pi)
 #define len(a, b)	groff_hypot((double)(b.x-a.x), (double)(b.y-a.y))
-
 
 extern int dotshifter;		/* for the length of dotted curves */
 
@@ -25,7 +23,6 @@ extern char *tfont[];
 extern int tsize[];
 extern int stipple_index[];	/* stipple font index for stipples 0 - 16 */
 extern char *stipple;		/* stipple type (cf or ug) */
-
 
 extern double troffscale;	/* imports from main.c */
 extern double linethickness;
@@ -68,7 +65,6 @@ void PeriodicSpline(double h[], int z[],
 void NaturalEndSpline(double h[], int z[],
 		      double dz[], double d2z[], double d3z[],
 		      int npoints);
-
 
 
 /*----------------------------------------------------------------------------*
@@ -263,7 +259,6 @@ HGPrintElt(ELT *element,
   }				/* end if */
 }				/* end PrintElt */
 
-
 /*----------------------------------------------------------------------------*
  | Routine:	HGPutText (justification, position_point, string)
  |
@@ -333,7 +328,6 @@ HGPutText(int justify,
 				/* left                                   */
 }				/* end HGPutText */
 
-
 /*----------------------------------------------------------------------------*
  | Routine:	doarc (center_point, start_point, angle)
  |
@@ -354,12 +348,11 @@ doarc(POINT cp,
 	  (int) (sp.x * troffscale), (int) (sp.y * troffscale), 0);
 }
 
-
 /*----------------------------------------------------------------------------*
  | Routine:	HGSetFont (font_number, Point_size)
  |
  | Results:	ALWAYS outputs a .ft and .ps directive to troff.  This is
- |		done because someone may change stuff inside a text string. 
+ |		done because someone may change stuff inside a text string.
  |		Changes thickness back to default thickness.  Default
  |		thickness depends on font and pointsize.
  *----------------------------------------------------------------------------*/
@@ -372,7 +365,6 @@ HGSetFont(int font,
 	 ".ps %d\n", tfont[font - 1], tsize[size - 1]);
   linethickness = DEFTHICK;
 }
-
 
 /*----------------------------------------------------------------------------*
  | Routine:	HGSetBrush (line_mode)
@@ -404,7 +396,6 @@ HGSetBrush(int mode)
     cr();
 }
 
-
 /*----------------------------------------------------------------------------*
  | Routine:	deltax (x_destination)
  |
@@ -422,7 +413,6 @@ deltax(double x)
   printf(" %du", ix - lastx);
   lastx = ix;
 }
-
 
 /*----------------------------------------------------------------------------*
  | Routine:	deltay (y_destination)
@@ -443,12 +433,11 @@ deltay(double y)
   lastyline = iy;
 }
 
-
 /*----------------------------------------------------------------------------*
  | Routine:	tmove2 (px, py)
  |
  | Results:	Produces horizontal and vertical moves for troff given the
- |		pair of points to move to and knowing the current position. 
+ |		pair of points to move to and knowing the current position.
  |		Also puts out a horizontal move to start the line.  This is
  |		a variation without the .sp command.
  *----------------------------------------------------------------------------*/
@@ -469,7 +458,6 @@ tmove2(int px,
     lastx = px;
   }
 }
-
 
 /*----------------------------------------------------------------------------*
  | Routine:	tmove (point_pointer)
@@ -498,7 +486,6 @@ tmove(POINT * ptr)
   }
 }
 
-
 /*----------------------------------------------------------------------------*
  | Routine:	cr ( )
  |
@@ -514,7 +501,6 @@ cr()
   printf("\n.sp -1\n");
   lastx = xleft;
 }
-
 
 /*----------------------------------------------------------------------------*
  | Routine:	line ( )
@@ -532,7 +518,6 @@ line(int px,
   lastx = px;
   lastyline = lasty = py;
 }
-
 
 /*----------------------------------------------------------------------------
  | Routine:	drawwig (ptr, type)
@@ -561,7 +546,6 @@ drawwig(POINT * ptr,
       picurve(&x[0], &y[0], npts);
   }
 }
-
 
 /*----------------------------------------------------------------------------
  | Routine:	HGArc (xcenter, ycenter, xstart, ystart, angle)
@@ -622,7 +606,6 @@ HGArc(register int cx,
     }
   }				/* end for */
 }				/* end HGArc */
-
 
 /*----------------------------------------------------------------------------
  | Routine:	picurve (xpoints, ypoints, num_of_points)
@@ -691,7 +674,6 @@ picurve(register int *x,
   }
 }
 
-
 /*----------------------------------------------------------------------------
  | Routine:	HGCurve(xpoints, ypoints, num_points)
  |
@@ -759,7 +741,6 @@ HGCurve(int *x,
   }				/* end for j */
 }				/* end HGCurve */
 
-
 /*----------------------------------------------------------------------------
  | Routine:	Paramaterize (xpoints, ypoints, hparams, num_points)
  |
@@ -796,12 +777,11 @@ Paramaterize(int x[],
     h[i] = u[i + 1] - u[i];
 }				/* end Paramaterize */
 
-
 /*----------------------------------------------------------------------------
  | Routine:	PeriodicSpline (h, z, dz, d2z, d3z, npoints)
  |
  | Results:	This routine solves for the cubic polynomial to fit a spline
- |		curve to the the points specified by the list of values. 
+ |		curve to the the points specified by the list of values.
  |		The Curve generated is periodic.  The algorithms for this
  |		curve are from the `Spline Curve Techniques' paper cited
  |		above.
@@ -869,7 +849,6 @@ PeriodicSpline(double h[],	/* paramaterization  */
   }
 }				/* end PeriodicSpline */
 
-
 /*----------------------------------------------------------------------------
  | Routine:	NaturalEndSpline (h, z, dz, d2z, d3z, npoints)
  |
@@ -925,7 +904,6 @@ NaturalEndSpline(double h[],	/* parameterization */
   }
 }				/* end NaturalEndSpline */
 
-
 /*----------------------------------------------------------------------------*
  | Routine:	change (x_position, y_position, visible_flag)
  |
@@ -954,7 +932,6 @@ change(register int x,
     tmove2(x, y);
   }
 }
-
 
 /*----------------------------------------------------------------------------
  | Routine:	HGtline (xstart, ystart, xend, yend)
@@ -1045,4 +1022,4 @@ HGtline(int x_1,
     change(x_1, y_1, 0);
 }
 
-/* EOF */
+// s-it2-mode

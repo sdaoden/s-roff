@@ -12,7 +12,7 @@
  * with a `default' command and are further overridden by commands in the
  * input.
  *
- * Inside the GS and GE, commands are accepted to reconfigure the picture. 
+ * Inside the GS and GE, commands are accepted to reconfigure the picture.
  * At most one command may reside on each line, and each command is followed
  * by a parameter separated by white space.  The commands are as follows,
  * and may be abbreviated down to one character (with exception of `scale'
@@ -27,7 +27,7 @@
  *                                    font (one or two characters).
  *                     stipple, l  -  Use a stipple font for polygons.  Arg
  *                                    is troff font name.  No Default.  Can
- *                                    use only one stipple font per picture. 
+ *                                    use only one stipple font per picture.
  *                                    (See below for stipple font index.)
  *                       scale, x  -  Scale is IN ADDITION to the global
  *                                    scale factor from the default.
@@ -43,7 +43,7 @@
  *                                    scaling factor that is in effect, and
  *                                    forces the picture to fit into either
  *                                    the height or width specified,
- *                                    whichever makes the picture smaller. 
+ *                                    whichever makes the picture smaller.
  *                                    The operand for these two commands is
  *                                    a floating-point number in units of
  *                                    inches.
@@ -51,7 +51,7 @@
  *                                    and a stipple `character'.  <nn> must
  *                                    be in the range 0 to NSTIPPLES (16)
  *                                    inclusive.  The integer operand is an
- *                                    index in the stipple font selected. 
+ *                                    index in the stipple font selected.
  *                                    Valid cf (cifplot) indices are 1-32
  *                                    (although 24 is not defined), valid ug
  *                                    (unigrafix) indices are 1-14, and
@@ -66,24 +66,23 @@
  * are used for text processing and g5-g7 are reserved.
  */
 
-
-#include "lib.h"
+#include "config.h"
+#include "grn-config.h"
 
 #include <ctype.h>
 #include <stdlib.h>
-#include "gprint.h"
-
-#include "device.h"
-#include "file_case.h"
-#include "font.h"
-#include "searchpath.h"
-#include "macropath.h"
 
 #include "errarg.h"
 #include "error.h"
 #include "defs.h"
+#include "device.h"
+#include "file_case.h"
+#include "font.h"
+#include "lib.h"
+#include "macropath.h"
+#include "searchpath.h"
 
-extern "C" const char *Version_string;
+#include "gprint.h"
 
 /* database imports */
 
@@ -92,35 +91,6 @@ extern ELT *DBInit();
 extern ELT *DBRead(register FILE *file);
 extern POINT *PTInit();
 extern POINT *PTMakePoint(double x, double y, POINT **pplist);
-
-
-#define SUN_SCALEFACTOR 0.70
-
-/* #define DEFSTIPPLE    "gs" */
-#define DEFSTIPPLE	"cf"
-/*
- * This grn implementation emits `.st' requests to control stipple effects,
- * but groff does not (currently) support any such request.
- *
- * This hack disables the emission of such requests, without destroying the
- * infrastructure necessary to support the feature in the future; to enable
- * the emission of `.st' requests, at a future date when groff can support
- * them, simply rewrite the following #define as:
- *
- *   #define USE_ST_REQUEST  stipple
- *
- * with accompanying comment: ``emit `.st' requests as required''.
- */
-#define USE_ST_REQUEST  0	/* never emit `.st' requests */
-
-#define MAXINLINE	100	/* input line length */
-
-#define SCREENtoINCH	0.02	/* scaling factor, screen to inches */
-
-#define BIG	999999999999.0	/* unweildly large floating number */
-
-
-static char sccsid[] = "@(#) (Berkeley) 8/5/85, 12/28/99";
 
 int res;			/* the printer's resolution goes here */
 
@@ -227,7 +197,6 @@ char gremlinfile[MAXINLINE];	/* filename to use for a picture */
 int SUNFILE = FALSE;		/* TRUE if SUN gremlin file */
 int compatibility_flag = FALSE;	/* TRUE if in compatibility mode */
 
-
 void getres();
 int doinput(file_case *fcp);
 void conv(file_case *fcp, int baseline);
@@ -235,15 +204,13 @@ void savestate();
 int has_polygon(register ELT *elist);
 void interpret(char *line);
 
-
 void
 usage(FILE *stream)
 {
   fprintf(stream,
-	  "usage: %s [ -vCs ] [ -M dir ] [ -F dir ] [ -T dev ] [ file ]\n",
+	  "Synopsis: %s [ -vCs ] [ -M dir ] [ -F dir ] [ -T dev ] [ file ]\n",
 	  program_name);
 }
-
 
 /*----------------------------------------------------------------------------*
  | Routine:	main (argument_count, argument_pointer)
@@ -300,7 +267,7 @@ main(int argc,
       case '-':
 	if (strcmp(*argv,"--version")==0) {
       case 'v':
-	  printf("GNU grn (groff) version %s\n", Version_string);
+	  puts(L_P_GRN " (" T_ROFF ") v " VERSION);
 	  exit(0);
 	  break;
 	}
@@ -349,7 +316,6 @@ main(int argc,
   return 0;
 }
 
-
 /*----------------------------------------------------------------------------*
  | Routine:	char  * operand (& argc, & argv)
  |
@@ -373,7 +339,6 @@ operand(int *argcp,
   }
   return (*(++(*argvp)));	/* operand is next word */
 }
-
 
 /*----------------------------------------------------------------------------*
  | Routine:	getres ()
@@ -406,7 +371,6 @@ getres()
     linepiece = linepiece >> 1;
 }
 
-
 /*----------------------------------------------------------------------------*
  | Routine:	int  doinput (file_pointer)
  |
@@ -414,7 +378,7 @@ getres()
  |
  | Side Efct:	"linenum" is incremented.
  |
- | Bugs:	Lines longer than MAXINLINE are NOT checked, except for 
+ | Bugs:	Lines longer than MAXINLINE are NOT checked, except for
  |		updating `linenum'.
  *----------------------------------------------------------------------------*/
 
@@ -427,7 +391,6 @@ doinput(file_case *fcp)
     linenum++;
   return 1;
 }
-
 
 /*----------------------------------------------------------------------------*
  | Routine:	initpic ( )
@@ -473,7 +436,6 @@ initpic()
   linethickness = DEFTHICK;	/* brush styles */
   linmod = DEFSTYLE;
 }
-
 
 /*----------------------------------------------------------------------------*
  | Routine:	conv (file_pointer, starting_line)
@@ -660,7 +622,6 @@ conv(file_case *fcp,
   } while (!done);
 }
 
-
 /*----------------------------------------------------------------------------*
  | Routine:	savestate  ( )
  |
@@ -691,7 +652,6 @@ savestate()
   defpoint = pointscale;	/* flag for scaling pointsizes from x factors */
 }
 
-
 /*----------------------------------------------------------------------------*
  | Routine:	savebounds (x_coordinate, y_coordinate)
  |
@@ -715,7 +675,6 @@ savebounds(double x,
   if (y > bottompoint)
     bottompoint = y;
 }
-
 
 /*----------------------------------------------------------------------------*
  | Routine:	interpret (character_string)
@@ -903,7 +862,6 @@ interpret(char *line)
   };
 }
 
-
 /*
  * return TRUE if picture contains a polygon
  * otherwise FALSE
@@ -921,4 +879,4 @@ has_polygon(register ELT *elist)
   return (0);
 }
 
-/* EOF */
+// s-it2-mode

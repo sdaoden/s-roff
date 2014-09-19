@@ -1,13 +1,15 @@
-/* Last non-groff version: hpoint.c  1.1  84/10/08 */
-
 /*
  * This file contains routines for manipulating the point data structures
  * for the gremlin picture editor.
  */
+/* Last non-groff version: hpoint.c  1.1  84/10/08 */
+
+#include "config.h"
+#include "grn-config.h"
 
 #include <stdlib.h>
-#include "gprint.h"
 
+#include "gprint.h"
 
 /*
  * Return pointer to empty point list.
@@ -17,7 +19,6 @@ PTInit()
 {
   return ((POINT *) NULL);
 }
-
 
 /*
  * This routine creates a new point with coordinates x and y and links it
@@ -46,4 +47,4 @@ PTMakePoint(double x,
   return (pt);
 }				/* end PTMakePoint */
 
-/* EOF */
+// s-it2-mode

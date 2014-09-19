@@ -1,6 +1,10 @@
-'\" t
+'\" t -- preprocess: tbl(1)
 .ig
-Copyright (C) 2000, 2001, 2002, 2003, 2004, 2006
+@ @L_P_GRN@.1
+
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
+Copyright (C) 2000 - 2004, 2006
   Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
@@ -36,11 +40,11 @@ the original English.
 ..
 .
 .
-.TH @G@GRN @MAN1EXT@ "@MDATE@" "Groff Version @VERSION@"
+.TH @U_P_GRN@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .SH NAME
-@g@grn \- groff preprocessor for gremlin files
+@L_P_GRN@ \- preprocessor for gremlin files
 .SH SYNOPSIS
-.BR @g@grn
+.BR @L_P_GRN@
 [
 .B \-Cv
 ]
@@ -60,26 +64,26 @@ the original English.
 It is possible to have whitespace between a command line option and its
 parameter.
 .SH DESCRIPTION
-.I @g@grn
+.I @L_P_GRN@
 is a preprocessor for including
 .I gremlin
 pictures in
-.I groff
+.I @L_ROFF@
 input.
-.I @g@grn
+.I @L_P_GRN@
 writes to standard output, processing only input lines between two that
 start with
 .B .GS
 and
 .BR .GE.
 Those lines must contain
-.I @g@grn
+.I @L_P_GRN@
 commands (see below).
 These commands request a
 .I gremlin
 file, and the picture in that file is
 converted and placed in the
-.I @g@troff
+.I @L_TROFF@
 input stream.
 The
 .B .GS
@@ -93,9 +97,7 @@ is mentioned, the standard input is read.
 At the end of the picture, the position on the page is the bottom of the
 .I gremlin
 picture.
-If the
-.I @g@grn
-entry is ended with
+If the entry is ended with
 .B .GF
 instead of
 .BR .GE ,
@@ -115,7 +117,7 @@ Prepare output for printer
 The default device is
 .BR @DEVICE@ .
 See
-.BR groff (@MAN1EXT@)
+.BR @L_ROFF@ (@MAN1EXT@)
 for acceptable devices.
 .TP
 .BI \-M dir
@@ -171,7 +173,7 @@ Each input line between
 and
 .B .GE
 may have one
-.I @g@grn
+.I @L_P_GRN@
 command.
 Commands consist of one or two strings separated by white space, the first
 string being the command and the second its operand.
@@ -206,7 +208,7 @@ The default is 12 (16, 24, and 36, respectively).
 .TQ
 .BI special\  f
 Set the roman (italics, bold, or special) font to
-.IR @g@troff 's
+.IR @L_TROFF@ 's
 font
 .I f
 (either a name or number).
@@ -216,7 +218,7 @@ The default is R (I, B, and S, respectively).
 .TQ
 .BI stipple\  f
 Set the stipple font to
-.IR @g@troff 's
+.IR @L_TROFF@ 's
 stipple font
 .I f
 (name or number).
@@ -271,7 +273,7 @@ regardless of any scaling factors in the picture.
 Setting
 .B pointscale
 will cause the point sizes to scale with the picture (within
-.IR @g@troff 's
+.IR @L_TROFF@ 's
 limitations, of course).
 An operand of anything but
 .I off
@@ -282,7 +284,7 @@ Reset the picture environment defaults to the settings in the current
 picture.
 This is meant to be used as a global parameter setting mechanism at the
 beginning of the
-.I @g@troff
+.I @L_TROFF@
 input file, but can be used at any time to reset the
 default settings.
 .TP
@@ -326,13 +328,13 @@ doesn't exist, an error message is reported and processing continues from
 the
 .B .GE
 line.
-.SH NOTES ABOUT GROFF
+.SH NOTES ABOUT @U_ROFF@
 Since
-.I @g@grn
+.I @L_P_GRN@
 is a preprocessor, it doesn't know about current indents, point sizes,
 margins, number registers, etc.
 Consequently, no
-.I @g@troff
+.I @L_TROFF@
 input can be placed between the
 .B .GS
 and
@@ -341,10 +343,8 @@ requests.
 However,
 .I gremlin
 text is now processed by
-.IR @g@troff ,
-so anything valid in a single line of
-.I @g@troff
-input is valid in a line of
+.IR @L_TROFF@ ,
+so anything valid in a single line of troff input is valid in a line of
 .I gremlin
 text (barring `.' directives at the beginning of a line).
 Thus, it is possible to have equations within a
@@ -357,11 +357,11 @@ expressions enclosed by previously defined delimiters (e.g.
 .IR $$ ).
 .PP
 When using
-.I @g@grn
+.I @L_P_GRN@
 along with other preprocessors, it is best to run
 .I tbl
 before
-.IR @g@grn ,
+.IR @L_P_GRN@ ,
 .IR pic ,
 and/or
 .I ideal
@@ -371,14 +371,14 @@ to avoid overworking
 should always be run last.
 .PP
 A picture is considered an entity, but that doesn't stop
-.I @g@troff
+.I @L_TROFF@
 from trying to break it up if it falls off the end of a page.
 Placing the picture between `keeps' in \-me macros will ensure proper
 placement.
 .PP
-.I @g@grn
+.I @L_P_GRN@
 uses
-.IR @g@troff 's 
+.IR @L_TROFF@ 's
 number registers
 .B g1
 through
@@ -393,7 +393,7 @@ figure (in device units) before entering the
 .B .GS
 request (this is for those who want to rewrite these macros).
 .SH GREMLIN FILE FORMAT
-There exist two distinct 
+There exist two distinct
 .I gremlin
 file formats, the original format from the
 .I AED
@@ -409,13 +409,13 @@ version allowing reference points with negative coordinates is
 compatible with the
 .I AED
 version.
-As long as a 
+As long as a
 .I gremlin
 file does not contain negative coordinates, either format will be read
 correctly by either version of
 .I gremlin
 or
-.IR @g@grn .
+.IR @L_P_GRN@ .
 The other difference to the
 .IR SUN / X11
 format is the use of names for picture objects (e.g., POLYGON, CURVE)
@@ -568,16 +568,16 @@ For text, the brush selects a font as follows:
 .TS
 center, tab(@);
 ncw(0.1i)l.
-1 \(mi@@roman (R font in groff)
-2 \(mi@@italics (I font in groff)
-3 \(mi@@bold (B font in groff)
-4 \(mi@@special (S font in groff)
+1 \(mi@@roman (R font in @L_ROFF@)
+2 \(mi@@italics (I font in @L_ROFF@)
+3 \(mi@@bold (B font in @L_ROFF@)
+4 \(mi@@special (S font in @L_ROFF@)
 .TE
 .sp
 If you're using
-.I @g@grn
+.I @L_P_GRN@
 to run your pictures through
-.IR groff ,
+.IR @L_ROFF@ ,
 the font is really just a starting font:
 The text string can contain formatting sequences like
 ``\efI''
@@ -616,7 +616,7 @@ ever use negative coordinates.
 .I gremlin
 writes out coordinates using format ``%f1.2''; it's probably a good idea to
 use the same format if you want to modify the
-.I @g@grn
+.I @L_P_GRN@
 code.
 .SH NOTES ON SUN/X11 COORDINATES
 There is no longer a restriction on the range of coordinates used to create
@@ -635,19 +635,17 @@ Device description file for device
 .IR name .
 .SH SEE ALSO
 .BR gremlin (1),
-.BR groff (@MAN1EXT@),
-.BR @g@pic (@MAN1EXT@),
+.BR @L_ROFF@ (@MAN1EXT@),
+.BR @L_P_PIC@ (@MAN1EXT@),
 .BR ideal (1)
 .SH HISTORY
 .PP
 David Slattengren and Barry Roitblat wrote the original Berkeley
-.IR @g@grn .
+.IR @L_P_GRN@ .
 .PP
 Daniel Senderowicz and Werner Lemberg modified it for
 .IR groff .
 .
 .cp \n[grn_C]
 .
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
+.\" s-ts-mode
