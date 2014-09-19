@@ -1,32 +1,38 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2001, 2002, 2007
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2001, 2002, 2007
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+#include "config.h"
+#include "eqn-config.h"
 
 #include "eqn.h"
 #include "pbox.h"
 
-class over_box : public box {
-private:
+class over_box
+: public box
+{
   int reduce_size;
   box *num;
   box *den;
+
 public:
   over_box(int small, box *, box *);
   ~over_box();
@@ -79,7 +85,7 @@ int over_box::compute_metrics(int style)
   }
   if (reduce_size)
     printf(".ps \\n[" SIZE_FORMAT "]u\n", uid);
-  printf(".nr " WIDTH_FORMAT " (\\n[" WIDTH_FORMAT "]>?\\n[" WIDTH_FORMAT "]", 
+  printf(".nr " WIDTH_FORMAT " (\\n[" WIDTH_FORMAT "]>?\\n[" WIDTH_FORMAT "]",
 	 uid, num->uid, den->uid);
   // allow for \(ru being wider than both the numerator and denominator
   if (!draw_flag)
@@ -121,9 +127,9 @@ void over_box::output()
   if (output_format == troff) {
     if (reduce_size)
       printf("\\s[\\n[" SMALL_SIZE_FORMAT "]u]", uid);
-  #ifdef USE_Z
+#ifdef USE_Z
     printf("\\Z" DELIMITER_CHAR);
-  #endif
+#endif
     // move up to the numerator baseline
     printf("\\v'-\\n[" SUP_RAISE_FORMAT "]u'", uid);
     // move across so that it's centered
@@ -133,19 +139,19 @@ void over_box::output()
     // print the numerator
     num->output();
 
-  #ifdef USE_Z
+#ifdef USE_Z
     printf(DELIMITER_CHAR);
-  #else
+#else
     // back again
     printf("\\h'-\\n[" WIDTH_FORMAT "]u'", num->uid);
     printf("\\h'-(\\n[" WIDTH_FORMAT "]u-\\n[" WIDTH_FORMAT "]u/2u)'",
 	   uid, num->uid);
     // down again
     printf("\\v'\\n[" SUP_RAISE_FORMAT "]u'", uid);
-  #endif
-  #ifdef USE_Z
+#endif
+#ifdef USE_Z
     printf("\\Z" DELIMITER_CHAR);
-  #endif
+#endif
     // move down to the denominator baseline
     printf("\\v'\\n[" SUB_LOWER_FORMAT "]u'", uid);
 
@@ -156,16 +162,16 @@ void over_box::output()
     // print the the denominator
     den->output();
 
-  #ifdef USE_Z
+#ifdef USE_Z
     printf(DELIMITER_CHAR);
-  #else
+#else
     // back again
     printf("\\h'-\\n[" WIDTH_FORMAT "]u'", den->uid);
     printf("\\h'-(\\n[" WIDTH_FORMAT "]u-\\n[" WIDTH_FORMAT "]u/2u)'",
 	   uid, den->uid);
     // up again
     printf("\\v'-\\n[" SUB_LOWER_FORMAT "]u'", uid);
-  #endif
+#endif
     if (reduce_size)
       printf("\\s[\\n[" SIZE_FORMAT "]u]", uid);
     // draw the line
@@ -204,3 +210,5 @@ void over_box::check_tabs(int level)
   num->check_tabs(level + 1);
   den->check_tabs(level + 1);
 }
+
+// s-it2-mode

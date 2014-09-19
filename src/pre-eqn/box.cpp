@@ -1,23 +1,27 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2002, 2004, 2007
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2002, 2004, 2007
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+#include "config.h"
+#include "eqn-config.h"
 
 #include "eqn.h"
 #include "pbox.h"
@@ -29,7 +33,7 @@ char *grfont = 0;
 char *gbfont = 0;
 int gsize = 0;
 
-int script_size_reduction = -1;	// negative means reduce by a percentage 
+int script_size_reduction = -1;	// negative means reduce by a percentage
 
 int positive_space = -1;
 int negative_space = -1;
@@ -84,7 +88,7 @@ int nroff = 0;			// should we grok ndefine or tdefine?
 struct S {
   const char *name;
   int *ptr;
-} param_table[] = {
+} param_table[] = { // FIXME const
   { "fat_offset", &fat_offset },
   { "over_hang", &over_hang },
   { "accent_width", &accent_width },
@@ -220,9 +224,6 @@ void set_gbfont(const char *s)
   a_delete gbfont;
   gbfont = strsave(s);
 }
-
-// this must be precisely 2 characters in length
-#define COMPATIBLE_REG "0C"
 
 void start_string()
 {
@@ -362,9 +363,6 @@ void box::top_level()
   next_uid = 0;
 }
 
-// gpic defines this register so as to make geqn not produce `\x's
-#define EQN_NO_EXTRA_SPACE_REG "0x"
-
 void box::extra_space()
 {
   printf(".if !r" EQN_NO_EXTRA_SPACE_REG " "
@@ -436,11 +434,10 @@ int box::right_is_italic()
 void box::hint(unsigned)
 {
 }
-  
+
 void box::handle_char_type(int, int)
 {
 }
-
 
 box_list::box_list(box *pp)
 {
@@ -476,7 +473,6 @@ void box_list::list_check_tabs(int level)
   for (int i = 0; i < len; i++)
     p[i]->check_tabs(level);
 }
-
 
 pointer_box::pointer_box(box *pp) : p(pp)
 {
@@ -644,3 +640,5 @@ void tab_box::debug_print()
 {
   fprintf(stderr, "<tab>");
 }
+
+// s-it2-mode

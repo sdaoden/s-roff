@@ -1,30 +1,36 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2002, 2007
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2002, 2007
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+#include "config.h"
+#include "eqn-config.h"
 
 #include "eqn.h"
 #include "pbox.h"
 
-class accent_box : public pointer_box {
-private:
+class accent_box
+: public pointer_box
+{
   box *ab;
+
 public:
   accent_box(box *, box *);
   ~accent_box();
@@ -70,7 +76,7 @@ void accent_box::output()
     printf("\\h'\\n[" WIDTH_FORMAT "]u-\\n[" WIDTH_FORMAT "]u/2u+\\n["
 	   SKEW_FORMAT "]u'",
 	   p->uid, ab->uid, p->uid);
-    printf("\\v'-\\n[" SUP_RAISE_FORMAT "]u'", uid); 
+    printf("\\v'-\\n[" SUP_RAISE_FORMAT "]u'", uid);
     ab->output();
     printf("\\h'-\\n[" WIDTH_FORMAT "]u'", ab->uid);
     printf("\\v'\\n[" SUP_RAISE_FORMAT "]u'", uid);
@@ -124,7 +130,7 @@ void accent_box::output()
     printf("\\h'\\n[" LEFT_WIDTH_FORMAT "]u+\\n[" SKEW_FORMAT "]u"
 	   "-(\\n[" WIDTH_FORMAT "]u/2u)'",
 	   uid, p->uid, ab->uid);
-    printf("\\v'-\\n[" SUP_RAISE_FORMAT "]u'", uid); 
+    printf("\\v'-\\n[" SUP_RAISE_FORMAT "]u'", uid);
     ab->output();
     printf(DELIMITER_CHAR);
     printf("\\Z" DELIMITER_CHAR);
@@ -157,7 +163,9 @@ void accent_box::debug_print()
   fprintf(stderr, " }");
 }
 
-class overline_char_box : public simple_box {
+class overline_char_box
+: public simple_box
+{
 public:
   overline_char_box();
   void output();
@@ -185,7 +193,9 @@ void overline_char_box::debug_print()
   fprintf(stderr, "<overline char>");
 }
 
-class overline_box : public pointer_box {
+class overline_box
+: public pointer_box
+{
 public:
   overline_box(box *);
   int compute_metrics(int);
@@ -244,8 +254,11 @@ void overline_box::debug_print()
   fprintf(stderr, " } bar");
 }
 
-class uaccent_box : public pointer_box {
+class uaccent_box
+: public pointer_box
+{
   box *ab;
+
 public:
   uaccent_box(box *, box *);
   ~uaccent_box();
@@ -299,7 +312,7 @@ void uaccent_box::output()
     printf("\\Z" DELIMITER_CHAR);
     printf("\\h'\\n[" LEFT_WIDTH_FORMAT "]u-(\\n[" WIDTH_FORMAT "]u/2u)'",
 	   uid, ab->uid);
-    printf("\\v'\\n[" DEPTH_FORMAT "]u'", p->uid); 
+    printf("\\v'\\n[" DEPTH_FORMAT "]u'", p->uid);
     ab->output();
     printf(DELIMITER_CHAR);
     printf("\\Z" DELIMITER_CHAR);
@@ -337,7 +350,9 @@ void uaccent_box::debug_print()
   fprintf(stderr, " }");
 }
 
-class underline_char_box : public simple_box {
+class underline_char_box
+: public simple_box
+{
 public:
   underline_char_box();
   void output();
@@ -366,7 +381,9 @@ void underline_char_box::debug_print()
 }
 
 
-class underline_box : public pointer_box {
+class underline_box
+: public pointer_box
+{
 public:
   underline_box(box *);
   int compute_metrics(int);
@@ -476,7 +493,6 @@ void size_box::debug_print()
   fprintf(stderr, " }");
 }
 
-
 font_box::font_box(char *s, box *pp) : pointer_box(pp), f(s)
 {
 }
@@ -571,14 +587,12 @@ void fat_box::output()
   }
 }
 
-
 void fat_box::debug_print()
 {
   fprintf(stderr, "fat { ");
   p->debug_print();
   fprintf(stderr, " }");
 }
-
 
 vmotion_box::vmotion_box(int i, box *pp) : pointer_box(pp), n(i)
 {
@@ -700,3 +714,4 @@ void vcenter_box::debug_print()
   fprintf(stderr, " }");
 }
 
+// s-it2-mode

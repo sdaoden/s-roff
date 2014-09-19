@@ -1,0 +1,20 @@
+/*@ Configurable stuff */
+#ifndef _EQN_CONFIG_H
+#define _EQN_CONFIG_H
+
+#define STARTUP_FILE            "eqnrc"
+
+// prefix for all registers, strings, macros
+#define PREFIX                  "0"
+
+// this must be precisely 2 characters in length
+#define COMPATIBLE_REG          "0C"
+
+// XYpic defines this register so as to make geqn not produce `\x's
+#define EQN_NO_EXTRA_SPACE_REG  "0x"
+
+// Character representing $1.  Must be invalid input character.
+#define ARG1                    14
+
+#endif // _EQN_CONFIG_H
+// s-it2-mode

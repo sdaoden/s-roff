@@ -1,38 +1,39 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2000, 2001, 2002, 2005, 2007
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000 - 2002, 2005, 2007
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 
-This file is part of groff.
+#include "config.h"
+#include "eqn-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+#include <ctype.h>
 
 #include "eqn.h"
-#include "stringclass.h"
 #include "device.h"
 #include "file_case.h"
-#include "searchpath.h"
-#include "macropath.h"
 #include "htmlhint.h"
+#include "macropath.h"
 #include "pbox.h"
-#include "ctype.h"
-
-#define STARTUP_FILE "eqnrc"
+#include "searchpath.h"
+#include "stringclass.h"
 
 extern int yyparse();
-extern "C" const char *Version_string;
 
 static char *delim_search    (char *, int);
 static int   inline_equation (file_case *, string &, string &);
@@ -113,7 +114,7 @@ void do_file(file_case *fcp, const char *filename)
       inline_flag = 0;
       yyparse();
       restore_compatibility();
-      if (non_empty_flag) 
+      if (non_empty_flag)
 	if (output_format == mathml)
 	  putchar('\n');
         else {
@@ -265,7 +266,7 @@ static char *delim_search(char *ptr, int delim)
 void usage(FILE *stream)
 {
   fprintf(stream,
-    "usage: %s [ -rvDCNR ] -dxx -fn -sn -pn -mn -Mdir -Ts [ files ... ]\n",
+    "Synopsis: %s [ -rvDCNR ] -dxx -fn -sn -pn -mn -Mdir -Ts [ files ... ]\n",
     program_name);
 }
 
@@ -295,7 +296,7 @@ int main(int argc, char **argv)
       config_macro_path.command_line_dir(optarg);
       break;
     case 'v':
-      printf("GNU eqn (groff) version %s\n", Version_string);
+      puts(L_P_EQN " (" T_ROFF ") v" VERSION);
       exit(0);
       break;
     case 'd':
@@ -386,9 +387,10 @@ int main(int argc, char **argv)
 	   ".tm warning: %s should have been given a `-Tps' option\n",
 	   device, program_name);
     printf(".if '\\*(.T'html' "
-	   ".if !'%s'ps' "
-	   ".tm warning: (it is advisable to invoke groff via: groff -Thtml -e)\n",
-	   device);
+      ".if !'%s'ps' "
+      ".tm warning: (it is advisable to invoke " L_ROFF
+        " via: " L_ROFF " -Thtml -e)\n",
+      device);
   }
 
   file_case *fcp;
@@ -415,3 +417,5 @@ int main(int argc, char **argv)
     fatal("output error");
   return 0;
 }
+
+// s-it2-mode

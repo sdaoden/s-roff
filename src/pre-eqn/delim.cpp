@@ -1,23 +1,27 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2003, 2007
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2003, 2007
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+#include "config.h"
+#include "eqn-config.h"
 
 #include "eqn.h"
 #include "pbox.h"
@@ -28,7 +32,7 @@ enum left_or_right_t { LEFT_DELIM = 01, RIGHT_DELIM = 02 };
 // Small will be put in the roman font, others are assumed to be
 // on the special font (so no font change will be necessary.)
 
-struct delimiter {
+struct delimiter { /* FIXME const? */
   const char *name;
   int flags;
   const char *small;
@@ -159,13 +163,15 @@ struct delimiter {
   },
 };
 
-const int DELIM_TABLE_SIZE = int(sizeof(delim_table)/sizeof(delim_table[0]));
+const int DELIM_TABLE_SIZE = int(NELEM(delim_table));
 
-class delim_box : public box {
-private:
+class delim_box
+: public box
+{
   char *left;
   char *right;
   box *p;
+
 public:
   delim_box(char *, box *, char *);
   ~delim_box();
@@ -243,7 +249,7 @@ static void build_extensible(const char *ext, const char *top, const char *mid,
     printf("/2");
   printf(">?0+\\n[" EXT_HEIGHT_REG "]+\\n[" EXT_DEPTH_REG "]-1/(\\n["
 	 EXT_HEIGHT_REG "]+\\n[" EXT_DEPTH_REG "])\n");
-  
+
   printf(".nr " TOTAL_HEIGHT_REG " +(\\n[" EXT_HEIGHT_REG "]+\\n["
 	 EXT_DEPTH_REG "]*\\n[" TEMP_REG "]");
   if (mid)
@@ -267,7 +273,7 @@ static void build_extensible(const char *ext, const char *top, const char *mid,
 
   printf("." REPEAT_APPEND_STRING_MACRO " " DELIM_STRING " \\n[" TEMP_REG "] "
 	 "\\v'\\n[" EXT_HEIGHT_REG "]u'"
-	 "\\Z" DELIMITER_CHAR "%s" DELIMITER_CHAR 
+	 "\\Z" DELIMITER_CHAR "%s" DELIMITER_CHAR
 	 "\\v'\\n[" EXT_DEPTH_REG "]u'\n",
 	 ext);
 
@@ -276,7 +282,7 @@ static void build_extensible(const char *ext, const char *top, const char *mid,
 	   "\\Z" DELIMITER_CHAR "%s" DELIMITER_CHAR
 	   "\\v'\\n[" MID_DEPTH_REG "]u'\n",
 	   mid);
-    printf("." REPEAT_APPEND_STRING_MACRO " " DELIM_STRING 
+    printf("." REPEAT_APPEND_STRING_MACRO " " DELIM_STRING
 	   " \\n[" TEMP_REG "] "
 	   "\\v'\\n[" EXT_HEIGHT_REG "]u'"
 	   "\\Z" DELIMITER_CHAR "%s" DELIMITER_CHAR
@@ -299,7 +305,7 @@ static void define_extensible_string(char *delim, int uid,
   int delim_len = strlen(delim);
   int i;
   for (i = 0; i < DELIM_TABLE_SIZE; i++, d++)
-    if (strncmp(delim, d->name, delim_len) == 0 
+    if (strncmp(delim, d->name, delim_len) == 0
 	&& (left_or_right & d->flags) != 0)
       break;
   if (i >= DELIM_TABLE_SIZE) {
@@ -316,7 +322,7 @@ static void define_extensible_string(char *delim, int uid,
 	 "\\{",
 	 current_roman_font, d->small, axis_height,
 	 current_roman_font, d->small);
-	 
+
   char buf[256];
   sprintf(buf, d->chain_format, "\\\\n[" INDEX_REG "]");
   printf(".nr " INDEX_REG " 0\n"
@@ -407,3 +413,4 @@ void delim_box::debug_print()
     fprintf(stderr, " right \"%s\"", right);
 }
 
+// s-it2-mode

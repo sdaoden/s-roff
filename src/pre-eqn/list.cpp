@@ -1,22 +1,26 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2007 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2007 Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+#include "config.h"
+#include "eqn-config.h"
 
 #include "eqn.h"
 #include "pbox.h"
@@ -93,7 +97,7 @@ int list_box::compute_metrics(int style)
   sty = style;
   int i;
   for (i = 0; i < list.len; i++) {
-    int t = list.p[i]->spacing_type; 
+    int t = list.p[i]->spacing_type;
     // 5
     if (t == BINARY_TYPE) {
       int prevt;
@@ -106,7 +110,7 @@ int list_box::compute_metrics(int style)
 	list.p[i]->spacing_type = ORDINARY_TYPE;
     }
     // 7
-    else if ((t == RELATION_TYPE || t == CLOSING_TYPE 
+    else if ((t == RELATION_TYPE || t == CLOSING_TYPE
 	      || t == PUNCTUATION_TYPE)
 	     && i > 0 && list.p[i-1]->spacing_type == BINARY_TYPE)
       list.p[i-1]->spacing_type = ORDINARY_TYPE;
@@ -239,3 +243,5 @@ void list_box::check_tabs(int level)
 {
   list.list_check_tabs(level);
 }
+
+// s-it2-mode

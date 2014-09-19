@@ -1,38 +1,42 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2000, 2001, 2002, 2003, 2005, 2007,
-                 2008
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000 - 2003, 2005, 2007, 2008
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+#include "config.h"
+#include "eqn-config.h"
 
 #include "eqn.h"
 #include "eqn_tab.h"
-#include "stringclass.h"
-#include "ptable.h"
 #include "file_case.h"
-
+#include "ptable.h"
+#include "stringclass.h"
 
 // declarations to avoid friend name injection problems
 int get_char();
 int peek_char();
 int get_location(char **, int *);
 
-struct definition {
+class definition
+{
+public:
   char is_macro;
   char is_simple;
   union {
@@ -62,7 +66,7 @@ PTABLE(definition) macro_table;
 static struct {
   const char *name;
   int token;
-} token_table[] = {
+} token_table[] = { // FIXME const
   { "over", OVER },
   { "smallover", SMALLOVER },
   { "sqrt", SQRT },
@@ -127,7 +131,7 @@ struct builtin_def {
   const char *def;
 };
 
-static struct builtin_def common_defs[] = {
+static struct builtin_def common_defs[] = { // FIXME const
   { "ALPHA", "\\(*A" },
   { "BETA", "\\(*B" },
   { "CHI", "\\(*X" },
@@ -243,10 +247,10 @@ static struct builtin_def common_defs[] = {
   { "cdot", "type \"binary\" \\(md" },
   { "cdots", "type \"inner\" { \\(md \\(md \\(md }" },
   { "dollar", "$" },
-};  
+};
 
 /* composite definitions that require troff size and motion operators */
-static struct builtin_def troff_defs[] = {
+static struct builtin_def troff_defs[] = { // FIXME const
   { "sum", "{type \"operator\" vcenter size +5 \\(*S}" },
   { "prod", "{type \"operator\" vcenter size +5 \\(*P}" },
   { "int", "{type \"operator\" vcenter size +8 \\(is}" },
@@ -266,7 +270,7 @@ static struct builtin_def troff_defs[] = {
 };
 
 /* equivalent definitions for MathML mode */
-static struct builtin_def mathml_defs[] = {
+static struct builtin_def mathml_defs[] = { // FIXME const
   { "sum", "{type \"operator\" size big \\(*S}" },
   { "prod", "{type \"operator\" size big \\(*P}" },
   { "int", "{type \"operator\" size big \\(is}" },
@@ -283,13 +287,13 @@ static struct builtin_def mathml_defs[] = {
 void init_table(const char *device)
 {
   unsigned int i;
-  for (i = 0; i < sizeof(token_table)/sizeof(token_table[0]); i++) {
+  for (i = 0; i < NELEM(token_table); i++) {
     definition *def = new definition[1];
     def->is_macro = 0;
     def->tok = token_table[i].token;
     macro_table.define(token_table[i].name, def);
   }
-  for (i = 0; i < sizeof(common_defs)/sizeof(common_defs[0]); i++) {
+  for (i = 0; i < NELEM(common_defs); i++) {
     definition *def = new definition[1];
     def->is_macro = 1;
     def->contents = strsave(common_defs[i].def);
@@ -297,7 +301,7 @@ void init_table(const char *device)
     macro_table.define(common_defs[i].name, def);
   }
   if (output_format == troff) {
-    for (i = 0; i < sizeof(troff_defs)/sizeof(troff_defs[0]); i++) {
+    for (i = 0; i < NELEM(troff_defs); i++) {
       definition *def = new definition[1];
       def->is_macro = 1;
       def->contents = strsave(troff_defs[i].def);
@@ -306,7 +310,7 @@ void init_table(const char *device)
     }
   }
   else if (output_format == mathml) {
-    for (i = 0; i < sizeof(mathml_defs)/sizeof(mathml_defs[0]); i++) {
+    for (i = 0; i < NELEM(mathml_defs); i++) {
       definition *def = new definition[1];
       def->is_macro = 1;
       def->contents = strsave(mathml_defs[i].def);
@@ -320,28 +324,34 @@ void init_table(const char *device)
   macro_table.define(device, def);
 }
 
-class input {
+class input
+{
+  friend int get_char();
+  friend int peek_char();
+  friend int get_location(char **, int *);
+  friend void init_lex(const char *str, const char *filename, int lineno);
+
   input *next;
+
 public:
   input(input *p);
   virtual ~input();
   virtual int get() = 0;
   virtual int peek() = 0;
   virtual int get_location(char **, int *);
-
-  friend int get_char();
-  friend int peek_char();
-  friend int get_location(char **, int *);
-  friend void init_lex(const char *str, const char *filename, int lineno);
 };
 
-class file_input : public input {
+class file_input
+: public input
+{
   file_case *_fcp;
   char *filename;
   int lineno;
   string line;
   const char *ptr;
+
   int read_line();
+
 public:
   file_input(file_case *, const char *, input *);
   ~file_input();
@@ -350,10 +360,12 @@ public:
   int get_location(char **, int *);
 };
 
-
-class macro_input : public input {
+class macro_input
+: public input
+{
   char *s;
   char *p;
+
 public:
   macro_input(const char *, input *);
   ~macro_input();
@@ -361,22 +373,28 @@ public:
   int peek();
 };
 
-class top_input : public macro_input {
+class top_input
+: public macro_input
+{
   char *filename;
   int lineno;
- public:
+
+public:
   top_input(const char *, const char *, int, input *);
   ~top_input();
   int get();
   int get_location(char **, int *);
 };
 
-class argument_macro_input: public input {
+class argument_macro_input
+: public input
+{
   char *s;
   char *p;
   char *ap;
   int argc;
   char *argv[9];
+
 public:
   argument_macro_input(const char *, int, char **, input *);
   ~argument_macro_input();
@@ -422,7 +440,7 @@ int file_input::read_line()
 	lex_error("invalid input character code %1", c);
       else {
 	line += char(c);
-	if (c == '\n') 
+	if (c == '\n')
 	  break;
       }
     }
@@ -514,10 +532,7 @@ int top_input::get_location(char **fnp, int *lnp)
   return 1;
 }
 
-// Character representing $1.  Must be invalid input character.
-#define ARG1 14
-
-argument_macro_input::argument_macro_input(const char *body, int ac, 
+argument_macro_input::argument_macro_input(const char *body, int ac,
 					   char **av, input *x)
 : input(x), ap(0), argc(ac)
 {
@@ -535,7 +550,6 @@ argument_macro_input::argument_macro_input(const char *body, int ac,
       s[j++] = s[i];
   s[j] = '\0';
 }
-
 
 argument_macro_input::~argument_macro_input()
 {
@@ -696,7 +710,6 @@ void init_lex(const char *str, const char *filename, int lineno)
   current_input = new top_input(str, filename, lineno, 0);
   flush_context();
 }
-
 
 void get_delimited_text()
 {
@@ -1210,3 +1223,4 @@ void yyerror(const char *s)
   show_context();
 }
 
+// s-it2-mode

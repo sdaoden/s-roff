@@ -1,29 +1,36 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2004, 2005
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2004, 2005
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+#ifndef _BOX_H
+#define _BOX_H
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+#include "config.h"
+#include "eqn-config.h"
 
 class list_box;
 
-class box {
-private:
+class box
+{
   static int next_uid;
+
 public:
   int spacing_type;
   const int uid;
@@ -48,9 +55,10 @@ public:
   virtual void check_tabs(int);
 };
 
-class box_list {
-private:
+class box_list
+{
   int maxlen;
+
 public:
   box **p;
   int len;
@@ -68,10 +76,13 @@ box *make_script_box(box *, box *, box *);
 box *make_mark_box(box *);
 box *make_lineup_box(box *);
 
-class list_box : public box {
+class list_box
+: public box
+{
   int is_script;
   box_list list;
   int sty;
+
 public:
   list_box(box *);
   void debug_print();
@@ -90,9 +101,12 @@ public:
 
 enum alignment { LEFT_ALIGN, RIGHT_ALIGN, CENTER_ALIGN };
 
-class column : public box_list {
+class column
+: public box_list
+{
   alignment align;
   int space;
+
 public:
   column(box *);
   void set_alignment(alignment);
@@ -103,8 +117,11 @@ public:
   friend class pile_box;
 };
 
-class pile_box : public box {
+class pile_box
+: public box
+{
   column col;
+
 public:
   pile_box(box *);
   int compute_metrics(int);
@@ -116,11 +133,13 @@ public:
   void append(box *p) { col.append(p); }
 };
 
-class matrix_box : public box {
-private:
+class matrix_box
+: public box
+{
   int len;
   int maxlen;
   column **p;
+
 public:
   matrix_box(column *);
   ~matrix_box();
@@ -131,9 +150,12 @@ public:
   void debug_print();
 };
 
-class pointer_box : public box {
+class pointer_box
+: public box
+{
 protected:
   box *p;
+
 public:
   pointer_box(box *);
   ~pointer_box();
@@ -144,7 +166,9 @@ public:
   void check_tabs(int);
 };
 
-class vcenter_box : public pointer_box {
+class vcenter_box
+: public pointer_box
+{
 public:
   vcenter_box(box *);
   int compute_metrics(int);
@@ -152,7 +176,9 @@ public:
   void debug_print();
 };
 
-class simple_box : public box {
+class simple_box
+: public box
+{
 public:
   int compute_metrics(int);
   void compute_subscript_kern();
@@ -162,8 +188,11 @@ public:
   int is_simple();
 };
 
-class quoted_text_box : public simple_box {
+class quoted_text_box
+: public simple_box
+{
   char *text;
+
 public:
   quoted_text_box(char *);
   ~quoted_text_box();
@@ -171,22 +200,29 @@ public:
   void output();
 };
 
-class half_space_box : public simple_box {
+class half_space_box
+: public simple_box
+{
 public:
   half_space_box();
   void output();
   void debug_print();
 };
 
-class space_box : public simple_box {
+class space_box
+: public simple_box
+{
 public:
   space_box();
   void output();
   void debug_print();
 };
 
-class tab_box : public box {
+class tab_box
+: public box
+{
   int disabled;
+
 public:
   tab_box();
   void output();
@@ -194,9 +230,11 @@ public:
   void check_tabs(int);
 };
 
-class size_box : public pointer_box {
-private:
+class size_box
+: public pointer_box
+{
   char *size;
+
 public:
   size_box(char *, box *);
   ~size_box();
@@ -205,9 +243,11 @@ public:
   void debug_print();
 };
 
-class font_box : public pointer_box {
-private:
+class font_box
+: public pointer_box
+{
   char *f;
+
 public:
   font_box(char *, box *);
   ~font_box();
@@ -216,7 +256,9 @@ public:
   void debug_print();
 };
 
-class fat_box : public pointer_box {
+class fat_box
+: public pointer_box
+{
 public:
   fat_box(box *);
   int compute_metrics(int);
@@ -224,9 +266,11 @@ public:
   void debug_print();
 };
 
-class vmotion_box : public pointer_box {
-private:
+class vmotion_box
+: public pointer_box
+{
   int n;			// up is >= 0
+
 public:
   vmotion_box(int, box *);
   int compute_metrics(int);
@@ -234,8 +278,11 @@ public:
   void debug_print();
 };
 
-class hmotion_box : public pointer_box {
+class hmotion_box
+: public pointer_box
+{
   int n;
+
 public:
   hmotion_box(int, box *);
   int compute_metrics(int);
@@ -278,3 +325,6 @@ void init_char_table();
 void init_extensible();
 void define_extensible(const char *name, const char *ext, const char *top = 0,
 		       const char *mid = 0, const char *bot = 0);
+
+#endif // _BOX_H
+// s-it2-mode

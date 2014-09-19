@@ -1,25 +1,30 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2003, 2007
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2003, 2007
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+#include "config.h"
+#include "eqn-config.h"
 
 #include <ctype.h>
+
 #include "eqn.h"
 #include "pbox.h"
 #include "ptable.h"
@@ -29,7 +34,7 @@ struct map {
   const char *to;
 };
 
-struct map entity_table[] = {
+struct map entity_table[] = { // FIXME const
   // Classic troff special characters
   {"%", "&shy;"},	// ISOnum
   {"'", "&acute;"},	// ISOdia
@@ -260,7 +265,7 @@ struct map entity_table[] = {
   {"r?", "&iquest;"},	// ISOnum
   // Old troff \(em goes here
   {"en", "&ndash;"},	// ISOpub: en dash
-  // Old troff \(hy goes here 
+  // Old troff \(hy goes here
   // Brackets
   {"lB", "&lsqb;"},	// ISOnum: left (square) bracket
   {"rB", "&rsqb;"},	// ISOnum: right (square) bracket
@@ -357,7 +362,7 @@ struct map entity_table[] = {
   {"=~", "&cong;"},	// ISOamsr
   // Old troff \(ap goes here
   {"~~", "&ap;"},	// ISOtech
-  // This appears to be an error in the groff table.  
+  // This appears to be an error in the groff table.
   // It clashes with the Bell Labs use of ~= for a congruence sign
   // {"~=", "&ap;"},	// ISOamsr
   // Old troff \(pt, \(es, \(mo go here
@@ -380,7 +385,7 @@ struct map entity_table[] = {
   {"pd", "&part;"},	// ISOtech: partial differentiation sign
   // Their table duplicates the Greek letters here.
   // We list only the variant forms here, mapping them into
-  // the ISO Greek 4 variants (which may or may not be correct :-() 
+  // the ISO Greek 4 variants (which may or may not be correct :-()
   {"+f", "&b.phiv;"},	// ISOgrk4: variant phi
   {"+h", "&b.thetas;"},	// ISOgrk4: variant theta
   {"+p", "&b.omega;"},	// ISOgrk4: variant pi, looking like omega
@@ -394,19 +399,19 @@ struct map entity_table[] = {
 const char *special_to_entity(const char *sp)
 {
   struct map *mp;
-  for (mp = entity_table; 
-       mp < entity_table + sizeof(entity_table)/sizeof(entity_table[0]); 
-       mp++) {
-    if (strcmp(mp->from, sp) == 0)
+  for (mp = entity_table; mp < entity_table + NELEM(entity_table); ++mp)
+    if (!strcmp(mp->from, sp))
       return mp->to;
-  }
   return NULL;
 }
 
-class char_box : public simple_box {
+class char_box
+: public simple_box
+{
   unsigned char c;
   char next_is_italic;
   char prev_is_italic;
+
 public:
   char_box(unsigned char);
   void debug_print();
@@ -418,8 +423,11 @@ public:
   void handle_char_type(int, int);
 };
 
-class special_char_box : public simple_box {
+class special_char_box
+: public simple_box
+{
   char *s;
+
 public:
   special_char_box(const char *);
   ~special_char_box();
@@ -441,7 +449,7 @@ enum spacing_type {
   s_suppress
 };
 
-const char *spacing_type_table[] = {
+const char *spacing_type_table[] = { // FIXME const
   "ordinary",
   "operator",
   "binary",
@@ -457,13 +465,15 @@ const char *spacing_type_table[] = {
 const int DIGIT_TYPE = 0;
 const int LETTER_TYPE = 1;
 
-const char *font_type_table[] = {
+const char *font_type_table[] = { // FIXME const
   "digit",
   "letter",
   0,
 };
 
-struct char_info {
+class char_info
+{
+public:
   int spacing_type;
   int font_type;
   char_info();
@@ -681,7 +691,6 @@ void special_char_box::debug_print()
   fprintf(stderr, "\\[%s]", s);
 }
 
-
 void char_box::handle_char_type(int st, int ft)
 {
   if (st >= 0)
@@ -713,8 +722,11 @@ void set_char_type(const char *type, char *ch)
 /* We give primes special treatment so that in ``x' sub 2'', the ``2''
 will be tucked under the prime */
 
-class prime_box : public pointer_box {
+class prime_box
+: public pointer_box
+{
   box *pb;
+
 public:
   prime_box(box *);
   ~prime_box();
@@ -952,3 +964,4 @@ box *split_text(char *text)
     return new quoted_text_box(0);
 }
 
+// s-it2-mode

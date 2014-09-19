@@ -1,5 +1,9 @@
 .ig
-Copyright (C) 1989-2000, 2001, 2004, 2005, 2007
+@ @L_P_EQN@.1
+
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
+Copyright (C) 1989 - 2001, 2004, 2005, 2007
   Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
@@ -38,15 +42,15 @@ the original English.
 .tr \(ts"
 .
 .
-.TH @G@EQN @MAN1EXT@ "@MDATE@" "Groff Version @VERSION@"
+.TH @U_P_EQN@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
 .
 .SH NAME
-@g@eqn \- format equations for troff or MathML
+@L_P_EQN@ \- format equations for @T_ROFF@ or MathML
 .
 .
 .SH SYNOPSIS
-.SY @g@eqn
+.SY @L_P_EQN
 .OP \-rvCNR
 .OP \-d xy
 .OP \-T name
@@ -64,9 +68,9 @@ parameter.
 .
 .
 .SH DESCRIPTION
-This manual page describes the GNU version of
-.BR eqn ,
-which is part of the groff document formatting system.
+This manual page describes
+.BR @L_P_EQN@ ,
+which is part of the @T_ROFF@ document formatting system.
 .B eqn
 compiles descriptions of equations embedded within
 .B troff
@@ -75,12 +79,10 @@ input files into commands that are understood by
 Normally, it should be invoked using the
 .B \-e
 option of
-.BR groff .
-The syntax is quite compatible with Unix eqn.
-The output of GNU
-.B eqn
-cannot be processed with Unix troff;
-it must be processed with GNU troff.
+.BR @L_ROFF@ .
+The syntax is quite compatible with Unix eqn;
+its output cannot be processed with Unix troff, however,
+it must be processed with @L_TROFF@.
 If no files are given on the command line, the standard input is read.
 A filename of
 .B \-
@@ -105,8 +107,7 @@ The
 option prevents this.
 .
 .LP
-GNU
-.B eqn
+.B @L_P_EQN@
 does not provide the functionality of neqn:
 it does not support low-resolution, typewriter-like devices
 (although it may work adequately for very simple input).
@@ -167,7 +168,7 @@ with a value of\~\c
 .B eqnrc
 uses this to provide definitions appropriate for the output device.
 However, if the specified device is \[lq]MathML\[rq], the output is
-MathML markup rather than troff commands, and 
+MathML markup rather than troff commands, and
 .B eqnrc
 is not loaded at all.
 The default output device is
@@ -207,7 +208,7 @@ is when the equation is encountered.
 This says that subscripts and superscripts should be
 .I n\~\c
 points smaller than the surrounding text.
-This option is deprecated. 
+This option is deprecated.
 Normally
 .B eqn
 sets subscripts and superscripts at 70% of the size of the
@@ -215,32 +216,31 @@ surrounding text.
 .
 .
 .SH USAGE
-Only the differences between GNU
-.B eqn
+Only the differences between
+.B @L_P_EQN@
 and Unix eqn are described here.
 .
 .LP
-GNU
-.B eqn
-emits Presentation MathML output when invoked with the 
+.B @L_P_EQN@
+emits Presentation MathML output when invoked with the
 .B "-T\~MathML"
 option.
 .
 .LP
-GNU eqn sets the input token 
-.B \&"..." 
+@L_P_EQN@ sets the input token
+.B \&"..."
 as three periods or low dots, rather than the three centered dots of
 classic eqn.  To get three centered dots, write
 .B "cdots"
-or 
+or
 .BR "cdot cdot cdot".
 .
 .LP
-Most of the new features of the GNU
-.B eqn
+Most of the new features of the
+.B @L_P_EQN@
 input language are based on \*(tx.
-There are some references to the differences between \*(tx and GNU
-.B eqn
+There are some references to the differences between \*(tx and
+.B @L_P_EQN@
 below;
 these may safely be ignored if you do not know \*(tx.
 .
@@ -353,7 +353,7 @@ subsection.
 .SS New primitives
 .TP
 .BI big\  e
-Enlarges the expression it modifies; intended to have semantics like 
+Enlarges the expression it modifies; intended to have semantics like
 CSS `large'.
 In troff output, the point size is increased by\~5;
 in MathML output, the expression uses
@@ -535,7 +535,7 @@ that is not the first character is treated like
 This constructs a new object from\~\c
 .I e
 using a
-.BR @g@troff (@MAN1EXT@)
+.BR @L_TROFF@ (@MAN1EXT@)
 macro named
 .IR text .
 When the macro is called,
@@ -657,13 +657,13 @@ A positive value of the integer\~\c
 a negative value sets the spacing after the equation, replacing the
 default values.
 This primitive provides an interface to
-.BR groff 's
+.BR @L_ROFF@ 's
 .B \ex
 escape (but with opposite sign).
 .
 .IP
 This keyword has no effect if the equation is part of a
-.B pic
+.B @L_P_PIC@
 picture.
 .
 .SS Extended primitives
@@ -687,7 +687,7 @@ The integer value\~\c
 .I n
 (in hundredths of an em) increases the vertical spacing between rows,
 using
-.BR groff 's
+.BR @L_ROFF@ 's
 .B \ex
 escape (the value has no effect in MathML mode).
 Negative values are possible but have no effect.
@@ -695,12 +695,12 @@ If there is more than a single value given in a matrix, the biggest one
 is used.
 .
 .SS Customization
-When 
+When
 .B eqn
 is generating troff markup, the appearance of equations is controlled
-by a large number of parameters.  They have no effect when generating 
+by a large number of parameters.  They have no effect when generating
 MathML mode, which pushes typesetting and fine motions downstream to
-a MathML rendering engine. 
+a MathML rendering engine.
 These parameters can be set using the
 .B set
 command.
@@ -1181,12 +1181,12 @@ It does not support fine control of motions and sizes to the same
 degree troff does.
 Thus:
 .
-.IP * 
+.IP *
 .B eqn
 parameters have no effect on the generated MathML.
 .
 .IP *
-The 
+The
 .BR special,
 .BR up ,
 .BR down ,
@@ -1194,7 +1194,7 @@ The
 and
 .B back
 operations cannot be implemented, and yield a
-MathML `<merror>' message instead.  
+MathML `<merror>' message instead.
 .
 .IP *
 The
@@ -1206,7 +1206,7 @@ MathML default.
 Characters that
 .B eqn
 over troff sets extra large \(en notably the integral sign \(en
-may appear too small and need to have their `<mstyle>' wrappers 
+may appear too small and need to have their `<mstyle>' wrappers
 adjusted by hand.
 .
 .LP
@@ -1222,9 +1222,9 @@ They can, however, be recognized as strings that begin with `<math>'
 and end with `</math>' and do not cross line boundaries.
 .
 .LP
-See the 
+See the
 .B BUGS
-section for translation limits specific to 
+section for translation limits specific to
 .BR eqn .
 .
 .
@@ -1245,12 +1245,10 @@ This is allowed by the specification, but inefficient.
 .
 .
 .SH "SEE ALSO"
-.BR groff (@MAN1EXT@),
-.BR @g@troff (@MAN1EXT@),
-.BR @g@pic (@MAN1EXT@),
-.BR groff_font (@MAN5EXT@),
+.BR @L_ROFF@ (@MAN1EXT@),
+.BR @L_TROFF@ (@MAN1EXT@),
+.BR @L_P_PIC@ (@MAN1EXT@),
+.BR @L_ROFF@_font (@MAN5EXT@),
 .I The\ \*(txbook
 .
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
+.\" s-ts-mode

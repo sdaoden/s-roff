@@ -1,29 +1,40 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2002, 2003, 2007, 2008
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2002, 2003, 2007, 2008
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+#include "config.h"
+#include "eqn-config.h"
 
 #include "eqn.h"
 #include "pbox.h"
 
+#define SQRT_CHAR               "\\[sqrt]"
+#define RADICAL_EXTENSION_CHAR  "\\[sqrtex]"
 
-class sqrt_box : public pointer_box {
+#define SQRT_CHAIN              "\\[sqrt\\\\n[" INDEX_REG "]]"
+#define BAR_CHAIN               "\\[sqrtex\\\\n[" INDEX_REG "]]"
+
+class sqrt_box
+: public pointer_box
+{
 public:
   sqrt_box(box *);
   int compute_metrics(int style);
@@ -40,12 +51,6 @@ box *make_sqrt_box(box *pp)
 sqrt_box::sqrt_box(box *pp) : pointer_box(pp)
 {
 }
-
-#define SQRT_CHAR "\\[sqrt]"
-#define RADICAL_EXTENSION_CHAR "\\[sqrtex]"
-
-#define SQRT_CHAIN "\\[sqrt\\\\n[" INDEX_REG "]]"
-#define BAR_CHAIN "\\[sqrtex\\\\n[" INDEX_REG "]]"
 
 int sqrt_box::compute_metrics(int style)
 {
@@ -102,7 +107,7 @@ int sqrt_box::compute_metrics(int style)
 	 "..\n"
 	 "." TEMP_MACRO "\n",
 	 uid, uid, default_rule_thickness);
-  
+
   printf(".\\}\\}\n");
 
   printf(".nr " SMALL_SIZE_FORMAT " \\n[.ps]\n", uid);
@@ -186,3 +191,5 @@ void sqrt_box::check_tabs(int level)
 {
   p->check_tabs(level + 1);
 }
+
+// s-it2-mode
