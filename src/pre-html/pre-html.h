@@ -1,8 +1,9 @@
-// -*- C++ -*-
-/* Copyright (C) 2000, 2001 Free Software Foundation, Inc.
- * Written by Gaius Mulley (gaius@glam.ac.uk).
+/*@ Defines functions implemented within pre-html.cpp.
  *
- * This file is part of groff.
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+ * Written by Gaius Mulley (gaius@glam.ac.uk).
  *
  * groff is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free
@@ -16,23 +17,15 @@
  *
  * You should have received a copy of the GNU General Public License along
  * with groff; see the file COPYING.  If not, write to the Free Software
- * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. 
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
  */
+#ifndef _PRE_HTML_H
+#define _PRE_HTML_H
 
-/*
- *  defines functions implemented within pre-html.cpp
- */
+#include "config.h"
+#include "html-config.h"
 
-#if !defined(PREHTMLH)
-#  define PREHTMLH
-#  if defined(PREHTMLC)
-#     define EXTERN
-#  else
-#     define EXTERN extern
-#  endif
+extern void sys_fatal(const char *s); // FIXME lib.h / errorxy /  whatever
 
-
-extern void sys_fatal (const char *s);
-
-#undef EXTERN
-#endif
+#endif // _PRE_HTML_H
+// s-it2-mode

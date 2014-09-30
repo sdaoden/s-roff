@@ -1,63 +1,48 @@
-// -*- C++ -*-
-/* Copyright (C) 2000, 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
-     Written by Gaius Mulley (gaius@glam.ac.uk).
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 2000, 2001, 2003 - 2005 Free Software Foundation, Inc.
+ *      Written by Gaius Mulley (gaius@glam.ac.uk).
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
+#include "config.h"
+#include "html-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
+#include <sys/types.h>
 
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-#include "lib.h"
-
-#include <signal.h>
-#include <ctype.h>
 #include <assert.h>
-#include <stdlib.h>
+#include <ctype.h>
 #include <errno.h>
+#include <signal.h>
+#include <stdlib.h>
+
 #include "errarg.h"
 #include "error.h"
-#include "stringclass.h"
-#include "posix.h"
+#include "lib.h"
 #include "nonposix.h"
-
-#include <errno.h>
-#include <sys/types.h>
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
+#include "posix.h"
+#include "stringclass.h"
 
 #include "pushback.h"
 #include "pre-html.h"
 
-#if !defined(TRUE)
-#   define TRUE  (1==1)
-#endif
-
-#if !defined(FALSE)
-#   define FALSE (1==0)
-#endif
-
-#   define ERROR(X)   (void)(fprintf(stderr, "%s:%d error %s\n", __FILE__, __LINE__, X) && \
-                            (fflush(stderr)) && localexit(1))
-
-
-#define MAXPUSHBACKSTACK 4096                  /* maximum number of character that can be pushed back */
-
-
-/*
- *  constructor for pushBackBuffer
- */
+#define ERROR(X) \
+  (void)(fprintf(stderr, "%s:%d error %s\n", __FILE__, __LINE__, X) &&\
+   (fflush(stderr)) && localexit(1))
 
 pushBackBuffer::pushBackBuffer (char *filename)
 {
@@ -68,7 +53,7 @@ pushBackBuffer::pushBackBuffer (char *filename)
   stackPtr = 0;   /* index to push back stack        */
   debug    = 0;
   verbose  = 0;
-  eofFound = FALSE;
+  eofFound = false;
   lineNo   = 1;
   if (strcmp(filename, "") != 0) {
     stdIn = dup(0);
@@ -123,7 +108,7 @@ char pushBackBuffer::getPB (void)
       }
       return( ch );
     } else {
-      eofFound = TRUE;
+      eofFound = true;
       return( eof );
     }
   }
@@ -146,7 +131,7 @@ char pushBackBuffer::putPB (char ch)
 }
 
 /*
- *  isWhite - returns TRUE if a white character is found. This character is NOT consumed.
+ *  isWhite - returns true if a white character is found. This character is NOT consumed.
  */
 
 static int isWhite (char ch)
@@ -182,8 +167,8 @@ void pushBackBuffer::skipUntilToken (void)
 }
 
 /*
- *  isString - returns TRUE if the string, s, matches the pushed back string.
- *             if TRUE is returned then this string is consumed, otherwise it is
+ *  isString - returns true if the string, s, matches the pushed back string.
+ *             if true is returned then this string is consumed, otherwise it is
  *             left alone.
  */
 
@@ -199,7 +184,7 @@ int pushBackBuffer::isString (const char *s)
     i++;
   }
   if (i==length) {
-    return( TRUE );
+    return true;
   } else {
     i--;
     while (i>=0) {
@@ -209,11 +194,11 @@ int pushBackBuffer::isString (const char *s)
       i--;
     }
   }
-  return( FALSE );
+  return false;
 }
 
 /*
- *  isDigit - returns TRUE if the character, ch, is a digit.
+ *  isDigit - returns true if the character, ch, is a digit.
  */
 
 static int isDigit (char ch)
@@ -222,7 +207,7 @@ static int isDigit (char ch)
 }
 
 /*
- *  isHexDigit - returns TRUE if the character, ch, is a hex digit.
+ *  isHexDigit - returns true if the character, ch, is a hex digit.
  */
 
 #if 0
@@ -327,3 +312,5 @@ char *pushBackBuffer::readString (void)
   }
   return( str );
 }
+
+// s-it2-mode

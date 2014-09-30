@@ -1,9 +1,9 @@
-// -*- C++ -*-
-/* Copyright (C) 2000, 2001, 2002, 2003, 2004, 2007, 2008
- * 	Free Software Foundation, Inc.
- * Written by Gaius Mulley (gaius@glam.ac.uk).
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
  *
- * This file is part of groff.
+ * Copyright (C) 2000 - 2004, 2007, 2008
+ * Free Software Foundation, Inc.
+ * Written by Gaius Mulley (gaius@glam.ac.uk).
  *
  * groff is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free
@@ -17,45 +17,45 @@
  *
  * You should have received a copy of the GNU General Public License along
  * with groff; see the file COPYING.  If not, write to the Free Software
- * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. 
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
  */
-
 #define PREHTMLC
 
-#include "lib.h"
+#include "config.h"
+#include "html-config.h"
 
-#include <signal.h>
-#include <ctype.h>
-#include <assert.h>
-#include <stdlib.h>
-#include <errno.h>
-#include "errarg.h"
-#include "error.h"
-#include "file_case.h"
-#include "stringclass.h"
-#include "posix.h"
-#include "defs.h"
-#include "searchpath.h"
-#include "paper.h"
-#include "device.h"
-#include "font.h"
-
-#include <errno.h>
 #include <sys/types.h>
-#ifdef HAVE_UNISTD_H
-# include <unistd.h>
-#endif
 
 #ifdef _POSIX_VERSION
 # include <sys/wait.h>
 # define PID_T pid_t
-#else /* not _POSIX_VERSION */
+#else
 # define PID_T int
-#endif /* not _POSIX_VERSION */
+#endif
 
+#include <assert.h>
+#include <ctype.h>
+#include <errno.h>
+#include <signal.h>
 #include <stdarg.h>
+#include <stdlib.h>
 
+#include "defs.h"
+#include "device.h"
+#include "errarg.h"
+#include "error.h"
+#include "file_case.h"
+#include "font.h"
+#include "lib.h"
 #include "nonposix.h"
+#include "paper.h"
+#include "posix.h"
+#include "searchpath.h"
+#include "stringclass.h"
+
+#include "html-strings.h"
+#include "pushback.h"
+#include "pre-html.h"
 
 #if 0
 # define DEBUGGING
@@ -104,7 +104,7 @@
    `c:/temp' instead.  (Note that user may choose to override this by
    supplying a definition such as
 
-     -DDEBUG_FILE_DIR=d:/path/to/debug/files
+     -DDEBUG_FILE_DIR=d:/path/to/debug/files  FIXME what more special to come?
 
    in the CPPFLAGS to `make'.) */
 
@@ -143,12 +143,6 @@
 # define DEBUG_FILE(name) DEBUG_NAME(DEBUG_FILE_DIR) "/" name
 #endif
 
-extern "C" const char *Version_string;
-
-#include "pre-html.h"
-#include "pushback.h"
-#include "html-strings.h"
-
 #define DEFAULT_LINE_LENGTH 7	// inches wide
 #define DEFAULT_IMAGE_RES 100	// number of pixels per inch resolution
 #define IMAGE_BOARDER_PIXELS 0
@@ -166,13 +160,6 @@ extern "C" const char *Version_string;
 #define PS_TEMPLATE_LONG "-ps-"
 #define REGION_TEMPLATE_SHORT "rg"
 #define REGION_TEMPLATE_LONG "-regions-"
-
-#if !defined(TRUE)
-# define TRUE (1==1)
-#endif
-#if !defined(FALSE)
-# define FALSE (1==0)
-#endif
 
 typedef enum {
   CENTERED, LEFT, RIGHT, INLINE
@@ -203,39 +190,35 @@ static char *image_dir = NULL;		// user specified image directory
 static int textAlphaBits = MAX_ALPHA_BITS;
 static int graphicAlphaBits = MAX_ALPHA_BITS;
 static char *antiAlias = NULL;		// antialias arguments we pass to gs
-static int show_progress = FALSE;	// should we display page numbers as
+static int show_progress = false;	// should we display page numbers as
 					// they are processed?
 static int currentPageNo = -1;		// current image page number
 #if defined(DEBUGGING)
-static int debug = FALSE;
+static int debug = false;
 static char *troffFileName = NULL;	// output of pre-html output which
 					// is sent to troff -Tps
 static char *htmlFileName = NULL;	// output of pre-html output which
 					// is sent to troff -Thtml
 #endif
-static int eqn_flag = FALSE;            // must we preprocess via eqn?
+static int eqn_flag = false;            // must we preprocess via eqn?
 
-static char *linebuf = NULL;		// for scanning devps/DESC
+static char *linebuf = NULL;		// for scanning dev-ps/DESC
 static int linebufsize = 0;
 static const char *image_gen = NULL;    // the `gs' program
 
-const char *const FONT_ENV_VAR = "GROFF_FONT_PATH";
+const char *const FONT_ENV_VAR = U_ROFF_FONT_PATH;
 static search_path font_path(FONT_ENV_VAR, FONTPATH, 0, 0);
 static html_dialect dialect = html4;
-
 
 /*
  *  Images are generated via postscript, gs, and the pnm utilities.
  */
 #define IMAGE_DEVICE "-Tps"
 
-
 static int do_file(const char *filename);
-
 
 /*
  *  sys_fatal - Write a fatal error message.
- *              Taken from src/roff/groff/pipeline.c.
  */
 
 void sys_fatal(const char *s)
@@ -289,21 +272,21 @@ int get_line(file_case *fcp)
 }
 
 /*
- *  get_resolution - Return the postscript resolution from devps/DESC.
+ *  get_resolution - Return the postscript resolution from dev-ps/DESC. FIXME
  */
 
 static unsigned int get_resolution(void)
 {
   unsigned int res;
   file_case *fcp;
-  if ((fcp = font_path.open_file("devps/DESC", fcp->fc_const_path)) == NULL)
-    fatal("can't open devps/DESC");
+  if ((fcp = font_path.open_file("dev-ps/DESC", fcp->fc_const_path)) == NULL)
+    fatal("can't open dev-ps/DESC");
   while (get_line(fcp)) {
     int n = sscanf(linebuf, "res %u", &res);
     if (n >= 1)
       goto jleave;
   }
-  fatal("can't find `res' keyword in devps/DESC");
+  fatal("can't find `res' keyword in dev-ps/DESC");
 jleave:
   delete fcp;
   return res;
@@ -392,7 +375,9 @@ char *make_message(const char *fmt, ...)
  *  the class and methods for retaining ascii text
  */
 
-struct char_block {
+class char_block
+{
+public:
   enum { SIZE = 256 };
   char buffer[SIZE];
   int used;
@@ -412,7 +397,13 @@ char_block::char_block()
     buffer[i] = 0;
 }
 
-class char_buffer {
+class char_buffer
+{
+  char_block *head;
+  char_block *tail;
+
+  int run_output_filter(int device_format_selector, int argc, char *argv[]);
+
 public:
   char_buffer();
   ~char_buffer();
@@ -424,10 +415,6 @@ public:
   int can_see(char_block **t, int *i, const char *string);
   int skip_spaces(char_block **t, int *i);
   void skip_until_newline(char_block **t, int *i);
-private:
-  char_block *head;
-  char_block *tail;
-  int run_output_filter(int device_format_selector, int argc, char *argv[]);
 };
 
 /*
@@ -540,7 +527,7 @@ static void makeFileName(void)
   }
 
   if (image_template == NULL)
-    macroset_template = make_message("%sgrohtml-%d", image_dir,
+    macroset_template = make_message("%s" L_D_HTML "-%d", image_dir,
 				     (int)getpid());
   else
     macroset_template = make_message("%s%s", image_dir, image_template);
@@ -689,7 +676,7 @@ void char_buffer::write_upto_newline(char_block **t, int *i, int is_html)
 }
 
 /*
- *  can_see - Return TRUE if we can see string in t->buffer[i] onwards.
+ *  can_see - Return true if we can see string in t->buffer[i] onwards.
  */
 
 int char_buffer::can_see(char_block **t, int *i, const char *str)
@@ -707,18 +694,18 @@ int char_buffer::can_see(char_block **t, int *i, const char *str)
     if (j == l) {
       *i = k;
       *t = s;
-      return TRUE;
+      return true;
     }
     else if (k < s->used && s->buffer[k] != str[j])
-      return( FALSE );
+      return( false );
     s = s->next;
     k = 0;
   }
-  return FALSE;
+  return false;
 }
 
 /*
- *  skip_spaces - Return TRUE if we have not run out of data.
+ *  skip_spaces - Return true if we have not run out of data.
  *                Consume spaces also.
  */
 
@@ -736,10 +723,10 @@ int char_buffer::skip_spaces(char_block **t, int *i)
     }
     else {
       *i = k;
-      return TRUE;
+      return true;
     }
   }
-  return FALSE;
+  return false;
 }
 
 /*
@@ -813,7 +800,9 @@ void char_buffer::emit_troff_output(int device_format_selector)
  *  postscript file and assigns names for each image.
  */
 
-struct imageItem {
+class imageItem
+{
+public:
   imageItem *next;
   int X1;
   int Y1;
@@ -861,11 +850,12 @@ imageItem::~imageItem()
  *  imageList - A class containing a list of imageItems.
  */
 
-class imageList {
-private:
+class imageList
+{
   imageItem *head;
   imageItem *tail;
   int count;
+
 public:
   imageList();
   ~imageList();
@@ -1099,7 +1089,7 @@ static void generateImages(char *region_file_name)
   pushBackBuffer *f=new pushBackBuffer(region_file_name);
 
   while (f->putPB(f->getPB()) != eof) {
-    if (f->isString("grohtml-info:page")) {
+    if (f->isString(L_D_HTML "-info:page")) {
       int page = f->readInt();
       int x1 = f->readInt();
       int y1 = f->readInt();
@@ -1202,7 +1192,7 @@ static void alterDeviceTo(int argc, char *argv[], int toImage)
 	argv[i] = (char *)IMAGE_DEVICE;
       i++;
     }
-    argv[troff_arg] = (char *)"groff";	/* rather than troff */
+    argv[troff_arg] = (char*)L_ROFF; // rather than troff
   }
   else {
     while (i < argc) {
@@ -1213,7 +1203,7 @@ static void alterDeviceTo(int argc, char *argv[], int toImage)
 	  argv[i] = (char *)"-Thtml";
       i++;
     }
-    argv[troff_arg] = (char *)"groff";	/* use groff -Z */
+    argv[troff_arg] = (char*)L_ROFF; // use groff -Z
   }
 }
 
@@ -1281,9 +1271,7 @@ void dump_args(int argc, char *argv[])
 /*
  *  print_args - print arguments as if they were issued on the command line.
  */
-
-#if defined(DEBUGGING)
-
+#ifdef DEBUGGING
 void print_args(int argc, char *argv[])
 {
   if (debug) {
@@ -1293,13 +1281,10 @@ void print_args(int argc, char *argv[])
     fprintf(stderr, "\n");
   }
 }
-
 #else
-
 void print_args(int, char **)
 {
 }
-
 #endif
 
 int char_buffer::run_output_filter(int filter, int argc, char **argv)
@@ -1555,11 +1540,11 @@ static void usage(FILE *stream)
   fprintf(stream,
     "\n"
     "This program is not intended to be called stand-alone;\n"
-    "it is part of the groff pipeline to produce HTML output.\n"
+    "it is part of the " L_ROFF " pipeline to produce HTML output.\n"
     "\n"
     "If there is ever the need to call it manually (e.g., for\n"
     "debugging purposes), add command line option `-V' while calling\n"
-    "the `groff' program to see which arguments are passed to it.\n"
+    "the `" L_ROFF "' program to see which arguments are passed to it.\n"
     "\n");
 }
 
@@ -1571,7 +1556,7 @@ static void usage(FILE *stream)
 
 static int scanArguments(int argc, char **argv)
 {
-  const char *command_prefix = getenv("GROFF_COMMAND_PREFIX");
+  const char *command_prefix = getenv(U_ROFF_COMMAND_PREFIX);
   if (!command_prefix)
     command_prefix = PROG_PREFIX;
   char *troff_name = new char[strlen(command_prefix) + strlen("troff") + 1];
@@ -1599,15 +1584,15 @@ static int scanArguments(int argc, char **argv)
       // handled by post-grohtml (set background color to white)
       break;
     case 'd':
-#if defined(DEBUGGING)
-      debug = TRUE;
+#ifdef DEBUGGING
+      debug = true;
 #endif
       break;
     case 'D':
       image_dir = optarg;
       break;
     case 'e':
-      eqn_flag = TRUE;
+      eqn_flag = true;
       break;
     case 'F':
       font_path.command_line_dir(optarg);
@@ -1642,7 +1627,7 @@ static int scanArguments(int argc, char **argv)
       vertical_offset = atoi(optarg);
       break;
     case 'p':
-      show_progress = TRUE;
+      show_progress = true;
       break;
     case 'r':
       // handled by post-grohtml (no header and footer lines)
@@ -1654,7 +1639,7 @@ static int scanArguments(int argc, char **argv)
       // handled by post-grohtml (set file split level)
       break;
     case 'v':
-      printf("GNU pre-grohtml (groff) version %s\n", Version_string);
+      puts(L_D_PREHTML " (" T_ROFF ") v" VERSION);
       exit(0);
     case 'V':
       // handled by post-grohtml (create validator button)
@@ -1715,7 +1700,7 @@ static int makeTempFiles(void)
   /* psPageName contains a single page of postscript */
   f = xtmpfile(&psPageName,
 	       PS_TEMPLATE_LONG, PS_TEMPLATE_SHORT,
-	       TRUE);
+	       true);
   if (f == NULL) {
     sys_fatal("xtmpfile");
     return -1;
@@ -1725,7 +1710,7 @@ static int makeTempFiles(void)
   /* imagePageName contains a bitmap image of the single postscript page */
   f = xtmpfile(&imagePageName,
 	       PAGE_TEMPLATE_LONG, PAGE_TEMPLATE_SHORT,
-	       TRUE);
+	       true);
   if (f == NULL) {
     sys_fatal("xtmpfile");
     return -1;
@@ -1735,7 +1720,7 @@ static int makeTempFiles(void)
   /* psFileName contains a postscript file of the complete document */
   f = xtmpfile(&psFileName,
 	       PS_TEMPLATE_LONG, PS_TEMPLATE_SHORT,
-	       TRUE);
+	       true);
   if (f == NULL) {
     sys_fatal("xtmpfile");
     return -1;
@@ -1745,7 +1730,7 @@ static int makeTempFiles(void)
   /* regionFileName contains a list of the images and their boxed coordinates */
   f = xtmpfile(&regionFileName,
 	       REGION_TEMPLATE_LONG, REGION_TEMPLATE_SHORT,
-	       TRUE);
+	       true);
   if (f == NULL) {
     sys_fatal("xtmpfile");
     return -1;
@@ -1777,10 +1762,10 @@ int main(int argc, char **argv)
 #endif /* CAPTURE_MODE */
   device = "html";
   if (!font::load_desc())
-    fatal("cannot find devhtml/DESC exiting");
+    fatal("cannot find html/DESC exiting");
   image_gen = font::image_generator;
   if (image_gen == NULL || (strcmp(image_gen, "") == 0))
-    fatal("devhtml/DESC must set the image_generator field, exiting");
+    fatal("html/DESC must set the image_generator field, exiting");
   postscriptRes = get_resolution();
   i = scanArguments(argc, argv);
   setupAntiAlias();
@@ -1829,3 +1814,5 @@ static int do_file(const char *filename)
   current_filename = NULL;
   return 1;
 }
+
+// s-it2-mode
