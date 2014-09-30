@@ -1,51 +1,50 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2001, 2002, 2003, 2004, 2007, 2008
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2001 - 2004, 2007, 2008
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+#ifndef _TABLE_H
+#define _TABLE_H
 
-This file is part of groff.
+#include "config.h"
+#include "tbl-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-#include "lib.h"
-
-#include <stdlib.h>
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#include <stdlib.h>
 
-#include "cset.h"
 #include "cmap.h"
-#include "stringclass.h"
+#include "cset.h"
 #include "errarg.h"
 #include "error.h"
-
-// PREFIX and PREFIX_CHAR must be the same.
-#define PREFIX "3"
-#define PREFIX_CHAR '3'
-
-// LEADER and LEADER_CHAR must be the same.
-#define LEADER "a"
-#define LEADER_CHAR 'a'
+#include "lib.h"
+#include "stringclass.h"
 
 struct inc_number {
   short inc;
   short val;
 };
 
-struct entry_modifier {
+class entry_modifier
+{
+public:
   inc_number point_size;
   inc_number vertical_spacing;
   string font;
@@ -59,18 +58,21 @@ struct entry_modifier {
 };
 
 enum format_type {
-  FORMAT_LEFT, 
-  FORMAT_CENTER, 
-  FORMAT_RIGHT, 
+  FORMAT_LEFT,
+  FORMAT_CENTER,
+  FORMAT_RIGHT,
   FORMAT_NUMERIC,
   FORMAT_ALPHABETIC,
-  FORMAT_SPAN, 
+  FORMAT_SPAN,
   FORMAT_VSPAN,
   FORMAT_HLINE,
   FORMAT_DOUBLE_HLINE
 };
 
-struct entry_format : public entry_modifier {
+class entry_format
+: public entry_modifier
+{
+public:
   format_type type;
 
   entry_format(format_type);
@@ -83,7 +85,8 @@ struct horizontal_span;
 struct stuff;
 struct vertical_rule;
 
-class table {
+class table
+{
   int nrows;
   int ncolumns;
   int linesize;
@@ -104,6 +107,7 @@ class table {
   int right_separation;
   int total_separation;
   int allocated_rows;
+
   void build_span_list();
   void compute_expand_width();
   void do_hspan(int r, int c);
@@ -132,6 +136,7 @@ class table {
   void compute_vrule_bot_adjust(int, int, string &);
   void determine_row_type();
   int count_expand_columns();
+
 public:
   unsigned flags;
   enum {
@@ -145,6 +150,7 @@ public:
     EXPERIMENTAL = 0x80000000	// undocumented; use as a hook for experiments
     };
   char *expand;
+
   table(int nc, unsigned flags, int linesize, char decimal_point_char);
   ~table();
 
@@ -169,3 +175,6 @@ public:
 void set_troff_location(const char *, int);
 
 extern int compatible_flag;
+
+#endif // _TABLE_H
+// s-it2-mode

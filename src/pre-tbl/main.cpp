@@ -1,43 +1,43 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2000, 2001, 2002, 2003, 2004, 2005,
-                 2007, 2008
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000 - 2005, 2007, 2008
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+#include "config.h"
+#include "tbl-config.h"
 
 #include "file_case.h"
 
 #include "table.h"
 
-#define MAX_POINT_SIZE 99
-#define MAX_VERTICAL_SPACING 72
-
-extern "C" const char *Version_string;
-
 int compatible_flag = 0;
 
-class table_input {
+class table_input
+{
   file_case *_fcp;
   enum { START, MIDDLE,
 	 REREAD_T, REREAD_TE, REREAD_E,
 	 LEADER_1, LEADER_2, LEADER_3, LEADER_4,
 	 END, ERROR } state;
   string unget_stack;
+
 public:
   table_input(file_case *);
   int get();
@@ -233,7 +233,7 @@ void process_input_file(file_case *fcp)
 	putchar('T');
 	putchar(c);
 	if (c == '\n') {
- 	  current_lineno++;
+	  current_lineno++;
 	  state = START;
 	}
 	else
@@ -288,7 +288,7 @@ void process_input_file(file_case *fcp)
 	putchar('l');
 	putchar(c);
 	if (c == '\n') {
- 	  current_lineno++;
+	  current_lineno++;
 	  state = START;
 	}
 	else
@@ -344,7 +344,9 @@ void process_input_file(file_case *fcp)
   }
 }
 
-struct options {
+class options
+{
+public:
   unsigned flags;
   int linesize;
   char delim[2];
@@ -617,7 +619,9 @@ void entry_format::debug_print() const
     putc('u', stderr);
 }
 
-struct format {
+class format
+{
+public:
   int nrows;
   int ncolumns;
   int *separation;
@@ -693,7 +697,10 @@ format::~format()
   a_delete entry;
 }
 
-struct input_entry_format : public entry_format {
+class input_entry_format
+: public entry_format
+{
+public:
   input_entry_format *next;
   string width;
   int separation;
@@ -702,6 +709,7 @@ struct input_entry_format : public entry_format {
   int last_column;
   int equal;
   int expand;
+
   input_entry_format(format_type, input_entry_format * = 0);
   ~input_entry_format();
   void debug_print();
@@ -748,7 +756,7 @@ void input_entry_format::debug_print()
   if (expand)
     putc('x', stderr);
   if (separation >= 0)
-    fprintf(stderr, "%d", separation); 
+    fprintf(stderr, "%d", separation);
   for (i = 0; i < vline; i++)
     putc('|', stderr);
   if (last_column)
@@ -1479,7 +1487,7 @@ table *process_data(table_input &in, format *f, options *opt)
 	  }
 	}
 	tbl->add_text_line(current_row, line, current_filename, ln);
-	if (line.length() >= 4 
+	if (line.length() >= 4
 	    && line[0] == '.' && line[1] == 'T' && line[2] == '&') {
 	  format *newf = process_format(in, opt, f);
 	  if (newf == 0)
@@ -1537,7 +1545,7 @@ void process_table(table_input &in)
   options *opt = 0;
   format *form = 0;
   table *tbl = 0;
-  if ((opt = process_options(in)) != 0 
+  if ((opt = process_options(in)) != 0
       && (form = process_format(in, opt)) != 0
       && (tbl = process_data(in, form, opt)) != 0) {
     tbl->print();
@@ -1556,7 +1564,7 @@ void process_table(table_input &in)
 
 static void usage(FILE *stream)
 {
-  fprintf(stream, "usage: %s [ -vC ] [ files... ]\n", program_name);
+  fprintf(stream, "Synopsis: %s [ -vC ] [ files... ]\n", program_name);
 }
 
 int main(int argc, char **argv)
@@ -1577,7 +1585,7 @@ int main(int argc, char **argv)
       break;
     case 'v':
       {
-	printf("GNU tbl (groff) version %s\n", Version_string);
+	puts(L_P_TBL " (" T_ROFF ") v" VERSION);
 	exit(0);
 	break;
       }
@@ -1595,7 +1603,7 @@ int main(int argc, char **argv)
     default:
       assert(0);
     }
-  printf(".if !\\n(.g .ab GNU tbl requires GNU troff.\n"
+  printf(".if !\\n(.g .ab " L_P_TBL " requires " L_TROFF ".\n"
 	 ".if !dTS .ds TS\n"
 	 ".if !dTE .ds TE\n");
 
@@ -1621,3 +1629,4 @@ int main(int argc, char **argv)
   return 0;
 }
 
+// s-it2-mode

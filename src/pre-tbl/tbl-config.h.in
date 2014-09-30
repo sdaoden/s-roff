@@ -1,0 +1,17 @@
+/*@ Configurable stuff */
+#ifndef _TBL_CONFIG_H
+#define _TBL_CONFIG_H
+
+#define MAX_POINT_SIZE        99
+#define MAX_VERTICAL_SPACING  72
+
+// PREFIX and PREFIX_CHAR must be the same.
+#define PREFIX                "3"
+#define PREFIX_CHAR           '3'
+
+// LEADER and LEADER_CHAR must be the same.
+#define LEADER                "a"
+#define LEADER_CHAR           'a'
+
+#endif // _TBL_CONFIG_H
+// s-it2-mode
