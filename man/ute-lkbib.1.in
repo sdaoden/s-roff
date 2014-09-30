@@ -1,5 +1,9 @@
 .ig
-Copyright (C) 1989-2000, 2001, 2004 Free Software Foundation, Inc.
+@ @L_LKBIB@.1
+
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
+Copyright (C) 1989 - 2001, 2004 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -26,15 +30,14 @@ the original English.
 ..
 .
 .
-.TH LKBIB @MAN1EXT@ "@MDATE@" "Groff Version @VERSION@"
-.
+.TH @U_LKBIB@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
 .SH NAME
-lkbib \- search bibliographic databases
+@L_LKBIB@ \- search bibliographic databases
 .
 .
 .SH SYNOPSIS
-.B lkbib
+.B @L_LKBIB@
 [
 .B \-v
 ]
@@ -55,12 +58,11 @@ parameter.
 .
 .
 .SH DESCRIPTION
-.B lkbib
+.B @L_LKBIB@
 searches bibliographic databases for references that contain the keys
 .IR key \|.\|.\|.\&
 and prints any references found on the standard output.
-.B lkbib
-will search any databases given by
+It will search any databases given by
 .B \-p
 options, and then a default database.
 The default database is taken from the
@@ -74,7 +76,7 @@ to be searched,
 if an index
 .IB filename @INDEX_SUFFIX@
 created by
-.BR @g@indxbib (@MAN1EXT@)
+.BR @L_INDXBIB@ (@MAN1EXT@)
 exists, then it will be searched instead;
 each index can cover multiple databases.
 .
@@ -127,10 +129,8 @@ Index files.
 .
 .
 .SH "SEE ALSO"
-.BR @g@refer (@MAN1EXT@),
-.BR @g@lookbib (@MAN1EXT@),
-.BR @g@indxbib (@MAN1EXT@)
+.BR @L_P_REFER@ (@MAN1EXT@),
+.BR @L_LOOKBIB@ (@MAN1EXT@),
+.BR @L_INDXBIB@ (@MAN1EXT@)
 .
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
+.\" s-ts-mode
