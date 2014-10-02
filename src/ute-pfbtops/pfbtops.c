@@ -1,44 +1,38 @@
-/* Copyright (C) 1992, 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@ This translates ps fonts in .pfb format to ASCII ps files.
+ *
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1992, 2001, 2003 - 2005 Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
+#include "config.h"
+#include "pfbtops-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
+#define __GETOPT_PREFIX groff_ /* FIXME */
 
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-/* This translates ps fonts in .pfb format to ASCII ps files. */
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
-#define __GETOPT_PREFIX groff_
-
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
 
-#include <getopt.h>
-
+#include <getopt.h> /* FIXME */
 #include "nonposix.h"
 
-/* Binary bytes per output line. */
-#define BYTES_PER_LINE (64/2)
-#define MAX_LINE_LENGTH 78
-#define HEX_DIGITS "0123456789abcdef"
-
-extern const char *Version_string;
+#define HEX_DIGITS      "0123456789abcdef"
 
 static char *program_name;
 
@@ -50,7 +44,7 @@ static void error(const char *s)
 
 static void usage(FILE *stream)
 {
-  fprintf(stream, "usage: %s [-v] [pfb_file]\n", program_name);
+  fprintf(stream, "Synopsis: %s [-v] [pfb_file]\n", program_name);
 }
 
 static void get_text(int n)
@@ -129,7 +123,7 @@ static void get_text(int n)
 	while (c != ' ' && c != '\t' && c != '\f') {
 	  putchar(c);
 	  if (n-- == 0)
-	    break;  
+	    break;
 	  c = getchar();
 	}
 	count = 0;
@@ -178,7 +172,7 @@ int main(int argc, char **argv)
   while ((opt = getopt_long(argc, argv, "v", long_options, NULL)) != EOF) {
     switch (opt) {
     case 'v':
-      printf("GNU pfbtops (groff) version %s\n", Version_string);
+      printf(L_PFBTOPS " (" T_ROFF ") v" VERSION);
       exit(0);
       break;
     case CHAR_MAX + 1: /* --help */
@@ -229,3 +223,5 @@ int main(int argc, char **argv)
   }
   exit(0);
 }
+
+// s-it2-mode
