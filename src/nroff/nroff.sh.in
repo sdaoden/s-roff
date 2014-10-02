@@ -1,24 +1,23 @@
-#! /bin/sh
-# Emulate nroff with groff.
+#!/bin/sh
+#@ Emulate nroff with @L_ROFF@.
 #
-# Copyright (C) 1992, 1993, 1994, 1999, 2000, 2001, 2002, 2003,
-#               2004, 2005, 2007
+# Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+#
+# Copyright (C) 1992 - 1994, 1999 - 2005, 2007
 #   Free Software Foundation, Inc.
 #
 # Written by James Clark, maintained by Werner Lemberg.
-
-# This file is of `groff'.
-
+#
 # `groff' is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License (GPL) as published
 # by the Free Software Foundation; either version 2, or (at your
 # option) any later version.
-
+#
 # `groff' is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
-
+#
 # You should have received a copy of the GNU General Public License
 # along with `groff'; see the files COPYING and LICENSE in the top
 # directory of the `groff' source.  If not, write to the Free Software
@@ -28,9 +27,8 @@
 prog="$0"
 
 # Default device.
-
-# Check the GROFF_TYPESETTER environment variable.
-Tenv=$GROFF_TYPESETTER
+# Check the @U_ROFF@_TYPESETTER environment variable.
+Tenv="${@U_ROFF@_TYPESETTER}"
 
 # Try the `locale charmap' command first because it is most reliable.
 # On systems where it doesn't exist, look at the environment variables.
@@ -92,11 +90,11 @@ for i
       # However, disable SGR, since Solaris `col' mishandles it.
       opts="$opts -P-c" ;;
     -v | --version)
-      echo "GNU nroff (groff) version @VERSION@"
+      echo "@L_NROFF@ (@T_ROFF@) v@VERSION@"
       exit 0 ;;
     --help)
-      echo "usage: nroff [-CchipStUv] [-dCS] [-MDIR] [-mNAME] [-nNUM] [-oLIST]"
-      echo "             [-rCN] [-Tname] [-WNAME] [-wNAME] [FILE...]"
+      echo "Synopsis: @L_NROFF@ [-CchipStUv] [-dCS] [-MDIR] [-mNAME] [-nNUM]"
+      echo "             [-oLIST] [-rCN] [-Tname] [-WNAME] [-wNAME] [FILE...]"
       exit 0 ;;
     --)
       shift
@@ -128,14 +126,13 @@ case $T in
     T=-T$Tloc ;;
 esac
 
-# Set up the `GROFF_BIN_PATH' variable
-# to be exported in the current `GROFF_RUNTIME' environment.
-
-@GROFF_BIN_PATH_SETUP@
-export GROFF_BIN_PATH
+# Set up the `@U_ROFF@_BIN_PATH' variable
+# to be exported in the current `@U_ROFF@_RUNTIME' environment.
+@U_ROFF_BIN_PATH_SETUP@
+export @U_ROFF@_BIN_PATH
 
 # Load nroff-style character definitions too.
 
-PATH="$GROFF_RUNTIME$PATH" groff -mtty-char $T $opts ${1+"$@"}
+PATH="${@U_ROFF@_RUNTIME}${PATH}" @L_ROFF@ -mtty-char ${T} $opts ${1+"${@}"}
 
-# eof
+# s-sh-mode

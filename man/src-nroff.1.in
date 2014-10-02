@@ -1,5 +1,9 @@
 .ig
-Copyright (C) 1989-2001, 2002, 2003, 2005, 2007
+@ @L_NROFF@.1
+
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
+Copyright (C) 1989 - 2003, 2005, 2007
   Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
@@ -18,10 +22,10 @@ translations approved by the Free Software Foundation instead of in
 the original English.
 ..
 .
-.TH @G@NROFF @MAN1EXT@ "@MDATE@" "Groff Version @VERSION@"
+.TH @U_NROFF@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
 .SH NAME
-@g@nroff \- emulate nroff command with groff
+@L_NROFF@ \- emulate nroff command with @L_ROFF@
 .
 .SH SYNOPSIS
 .
@@ -33,7 +37,7 @@ the original English.
 .    RB "[" "\\$1" "]"
 ..
 
-.SY @g@nroff
+.SY @L_NROFF@
 .OP \-CchipStUvwW
 .OP \-d cs
 .OP \-M dir
@@ -44,7 +48,7 @@ the original English.
 .OP \-T name
 .RI [ file\~ .\|.\|.]
 .
-.SY @g@nroff
+.SY @L_NROFF@
 .B \-\-help
 .
 .SY @g@nroff
@@ -55,10 +59,10 @@ the original English.
 .
 .SH DESCRIPTION
 The
-.B @g@nroff
+.B @L_NROFF@
 script emulates the
 .B nroff
-command using groff.
+command using @L_ROFF@.
 Only
 .BR ascii ,
 .BR latin1 ,
@@ -68,15 +72,15 @@ and
 are devices accepted by
 .BR nroff
 to select the output encoding emitted by
-.BR grotty ,
-groff's TTY output device.
+.BR @L_D_TTY@ ,
+@L_ROFF@'s TTY output device.
 If neither the
-.B GROFF_TYPESETTER
+.B @U_ROFF@_TYPESETTER
 environment variable nor the
 .B \-T
 command line option (which overrides the environment variable)
 specifies a (valid) device,
-.B @g@nroff
+.B @L_NROFF@
 checks the current locale to select a default output device.
 It first tries the
 .B locale
@@ -95,7 +99,7 @@ and
 .B \-c
 options
 are equivalent to
-.BR grotty 's
+.BR @L_D_TTY@ 's
 options
 .B \-h
 (using tabs in the output) and
@@ -114,16 +118,16 @@ The
 and
 .B \-W
 options have the effect described in
-.BR @g@troff (@MAN1EXT@).
+.BR @L_TROFF@ (@MAN1EXT@).
 In addition,
-.B @g@nroff
+.B @L_NROFF@
 silently ignores the options
 .BR \-e ,
 .BR \-q ,
 and
 .BR \-s
 (which are not implemented in
-.BR @g@troff ).
+.BR @L_TROFF@ ).
 Options
 .B \-p
 (pic),
@@ -133,7 +137,7 @@ Options
 (safer), and
 .B \-U
 (unsafe) are passed to
-.BR groff .
+.BR @L_ROFF@ .
 .B \-v
 and
 .B \-\-version
@@ -144,17 +148,18 @@ prints a help message.
 .SH ENVIRONMENT
 .TP
 .SM
-.B GROFF_TYPESETTER
+.B @U_ROFF@_TYPESETTER
 The default device for
-.BR groff .
+.BR @L_ROFF@ .
 If not set (which is the normal case), it defaults to `ps'.
 .
 .TP
 .SM
-.B GROFF_BIN_PATH
+.B @U_ROFF@_BIN_PATH
 A colon separated list of directories in which to search for the
-.B groff
-executable before searching in PATH.  If unset, `@BINDIR@' is used.
+.B @L_ROFF@
+executable before searching in PATH.
+If unset, `@BINDIR@' is used.
 .
 .SH NOTES
 This shell script is basically intended for use with
@@ -163,10 +168,8 @@ nroff-style character definitions (in the file tty-char.tmac) are also
 loaded to emulate unrepresentable glyphs.
 .
 .SH "SEE ALSO"
-.BR groff (@MAN1EXT@),
-.BR @g@troff (@MAN1EXT@),
-.BR grotty (@MAN1EXT@)
+.BR @L_ROFF@ (@MAN1EXT@),
+.BR @L_TROFF@ (@MAN1EXT@),
+.BR @L_D_TTY@ (@MAN1EXT@)
 .
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
+.\" s-ts-mode
