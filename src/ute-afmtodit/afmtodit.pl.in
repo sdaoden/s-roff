@@ -1,10 +1,9 @@
-#! /usr/bin/perl -w
-# -*- Perl -*-
-# Copyright (C) 1989-2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+#!/usr/bin/env perl -w
+# Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+#
+# Copyright (C) 1989 - 2008
 # Free Software Foundation, Inc.
 #      Written by James Clark (jjc@jclark.com)
-#
-# This file is part of groff.
 #
 # groff is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free
@@ -36,12 +35,12 @@ our ($opt_a, $opt_c, $opt_d, $opt_e, $opt_f, $opt_i,
      $opt_k, $opt_m, $opt_n, $opt_s, $opt_v, $opt_x);
 
 if ($opt_v) {
-    print "GNU afmtodit (groff) version @VERSION@\n";
+    print "@L_AFMTODIT@ (@T_ROFF@) v @VERSION@\n";
     exit 0;
 }
 
 if ($#ARGV != 2) {
-    die "usage: $prog [-ckmnsvx] [-a angle] [-d DESC] [-e encoding]\n" .
+    die "Synopsis: $prog [-ckmnsvx] [-a angle] [-d DESC] [-e encoding]\n" .
 	"       [-f name] [-i n] afmfile mapfile font\n";
 }
 
@@ -49,13 +48,13 @@ my $afm = $ARGV[0];
 my $map = $ARGV[1];
 my $font = $ARGV[2];
 my $desc = $opt_d || "DESC";
-my $sys_map = $groff_sys_fontdir . "/devps/generate/" . $map;
-my $sys_desc = $groff_sys_fontdir . "/devps/" . $desc;
+my $sys_map = $groff_sys_fontdir . "/dev-ps/generate/" . $map;
+my $sys_desc = $groff_sys_fontdir . "/dev-ps/" . $desc;
 
 # read the afm file
 
 my $psname;
-my ($notice, $version, $fullname, $familyname, @comments); 
+my ($notice, $version, $fullname, $familyname, @comments);
 my $italic_angle = 0;
 my (@kern1, @kern2, @kernx);
 my (%italic_correction, %left_italic_correction);
@@ -202,7 +201,7 @@ close(DESC);
 if ($opt_e) {
     # read the encoding file
 
-    my $sys_opt_e = $groff_sys_fontdir . "/devps/" . $opt_e;
+    my $sys_opt_e = $groff_sys_fontdir . "/dev-ps/" . $opt_e;
     open(ENCODING, $opt_e) || open(ENCODING, $sys_opt_e) ||
 	die "$prog: can't open \`$opt_e' or \`$sys_opt_e': $!\n";
     while (<ENCODING>) {
@@ -236,7 +235,7 @@ while (<MAP>) {
 	    # The PostScript character "space" is automatically mapped
 	    # to the groff character "space"; this is for grops.
 	    warn "you are not allowed to map to " .
-		 "the groff character \`space'";
+		 "the roff character \`space'";
 	}
 	elsif ($field[0] eq "space") {
 	    warn "you are not allowed to map " .
@@ -420,7 +419,7 @@ open(FONT, ">$font") || die "$prog: can't open \`$font' for output: $!\n";
 select(FONT);
 
 print("# This file has been generated with " .
-      "GNU afmtodit (groff) version @VERSION@\n");
+      "@L_AFMTODIT (@T_ROFF@) v@VERSION@\n");
 print("#\n");
 print("#   $fullname\n") if defined $fullname;
 print("#   $version\n") if defined $version;
@@ -594,4 +593,4 @@ sub conv {
     $_[0]*$unitwidth*$resolution/(72*1000*$sizescale) + ($_[0] < 0 ? -.5 : .5);
 }
 
-# eof
+# s-it2-mode
