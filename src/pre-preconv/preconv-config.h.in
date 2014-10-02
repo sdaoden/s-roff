@@ -1,0 +1,8 @@
+/*@ Configurable stuff */
+#ifndef _PRECONV_CONFIG_H
+#define _PRECONV_CONFIG_H
+
+#define MAX_VAR_LEN 100
+
+#endif // _PRECONV_CONFIG_H
+// s-it2-mode

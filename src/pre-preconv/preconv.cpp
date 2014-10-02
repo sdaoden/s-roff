@@ -1,39 +1,41 @@
-// -*- C++ -*-
-/* Copyright (C) 2005, 2006, 2008
-   Free Software Foundation, Inc.
-     Written by Werner Lemberg (wl@gnu.org)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 2005, 2006, 2008
+ *    Free Software Foundation, Inc.
+ *      Written by Werner Lemberg (wl@gnu.org)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-#include "lib.h"
+#include "config.h"
 
 #include <assert.h>
-#include <stdlib.h>
 #include <errno.h>
+#include <locale.h>
+#include <stdlib.h>
+
 #include "errarg.h"
 #include "error.h"
 #include "file_case.h"
+#include "lib.h"
 #include "localcharset.h"
 #include "nonposix.h"
 #include "stringclass.h"
 
-#include <locale.h>
-
-#if HAVE_ICONV
+#ifdef HAVE_ICONV
 # include <iconv.h>
 # ifdef WORDS_BIGENDIAN
 #  define UNICODE "UTF-32BE"
@@ -41,10 +43,6 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 #  define UNICODE "UTF-32LE"
 # endif
 #endif
-
-#define MAX_VAR_LEN 100
-
-extern "C" const char *Version_string;
 
 char default_encoding[MAX_VAR_LEN];
 char user_encoding[MAX_VAR_LEN];
@@ -89,7 +87,7 @@ struct conversion {
 // Please contact the groff list if you find the selection inadequate.
 
 static const conversion
-emacs_to_mime[] = {
+emacs_to_mime[] = { // FIXME what kind of shit is THIS?? P.S.: it's documented!
   {"ascii",				"US-ASCII"},	// Emacs
   {"big5",				"Big5"},
   {"chinese-big5",			"Big5"},	// Emacs
@@ -372,9 +370,7 @@ emacs_to_mime[] = {
   {NULL,				NULL},
 };
 
-// ---------------------------------------------------------
 // Convert encoding name from emacs to mime.
-// ---------------------------------------------------------
 char *
 emacs2mime(char *emacs_enc)
 {
@@ -394,9 +390,7 @@ emacs2mime(char *emacs_enc)
   return emacs_enc;
 }
 
-// ---------------------------------------------------------
 // Print out Unicode entity if value is greater than 0x7F.
-// ---------------------------------------------------------
 inline void
 unicode_entity(int u)
 {
@@ -414,10 +408,8 @@ unicode_entity(int u)
   }
 }
 
-// ---------------------------------------------------------
 // Conversion functions.  All functions take `data', which
 // normally holds the first two lines, and a file pointer.
-// ---------------------------------------------------------
 
 // Conversion from ISO-8859-1 (aka Latin-1) to Unicode.
 void
@@ -436,7 +428,9 @@ conversion_latin1(file_case *fcp, const string &data)
 // In this case, the UTF-8 stuff here in this file will be
 // moved to the troff program.
 
-struct utf8 {
+class utf8
+{
+public:
   file_case *_fcp;
   unsigned char s[6];
   enum {
@@ -450,6 +444,7 @@ struct utf8 {
   int expected_bytes;
   int invalid_warning;
   int incomplete_warning;
+
   utf8(file_case *);
   ~utf8();
   void add(unsigned char);
@@ -457,11 +452,10 @@ struct utf8 {
   void incomplete();
 };
 
-utf8::utf8(file_case *fcp) : _fcp(fcp), byte(FIRST), expected_bytes(1),
-		      invalid_warning(1), incomplete_warning(1)
-{
-  // empty
-}
+utf8::utf8(file_case *fcp)
+: _fcp(fcp), byte(FIRST),
+  expected_bytes(1), invalid_warning(1), incomplete_warning(1)
+{}
 
 utf8::~utf8()
 {
@@ -610,7 +604,7 @@ conversion_utf8(file_case *fcp, const string &data)
 void
 conversion_cp1047(file_case *fcp, const string &data)
 {
-  static unsigned char cp1047[] = {
+  static unsigned char cp1047[] = { // FIXME const
     0x00, 0x01, 0x02, 0x03, 0x9C, 0x09, 0x86, 0x7F,	// 0x00
     0x97, 0x8D, 0x8E, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
     0x10, 0x11, 0x12, 0x13, 0x9D, 0x85, 0x08, 0x87,	// 0x10
@@ -654,7 +648,7 @@ conversion_cp1047(file_case *fcp, const string &data)
 }
 
 // Locale-sensible conversion.
-#if HAVE_ICONV
+#ifdef HAVE_ICONV
 void
 conversion_iconv(file_case *fcp, const string &data, char *enc)
 {
@@ -740,9 +734,8 @@ conversion_iconv(file_case *fcp, const string &data, char *enc)
   for (int *ptr = outbuf; (char *)ptr < limit; ptr++)
     unicode_entity(*ptr);
 }
-#endif /* HAVE_ICONV */
+#endif // HAVE_ICONV
 
-// ---------------------------------------------------------
 // Handle Byte Order Mark.
 //
 // Since we have a chicken-and-egg problem it's necessary
@@ -756,7 +749,6 @@ conversion_iconv(file_case *fcp, const string &data, char *enc)
 // four bytes from the data stream.
 //
 // Return encoding if a BOM is found, NULL otherwise.
-// ---------------------------------------------------------
 const char *
 get_BOM(file_case *fcp, string &BOM, string &data)
 {
@@ -770,14 +762,14 @@ get_BOM(file_case *fcp, string &BOM, string &data)
     int len;
     const char *str;
     const char *name;
-  } BOM_table[] = {
+  } BOM_table[] = { // FIXME const
     {4, "\x00\x00\xFE\xFF", "UTF-32"},
     {4, "\xFF\xFE\x00\x00", "UTF-32"},
     {3, "\xEF\xBB\xBF", "UTF-8"},
     {2, "\xFE\xFF", "UTF-16"},
     {2, "\xFF\xFE", "UTF-16"},
   };
-  const int BOM_table_len = sizeof (BOM_table) / sizeof (BOM_table[0]);
+  const int BOM_table_len = NELEM(BOM_table);
   char BOM_string[4];
   const char *retval = NULL;
   int len;
@@ -804,13 +796,11 @@ get_BOM(file_case *fcp, string &BOM, string &data)
   return retval;
 }
 
-// ---------------------------------------------------------
 // Get first two lines from input stream.
 //
 // Return string (allocated with `new') without zero bytes
 // or NULL in case no coding tag can occur in the data
 // (which is stored unmodified in `data').
-// ---------------------------------------------------------
 char *
 get_tag_lines(file_case *fcp, string &data)
 {
@@ -852,11 +842,9 @@ get_tag_lines(file_case *fcp, string &data)
   return data.extract();
 }
 
-// ---------------------------------------------------------
 // Check whether C string starts with a comment.
 //
 // Return 1 if true, 0 otherwise.
-// ---------------------------------------------------------
 int
 is_comment_line(char *s)
 {
@@ -883,7 +871,6 @@ is_comment_line(char *s)
   return 0;
 }
 
-// ---------------------------------------------------------
 // Get a value/variable pair from a local variables list
 // in a C string which look like this:
 //
@@ -894,7 +881,6 @@ is_comment_line(char *s)
 //
 // Return position of next value/variable pair or NULL if
 // at end of data.
-// ---------------------------------------------------------
 char *
 get_variable_value_pair(char *d1, char **variable, char **value)
 {
@@ -932,7 +918,6 @@ get_variable_value_pair(char *d1, char **variable, char **value)
   return NULL;
 }
 
-// ---------------------------------------------------------
 // Check coding tag in the read buffer.
 //
 // We search for the following line:
@@ -965,7 +950,6 @@ get_variable_value_pair(char *d1, char **variable, char **value)
 // UTF-16 or UTF-32 (or its siblings) in most cases.
 //
 // XXX Add support for tag at the end of buffer.
-// ---------------------------------------------------------
 char *
 check_coding_tag(file_case *fcp, string &data)
 {
@@ -999,11 +983,9 @@ check_coding_tag(file_case *fcp, string &data)
   return NULL;
 }
 
-// ---------------------------------------------------------
 // Handle an input file.  If filename is `-' handle stdin.
 //
 // Return 1 on success, 0 otherwise.
-// ---------------------------------------------------------
 int
 do_file(const char *filename)
 {
@@ -1084,13 +1066,11 @@ do_file(const char *filename)
   return success;
 }
 
-// ---------------------------------------------------------
 // Print usage.
-// ---------------------------------------------------------
 void
 usage(FILE *stream)
 {
-  fprintf(stream, "usage: %s [ option ] [ files ]\n"
+  fprintf(stream, "Synopsis: %s [ option ] [ files ]\n"
 		  "\n"
 		  "-d           show debugging messages\n"
 		  "-D encoding  specify default encoding\n"
@@ -1103,9 +1083,6 @@ usage(FILE *stream)
 		  program_name, default_encoding);
 }
 
-// ---------------------------------------------------------
-// Main routine.
-// ---------------------------------------------------------
 int
 main(int argc, char **argv)
 {
@@ -1134,14 +1111,14 @@ main(int argc, char **argv)
 			    "dD:e:hrv", long_options, NULL)) != EOF)
     switch (opt) {
     case 'v':
-      printf("GNU preconv (groff) version %s %s iconv support\n",
-	     Version_string,
+      puts(L_P_PRECONV " (" T_ROFF ") v " VERSION
 #ifdef HAVE_ICONV
-	     "with"
+        "with"
 #else
-	     "without"
-#endif /* HAVE_ICONV */
-	    );
+        "without"
+#endif
+        "iconv support"
+      );
       exit(0);
       break;
     case 'd':
@@ -1188,4 +1165,4 @@ main(int argc, char **argv)
   return nbad != 0;
 }
 
-/* end of preconv.cpp */
+// s-it2-mode

@@ -1,5 +1,9 @@
 .ig
-Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+@ @L_P_PRECONV@.1
+
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
+Copyright (C) 2006 - 2008 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -17,26 +21,26 @@ translations approved by the Free Software Foundation instead of in
 the original English.
 ..
 .
-.TH PRECONV @MAN1EXT@ "@MDATE@" "Groff Version @VERSION@"
+.TH @U_P_PRECONV@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
 .
 .SH NAME
-preconv \- convert encoding of input files to something GNU troff understands
+@L_P_PRECONV@ \- convert encoding of input files
 .
 .
 .SH SYNOPSIS
-.SY preconv
+.SY @L_P_PRECONV@
 .OP \-dr
 .OP \-e encoding
 .RI [ files
 .IR .\|.\|. ]
 .
-.SY preconv
+.SY @
 .B \-h
 |
 .B \-\-help
 .
-.SY preconv
+.SY @L_P_PRECONV@
 .B \-v
 |
 .B \-\-version
@@ -49,23 +53,23 @@ command line option and its parameter.
 .
 .
 .SH DESCRIPTION
-.B preconv
+.B @L_P_PRECONV@
 reads
 .I files
-and converts its encoding(s) to a form GNU
-.BR troff (@MAN1EXT@)
+and converts its encoding(s) to a form
+.BR @L_TROFF@ (@MAN1EXT@)
 can process, sending the data to standard output.
 Currently, this means ASCII characters and `\e[uXXXX]' entities, where
 `XXXX' is a hexadecimal number with four to six digits, representing a
 Unicode input code.
 Normally,
-.B preconv
+.B @L_P_PRECONV@
 should be invoked with the
 .B \-k
 and
 .B \-K
 options of
-.BR groff .
+.BR @L_ROFF@ .
 .
 .
 .SH OPTIONS
@@ -81,11 +85,11 @@ Specify default encoding if everything fails (see below).
 .BI \-e encoding
 Specify input encoding explicitly, overriding all other methods.
 This corresponds to
-.BR groff 's
+.BR @L_ROFF@ 's
 .BI \-K encoding
 option.
 Without this switch,
-.B preconv
+.B @L_P_PRECONV@
 uses the algorithm described below to select the input encoding.
 .
 .TP
@@ -106,7 +110,7 @@ Print version number.
 .
 .
 .SH USAGE
-.B preconv
+.B @L_P_PRECONV@
 tries to find the input encoding with the following algorithm.
 .
 .IP 1.
@@ -134,9 +138,9 @@ by the current locale, or `latin1' if the locale is set to `C',
 .
 .PP
 Note that the
-.B groff
+.B @L_ROFF@
 program supports a
-.B GROFF_ENCODING
+.B @U_ROFF@_ENCODING
 environment variable which is eventually expanded to option
 .BR \-k .
 .
@@ -153,14 +157,14 @@ ease the conversion from and to \%UTF-16 and \%UTF-32).
 In all cases, the byte order mark is
 .I not
 part of the data but part of the encoding protocol; in other words,
-.BR preconv 's
+.BR @L_P_PRECONV@ 's
 output doesn't contain it.
 .
 .PP
 Note that U+FEFF not at the start of the input data actually is emitted;
 it has then the meaning of a `zero width no-break space' character \[en]
 something not needed normally in
-.BR groff .
+.BR @L_ROFF@ .
 .
 .SS "Coding Tags"
 Editors which support more than a single character encoding need tags
@@ -173,7 +177,7 @@ or doesn't represent a natural language.
 .
 .PP
 For these reasons,
-.B preconv
+.B @L_P_PRECONV@
 supports the coding tag convention (with some restrictions) as used by
 .B "GNU Emacs"
 and
@@ -187,7 +191,7 @@ and
 .B XEmacs
 are stored in so-called
 .IR "File Variables" .
-.B preconv
+.B @L_P_PRECONV@
 recognizes the following syntax form which must be put into a troff comment
 in the first or second line.
 .
@@ -203,7 +207,7 @@ in the first or second line.
 .
 .PP
 The only relevant tag for
-.B preconv
+.B @L_P_PRECONV@
 is `coding' which can take the values listed below.
 Here an example line which tells
 .B Emacs
@@ -219,7 +223,7 @@ to edit a file in troff mode, and to use \%latin2 as its encoding.
 .PP
 The following list gives all MIME coding tags (either lowercase or
 uppercase) supported by
-.BR preconv ;
+.BR @L_P_PRECONV@ ;
 this list is hard-coded in the source.
 .
 .RS
@@ -256,7 +260,7 @@ eventually map to values from the list above.
 .PP
 Those tags are taken from
 .B "GNU Emacs"
-and 
+and
 .BR XEmacs ,
 together with some aliases.
 Trailing \%`-dos', \%`-unix', and \%`-mac' suffixes of coding tags (which
@@ -264,20 +268,20 @@ give the end-of-line convention used in the file) are stripped off before
 the comparison with the above tags happens.
 .
 .SS "Iconv Issues"
-.B preconv
+.B @L_P_PRECONV@
 by itself only supports three encodings: \%latin-1, cp1047, and \%UTF-8;
 all other encodings are passed to the
 .B iconv
 library functions.
 At compile time it is searched and checked for a valid
 .B iconv
-implementation; a call to `preconv \-\-version' shows whether
+implementation; a call to `@L_P_PRECONV@ \-\-version' shows whether
 .B iconv
 is used.
 .
 .
 .SH BUGS
-.B preconv
+.B @L_P_PRECONV@
 doesn't support
 .I "local variable lists"
 yet.
@@ -286,14 +290,5 @@ file.
 .
 .
 .SH "SEE ALSO"
-.BR groff (@MAN1EXT@)
-.br
-the
-.B "GNU Emacs"
-and
-.B XEmacs
-info pages
-.
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
+.BR @L_ROFF@ (@MAN1EXT@)
+.\" s-ts-mode
