@@ -6,7 +6,7 @@
 	true setpacking
 } if
 
-/grops 120 dict dup begin 
+/grops 120 dict dup begin
 
 % The ASCII code of the space character.
 /SC 32 def
@@ -27,7 +27,7 @@
 /N { rmoveto 0 SC 3 -1 roll widthshow } bind def
 /O { rmoveto 0 exch ashow } bind def
 /P { rmoveto 0 exch 0 SC 5 2 roll awidthshow } bind def
-/Q { moveto show } bind def 
+/Q { moveto show } bind def
 /R { moveto 0 SC 3 -1 roll widthshow } bind def
 /S { moveto 0 exch ashow } bind def
 /T { moveto 0 exch 0 SC 5 2 roll awidthshow } bind def
@@ -105,12 +105,12 @@
 % round a position to nearest (pixel + (.25,.25))
 
 /SN {
-	transform 
+	transform
 	.25 sub exch .25 sub exch
 	round .25 add exch round .25 add exch
 	itransform
 } bind def
-	
+
 % endx endy startx starty DL -
 % we round the endpoints of the line, so that parallel horizontal
 % and vertical lines will appear even

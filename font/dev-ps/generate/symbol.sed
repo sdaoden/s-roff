@@ -1,4 +1,4 @@
-#! /bin/sed -f
+#!/bin/sed -f
 # Set up uniform vertical dimensions for extensible glyphs (needed by eqn).
 /^C .*[ ;]N bracketlefttp[ ;]/bx
 /^C .*[ ;]N bracketleftex[ ;]/bx
@@ -31,3 +31,4 @@ b
 :z
 s/B \([-0-9][0-9]*\) \([-0-9][0-9]*\) \([-0-9][0-9]*\) [-0-9][0-9]*/B \1 \2 \3 920/
 b
+# s-sh-mode
