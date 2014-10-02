@@ -1,0 +1,10 @@
+/*@ Configurable stuff */
+#ifndef _INDXBIB_CONFIG_H
+#define _INDXBIB_CONFIG_H
+
+// These are documented in the manual!
+#define DEFAULT_HASH_TABLE_SIZE 997
+#define TEMP_INDEX_TEMPLATE     "indxbibXXXXXX"
+
+#endif // _INDXBIB_CONFIG_H
+// s-it2-mode

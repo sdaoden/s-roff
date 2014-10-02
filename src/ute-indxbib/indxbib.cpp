@@ -1,76 +1,78 @@
-// -*- C++ -*-
-/* Copyright (C) 1989-1992, 2000, 2001, 2002, 2003, 2004
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000 - 2004
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
+#include "config.h"
+#include "indxbib-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
+#include <sys/types.h>
 
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-#include "lib.h"
-
-#include <stdlib.h>
 #include <assert.h>
 #include <errno.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <unistd.h>
 
-#include "posix.h"
+#include "cmap.h"
+#include "cset.h"
+#include "defs.h"
 #include "errarg.h"
 #include "error.h"
+#include "lib.h"
+#include "nonposix.h"
+#include "posix.h"
 #include "stringclass.h"
-#include "cset.h"
-#include "cmap.h"
 
-#include "defs.h"
 #include "index.h"
 
-#include "nonposix.h"
-
-extern "C" const char *Version_string;
-
-#define DEFAULT_HASH_TABLE_SIZE 997
-#define TEMP_INDEX_TEMPLATE "indxbibXXXXXX"
-
-// (2^n - MALLOC_OVERHEAD) should be a good argument for malloc().
-
+// (2^n - MALLOC_OVERHEAD) should be a good argument for malloc(). TODO
 #define MALLOC_OVERHEAD 16
 
 #ifdef BLOCK_SIZE
-#undef BLOCK_SIZE
+# undef BLOCK_SIZE
 #endif
-
 const int BLOCK_SIZE = ((1024 - MALLOC_OVERHEAD - sizeof(struct block *)
 			 - sizeof(int)) / sizeof(int));
-struct block {
+class block
+{
+public:
   block *next;
   int used;
   int v[BLOCK_SIZE];
-  
+
   block(block *p = 0) : next(p), used(0) { }
 };
-
-struct block;
 
 union table_entry {
   block *ptr;
   int count;
 };
 
-struct word_list {
+class word_list
+{
+public:
   word_list *next;
   char *str;
   int len;
+
   word_list(const char *, int, word_list *);
 };
 
@@ -107,18 +109,19 @@ static void store_filename(const char *);
 static void fwrite_or_die(const void *ptr, int size, int nitems, FILE *fp);
 static char *get_cwd();
 
-extern "C" {
-  void cleanup();
-  void catch_fatal_signals();
-  void ignore_fatal_signals();
-}
+static void   _cleanup(void);
+static void   _handle_fatal_signal(int signum)
+static void   _catch_fatal_signals(void);
+#ifndef HAVE_RENAME
+static void   _ignore_fatal_signals(void);
+#endif
 
 int main(int argc, char **argv)
 {
   program_name = argv[0];
   static char stderr_buf[BUFSIZ];
   setbuf(stderr, stderr_buf);
-  
+
   const char *base_name = 0;
   typedef int (*parser_t)(const char *);
   parser_t parser = do_file;
@@ -173,7 +176,7 @@ int main(int argc, char **argv)
       parser = do_whole_file;
       break;
     case 'v':
-      printf("GNU indxbib (groff) version %s\n", Version_string);
+      printf(L_INDXBIB " (" T_ROFF ") v" VERSION);
       exit(0);
       break;
     case CHAR_MAX + 1: // --help
@@ -233,7 +236,7 @@ int main(int argc, char **argv)
   else {
     temp_index_file = strsave(TEMP_INDEX_TEMPLATE);
   }
-  catch_fatal_signals();
+  _catch_fatal_signals();
   int fd = mkstemp(temp_index_file);
   if (fd < 0)
     fatal("can't create temporary index file: %1", strerror(errno));
@@ -281,16 +284,16 @@ int main(int argc, char **argv)
   write_hash_table();
   if (fclose(indxfp) < 0)
     fatal("error closing temporary index file: %1", strerror(errno));
-  char *index_file = new char[strlen(base_name) + sizeof(INDEX_SUFFIX)];    
+  char *index_file = new char[strlen(base_name) + sizeof(INDEX_SUFFIX)];
   strcpy(index_file, base_name);
   strcat(index_file, INDEX_SUFFIX);
 #ifdef HAVE_RENAME
-#ifdef __EMX__
+# ifdef __EMX__
   if (access(index_file, R_OK) == 0)
     unlink(index_file);
-#endif /* __EMX__ */
+# endif /* __EMX__ */
   if (rename(temp_index_file, index_file) < 0) {
-#ifdef __MSDOS__
+# ifdef __MSDOS__
     // RENAME could fail on plain MSDOS filesystems because
     // INDEX_FILE is an invalid filename, e.g. it has multiple dots.
     char *fname = p ? index_file + (p - base_name) : 0;
@@ -302,11 +305,11 @@ int main(int argc, char **argv)
         && strcmp(dot, INDEX_SUFFIX) != 0)
       *dot = '_';
     if (rename(temp_index_file, index_file) < 0)
-#endif
+# endif
     fatal("can't rename temporary index file: %1", strerror(errno));
   }
-#else /* not HAVE_RENAME */
-  ignore_fatal_signals();
+#else /* HAVE_RENAME */
+  _ignore_fatal_signals();
   if (unlink(index_file) < 0) {
     if (errno != ENOENT)
       fatal("can't unlink `%1': %2", index_file, strerror(errno));
@@ -315,7 +318,7 @@ int main(int argc, char **argv)
     fatal("can't link temporary index file: %1", strerror(errno));
   if (unlink(temp_index_file) < 0)
     fatal("can't unlink temporary index file: %1", strerror(errno));
-#endif /* not HAVE_RENAME */
+#endif /* HAVE_RENAME */
   temp_index_file = 0;
   return failed;
 }
@@ -323,7 +326,7 @@ int main(int argc, char **argv)
 static void usage(FILE *stream)
 {
   fprintf(stream,
-"usage: %s [-vw] [-c file] [-d dir] [-f file] [-h n] [-i XYZ] [-k n]\n"
+"Synopsis: %s [-vw] [-c file] [-d dir] [-f file] [-h n] [-i XYZ] [-k n]\n"
 "       [-l n] [-n n] [-o base] [-t n] [files...]\n",
 	  program_name);
 }
@@ -471,7 +474,7 @@ static int do_file(const char *filename)
     DISCARD,	// after truncate_len bytes of a key
     MIDDLE	// in between keys
   } state = START;
-  
+
   // In states START, BOL, IGNORE_BOL, space_count how many spaces at
   // the beginning have been seen.  In states PERCENT, IGNORE, KEY,
   // MIDDLE space_count must be 0.
@@ -775,16 +778,51 @@ static void fwrite_or_die(const void *ptr, int size, int nitems, FILE *fp)
 
 void fatal_error_exit()
 {
-  cleanup();
+  _cleanup();
   exit(3);
 }
 
-extern "C" {
-
-void cleanup()
+static void
+_cleanup(void)
 {
   if (temp_index_file)
     unlink(temp_index_file);
 }
 
+static void
+_handle_fatal_signal(int signum)
+{
+  signal(signum, SIG_DFL);
+  _cleanup();
+#ifdef HAVE_KILL
+  kill(getpid(), signum);
+#else
+  /* MS-DOS and Win32 don't have kill(); the best compromise is
+     probably to use exit() instead. */
+  exit(signum);
+#endif
 }
+
+static void
+_catch_fatal_signals(void)
+{
+#ifdef SIGHUP
+  signal(SIGHUP, &_handle_fatal_signal);
+#endif
+  signal(SIGINT, &_handle_fatal_signal);
+  signal(SIGTERM, &_handle_fatal_signal);
+}
+
+#ifndef HAVE_RENAME
+static void
+_ignore_fatal_signals()
+{
+# ifdef SIGHUP
+  signal(SIGHUP, SIG_IGN);
+# endif
+  signal(SIGINT, SIG_IGN);
+  signal(SIGTERM, SIG_IGN);
+}
+#endif /* HAVE_RENAME */
+
+// s-it2-mode
