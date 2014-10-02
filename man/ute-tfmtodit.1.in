@@ -1,5 +1,9 @@
 .ig
-Copyright (C) 1989-2000, 2001, 2002 Free Software Foundation, Inc.
+@ @L_TFMTODIT@.1
+
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
+Copyright (C) 1989 - 2002 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -24,16 +28,17 @@ the original English.
 .ie \\n(.$=0:((0\\$1)*2u>(\\n(.lu-\\n(.iu)) .TP
 .el .TP "\\$1"
 ..
-.TH TFMTODIT @MAN1EXT@ "@MDATE@" "Groff Version @VERSION@"
+.TH @U_TFMTODIT@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
+.
 .SH NAME
-tfmtodit \- create font files for use with groff \-Tdvi
+@L_TFMTODIT@ \- create font files for use with @L_ROFF@ \-Tdvi
 .SH SYNOPSIS
 .nr a \n(.j
 .ad l
 .nr i \n(.i
-.in +\w'\fBtfmtodit 'u
+.in +\w'\fB@L_TFMTODIT@ 'u
 .ti \niu
-.B tfmtodit
+.B @L_TFMTODIT@
 .de OP
 .ie \\n(.$-1 .RI "[\ \fB\\$1\fP" "\\$2" "\ ]"
 .el .RB "[\ " "\\$1" "\ ]"
@@ -50,14 +55,14 @@ tfmtodit \- create font files for use with groff \-Tdvi
 It is possible to have whitespace between a command line option and its
 parameter.
 .SH DESCRIPTION
-.B tfmtodit
+.B @L_TFMTODIT@
 creates a font file for use with
 .B
-groff \-Tdvi\fR.
+@L_ROFF@ \-Tdvi\fR.
 .I tfm_file
 is the name of the \*(tx font metric file for the font.
 .I map_file
-is a file giving the groff names for characters in the font;
+is a file giving the roff names for characters in the font;
 this file should consist of a sequence of lines of the form:
 .IP
 .I
@@ -69,12 +74,12 @@ is a decimal integer giving the position of the character in the font,
 and
 .IR c1 ,
 .IR c2 ,.\|.\|.
-are the groff names of the character.
-If a character has no groff names but exists in the tfm file,
-then it will be put in the groff font file as an unnamed character.
+are the roff names of the character.
+If a character has no roff names but exists in the tfm file,
+then it will be put in the roff font file as an unnamed character.
 .I font
-is the name of the groff font file.
-The groff font file is written to
+is the name of the roff font file.
+The roff font file is written to
 .IR font .
 .LP
 The
@@ -91,14 +96,14 @@ it should be listed in the
 .B fonts
 command in the DESC file;
 if it is not special, there is no need to list it, since
-.B troff
+.B @L_TROFF@
 can automatically mount it when it's first used.
 .LP
-To do a good job of math typesetting, groff requires
+To do a good job of math typesetting, @L_ROFF@ requires
 font metric information not present in the tfm file.
 The reason for this is that \*(tx has separate math italic fonts
-whereas groff uses normal italic fonts for math.
-The additional information required by groff is given by the
+whereas @L_ROFF@ uses normal italic fonts for math.
+The additional information required by @L_ROFF@ is given by the
 two arguments to the
 .B math_fit
 macro in the Metafont programs for the Computer Modern fonts.
@@ -166,7 +171,7 @@ The skewchar of this font is at position
 .I n
 should be an integer;
 it may be given in decimal,
-or with a leading 
+or with a leading
 .B 0
 in octal,
 or with a leading
@@ -180,18 +185,17 @@ is the specified character.
 is a gf file produced by Metafont containing special and numspecial
 commands giving additional font metric information.
 .SH FILES
-.Tp \w'\fB@FONTDIR@/devdvi/DESC'u+2n
-.B @FONTDIR@/devdvi/DESC
+.Tp \w'\fB@FONTDIR@/dev-dvi/DESC'u+2n
+.B @FONTDIR@/dev-dvi/DESC
 Device description file.
 .TP
-.BI @FONTDIR@/devdvi/ F
+.BI @FONTDIR@/dev-dvi/ F
 Font description file for font
 .IR F .
-.SH "SEE ALSO"
-.BR groff (@MAN1EXT@),
-.BR grodvi (@MAN1EXT@),
-.BR groff_font (@MAN5EXT@)
 .
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
+.SH "SEE ALSO"
+.BR @L_ROFF@ (@MAN1EXT@),
+.BR @L_D_DVI@ (@MAN1EXT@),
+.BR @L_ROFF@_font (@MAN5EXT@)
+.
+.\" s-ts-mode

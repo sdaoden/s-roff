@@ -1,68 +1,68 @@
-// -*- C++ -*-
-/* Copyright (C) 1989-1992, 2000, 2001, 2004 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000, 2001, 2004 Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
+/*
+ * I have tried to incorporate the changes needed for TeX 3.0 tfm files,
+ * but I haven't tested them.
+ *
+ * Groff requires more font metric information than TeX.  The reason
+ * for this is that TeX has separate Math Italic fonts, whereas groff
+ * uses normal italic fonts for math.  The two additional pieces of
+ * information required by groff correspond to the two arguments to the
+ * math_fit() macro in the Metafont programs for the CM fonts. In the
+ * case of a font for which math_fitting is false, these two arguments
+ * are normally ignored by Metafont. We need to get hold of these two
+ * parameters and put them in the groff font file.
+ *
+ * We do this by loading this definition after cmbase when creating cm.base.
+ *
+ * def ignore_math_fit(expr left_adjustment,right_adjustment) =
+ *  special "adjustment";
+ *  numspecial left_adjustment*16/designsize;
+ *  numspecial right_adjustment*16/designsize;
+ * enddef;
+ *
+ * This puts the two arguments to the math_fit macro into the gf file.
+ * (They will appear in the gf file immediately before the character to
+ * which they apply.)  We then create a gf file using this cm.base.  Then
+ * we run tfmtodit and specify this gf file with the -g option.
+ *
+ * This need only be done for a font for which math_fitting is false;
+ * When it's true, the left_correction and subscript_correction should
+ * both be zero.
+ */
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
+#include "config.h"
+#include "tfmtodit-config.h"
 
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-/* I have tried to incorporate the changes needed for TeX 3.0 tfm files,
-but I haven't tested them. */
-
-/* Groff requires more font metric information than TeX.  The reason
-for this is that TeX has separate Math Italic fonts, whereas groff
-uses normal italic fonts for math.  The two additional pieces of
-information required by groff correspond to the two arguments to the
-math_fit() macro in the Metafont programs for the CM fonts. In the
-case of a font for which math_fitting is false, these two arguments
-are normally ignored by Metafont. We need to get hold of these two
-parameters and put them in the groff font file.
-
-We do this by loading this definition after cmbase when creating cm.base.
-
-def ignore_math_fit(expr left_adjustment,right_adjustment) =
- special "adjustment";
- numspecial left_adjustment*16/designsize;
- numspecial right_adjustment*16/designsize;
- enddef;
-
-This puts the two arguments to the math_fit macro into the gf file.
-(They will appear in the gf file immediately before the character to
-which they apply.)  We then create a gf file using this cm.base.  Then
-we run tfmtodit and specify this gf file with the -g option.
-
-This need only be done for a font for which math_fitting is false;
-When it's true, the left_correction and subscript_correction should
-both be zero. */
-
-#include "lib.h"
-
-#include <stdlib.h>
-#include <math.h>
+#include <assert.h>
 #include <errno.h>
+#include <math.h>
+#include <stdlib.h>
+
+#include "cset.h"
 #include "errarg.h"
 #include "error.h"
-#include "assert.h"
-#include "cset.h"
+#include "lib.h"
 #include "nonposix.h"
-
-extern "C" const char *Version_string;
-
-/* Values in the tfm file should be multiplied by this. */
-
-#define MULTIPLIER 1
 
 struct char_info_word {
   unsigned char width_index;
@@ -80,7 +80,10 @@ struct lig_kern_command {
   unsigned char remainder;
 };
 
-class tfm {
+class tfm
+{
+  friend class kern_iterator;
+
   int bc;
   int ec;
   int nw;
@@ -100,6 +103,7 @@ class tfm {
   lig_kern_command *lig_kern;
   int *kern;
   int *param;
+
 public:
   tfm();
   ~tfm();
@@ -113,13 +117,14 @@ public:
   int get_checksum();
   int get_design_size();
   int get_lig(unsigned char, unsigned char, unsigned char *);
-  friend class kern_iterator;
 };
 
-class kern_iterator {
+class kern_iterator
+{
   tfm *t;
   int c;
   int i;
+
 public:
   kern_iterator(tfm *);
   int next(unsigned char *c1, unsigned char *c2, int *k);
@@ -164,7 +169,7 @@ int kern_iterator::next(unsigned char *c1, unsigned char *c2, int *k)
     }
   return 0;
 }
-	  
+
 tfm::tfm()
 : char_info(0), width(0), height(0), depth(0), italic(0), lig_kern(0),
   kern(0), param(0)
@@ -252,7 +257,7 @@ tfm::~tfm()
   a_delete kern;
   a_delete param;
 }
-  
+
 int read2(unsigned char *&s)
 {
   int n;
@@ -270,7 +275,6 @@ int read4(unsigned char *&s)
   n |= *s++;
   return n;
 }
-
 
 int tfm::load(const char *file)
 {
@@ -373,13 +377,16 @@ int tfm::load(const char *file)
   return 1;
 }
 
-class gf {
-  int left[256];
-  int right[256];
+class gf
+{
   static int sread4(int *p, FILE *fp);
   static int uread3(int *p, FILE *fp);
   static int uread2(int *p, FILE *fp);
   static int skip(int n, FILE *fp);
+
+  int left[256];
+  int right[256];
+
 public:
   gf();
   int load(const char *file);
@@ -586,17 +593,18 @@ int gf::skip(int n, FILE *fp)
   return 1;
 }
 
-
-struct char_list {
+class char_list
+{
+public:
   char *ch;
   char_list *next;
+
   char_list(const char *, char_list * = 0);
 };
 
 char_list::char_list(const char *s, char_list *p) : ch(strsave(s)), next(p)
 {
 }
-
 
 int read_map(const char *file, char_list **table)
 {
@@ -644,16 +652,17 @@ int read_map(const char *file, char_list **table)
   return 1;
 }
 
-
-/* Every character that can participate in a ligature appears in the
-lig_chars table. `ch' gives the full-name of the character, `name'
-gives the groff name of the character, `i' gives its index in
-the encoding, which is filled in later  (-1 if it does not appear). */
+/*
+ * Every character that can participate in a ligature appears in the
+ * lig_chars table. `ch' gives the full-name of the character, `name'
+ * gives the groff name of the character, `i' gives its index in
+ * the encoding, which is filled in later  (-1 if it does not appear).
+ */
 
 struct S {
   const char *ch;
   int i;
-} lig_chars[] = {
+} lig_chars[] = { // FIXME const
   { "f", -1 },
   { "i", -1 },
   { "l", -1 },
@@ -673,7 +682,7 @@ enum { CH_f, CH_i, CH_l, CH_ff, CH_fi, CH_fl, CH_ffi, CH_ffl };
 struct S2 {
   unsigned char c1, c2, res;
   const char *ch;
-} lig_table[] = {
+} lig_table[] = { // FIXME const
   { CH_f, CH_f, CH_ff, "ff" },
   { CH_f, CH_i, CH_fi, "fi" },
   { CH_f, CH_l, CH_fl, "fl" },
@@ -682,7 +691,7 @@ struct S2 {
   };
 
 static void usage(FILE *stream);
-  
+
 int main(int argc, char **argv)
 {
   program_name = argv[0];
@@ -718,7 +727,7 @@ int main(int argc, char **argv)
       }
     case 'v':
       {
-	printf("GNU tfmtodit (groff) version %s\n", Version_string);
+	printf(L_TFMTODIT " (" T_ROFF ") v" VERSION);
 	exit(0);
 	break;
       }
@@ -838,7 +847,7 @@ int main(int argc, char **argv)
     }
   printf("charset\n");
   char_list unnamed("---");
-  for (i = 0; i < 256; i++) 
+  for (i = 0; i < 256; i++)
     if (t.contains(i)) {
       char_list *p = table[i] ? table[i] : &unnamed;
       int m[6];
@@ -869,6 +878,9 @@ int main(int argc, char **argv)
 
 static void usage(FILE *stream)
 {
-  fprintf(stream, "usage: %s [-sv] [-g gf_file] [-k skewchar] tfm_file map_file font\n",
+  fprintf(stream,
+    "Synopsis: %s [-sv] [-g gf_file] [-k skewchar] tfm_file map_file font\n",
 	  program_name);
 }
+
+// s-it2-mode
