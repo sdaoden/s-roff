@@ -1,3 +1,7 @@
+TODO reminder.
+
+Generic
+=======
 
 - Get rid of all the short options which choose preprocessors, instead
   use a multiplexer
@@ -96,5 +100,435 @@
   .)z
 
 = Arrows for next/previous page from R5 xditview
+
+dev-ps
+======
+
+Read PFB files directly.
+
+Generate %%For comment.
+
+Generate %%Title comment.
+
+Angles in arc command: don't generate more digits after the decimal
+point than are necessary.
+
+Possibly generate BoundingBox comment.
+
+Per font composite character mechanism (sufficient for fractions).
+
+Consider whether we ought to do rounding of graphical objects other
+than lines. What's the point?
+
+Error messages should refer to output page number.
+
+Search for downloadable fonts using their PostScript names if not
+found in download file.
+
+Separate path for searching for downloadable font files.
+
+Clip to the BoundingBox when importing documents.
+
+dev-tty
+=======
+
+Document font and device description file usage of grotty.
+
+With -h avoid using a tab when a single space will do.
+
+pre-eqn
+=======
+
+Use the same size increases for sum prod int as eqn does.
+
+Perhaps chartype should be renamed.
+
+TeX makes {sub,super}script on a single character with an accent
+into an accent onto the (character with the script). Should we do this?
+
+Implement mark and lineups within scripts, matrices and piles, and accents.
+(Why would this be useful?)
+
+Perhaps push hmotions down through lists to avoid upsetting spacing
+adjustments.
+
+Possibly generate .lf commands during compute_metrics phase.
+
+Consider whether there should be extra space at the side of piles.
+
+Provide scriptstyle displaystyle etc.
+
+Provide a nicer matrix syntax, eg
+matrix ccc {
+a then b then c above
+e then f then g above
+h then i then k
+}
+
+Perhaps generate syntax error messages using the style of gpic.
+
+Wide accents.
+
+More use of \Z.
+
+Extensible square roots.
+
+Vphantom
+
+Smash.
+
+Provide a variant of vec that extends over the length of the accentee.
+
+Support vertical arrow delimiters.
+
+Make the following work:
+.EQ
+delim @@
+.EN
+.EQ @<-@
+some equation
+.EN
+
+pre-pic
+=======
+
+In troff mode, dotted and dashed splines.
+
+Make DELIMITED have type lstr; this would allow us to give better
+error messages for problems within the body of for and if constructs.
+
+In troff mode without -x, fake \D't' with .ps commands.
+
+Perhaps an option to set command char.
+
+Add an output class for dumb line printers. It wouldn't be pretty but
+it would be better than nothing. Integrate it with texinfo.  Useful
+for groff -Tascii as well.
+
+Option to allow better positioning of arrowheads on arcs.
+
+Perhaps add PostScript output mode.
+
+Change the interface to the output class so that output devices have
+the opportunity to handle arrowheads themselves.
+
+Consider whether the line thickness should scale.
+
+Consider whether the test in a for loop should be fuzzy (as it
+apparently is in grap).
+
+Possibly change fillval so that zero is black.
+
+Provide a way of getting text blocks (positioned with `.in' rather
+than \h), into pic.  Should be possible to use block of diverted text
+in pic.  Possibly something similar to T{ and T} in tbl.
+
+Option to provide macro backtraces.
+
+Have a path that is searched by `copy' statement.  Set by environment
+variable or command line option.
+
+pre-refer
+=========
+
+inline references
+
+Some sort of macro/subroutine that can cover several references.
+
+move-punctuation should ignore multiple punctuation characters.
+
+Make the index files machine independent.
+
+Allow search keys to be negated (with !) to indicate that the
+reference should not contain the key.  Ignore negated keys during
+indexed searching.
+
+Provide an option with lkbib and lookbib that prints the location
+(filename, position) of each reference.  Need to map filename_id's
+back to filenames.
+
+Rename join-authors to join-fields.  Have a separate label-join-fields
+command used by @ and #.
+
+Have some sort of quantifier: eg $.n#A means execute `$.n' for each
+instance of an A field, setting $ to that field, and then join the
+results using the join-authors command.
+
+no-text-in-bracket command which says not to allow post_text and
+pre_text when the [] flags has been given. Useful for superscripted
+footnotes.
+
+Make it possible to translate - to \(en in page ranges.
+
+Trim eign a bit.
+
+In indexed searching discard all numeric keys except dates.
+
+Allow `\ ' to separate article from first word.
+
+%also
+
+Option automatically to supply [] flags in every reference.
+
+See if we can avoid requiring a comma before jr. and so on
+in find_last_name().
+
+Cache sortified authors in authors string during tentative evaluation of
+label specification.
+
+Possibly don't allow * and % expressions in the first part of ?:, | or
+& expressions.
+
+Handle better the case where <> occurs inside functions and in the
+first operand of ~. Or perhaps implement <> using some magic character
+in the string.
+
+Should special treatment be given to lines beginning with . in
+references?  (Unix refer seems to treat them like `%').
+
+Add global flag to control whether all files should be stat-ed after
+loading, and whether they should be stat-ed before each search.
+Perhaps make this dependent on the number of files there are.
+
+Option to truncate keys to truncate_len in linear searching.
+
+Allow multiple -f options in indxbib.
+
+In indxbib, possibly store common words rather than common words
+filename.  In this case store only words that are actually present in
+the file.
+
+Perhaps we should put out an obnoxious copyright message when lookbib
+starts up.
+
+Provide an option that writes a file containing just the references
+actually used.  Useful if you want to distribute a document.
+
+Have a magic token such that
+%A <sort stuff><magic token><print stuff>
+will print as though it were
+%A <print stuff>
+but sort as though it were
+%A <sort stuff>
+Do we need this if we can specify author alternatives for sorting?
+No, provided we have separate alternatives for @.
+
+In consider_authors when last names are ambiguous we might be able to
+use just the first name and not Jr. bit. Or we might be able to
+abbreviate the author.
+
+It ought to be possible to specify an alternative field to sort on
+instead of date. (ie if there's a field giving the type of document --
+these references should sort after any years)
+
+Provide a way to execute a command using a command-line option.
+
+Option to set the label-spec as a command-line option (-L).
+
+Command to to specify which fields can occur multiple times:
+multiple AE
+
+Command to specify how various fields sort:
+aort-as-name A
+sort-as-date D
+sort-as-title T
+sort-as-other O
+
+Command to specify which fields are author fields:
+# if we don't have A use field Q
+author-fields AQ
+
+Commands to set properties of tokens.
+sortify-token \(ae ae
+uppercase-token \[ae] \[AE]
+
+Command to set the names of months:
+months january february march april may ...
+
+Perhaps provide some sort of macro capability:
+# perhaps a macro capability
+defmacro foo
+annotation-field $1
+endef
+
+Command to control strings used in capitalization
+capitalize-start \s+2
+capitalize-end \s-2
+(perhaps make these arguments to the capitalize command.)
+
+pre-soelim
+==========
+
+understand .pso.
+
+src: troff
+==========
+
+A line prefix request to make e.g. French quotation possible:
+
+  He said: >> blablablabla
+  >> blablabla blabla  bla
+  >> blabla blabla bla bla
+  >> bla bla bla blablabla
+  >> blabla. <<
+
+Give a more helpful error message when the indent is set to a value
+greater than the line-length.
+
+Tracing. This is a pain to implement because requests are responsible
+for reading their own arguments.
+
+Possibly implement -s option (stop every N pages). This functionality
+would be more appropriate in a postprocessor.
+
+Line breaking should be smarter.  In particular, it should be possible
+to shrink spaces.  Also avoid having a line that's been shrunk a lot
+next to a line that's been stretched a lot.  The difficulty is to
+design a mechanism that allows the user complete control over the
+decision of where to break the line.
+
+Provide a mechanism to control the shape of the rag in non-justified
+text.
+
+Add a discretionary break escape sequence. \='...'...'...' like TeX.
+
+Think about kerning between characters and spaces. (Need to implement
+get_breakpoints and split methods for kern_pair_node class.)
+
+In troff, if .L > 1 when a diversion is reread in no-fill mode, then
+extra line-spacing is added on. Groff at the moment treats line-spacing
+like vertical spacing and doesn't do this.
+
+Suppose \(ch comes from a special font S, and that the current font is
+R. Suppose that R contains a hyphen character and that S does not.
+Suppose that the current font is R. Suppose that \(ch is in a word
+and has a non-zero hyphen-type. Then we ought to be able to hyphenate,
+but we won't be able to because we will look for the hyphen only in
+font S and not in font R.
+
+Perhaps the current input level should be accessible in a number register.
+
+Should \w deal with a newline like \X?
+
+Have another look at uses of token::delimiter.  Perhaps we need to
+distinguish the case where we want to see if a token could start a
+number, from the case where we want to see if it could occur somewhere
+in a number expression.
+
+Provide a facility like copy thru in pic.
+
+Fancier implementation of font families which doesn't group fonts into
+families purely on the basis of their names.
+
+In the DESC file make the number of fonts optional if they are all on
+one line.
+
+Number register to give the diversion level.
+
+Time various alternative implementations of scale (both in font.c and
+number.c). On a sparc it's faster to always do it in floating point.
+
+Devise a more compact representation for the hyphenation patterns trie.
+
+Have a per-environment parameter to increase letter-spacing.
+
+Request to set character height.
+
+Request to set character slant.
+
+Provide some way to upcase or downcase strings.
+
+Support non-uniformly scalable fonts. Perhaps associate a suffix with
+a particular range of sizes.  eg
+  sizesuffix .display 14-512
+Then is you ask for R at pointsize 16, groff will first look for
+R.display and then R.  Probably necessary to be able to specify a
+separate unitwidth for each sizesuffix (eg. for X).
+
+Make it possible to suppress hyphenation on a word-by-word basis.
+(Perhaps store hyphenation flags in tfont.)
+
+Possibly allow multiple simultaneous input line traps.
+
+Unpaddable, breakable space escape sequence.
+
+Support hanging punctuation.
+
+In justified text, if the last line of a paragraph is only a little
+bit short it might be desirable to justify the line.  Allow the user
+control over this.
+
+The pm request could print where the macro was defined.  Also could
+optionally print the contents of a macro.
+
+Provide some way to round numbers to multiples of the current
+horizontal or vertical resolution.
+
+Better string-processing support (search).
+
+Generalized ligatures.
+
+Request to remove an environment. (Maintain a count of the references
+to the environment from the environment table, environment dictionary
+or environment stack.)
+
+Perhaps in the nr request a leading `-' should only be recognized as a
+decrement when it's at the same input level as the request.
+
+Don't ever change a charinfo.  Create new variants instead and chain
+them together.
+
+Unix troff appears to read the first character of a request name in
+copy mode.  Should we do the same?
+
+Number register giving name of end macro.
+
+More thorough range checking.
+
+Provide syntax for octal and hexadecimal numeric constants.  Perhaps
+o#100 and x#7f as per Scheme.  Or perhaps PostScript 16#7f.  Ambiguity
+between whether `c' is treated as digit or scaling indicator.
+
+Local variables.
+
+tmac
+====
+
+Support multiple line-spacing.
+
+If we have footnotes in the abstract in RP format, then the footnote
+will appear on the cover sheet, which it should, but also on the first
+page, which it should not.
+
+Should we allow multi-page cover-sheets?
+
+Warn about automatically numbered footnotes in floating keeps.
+
+When we bring back the footnote overflow at the top of page, it would
+be more efficient to avoid diverting it again. (Need to keep track of
+footnote height.)
+
+Possibly have a place above which the footnote trap must not be
+placed.
+
+Improved indexing, not using tm, controlled by string variable (eg
+-dIDX=file.idx).
+
+When changing from multi-column to narrower columns, we could avoid
+doing a @super-eject. (This might not be a good idea.)
+
+Think about cutmarks.  Possibly implement CM.
+
+Implement thesis Mode (TM, CT).
+
+Implement more V10 features.
+
+Should this
+
+.LP
+.rs
+.sp \n(.tu
+
+print two pages?
 
 # s-ts-mode
