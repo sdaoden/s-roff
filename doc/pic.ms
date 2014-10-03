@@ -1,8 +1,20 @@
+'\" pet -- preprocess: pic(1), eqn(1), tbl(1)
+.\"@ pic.ms
+.\"@ There is no hope that this will ever look right under nroff.
+.\"@ Comments beginning with %% are cut lines so portions of this
+.\"@ document can be automatically extracted.  %%TUTORIAL%% begins the
+.\"@ tutorial part; %%REFERENCE%% the reference part.  %%POSTLUDE%% the
+.\"@ bibliography and end matter after the reference part.
+.\"
+.\" Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+.\"
 .\" Copyright (C) 2006, 2007, 2008
 .\"   Free Software Foundation, Inc.
 .\"      Written by Eric S. Raymond <esr@thyrsus.com>
 .\"
-.\" This file is part of groff.
+.\" This document was written for free use and redistribution by
+.\" Eric S. Raymond <esr@thyrsus.com> in August 1995.  It has been put
+.\" under the GPL in March 2006.
 .\"
 .\" groff is free software; you can redistribute it and/or modify it under
 .\" the terms of the GNU General Public License as published by the Free
@@ -17,21 +29,6 @@
 .\" You should have received a copy of the GNU General Public License along
 .\" with groff; see the file COPYING.  If not, write to the Free Software
 .\" Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
-.\"
-.\" For tolerably obvious reason, this needs to be processed through PIC.
-.\" It also needs to be processed through TBL and EQN.  Use "groff -p -e -t".
-.\" There is no hope that this will ever look right under nroff.
-.\"
-.\" Comments beginning with %% are cut lines so portions of this
-.\" document can be automatically extracted.  %%TUTORIAL%% begins the
-.\" tutorial part; %%REFERENCE%% the reference part.  %%POSTLUDE%% the
-.\" bibliography and end matter after the reference part.
-.\"
-.\" This document was written for free use and redistribution by
-.\" Eric S. Raymond <esr@thyrsus.com> in August 1995.  It has been put
-.\" under the GPL in March 2006.
-.\"
-.\"	$Id$	
 .
 .
 .\" Set a proper TeX and LaTeX
@@ -3172,4 +3169,4 @@ Kernighan, B. W.  \fBPIC \[em] A Graphics Language for Typesetting
 Van Wyk, C. J.  \fBA high-level language for specifying pictures\fP.
 \fIACM Transactions On Graphics\fP 1,2 (1982) 163-182.
 .
-.\" end of pic.ms
+.\" s-ts-mode

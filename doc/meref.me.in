@@ -1,3 +1,5 @@
+.\"@ meref.me
+.\"
 .\" Copyright (c) 1986 The Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -16,6 +18,8 @@
 .\"	@(#)ref.me	6.4 (Berkeley) 7/17/89
 .\"
 .\" Modified by jjc@jclark.com for groff.
+.\"Adapted to S-roff by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+.
 .\"UC 7
 .ll 6.5i
 .lt 6.5i
@@ -45,6 +49,7 @@
 .rm XX
 .cu 0
 ..
+.ds S \s-1@U_ROFF@\s0
 .ds G \s-1GROFF\s0
 .ds N \s-1NROFF\s0
 .ds T \s-1TROFF\s0
@@ -65,7 +70,7 @@
 .b "\-ME REFERENCE MANUAL"
 .sz
 .sp
-.i "\*G Version \*(MO\(dg"
+.i "\*S Version \*(MO\(dg"
 .(f
 \(dgBased on Berkeley Release 2.31.
 .)f
@@ -85,6 +90,7 @@ University of California, Berkeley
 Berkeley, California  94720
 .sp 2
 .i "Modified for \*G by James Clark"
+.i "Modified for \*S by Steffen (Daode) Nurpmeso"
 .ce 0
 .sp 4
 .pp
@@ -94,10 +100,10 @@ the features
 of the
 .b \-me
 macro package
-for \*G.
+for \*S.
 Some familiarity is assumed
 with
-\*G.
+\*S.
 Specifically,
 the reader should understand
 breaks,
@@ -113,10 +119,10 @@ etc.
 .pp
 For a more casual introduction
 to text processing
-using \*G,
+using \*S,
 refer to the document
 .ul
-Writing Papers with \*G using \-me.
+Writing Papers with \*S using \-me.
 .pp
 There are a number of macro parameters
 that may be adjusted.
@@ -195,7 +201,7 @@ is any letter
 (upper or lower case)
 or digit.
 .pp
-This documentation applies to \*G version
+This documentation applies to \*S version
 \*(MO
 of the \-me macros.
 .sh 1 "Paragraphing"
@@ -1218,7 +1224,7 @@ as opposed to the
 request,
 which changes to
 .q "underline font"
-(usually italics in \*G).
+(usually italics in \*S).
 It won't work right
 if
 .i W
@@ -1234,7 +1240,7 @@ Quote
 .i W
 and append
 .i X .
-In \*G
+In \*S
 this surrounds
 .i W
 with
@@ -2221,3 +2227,5 @@ NAME	TYPE	DESCRIPTION
 \en(_M	R	section type (as set with .++ macro)
 .)l
 .rm $H
+.
+.\" s-ts-mode

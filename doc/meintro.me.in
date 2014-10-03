@@ -1,3 +1,5 @@
+.\"@ meintro.me
+.\"
 .\" Copyright (c) 1986 The Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -16,18 +18,22 @@
 .\"	@(#)intro.me	6.4 (Berkeley) 7/17/89
 .\"
 .\" Modified for groff by jjc@jclark.com.
+.\"Adapted to S-roff by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+.
 .\"UC 7
 .ll 6.5i
 .lt 6.5i
 .ds MO @VERSION@
 .nr si 3n
-.he 'USING GROFF AND \-ME''%'
+.he 'USING GROFF/compatible AND \-ME''%'
 .\"eh 'USD:22-%''Writing Papers with NROFF using \-me'
 .\"oh 'Writing Papers with NROFF using \-me''USD:22-%'
 .ds U \s-1UNIX\s0
 .ds N \s-1NROFF\s0
 .ds T \s-1TROFF\s0
 .ds G \s-1GROFF\s0
+.ds S \s-1@U_ROFF@\s0
+.ds s @L_ROFF@
 .+c
 .(l C
 .sz 14
@@ -49,6 +55,8 @@ University of California, Berkeley
 Berkeley, California  94720
 .sp 2
 .i "Modified for \*G by James Clark"
+.br
+.i "Modified for \*S by Steffen (Daode) Nurpmeso"
 .)l
 .sp 4
 .pp
@@ -60,7 +68,7 @@ available on the \*U\(dg
 of AT&T Bell Laboratories
 .)f
 operating system
-via \*G and the
+via \*S and the
 \-me
 macro package.
 It is assumed
@@ -86,7 +94,7 @@ and
 .ul
 The \*N/\*T Reference Manual.
 .pp
-\*G, a computer program
+\*S, a computer program
 that runs on the \*U operating system,
 reads an input file
 prepared by the user
@@ -98,7 +106,7 @@ or words to be printed,
 and
 .i requests ,
 which give instructions
-to the \*G program
+to the \*S program
 telling how to format the printed copy.
 .pp
 Section 1
@@ -125,10 +133,10 @@ you probably won't want to read beyond section 4
 until you have tried some of the basic features out.
 .pp
 When you have your raw text ready,
-call the \*G formatter by typing
+call the \*S formatter by typing
 as a request to the \*U shell:
 .(b
-groff \-me \-T\c
+\*s \-me \-T\c
 .i "type files"
 .)b
 where
@@ -136,8 +144,8 @@ where
 describes the type of
 output device you are using.
 A complete description of options
-to the \*G command can be found in
-.b groff (1).
+to the \*S command can be found in the
+manual page.
 .pp
 The word
 .i argument
@@ -173,7 +181,7 @@ by spaces.
 .sh 1 "Basics of Text Processing"
 .pp
 The primary function
-of \*G
+of \*S
 is to
 .i collect
 words from input lines,
@@ -243,11 +251,11 @@ and so forth.
 .pp
 I can offer you a few hints
 for preparing text
-for input to \*G.
+for input to \*S.
 First,
 keep the input lines short.
 Short input lines are easier to edit,
-and \*G will pack words onto longer lines
+and \*S will pack words onto longer lines
 for you anyhow.
 In keeping with this,
 it is helpful
@@ -267,7 +275,7 @@ do not hyphenate words at the end of lines
 (except words that should have hyphens in them,
 such as
 .q mother-in-law );
-\*G is smart enough to hyphenate words
+\*S is smart enough to hyphenate words
 for you as needed,
 but is not smart enough
 to take hyphens out
@@ -394,7 +402,7 @@ in the lower right corner.
 .sh 2 "Double Spacing"
 .pp
 .ls 2
-\*G will double space output text automatically if you
+\*S will double space output text automatically if you
 use the request
 .b ".ls\ 2" ,
 as is done in this section.
@@ -589,7 +597,7 @@ lines to center
 .)b
 The
 .b ".ce\ 0"
-request tells \*G to center zero more lines,
+request tells \*S to center zero more lines,
 in other words,
 stop centering.
 .pp
@@ -1602,7 +1610,7 @@ table of contents,
 and so forth at the front of the paper,
 it is more convenient to format
 and print them last
-when using \*G.
+when using \*S.
 This is so that index entries
 can be collected and then printed
 for the table of contents
@@ -1974,7 +1982,7 @@ Notice that if you are setting more than one word
 in whatever font,
 you must surround that word with double quote marks
 (`\|"\|')
-so that it will appear to the \*G processor as a single word.
+so that it will appear to the \*S processor as a single word.
 The quote marks will not appear in the formatted text.
 If you do want a quote mark to appear,
 you should quote the entire string
@@ -1996,7 +2004,7 @@ The
 produces a very narrow space
 so that the
 .q l
-does not overlap the quote sign in \*G,
+does not overlap the quote sign in \*S,
 like this:
 .(b
 .i """Master Control"""
@@ -2027,7 +2035,7 @@ should appear
 with these three font requests
 in the middle of lines.
 This is because
-of the way \*G justifies text.
+of the way \*S justifies text.
 For example,
 if you were to issue the requests:
 .(b
@@ -2036,7 +2044,7 @@ and
 \&.bx "words in a box"
 .)b
 in the middle of a line
-\*G would produce
+\*S would produce
 .u "some bold italics"
 and
 .bx "words in a box" ,\p
@@ -2240,4 +2248,6 @@ and the plethora of people who have contributed ideas
 and have given support for the project.
 .sp 1i
 This document applies to the version of the \-me macros
-included with \*G version \*(MO.
+included with \*S version \*(MO.
+.
+.\" s-ts-mode
