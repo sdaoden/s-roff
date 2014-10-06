@@ -500,9 +500,14 @@
 .
 .de bl			\" *** contiguous blank lines
 .br
+.@s \\$1
+.sp \\$1
+..
+.
+.de @s			\" --- diversion-surviving space test
 .ne \\$1
 .rs
-.sp \\$1
+.if !'\\n(.z'' \!.@s \\$1
 ..
 .
 .de n1			\" *** line numbering 1
@@ -819,7 +824,7 @@
 ..
 .
 .
-.\"		*** COLUMNNED OUTPUT ***
+.\"		*** COLUMNED OUTPUT ***
 .
 .
 .de 2c			\" *** double columned output
@@ -831,7 +836,7 @@
 .if \\n(.$>1 \
 .	nr $m \\$2
 .if \\n(.$>0 \
-.	nr $s \\$1n		\" param 1: column seperation
+.	nr $s \\$1n		\" param 1: column separation
 .nr $l (\\n(.l-((\\n($m-1)*\\n($s))/\\n($m
 .xl \\n($lu
 .mk _k
@@ -992,6 +997,7 @@
 ..
 .
 .de (c			\" *** begin block centered text
+.br
 .if "\\n(.z"|c" .tm Line \\n(c. -- Nested .(c requests
 .di |c
 ..
@@ -1061,6 +1067,11 @@
 .do if \\n[need_eo_h]>0 .do DEVTAG-EO-H
 .do nr need_eo_h 0
 .ec
+.if "\*(.T"html" \
+\{\
+.      do nr e-EQ-ll \\n(.l
+.      ll 1000n
+.\}
 .do HTML-IMAGE
 .if !\\n(?e \
 \{\
@@ -1077,6 +1088,8 @@
 .de EN			\" *** equation end
 .br
 .do HTML-IMAGE-END
+.if "\*(.T"html" \
+.      do ll \\n[e-EQ-ll]u
 .ie "\\$1"C" \
 \{\
 .	nr ?e 1
@@ -1096,7 +1109,7 @@
 .de @q			\" --- equation output
 .nr _Q \\n(dnu
 .ev
-.sp \\n(esu			\" output rest of preceeding text
+.sp \\n(esu			\" output rest of preceding text
 .if !"\\n(.z"" \!.ne \\n(_Qu
 .ne \\n(_Qu+\n(.Vu		\" keep it on one page
 .@C 2\"				\" .ev 2 may be jumbled from header
@@ -1129,6 +1142,11 @@
 .\"
 .de TS			\" *** table start
 .sp \\n(bsu
+.if "\*(.T"html" \
+\{\
+.      do nr e-TS-ll \\n(.l
+.      ll 1000n
+.\}
 .do HTML-IMAGE
 .@C 1
 .fi				\" drop into fill mode for text boxes
@@ -1166,6 +1184,8 @@
 .	ch @f \\n(nlu+\n(.Vu
 .ev
 .do HTML-IMAGE-END
+.if "\*(.T"html" \
+.      do ll \\n[e-TS-ll]u
 .sp \\n(bsu+\\n(.Lv-1v
 .re
 ..
