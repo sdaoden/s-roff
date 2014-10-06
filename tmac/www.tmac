@@ -6,15 +6,15 @@
 
 Copyright (c) 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 
-Copyright (C) 2001 - 2006, 2008
-  Free Software Foundation, Inc.
+Copyright (C) 2001-2014  Free Software Foundation, Inc.
 written by Gaius Mulley <gaius@glam.ac.uk>, with additions by
-Werner Lemberg <wl@gnu.org> and Bernd Warken <bwarken@mayn.de>.
+Werner Lemberg <wl@gnu.org> and
+Bernd Warken <groff-bernd.warken-72@web.de>.
 
 This is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
+Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
 This is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -22,9 +22,7 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with groff; see the file COPYING.  If not, write to the Free
-Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
-02110-1301, USA.
+along with this program. If not, see <http://www.gnu.org/licenses/>.
 ..
 .
 .
@@ -468,9 +466,12 @@ Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 .\"
 .\"   Generate an HTML name NAME.
 .\"   Define string TAG_NAME to TEXT, if present, otherwise to \n[PN].
+.\"   Register PN is the current page number.
 .de TAG
 .  HTML <a "name=""\\$1""></a>"
 .  ie '\\$2'' \
+.    if !rPN \
+.      nr PN \\n%
 .    ds TAG_\\$1 \\n[PN]\"
 .  el \
 .    ds TAG_\\$1 \\$2\"
@@ -932,6 +933,7 @@ Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 .
 .\" which macro to use for LI
 .de www-push-li
+.  nr www-li-indent \\n[.i]
 .  nr www-depth +1
 .  ds www-level\\n[www-depth] \\$1\"
 .  ds www-ltag\\n[www-depth]
@@ -1082,7 +1084,6 @@ Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 .\" LI
 .\"
 .\"   Insert a list item.
-.\"
 .
 .\" ********
 .\" www-li-ul - bulleted list item
@@ -1091,6 +1092,8 @@ Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 .    www-emit-ltag li
 .  el \{\
 .    www:paraspace
+.    if rPORPHANS \
+.      ne \\n[PORPHANS]v
 .    in \\n[www-li-indent]u
 .    ti -\w'\\*[www-ul-level\\n[www-ul-level]]'u
 .    nop \\*[www-ul-level\\n[www-ul-level]]\c
@@ -1104,9 +1107,11 @@ Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 .    www-emit-ltag li
 .  el \{\
 .    www:paraspace
+.    if rPORPHANS \
+.      ne \\n[PORPHANS]v
 .    in \\n[www-li-indent]u
-.    ti -\w'\\n[www-ol-ctr\\n[www-ol-level]]\ \ 'u
-.    nop \\n+[www-ol-ctr\\n[www-ol-level]]\ \ \c
+.    ti -\w'\\n+[www-ol-ctr\\n[www-ol-level]]\ \ 'u
+.    nop \\n[www-ol-ctr\\n[www-ol-level]]\ \ \c
 .  \}
 ..
 .
@@ -1119,6 +1124,8 @@ Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 .  \}
 .  el \{\
 .    www:paraspace
+.    if rPORPHANS \
+.      ne \\n[PORPHANS]v
 .    in \\n[www-li-indent]u
 .    ti -\\n[www-dl-shift]u
 .    nop \&\\$1
@@ -1292,22 +1299,34 @@ Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 .\" causing an endless loop
 .if !d TS \{\
 .  de TS
-.    nop \\*[HTML-IMAGE]\\
+.    HTML-IMAGE \\$@
+.    if \\n[www-html] \{\
+.      nr www-TS-ll \\n[.l]
+.      ll 1000n
+.    \}
 .  .
 .\}
 .if !d TE \{\
 .  de TE
-.    nop \\*[HTML-IMAGE-END]\\
+.    if \\n[www-html] \
+.      ll \\n[www-TS-ll]u
+.    HTML-IMAGE-END \\$@
 .  .
 .\}
 .if !d EQ \{\
 .  de EQ
-.    nop \\*[EQN-HTML-IMAGE]\\
+.    EQN-HTML-IMAGE \\$@
+.    if \\n[www-html] \{\
+.      nr www-EQ-ll \\n[.l]
+.      ll 1000n
+.    \}
 .  .
 .\}
 .if !d EN \{\
 .  de EN
-.    nop \\*[EQN-HTML-IMAGE-END]\\
+.    if \\n[www-html] \
+.      ll \\n[www-EQ-ll]u
+.    EQN-HTML-IMAGE-END \\$@
 .  .
 .\}
 .
@@ -1316,6 +1335,7 @@ Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 .\"   Generate multiple output files containing the HTML.
 .\"   A file is split whenever a .SH or .NH 1 is encountered.
 .\"   The argument to JOBNAME is the file stem for future output files.
+.\"
 .de JOBNAME
 .  DEVTAG .job-name \\$1
 ..
@@ -1324,11 +1344,13 @@ Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 .\"
 .\"   Add information to the <head> </head> section of the HTML
 .\"   document
+.\"
 .de HEAD
 .  DEVTAG .head "\\$*"
 ..
 .
 .\" start of some code
+.\"
 .de CDS
 .  ft C
 .  nf
