@@ -3,23 +3,21 @@
 
 Copyright (c) 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 
-Copyright (C) 1989 - 1992, 2001 - 2004, 2006, 2007
-  Free Software Foundation, Inc.
+Copyright (C) 1989-2014  Free Software Foundation, Inc.
      Written by James Clark (jjc@jclark.com)
 
 This is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
+Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
 This is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
 ..
 .if !\n(.g .ab These ms macros require groff / compatible.
 .if \n(.C \
@@ -516,11 +514,11 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
 .	el .nr pg*gutw 0
 .\}
 .DEVTAG ".mc \\n[pg@ncols] \\n[pg@colw] \\n[pg*gutw]"
-.mk pg*col-top
 .ns
 .nr pg*col-num 0
 .nr pg@fn-colw \\n[pg@colw]*5/6
 .par@reset
+.mk pg*col-top
 ..
 .de 2C
 .MC
@@ -1694,6 +1692,10 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
 .\}
 .di eqn*div
 .in 0
+.if '\*(.T'html' \{\
+.	nr eqn*ll \\n[.l]
+.	ll 1000n
+.\}
 .if \\n[eqn*type]=0 .EQN-HTML-IMAGE-LEFT
 .if \\n[eqn*type]=1 \{\
 .   if '\*(.T'html' .RS
@@ -1759,6 +1761,8 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
 .		if '\*(.T'html' .RE
 .	\}
 .	if \\n[eqn*type]=2 .EQN-HTML-IMAGE-END
+.	if '\*(.T'html' \
+.		ll \\n[eqn*ll]u
 .\}
 ..
 .
@@ -1776,6 +1780,10 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
 .de @TS
 .sp \\n[DD]u
 .if '\\$1'H' .di tbl*header-div
+.if '\*(.T'html' \{\
+.	nr tbl*ll \\n[.l]
+.	ll 1000n
+.\}
 .HTML-IMAGE
 ..
 .de tbl@top-hook
@@ -1821,6 +1829,8 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
 .       if !'\*(.T'html' .sp \\n[DD]u
 .\}
 .HTML-IMAGE-END
+.if '\*(.T'html' \
+.	ll \\n[tbl*ll]u
 .\" reset tabs
 .TA
 ..
@@ -1856,157 +1866,7 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
 .\" ******** module ref ********
 .\" ****************************
 .\" Refer support.
-.de ]-
-.rm [A [B [C [D [E [G [I [J [N [O [P [Q [R [S [T [V
-.rm ref*string
-..
-.\" Other
-.ds ref*spec!0 Q A T1 S V N P I C D O
-.\" Journal article
-.ds ref*spec!1 Q A T2 J S V N P I C D O
-.\" Book
-.ds ref*spec!2 Q A T1 S V P I C D O
-.\" Article within book
-.ds ref*spec!3 Q A T2 B E S V P I C D O
-.\" Tech report
-.ds ref*spec!4 Q A T2 R G P I C D O
-.\" ][ type
-.de ][
-.if r [T \{\
-.	als [T1 [T
-.	als [T2 [T
-.\}
-.ie d ref*spec!\\$1 .ref*build \\*[ref*spec!\\$1]
-.el \{\
-.	@error unknown reference type `\\$1'
-.	ref*build \\*[ref*spec!0]
-.\}
-.ref*print
-.rm ref*string
-.rm [F [T1 [T2
-..
-.\" start of reference number
-.ds [. \E*[par@sup-start]
-.\" end of reference number
-.ds .] \E*[par@sup-end]
-.\" period before reference
-.ds <. .
-.\" period after reference
-.ds >. \" empty
-.\" comma before reference
-.ds <, ,
-.\" comma after reference
-.ds >, \" empty
-.\" start collected references
-.de ]<
-.als ref*print ref*end-print
-.SH
-\&\\*[REFERENCES]
-.par@reset
-..
-.\" end collected references
-.de ]>
-.par@finish
-.als ref*print ref*normal-print
-..
-.de ref*normal-print
-.ie d [F .FS "\\*([.\\*([F\\*(.]"
-.el .FS \&
-\\*[ref*string]
-.FE
-..
-.de ref*end-print
-.ie d [F .IP "\\*([F."
-.el .XP
-\\*[ref*string]
-..
-.als ref*print ref*normal-print
-.de ref*build
-.rm ref*string ref*post-punct
-.nr ref*suppress-period 1
-.while \\n[.$] \{\
-.	if d [\\$1 \{\
-.		ie d ref*add-\\$1 .ref*add-\\$1
-.		el .ref*add-dflt \\$1
-.	\}
-.	shift
-.\}
-.\" now add a final period
-.ie d ref*string \{\
-.	if !\\n[ref*suppress-period] .as ref*string .
-.	if d ref*post-punct \{\
-.		as ref*string "\\*[ref*post-punct]
-.		rm ref*post-punct
-.	\}
-.\}
-.el .ds ref*string
-..
-.de ref*add-T1
-.ref*field T , " " "\fI" "" "\fP"
-.if r [T .nr ref*suppress-period \\n([T
-..
-.de ref*add-T2
-.ref*field T , " " "\\*Q" "" "\\*U"
-.if r [T .nr ref*suppress-period \\n([T
-..
-.de ref*add-P
-.ie \\n([P>0 .ref*field P , " " "pp. "
-.el .ref*field P , " " "p. "
-..
-.de ref*add-J
-.ref*field J , " " \fI "" \fP
-..
-.de ref*add-D
-.ref*field D "" " " ( )
-..
-.de ref*add-E
-.ref*field E , " " "ed. "
-..
-.de ref*add-G
-.ref*field G "" " " ( )
-..
-.de ref*add-B
-.ref*field B "" " " "in \fI" "" \fP
-..
-.de ref*add-O
-.ref*field O . " "
-.ie r [O .nr ref*suppress-period \\n([O
-.el .nr ref*suppress-period 1
-..
-.de ref*add-A
-.ref*field A , " "
-.if r [A .nr ref*suppress-period \\n([A
-..
-.de ref*add-V
-.ref*field V "" " " \fB \fR
-..
-.de ref*add-N
-.ref*field N "" ( "" ")"
-..
-.de ref*add-dflt
-.ref*field \\$1 , " "
-..
-.\" First argument is the field letter.
-.\" Second argument is the punctuation character to use to separate this field
-.\" from the previous field.
-.\" Third argument is a string to insert after the punctuation character of
-.\" the previous field (normally a space)
-.\" Fourth argument is a string with which to prefix this field.
-.\" Fifth argument is a string with which to postfix this field.
-.\" Sixth argument is a string to add after the punctuation character supplied
-.\" by the next field.
-.de ref*field
-.if d ref*string \{\
-.	ie d ref*post-punct \{\
-.		as ref*string "\\$2\\*[ref*post-punct]\\$3\"
-.		rm ref*post-punct
-.	\}
-.	el .as ref*string "\\$2\\$3\"
-.\}
-.as ref*string "\\$4\\*([\\$1\\$5
-.if \\n[.$]>5 .ds ref*post-punct "\\$6
-.nr ref*suppress-period 0
-..
+.mso refer-ms.tmac
 .\" ****************************
 .\" ******** module acc ********
 .\" ****************************
