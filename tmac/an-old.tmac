@@ -2,23 +2,21 @@
 .\"
 .\" Copyright (c) 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 .\"
-.\" Copyright (C) 1989 - 1992, 2001 - 2005, 2007 - 2009
-.\"   Free Software Foundation, Inc.
+.\" Copyright (C) 1989-2014  Free Software Foundation, Inc.
 .\"      Written by James Clark (jjc@jclark.com)
 .\"
 .\" This is free software; you can redistribute it and/or modify it under
 .\" the terms of the GNU General Public License as published by the Free
-.\" Software Foundation; either version 2, or (at your option) any later
-.\" version.
+.\" Software Foundation, either version 3 of the License, or
+.\" (at your option) any later version.
 .\"
 .\" This is distributed in the hope that it will be useful, but WITHOUT ANY
 .\" WARRANTY; without even the implied warranty of MERCHANTABILITY or
 .\" FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 .\" for more details.
 .\"
-.\" You should have received a copy of the GNU General Public License along
-.\" with groff; see the file COPYING.  If not, write to the Free Software
-.\" Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program. If not, see <http://www.gnu.org/licenses/>.
 .\"
 .\"  -rcR=1 => Create a single, very long page instead of multiple pages.
 .\"            Useful for online display.  Default in nroff mode.
@@ -417,8 +415,10 @@
 .  if \\n[.$] .nr an-prevailing-indent (n;\\$1)
 .  it 1 an-trap
 .  in 0
-.  ll -\\n[an-margin]u
-.  if !\\n[an-div?] .di an-div
+.  if !\\n[an-div?] \{\
+.    ll -\\n[an-margin]u
+.    di an-div
+.  \}
 .  nr an-div? 1
 ..
 .
@@ -620,6 +620,10 @@
 .
 .de1 TS
 .  sp \\n[PD]u
+.  if \\n[an-html] \{\
+.    nr an-TS-ll \\n[.l]
+.    ll 1000n
+.  \}
 .  HTML-IMAGE
 ..
 .
@@ -628,14 +632,22 @@
 .
 .de1 TE
 .  HTML-IMAGE-END
+.  if \\n[an-html] \
+.    ll \\n[an-TS-ll]u
 ..
 .
 .\" dummy equation delimiters
 .de1 EQ
+.  if \\n[an-html] \{\
+.    nr an-EQ-ll \\n[.l]
+.    ll 1000n
+.  \}
 .  HTML-IMAGE
 ..
 .de1 EN
 .  HTML-IMAGE-END
+.  if \\n[an-html] \
+.    ll \\n[an-EQ-ll]u
 ..
 .
 .de1 R
