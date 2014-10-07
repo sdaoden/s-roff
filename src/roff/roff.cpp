@@ -1,55 +1,44 @@
-// -*- C++ -*-
-/* Copyright (C) 1989-2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-                 2008
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@ A front end for S-roff.
+ *
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 2008
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
+#include "config.h"
+#include "roff-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-// A front end for groff.
-
-#include "lib.h"
-
-#include <stdlib.h>
-#include <signal.h>
+#include <assert.h>
 #include <errno.h>
+#include <signal.h>
+#include <stdlib.h>
 
-#include "assert.h"
+#include "cset.h"
+#include "defs.h"
+#include "device.h"
 #include "errarg.h"
 #include "error.h"
-#include "stringclass.h"
-#include "cset.h"
 #include "font.h"
-#include "device.h"
-#include "pipeline.h"
+#include "lib.h"
 #include "nonposix.h"
-#include "defs.h"
-
-#define GXDITVIEW "gxditview"
-
-// troff will be passed an argument of -rXREG=1 if the -X option is
-// specified
-#define XREG ".X"
-
-#ifdef NEED_DECLARATION_PUTENV
-extern "C" {
-  int putenv(const char *);
-}
-#endif /* NEED_DECLARATION_PUTENV */
+#include "pipeline.h"
+#include "stringclass.h"
 
 // The number of commands must be in sync with MAX_COMMANDS in pipeline.h
 const int PRECONV_INDEX = 0;
@@ -65,13 +54,16 @@ const int POST_INDEX = TROFF_INDEX + 1;
 const int SPOOL_INDEX = POST_INDEX + 1;
 
 const int NCOMMANDS = SPOOL_INDEX + 1;
+CTA(NCOMMANDS <= MAX_COMMANDS);
 
-class possible_command {
+class possible_command
+{
   char *name;
   string args;
   char **argv;
 
   void build_argv();
+
 public:
   possible_command();
   ~possible_command();
@@ -87,8 +79,6 @@ public:
   void print(int is_last, FILE *fp);
 };
 
-extern "C" const char *Version_string;
-
 int lflag = 0;
 char *spooler = 0;
 char *postdriver = 0;
@@ -101,7 +91,7 @@ void print_commands(FILE *);
 void append_arg_to_string(const char *arg, string &str);
 void handle_unknown_desc_command(const char *command, const char *arg,
 				 const char *filename, int lineno);
-const char *xbasename(const char *);
+const char *xbasename(const char *); // FIXME lib.h??
 
 void usage(FILE *stream);
 void help();
@@ -111,21 +101,19 @@ int main(int argc, char **argv)
   program_name = argv[0];
   static char stderr_buf[BUFSIZ];
   setbuf(stderr, stderr_buf);
-  assert(NCOMMANDS <= MAX_COMMANDS);
   string Pargs, Largs, Fargs;
   int Kflag = 0;
   int vflag = 0;
   int Vflag = 0;
   int zflag = 0;
   int iflag = 0;
-  int Xflag = 0;
   int oflag = 0;
   int safer_flag = 1;
   int is_xhtml = 0;
   int eflag = 0;
   int opt;
-  const char *command_prefix = getenv("GROFF_COMMAND_PREFIX");
-  const char *encoding = getenv("GROFF_ENCODING");
+  const char *command_prefix = getenv(U_ROFF_COMMAND_PREFIX);
+  const char *encoding = getenv(U_ROFF_ENCODING);
   if (!command_prefix)
     command_prefix = PROG_PREFIX;
   commands[TROFF_INDEX].set_name(command_prefix, "troff");
@@ -205,17 +193,12 @@ int main(int argc, char **argv)
       break;
     case 'v':
       vflag = 1;
-      printf("GNU groff version %s\n", Version_string);
-      printf(
-	"Copyright (C) 2006 Free Software Foundation, Inc.\n"
-	"GNU groff comes with ABSOLUTELY NO WARRANTY.\n"
-	"You may redistribute copies of groff and its subprograms\n"
-	"under the terms of the GNU General Public License.\n"
-	"For more information about these matters, see the file named COPYING.\n");
+      printf(L_ROFF " v" VERSION);
+      printf(L_ROFF_COPYRIGHT_PRINTOUT);
       printf("\ncalled subprograms:\n\n");
       fflush(stdout);
       commands[POST_INDEX].append_arg(buf);
-      // fall through
+      // FALLTHRU
     case 'C':
       commands[SOELIM_INDEX].append_arg(buf);
       commands[REFER_INDEX].append_arg(buf);
@@ -260,14 +243,7 @@ int main(int argc, char **argv)
       if (strcmp(optarg, "html") == 0)
 	// force soelim to aid the html preprocessor
 	commands[SOELIM_INDEX].set_name(command_prefix, "soelim");
-      
-      if (strcmp(optarg, "Xps") == 0) {
-	warning("-TXps option is obsolete: use -X -Tps instead");
-	device = "ps";
-	Xflag++;
-      }
-      else
-	device = optarg;
+      device = optarg;
       break;
     case 'F':
       font::command_line_font_dir(optarg);
@@ -301,9 +277,6 @@ int main(int argc, char **argv)
       break;
     case 'L':
       append_arg_to_string(optarg, Largs);
-      break;
-    case 'X':
-      Xflag++;
       break;
     case '?':
       usage(stderr);
@@ -339,49 +312,15 @@ int main(int argc, char **argv)
       commands[TROFF_INDEX].insert_arg("-v");
   }
   const char *real_driver = 0;
-  if (Xflag) {
-    real_driver = postdriver;
-    postdriver = (char *)GXDITVIEW;
-    commands[TROFF_INDEX].append_arg("-r" XREG "=", "1");
-  }
   if (postdriver)
     commands[POST_INDEX].set_name(postdriver);
-  int gxditview_flag = postdriver
-		       && strcmp(xbasename(postdriver), GXDITVIEW) == 0;
-  if (gxditview_flag && argc - optind == 1) {
-    commands[POST_INDEX].append_arg("-title");
-    commands[POST_INDEX].append_arg(argv[optind]);
-    commands[POST_INDEX].append_arg("-xrm");
-    commands[POST_INDEX].append_arg("*iconName:", argv[optind]);
-    string filename_string("|");
-    append_arg_to_string(argv[0], filename_string);
-    append_arg_to_string("-Z", filename_string);
-    for (int i = 1; i < argc; i++)
-      append_arg_to_string(argv[i], filename_string);
-    filename_string += '\0';
-    commands[POST_INDEX].append_arg("-filename");
-    commands[POST_INDEX].append_arg(filename_string.contents());
-  }
-  if (gxditview_flag && Xflag) {
-    string print_string(real_driver);
-    if (spooler) {
-      print_string += " | ";
-      print_string += spooler;
-      print_string += Largs;
-    }
-    print_string += '\0';
-    commands[POST_INDEX].append_arg("-printCommand");
-    commands[POST_INDEX].append_arg(print_string.contents());
-  }
   const char *p = Pargs.contents();
   const char *end = p + Pargs.length();
   while (p < end) {
     commands[POST_INDEX].append_arg(p);
     p = strchr(p, '\0') + 1;
   }
-  if (gxditview_flag)
-    commands[POST_INDEX].append_arg("-");
-  if (lflag && !vflag && !Xflag && spooler) {
+  if (lflag && !vflag && spooler) {
     commands[SPOOL_INDEX].set_name(BSHELL);
     commands[SPOOL_INDEX].append_arg(BSHELL_DASH_C);
     Largs += '\0';
@@ -427,10 +366,10 @@ int main(int argc, char **argv)
       commands[first_index].append_arg("-");
   }
   if (Fargs.length() > 0) {
-    string e = "GROFF_FONT_PATH";
+    string e = U_ROFF_FONT_PATH;
     e += '=';
     e += Fargs;
-    char *fontpath = getenv("GROFF_FONT_PATH");
+    char *fontpath = getenv(U_ROFF_FONT_PATH);
     if (fontpath && *fontpath) {
       e += PATH_SEP_CHAR;
       e += fontpath;
@@ -443,14 +382,14 @@ int main(int argc, char **argv)
     // we save the original path in GROFF_PATH__ and put it into the
     // environment -- troff will pick it up later.
     char *path = getenv("PATH");
-    string e = "GROFF_PATH__";
+    string e = U_ROFF_PATH__;
     e += '=';
     if (path && *path)
       e += path;
     e += '\0';
     if (putenv(strsave(e.contents())))
       fatal("putenv failed");
-    char *binpath = getenv("GROFF_BIN_PATH");
+    char *binpath = getenv(U_ROFF_BIN_PATH);
     string f = "PATH";
     f += '=';
     if (binpath && *binpath)
@@ -472,7 +411,7 @@ int main(int argc, char **argv)
   return run_commands(vflag);
 }
 
-const char *xbasename(const char *s)
+const char *xbasename(const char *s) // TODO -> library
 {
   if (!s)
     return 0;
@@ -683,7 +622,7 @@ void possible_command::print(int is_last, FILE *fp)
     fputs(" | ", fp);
 }
 
-void append_arg_to_string(const char *arg, string &str)
+void append_arg_to_string(const char *arg, string &str) // TODO quoting -> lib
 {
   str += ' ';
   int needs_quoting = 0;
@@ -746,7 +685,7 @@ char **possible_command::get_argv()
 void synopsis(FILE *stream)
 {
   fprintf(stream,
-"usage: %s [-abceghiklpstvzCENRSUVXZ] [-Fdir] [-mname] [-Tdev] [-ffam]\n"
+"Synopsis: %s [-abceghiklpstvzCENRSUVXZ] [-Fdir] [-mname] [-Tdev] [-ffam]\n"
 "       [-wname] [-Wname] [-Mdir] [-dcs] [-rcn] [-nnum] [-olist] [-Parg]\n"
 "       [-Darg] [-Karg] [-Larg] [-Idir] [files...]\n",
 	  program_name);
@@ -766,7 +705,6 @@ void help()
 "-s\tpreprocess with soelim\n"
 "-R\tpreprocess with refer\n"
 "-Tdev\tuse device dev\n"
-"-X\tuse X11 previewer rather than usual postprocessor\n"
 "-mname\tread macros tmac.name\n"
 "-dcs\tdefine a string c as s\n"
 "-rcn\tdefine a number register c as n\n"
@@ -808,7 +746,6 @@ void usage(FILE *stream)
 }
 
 extern "C" {
-
 void c_error(const char *format, const char *arg1, const char *arg2,
 	     const char *arg3)
 {
@@ -820,5 +757,6 @@ void c_fatal(const char *format, const char *arg1, const char *arg2,
 {
   fatal(format, arg1, arg2, arg3);
 }
+} // extern "C"
 
-}
+// s-it2-mode

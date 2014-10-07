@@ -1,0 +1,1211 @@
+.ig
+@ @L_ROFF@.1
+
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
+Copyright (C) 1989, 2002 - 2008
+Free Software Foundation, Inc.
+Rewritten in 2002 by Bernd Warken <bwarken@mayn.de>
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being this .ig-section and AUTHOR, with no
+Front-Cover Texts, and with no Back-Cover Texts.
+
+You should have received a copy of the Free Documentation License
+as part of the file COPYING; also located in the main directory of the
+source package of this program.
+..
+.
+.
+.\" Environment variable
+.de EnvVar
+.  SM
+.  BR \%\\$1 \\$2
+..
+.\" `char or string'
+.de Quoted
+.  ft CR
+\[oq]\\$*\[cq]
+.  ft
+..
+.
+.TH @U_ROFF@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
+.
+.\"
+.SH NAME
+@L_ROFF@ \- front-end for the @T_ROFF@ document formatting system
+.
+.\"
+.SH SYNOPSIS
+.
+.SY @L_ROFF@
+.OP \-abcegiklpstzCEGNRSUVZ
+.OP \-d cs
+.OP \-D arg
+.OP \-f fam
+.OP \-F dir
+.OP \-I dir
+.OP \-K arg
+.OP \-L arg
+.OP \-m name
+.OP \-M dir
+.OP \-n num
+.OP \-o list
+.OP \-P arg
+.OP \-r cn
+.OP \-T dev
+.OP \-w name
+.OP \-W name
+.RI [ file\~ .\|.\|.]
+.
+.SY @L_ROFF@
+.B \-h
+|
+.B \-\-help
+.
+.SY @L_ROFF@
+.B \-v
+|
+.B \-\-version
+.RI [ option\~ .\|.\|.]
+.YS
+.
+.\"
+.SH DESCRIPTION
+.
+This document describes the
+.B @L_ROFF@
+program, the main front-end for the
+.I @T_ROFF@
+document formatting system, which is a
+.BR roff (@MAN7EXT@)
+implementation that has all features of the classical
+.IR roff ,
+but also adds extensions.
+.
+.P
+The
+.B @L_ROFF@
+program allows to control the whole
+.I @T_ROFF@
+system by command line options.
+.
+.\"
+.SH OPTIONS
+.
+Whitespace between a command line option and its argument is
+optional.
+.
+Options can be grouped behind a single `\-' (minus character).
+.
+A filename of
+.B \-
+(minus character) denotes the standard input.
+.
+.\"
+.SS Native @L_ROFF@ Options
+.
+The following options either do not exist for
+.B @L_TROFF@
+or are differently interpreted by
+.BR @L_ROFF@ .
+.
+.TP
+.BI \-D\  arg
+Set default input encoding used by
+.B @L_P_PRECONV@
+to
+.IR arg .
+Implies
+.BR \-k .
+.
+.TP
+.B \-e
+Preprocess with
+.BR @L_P_EQN@ .
+.
+.TP
+.B \-g
+Preprocess with
+.BR @L_P_GRN@ .
+.
+.TP
+.B \-G
+Preprocess with
+.BR grap .
+.
+.TP
+.B \-h
+.TQ
+.B \-\-help
+Print a help message.
+.
+.TP
+.BI \-I\  dir
+This option may be used to specify a directory to search for
+files (both those on the command line and those named in
+.B .psbb
+and
+.B .so
+requests, and
+.B \eX'ps: import'
+and
+.B \eX'ps: file'
+escapes).
+The current directory is always searched first.
+This option may be specified more than once;
+the directories are searched in the order specified.
+No directory search is performed for files specified using an absolute path.
+This option implies the
+.B \-s
+option.
+.
+.TP
+.B \-k
+Preprocess with
+.BR @L_P_PRECONV@ .
+This is run before any other preprocessor.
+.
+Please refer to
+.BR @L_P_PRECONV@ 's
+manual page for its behaviour if no
+.B \-K
+(or
+.BR \-D )
+option is specified.
+.
+.TP
+.BI \-K\  arg
+Set input encoding used by
+.B @L_P_PRECONV@
+to
+.IR arg .
+Implies
+.BR \-k .
+.
+.TP
+.B \-l
+Send the output to a spooler program for printing.
+The command that should be used for this is specified by the
+.B print
+command in the device description file, see
+.BR \%@L_ROFF@_font (@MAN5EXT@).
+If this command is not present, the output is piped into the
+.BR lpr (1)
+program by default.
+See options
+.B \-L
+and
+.BR \-X .
+.
+.TP
+.BI \-L\  arg
+Pass
+.I arg
+to the spooler program.
+Several arguments should be passed with a separate
+-L
+option each.
+Note that
+.B @L_ROFF@
+does not prepend
+`-'
+(a minus sign) to
+.I arg
+before passing it to the spooler program.
+.
+.TP
+.B \-N
+Don't allow newlines within
+.I @L_P_EQN@
+delimiters.
+This is the same as the
+.B \-N
+option in
+.BR @L_P_EQN@ .
+.
+.TP
+.B \-p
+Preprocess with
+.BR @L_P_PIC@ .
+.
+.TP
+.BI \-P\  \-option
+.TQ
+.BI \-P\  \-option \ \-P\  arg
+Pass
+.I \-option
+or
+.I "\-option\~arg"
+to the postprocessor.
+The option must be specified with the necessary preceding minus
+sign(s)
+.Quoted -
+or
+.Quoted --
+because
+.B @L_ROFF@
+does not prepend any dashes before passing it to the postprocessor.
+.
+.TP
+.B \-R
+Preprocess with
+.BR @L_P_REFER@ .
+.
+No mechanism is provided for passing arguments to
+.B @L_P_REFER@
+because most
+.B @L_P_REFER@
+options have equivalent language elements that can be specified within
+the document.
+See
+.BR \%@L_P_REFER@ (@MAN1EXT@)
+for more details.
+.
+.TP
+.B \-s
+Preprocess with
+.BR @L_P_SOELIM@ .
+.
+.TP
+.B \-S
+Safer mode.
+Pass the
+.B \-S
+option to
+.B @L_P_PIC@
+and disable the following
+.B @L_TROFF@
+requests:
+.BR .open ,
+.BR .opena ,
+.BR .pso ,
+.BR .sy ,
+and
+.BR .pi .
+For security reasons, safer mode is enabled by default.
+.
+.TP
+.B \-t
+Preprocess with
+.BR @L_P_TBL@ .
+.
+.TP
+.BI \-T\  dev
+Set output device to
+.IR dev .
+For this device,
+.B @L_TROFF@
+generates the
+.I intermediate
+.IR output ;
+see
+.BR \%@L_ROFF@_out (@MAN5EXT@).
+Then
+.B @L_ROFF@
+calls a postprocessor to convert
+.BR @L_TROFF@ 's
+.I intermediate output
+to its final format.
+Real devices in
+.B @L_ROFF@
+are
+.
+.RS
+.RS
+.TP
+dvi
+TeX DVI format (postprocessor is
+.BR @L_D_DVI@ ).
+.
+.TP
+html
+.TQ
+xhtml
+HTML and XHTML output (preprocessors are
+.B @L_P_SOELIM@
+and
+.BR \%@L_D_PREHTML@ ,
+postprocessor is
+.BR \%@L_D_POSTHTML@ ).
+.
+.TP
+ps
+PostScript output (postprocessor is
+.BR @L_D_PS@ ).
+.RE
+.RE
+.
+.IP
+For the following TTY output devices (postprocessor is always
+.BR @L_D_TTY@ ),
+.B \-T
+selects the output encoding:
+.
+.RS
+.RS
+.TP
+ascii
+7bit \f[CR]ASCII\f[].
+.
+.TP
+cp1047
+\%Latin-1 character set for EBCDIC hosts.
+.
+.TP
+latin1
+ISO \%8859-1.
+.
+.TP
+utf8
+Unicode character set in \%UTF-8 encoding.
+.RE
+.RE
+.
+.IP
+The default device is
+.BR @DEVICE@ .
+.
+.TP
+.B \-U
+Unsafe mode.
+.
+Reverts to the (old) unsafe behaviour; see option
+.BR \-S .
+.
+.TP
+.B \-v
+.TQ
+.B \-\-version
+Output version information (of all programs that would be run by the
+specified pipeline).
+.
+.TP
+.B \-V
+Output the pipeline that would be run on the standard output, but do not
+execute it.
+If given more than once,
+the commands are both printed on the standard error and run.
+.
+.TP
+.B \-z
+Suppress output generated by
+.BR @L_TROFF@ .
+Only error messages are printed.
+.
+.TP
+.B \-Z
+Do not automatically postprocess intermediate output in the usual manner.
+This will cause
+.B @L_TROFF@
+output to appear on standard output,
+replacing the usual postprocessor output; see
+.BR \%@L_ROFF@_out (@MAN5EXT@).
+.
+.\"
+.SS Transparent Options
+.
+The following options are transparently handed over to the formatter
+program
+.B @L_TROFF@ .
+These options are described in more detail in
+.BR @L_TROFF@ (@MAN1EXT@).
+.
+.TP
+.B \-a
+\f[CR]ASCII\f[] approximation of output.
+.
+.TP
+.B \-b
+Backtrace on error or warning.
+.
+.TP
+.B \-c
+Disable color output.
+.
+Please consult the
+.BR \%@L_D_TTY@ (@MAN1EXT@)
+man page for more details.
+.
+.TP
+.B \-C
+Enable compatibility mode.
+.
+.TP
+.BI \-d\  cs
+.TQ
+.BI \-d\  name = s
+Define string.
+.
+.TP
+.B \-E
+Disable
+.B @L_TROFF@
+error messages.
+.
+.TP
+.BI \-f\  fam
+Set default font family.
+.
+.TP
+.BI \-F\  dir
+Set path for font DESC files.
+.
+.TP
+.B \-i
+Process standard input after the specified input files.
+.
+.TP
+.BI \-m\  name
+Include macro file
+.IB name .tmac
+(or
+.BI tmac. name\c
+); see also
+.BR \%@L_ROFF@_tmac (@MAN5EXT@).
+.
+.TP
+.BI \-M\  dir
+Path for macro files.
+.
+.TP
+.BI \-n\  num
+Number the first page
+.IR num .
+.
+.TP
+.BI \-o\  list
+Output only pages in
+.IR list .
+.
+.TP
+.BI \-r\  cn
+.TQ
+.BI \-r\  name = n
+Set number register.
+.
+.TP
+.BI \-w\  name
+Enable warning
+.IR name .
+.
+.TP
+.BI \-W\  name
+disable warning
+.IR name .
+.
+.
+.\"
+.SH "USING @U_ROFF@"
+.
+The
+.I @T_ROFF@ system
+implements the infrastructure of classical roff; see
+.BR roff (@MAN7EXT@)
+for a survey on how a
+.I roff
+system works in general.
+@T_ROFF@ adds front-end programs and other facilities which make using
+it easier than
+.IR "classical roff"
+with its pipeline approach.
+This section gives an overview of those added parts and complements
+.BR roff (@MAN7EXT@).
+.
+.\"
+.SS Paper Size
+.
+The
+.I virtual
+paper size used by
+.B troff
+to format the input is controlled globally with the requests
+.BR .po ,
+.BR .pl ,
+and
+.BR .ll .
+See
+.BR @L_ROFF@_tmac (@MAN5EXT@)
+for the `papersize' macro package which provides a convenient interface.
+.
+.P
+The
+.I physical
+paper size, giving the actual dimensions of the paper sheets, is
+controlled by output devices like
+.BR @L_D_PS@
+with the command line options
+.B \-p
+and
+.BR \-l .
+See
+.BR @L_ROFF@_font (@MAN5EXT@)
+and the man pages of the output devices for more details.
+.B @L_ROFF@
+uses the command line option
+.B \-P
+to pass options to output devices; for example, the following selects
+A4 paper in landscape orientation for the PS device:
+.
+.IP
+.EX
+@L_ROFF@ -Tps -P-pa4 -P-l ...
+.EE
+.
+.\"
+.SS Front-ends
+.
+@L_ROFF@ allows to specify the preprocessors by command line options,
+and automatically runs the postprocessor that is appropriate for the
+selected device after processing the data with @L_TROFF@.
+@L_ROFF@ therefore acts as a replacement for the necessity to manually
+specify the processor pipeline as is required by classical
+.BR roff (@MAN7EXT@).
+.
+.\"
+.SS Preprocessors
+.
+The standard preprocessors distributed along with
+.I @T_ROFF@
+are
+.
+.TP
+.BR \%@L_P_EQN@ (@MAN1EXT@)
+for mathematical formul\(ae,
+.
+.TP
+.BR \%@L_P_GRN@ (@MAN1EXT@)
+for including
+.BR gremlin (1)
+pictures,
+.
+.TP
+.BR \%@L_P_PIC@ (@MAN1EXT@)
+for drawing diagrams,
+.
+.TP
+.BR \%@L_P_REFER@ (@MAN1EXT@)
+for bibliographic references,
+.
+.TP
+.BR \%@L_P_SOELIM@ (@MAN1EXT@)
+for including macro files from standard locations,
+.
+.TP
+.BR @L_P_TABLES (@MAN1EXT@)
+for tables.
+.
+.P
+A new preprocessor is
+.BR \%@L_P_PRECONV@ (@MAN1EXT@)
+which converts various input encodings to something
+.B @L_ROFF@
+can understand.
+It is always run first before any other preprocessor.
+.
+.\"
+.SS "Macro Packages"
+.
+Macro packages can be included by option
+.BR \-m .
+.
+The
+.I @T_ROFF@
+system implements and extends all classical macro packages in a
+compatible way and adds some packages of its own.
+.
+Actually, the following macro packages are included:
+.
+.TP
+.B man
+The traditional man page format; see
+.BR \%@L_ROFF@_man (@MAN7EXT@).
+It can be specified on the command line as
+.B \-man
+or
+.BR \-m\~man .
+.
+.TP
+.B mandoc
+The general package for man pages; it automatically recognizes
+whether the documents uses the
+.I man
+or the
+.I mdoc
+format and branches to the corresponding macro package.
+.
+It can be specified on the command line as
+.B \%\-mandoc
+or
+.BR \-m\~\%mandoc .
+.
+.TP
+.B mdoc
+The \f[CR]BSD\f[]-style man page format; see
+.BR \%@L_ROFF@_mdoc (@MAN7EXT@).
+It can be specified on the command line as
+.B \-mdoc
+or
+.BR \-m\~mdoc .
+.
+.TP
+.B me
+The classical
+.I me
+document format; see
+.BR \%@L_ROFF@_me (@MAN7EXT@).
+It can be specified on the command line as
+.B \-me
+or
+.BR \-m\~me .
+.
+.TP
+.B ms
+The classical
+.I ms
+document format; see
+.BR \%@L_ROFF@_ms (@MAN7EXT@).
+It can be specified on the command line as
+.B \-ms
+or
+.BR \-m\~ms .
+.
+.TP
+.B www
+HTML-like macros for inclusion in arbitrary
+.I groff
+documents; see
+.BR \%@L_ROFF@_www (@MAN7EXT@).
+.
+.P
+Details on the naming of macro files and their placement can be found
+in
+.BR \%@L_ROFF@_tmac (@MAN5EXT@);
+this man page also documents some other, minor auxiliary macro packages
+not mentioned here.
+.
+.\"
+.SS "Programming Language"
+.
+General concepts common to all
+.I roff
+programming languages are described in
+.BR roff (@MAN7EXT@).
+.
+.P
+The
+.I @T_ROFF@
+extensions to the classical
+.I troff
+language are documented in
+.BR \%@L_ROFF@_diff (@MAN7EXT@).
+In here you find also differences in between GNU troff and @T_ROFF@.
+.
+.P
+The
+.I @T_ROFF@
+language as a whole is described in
+.BR @L_ROFF@ (@MAN7EXT@).
+.
+.\"
+.SS Formatters
+.
+The central
+.I roff
+formatter within the
+.I @T_ROFF@
+system is
+.BR @L_TROFF@ (@MAN1EXT@).
+It provides the features of both the classical
+.I troff
+and
+.IR nroff ,
+as well as the
+.I @T_ROFF@
+extensions.
+.
+The command line option
+.B \-C
+switches
+.B @L_TROFF@
+into
+.I "compatibility mode"
+which tries to emulate classical
+.I roff
+as much as possible.
+.
+.P
+There is a shell script
+.BR @L_NROFF@ (@MAN1EXT@)
+that emulates the behavior of classical
+.BR nroff .
+It tries to automatically select the proper output encoding, according to
+the current locale.
+.
+.P
+The formatter program generates
+.IR "intermediate output" ;
+see
+.BR \%@L_ROFF@_out (@MAN7EXT@).
+.
+.\"
+.SS Devices
+.
+In
+.IR roff ,
+the output targets are called
+.IR devices .
+A device can be a piece of hardware, e.g., a printer, or a software
+file format.
+.
+A device is specified by the option
+.BR \-T .
+The following devices are included:
+.
+.TP
+.B ascii
+Text output using the
+.BR ascii (7)
+character set.
+.
+.TP
+.B cp1047
+Text output using the EBCDIC code page IBM cp1047 (e.g., OS/390 Unix).
+.
+.TP
+.B dvi
+TeX DVI format.
+.
+.TP
+.B html
+HTML output.
+.
+.TP
+.B latin1
+Text output using the ISO \%Latin-1 (ISO \%8859-1) character set; see
+.BR \%iso_8859_1 (7).
+.
+.TP
+.B ps
+PostScript output; suitable for printers and previewers like
+.BR gv (1).
+.
+.TP
+.B utf8
+Text output using the Unicode (ISO 10646) character set with \%UTF-8
+encoding; see
+.BR unicode (7).
+.
+.TP
+.B xhtml
+XHTML output.
+.
+.P
+The postprocessor to be used for a device is specified by the
+.B postpro
+command in the device description file; see
+.BR \%@L_ROFF@_font (@MAN5EXT@).
+.
+.P
+The default device is
+.BR @DEVICE@ .
+.
+.\"
+.SS Postprocessors
+.
+.I @L_ROFF@
+provides 3\~hardware postprocessors:
+.
+.TP
+.BR \%@L_D_TTY@ (@MAN1EXT@)
+for text output using various encodings, e.g., on text-oriented
+terminals or line-printers.
+.
+.P
+Today, most printing or drawing hardware is handled by the operating
+system, by device drivers, or by software interfaces, usually accepting
+PostScript.
+Consequently, there isn't an urgent need for more hardware device
+postprocessors.
+.
+.P
+The software devices for conversion into other document file formats are:
+.
+.TP
+.BR \%@L_D_DVI@ (@MAN1EXT@)
+for the DVI format,
+.
+.TP
+.BR \%@L_D_HTML@ (@MAN1EXT@)
+for HTML and XHTML formats,
+.
+.TP
+.BR \%@L_D_PS@ (@MAN1EXT@)
+for PostScript.
+.
+.P
+Combined with the many existing free conversion tools this should
+be sufficient to convert a
+.I troff
+document into virtually any existing data format.
+.
+.\"
+.SS Utilities
+.
+The following utility programs around are available:
+.
+.TP
+.BR \%@L_ADDFTINFO@ (@MAN1EXT@)
+Add information to
+.I troff
+font description files for use with
+.IR @T_ROFF@ .
+.
+.TP
+.BR \%@L_AFMTODIT@ (@MAN1EXT@)
+Create font description files for PostScript device.
+.
+.TP
+.BR \%@L_INDXBIB@ (@MAN1EXT@)
+Make inverted index for bibliographic databases.
+.
+.TP
+.BR \%@L_LKBIB@ (@MAN1EXT@)
+Search bibliographic databases.
+.
+.TP
+.BR \%@L_LOOKBIB@ (@MAN1EXT@)
+Interactively search bibliographic databases.
+.
+.TP
+.BR \%@L_PDFROFF@ (@MAN1EXT@)
+Create PDF documents.
+.
+.TP
+.BR \%@L_PFBTOPS@ (@MAN1EXT@)
+Translate a PostScript font in .pfb format to \f[CR]ASCII\f[].
+.
+.TP
+.BR \%@L_TFMTODIT@ (@MAN1EXT@)
+Create font description files for TeX DVI device.
+.
+.\"
+.SH ENVIRONMENT
+.
+Normally, the path separator in the following environment variables is the
+colon; this may vary depending on the operating system.
+For example, DOS and Windows use a semicolon instead.
+.
+.TP
+.EnvVar @U_ROFF@_BIN_PATH
+This search path, followed by
+.EnvVar $PATH ,
+is used for commands that are executed by
+.BR @T_ROFF@ .
+If it is not set then the directory where the
+.I @T_ROFF@
+binaries were installed is prepended to
+.EnvVar PATH .
+.
+.TP
+.EnvVar @U_ROFF@_COMMAND_PREFIX
+When there is a need to run different
+.I roff
+implementations at the same time
+.I @T_ROFF@
+provides the facility to prepend a prefix to most of its programs that
+could provoke name clashings at run time (default is to have none).
+.
+More exactly, if it is set to prefix
+.I xxx
+then
+.B @L_ROFF@
+as a wrapper program internally calls
+.IB xxx @L_TROFF@
+instead of
+.BR @L_TROFF@ .
+This also applies to the preprocessors
+.BR \%@L_P_EQN@ ,
+.BR \%@L_P_GRN@ ,
+.BR \%@L_P_PIC@ ,
+.BR \%@L_P_REFER@ ,
+.BR \%@L_P_TBL@ ,
+.BR \%@L_P_SOELIM@ ,
+and to the utilities
+.B \%@L_INDXBIB@
+and
+.BR \%@L_LOOKBIB@ .
+.
+This feature does not apply to any programs different from the ones
+above (most notably
+.B @L_ROFF@
+itself).
+.
+.TP
+.EnvVar @U_ROFF@_ENCODING
+The value of this environment value is passed to the
+.B @L_P_PRECONV@
+preprocessor to select the encoding of input files, i.e.,
+setting this option implies
+.BR @L_ROFF@ 's
+command line option
+.B \-k .
+If set to an empty value then the automatic character set guessing
+heuristics are used, as documented for
+.BR preconv (@MAN1EXT@).
+An explicit
+.B \-K
+command line option overrides the value of
+.EnvVar @U_ROFF@_ENCODING .
+.
+.TP
+.EnvVar @U_ROFF@_FONT_PATH
+A list of directories in which to search for the
+.BI dev name
+directory in addition to the default ones.
+See
+.BR @L_TROFF@ (@MAN1EXT@)
+and
+.BR \%@L_ROFF@_font (@MAN5EXT@)
+for more details.
+.
+.TP
+.EnvVar @U_ROFF@_TMAC_PATH
+A list of directories in which to search for macro files in addition to
+the default directories.
+See
+.BR @L_TROFF@ (@MAN1EXT@)
+and
+.BR \%@L_ROFF@_tmac (@MAN5EXT@)
+for more details.
+.
+.TP
+.EnvVar @U_ROFF@_TMPDIR
+The directory in which temporary files are created.
+If this is not set but the environment variable
+.EnvVar TMPDIR
+instead, temporary files are created in the directory
+.EnvVar $TMPDIR .
+On MS-DOS and Windows\~32 platforms, the environment variables
+.EnvVar TMP
+and
+.EnvVar TEMP
+(in that order) are searched also, after
+.EnvVar @U_ROFF@_TMPDIR
+and
+.EnvVar TMPDIR .
+Otherwise, temporary files are created in
+.BR /tmp .
+The
+.BR \%@L_P_REFER@ (@MAN1EXT@),
+.BR \%@L_D_HTML@ (@MAN1EXT@),
+and
+.BR \%@L_D_PS@ (@MAN1EXT@)
+commands use temporary files.
+.
+.TP
+.EnvVar @U_ROFF@_TYPESETTER
+Preset the default device.
+If this is not set the
+.B @DEVICE@
+device is used as default.
+This device name is overwritten by the option
+.BR \-T .
+.
+.\"
+.SH FILES
+.
+There are some directories in which
+.I @T_ROFF@
+installs all of its data files.
+Due to different installation habits on different operating systems,
+their locations are not absolutely fixed, but their function is
+clearly defined and coincides on all systems.
+.
+.\"
+.SS "groff Macro Directory"
+.
+This contains all information related to macro packages;
+in the @T_ROFF@ system installation this directory is
+.IR @MACRODIR@ .
+Note that more than a single directory is searched for those files
+as documented in
+.BR \%@L_ROFF@_tmac (@MAN5EXT@)
+.
+.P
+The following files contained in the
+.I macro directory
+have a special meaning:
+.
+.TP
+.B troffrc
+Initialization file for
+.IR @L_TROFF@ .
+This is interpreted by
+.B @L_TROFF@
+before reading the macro sets and any input.
+.
+.TP
+.B troffrc-end
+Final startup file for
+.IR @L_TROFF@ .
+It is parsed after all macro sets have been read.
+.
+.TP
+.IB name .tmac
+.TQ
+.BI tmac. name
+Macro file for macro package
+.IR name .
+.
+.\"
+.SS "groff Font Directory"
+.
+This contains all information related to output devices;
+in the @T_ROFF@ system installation this directory is
+.IR @FONTDIR@ .
+Note that more than a single directory is searched for those files; see
+.BR @L_TROFF@ (@MAN1EXT@).
+.
+.P
+The following files contained in the
+.I font directory
+have a special meaning:
+.
+.TP
+.BI dev name /DESC
+Device description file for device
+.IR name ,
+see
+.BR \%@L_ROFF@_font (@MAN5EXT@).
+.
+.TP
+.BI dev name / F
+Font file for font
+.I F
+of device
+.IR name .
+.
+.\"
+.SH BUGS
+.
+.P
+On \f[CR]EBCDIC\f[] hosts (e.g., \f[CR]OS/390 Unix\f[]), output
+devices
+.B ascii
+and
+.B latin1
+aren't available.
+Similarly, output for \f[CR]EBCDIC\f[] code page
+.B cp1047
+is not available on \f[CR]ASCII\f[] based operating systems.
+.
+.P
+Report bugs to the
+.MT @BUGMAIL@
+mailing list
+.ME .
+.
+.\"
+.SH AUTHORS
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+.
+Copyright \(co 1989, 2002 - 2008
+Free Software Foundation, Inc.
+.
+.P
+This document is distributed under the terms of the \f[CR]FDL\f[]
+(\f[CR]GNU Free Documentation License\f[]) version 1.1 or later.
+.
+You should have received a copy of the \f[CR]FDL\f[] on your system,
+it is also available on-line at the
+.UR http://\:www.gnu.org/\:copyleft/\:fdl.html
+GNU copyleft site
+.UE .
+.
+.P
+This document is based on the original
+.I groff
+man page written by
+.MT jjc@jclark.com
+James Clark
+.UE .
+.
+It was rewritten, enhanced, and put under the FDL license by
+Bernd Warken.
+.
+It is maintained by
+.MT wl@gnu.org
+Werner Lemberg
+.ME .
+.
+.\"
+.SH "SEE ALSO"
+.
+.TP
+Introduction, history and further readings:
+.BR roff (@MAN7EXT@).
+.
+.TP
+Wrapper programs for formatters:
+.BR \%@L_ROFF@ (@MAN1EXT@).
+.
+.TP
+Roff preprocessors:
+.BR \%@L_P_EQN@ (@MAN1EXT@),
+.BR \%@L_P_GRN@ (@MAN1EXT@),
+.BR \%@L_P_PIC@ (@MAN1EXT@),
+.BR \%@L_P_PRECONV@ (@MAN1EXT@),
+.BR \%@L_P_REFER@ (@MAN1EXT@),
+.BR \%@L_P_SOELIM@ (@MAN1EXT@),
+.BR \%@L_P_TBL@ (@MAN1EXT@),
+.BR grap (1).
+.
+.TP
+Roff language with the groff extensions:
+.BR \%@L_ROFF@ (@MAN7EXT@),
+.BR \%@L_ROFF@_char (@MAN7EXT@),
+.BR \%@L_ROFF@_diff (@MAN7EXT@),
+.BR \%@L_ROFF@_font (@MAN5EXT@).
+.
+.TP
+Roff formatter programs:
+.BR \%@L_NROFF@ (@MAN1EXT@),
+.BR \%@L_TROFF@ (@MAN1EXT@),
+.BR ditroff (@MAN7EXT@).
+.
+.TP
+The intermediate output language:
+.BR \%@L_ROFF@_out (@MAN7EXT@).
+.
+.TP
+Postprocessors for the output devices:
+.BR \%@L_D_DVI@ (@MAN1EXT@),
+.BR \%@L_D_HTML@ (@MAN1EXT@),
+.BR \%@L_D_PS@ (@MAN1EXT@),
+.BR \%@L_D_TTY@ (@MAN1EXT@).
+.
+.TP
+Groff macro packages and macro-specific utilities:
+.BR \%@L_ROFF@_tmac (@MAN5EXT@),
+.BR \%@L_ROFF@_man (@MAN7EXT@),
+.BR \%@L_ROFF@_mdoc (@MAN7EXT@),
+.BR \%@L_ROFF@_me (@MAN7EXT@),
+.BR \%@L_ROFF@_ms (@MAN7EXT@),
+.BR \%@L_ROFF@_www (@MAN7EXT@),
+.BR \%@L_ROFF@_trace (@MAN7EXT@),
+.
+.TP
+The following utilities are available:
+.BR \%@L_ADDFTINFO@ (@MAN1EXT@),
+.BR \%@L_AFMTODIT@ (@MAN1EXT@),
+.BR \%@L_INDXBIB@ (@MAN1EXT@),
+.BR \%@L_LKBIB@ (@MAN1EXT@),
+.BR \%@L_LOOKBIB@ (@MAN1EXT@),
+.BR \%@L_PDFROFF@ (@MAN1EXT@),
+.BR \%@L_PFBTOPS@ (@MAN1EXT@),
+.BR \%@L_TFMTODIT@ (@MAN1EXT@),
+.
+.\" s-ts-mode

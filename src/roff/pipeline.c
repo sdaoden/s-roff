@@ -1,100 +1,69 @@
-/* Copyright (C) 1989, 1990, 1991, 1992, 2000, 2001, 2002, 2003, 2004, 2005,
-                 2006
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@ TODO All this stuff belongs into a library! (and separated, xy_OS.c..)
+ *
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000 - 2006 Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
+#include "config.h"
+#include "roff-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
-#include <stdio.h>
-#include <signal.h>
-#include <errno.h>
 #include <sys/types.h>
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
-#ifdef HAVE_STRERROR
-#include <string.h>
-#else
-extern char *strerror();
-#endif
-
-#ifdef _POSIX_VERSION
-
 #include <sys/wait.h>
-#define PID_T pid_t
 
-#else /* not _POSIX_VERSION */
+#include <errno.h>
+#include <signal.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
-/* traditional Unix */
-
-#define WIFEXITED(s) (((s) & 0377) == 0)
-#define WIFSTOPPED(s) (((s) & 0377) == 0177)
-#define WIFSIGNALED(s) (((s) & 0377) != 0 && (((s) & 0377) != 0177))
-#define WEXITSTATUS(s) (((s) >> 8) & 0377)
-#define WTERMSIG(s) ((s) & 0177)
-#define WSTOPSIG(s) (((s) >> 8) & 0377)
-
-#ifndef WCOREFLAG
-#define WCOREFLAG 0200
-#endif
-
-#define PID_T int
-
-#endif /* not _POSIX_VERSION */
-
-/* SVR4 uses WCOREFLG; Net 2 uses WCOREFLAG. */
-#ifndef WCOREFLAG
-#ifdef WCOREFLG
-#define WCOREFLAG WCOREFLG
-#endif /* WCOREFLG */
-#endif /* not WCOREFLAG */
-
-#ifndef WCOREDUMP
-#ifdef WCOREFLAG
-#define WCOREDUMP(s) ((s) & WCOREFLAG)
-#else /* not WCOREFLAG */
-#define WCOREDUMP(s) (0)
-#endif /* WCOREFLAG */
-#endif /* not WCOREDUMP */
+#include "lib.h"
 
 #include "pipeline.h"
 
+/* SVR4 uses WCOREFLG; Net 2 uses WCOREFLAG. */// FIXME -> lib.h?!
+#ifndef WCOREFLAG
+# ifdef WCOREFLG
+#  define WCOREFLAG	WCOREFLG
+# endif
+#endif
+#ifndef WCOREDUMP
+# ifdef WCOREFLAG
+#  define WCOREDUMP(s)	((s) & WCOREFLAG)
+# else
+#  define WCOREDUMP(s)	(0)
+# endif
+#endif
+
 #define error c_error
 
+// In roff.cpp TODO
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 extern void error(const char *, const char *, const char *, const char *);
 extern void c_fatal(const char *, const char *, const char *, const char *);
-extern const char *i_to_a(int);		/* from libgroff */
-
 #ifdef __cplusplus
 }
 #endif
 
 static void sys_fatal(const char *);
 static const char *xstrsignal(int);
-
 
 #if defined(__MSDOS__) \
     || (defined(_WIN32) && !defined(_UWIN) && !defined(__CYGWIN__)) \
@@ -113,7 +82,7 @@ static const char *command = "command";
 
 extern int strcasecmp(const char *, const char *);
 
-char *sbasename(const char *path)
+char *sbasename(const char *path) // TODO lib.h
 {
   char *base;
   const char *p1, *p2;
@@ -137,7 +106,7 @@ char *sbasename(const char *path)
   return(base);
 }
 
-/* Get the name of the system shell */
+/* Get the name of the system shell */// TODO lib.h
 char *system_shell_name(void)
 {
   const char *shell_name;
@@ -199,7 +168,6 @@ int is_system_shell(const char *prog)
 }
 
 #ifdef _WIN32
-
 /*
   Windows 32 doesn't have fork(), so we need to start asynchronous child
   processes with spawn() rather than exec().  If there is more than one
@@ -218,11 +186,11 @@ int run_pipeline(int ncommands, char ***commands, int no_pipe)
   int save_stdout = 0;
   int ret = 0;
   char err_str[BUFSIZ];
-  PID_T pids[MAX_COMMANDS];
+  pid_t pids[MAX_COMMANDS];
 
   for (i = 0; i < ncommands; i++) {
     int pdes[2];
-    PID_T pid;
+    pid_t pid;
 
     /* If no_pipe is set, just run the commands in sequence
        to show the version numbers */
@@ -328,7 +296,7 @@ int run_pipeline(int ncommands, char ***commands, int no_pipe)
 
   for (i = 0; i < ncommands; i++) {
     int status;
-    PID_T pid;
+    pid_t pid;
 
     pid = pids[i];
     if ((pid = WAIT(&status, pid, _WAIT_CHILD)) < 0) {
@@ -348,13 +316,12 @@ int run_pipeline(int ncommands, char ***commands, int no_pipe)
    from temporary files.
 */
 
-
 /* A signal handler that just records that a signal has happened.  */
 static int child_interrupted;
 
-static RETSIGTYPE signal_catcher(int signo)
+static void signal_catcher(int signo)
 {
-  child_interrupted++;
+  child_interrupted++; // ..not even volatile..
 }
 
 int run_pipeline(int ncommands, char ***commands, int no_pipe)
@@ -372,7 +339,7 @@ int run_pipeline(int ncommands, char ***commands, int no_pipe)
      `getenv("TEMP")' as last resort -- at least one of these had better
      be set, since Microsoft's default has a high probability of failure. */
   char *tmpdir;
-  if ((tmpdir = getenv("GROFF_TMPDIR")) == NULL
+  if ((tmpdir = getenv(U_ROFF_TMPDIR)) == NULL
       && (tmpdir = getenv("TMPDIR")) == NULL)
     tmpdir = getenv("TEMP");
 
@@ -392,7 +359,7 @@ int run_pipeline(int ncommands, char ***commands, int no_pipe)
       if (f < 0)
 	sys_fatal("open stdin");
       if (dup2(f, 0) < 0)
-	sys_fatal("dup2 stdin"); 
+	sys_fatal("dup2 stdin");
       if (close(f) < 0)
 	sys_fatal("close stdin");
     }
@@ -449,13 +416,13 @@ int run_pipeline(int ncommands, char ***commands, int no_pipe)
 {
   int i;
   int last_input = 0;
-  PID_T pids[MAX_COMMANDS];
+  pid_t pids[MAX_COMMANDS];
   int ret = 0;
   int proc_count = ncommands;
 
   for (i = 0; i < ncommands; i++) {
     int pdes[2];
-    PID_T pid;
+    pid_t pid;
 
     if ((i != ncommands - 1) && !no_pipe) {
       if (pipe(pdes) < 0)
@@ -504,7 +471,7 @@ int run_pipeline(int ncommands, char ***commands, int no_pipe)
   }
   while (proc_count > 0) {
     int status;
-    PID_T pid = wait(&status);
+    pid_t pid = wait(&status);
 
     if (pid < 0)
       sys_fatal("wait");
@@ -569,12 +536,12 @@ static const char *xstrsignal(int n)
 {
   static char buf[sizeof("Signal ") + 1 + sizeof(int) * 3];
 
-#ifdef NSIG
-#if HAVE_DECL_SYS_SIGLIST
+#ifdef NSIG /* FIXME no, very wrong is this */
+# if HAVE_DECL_SYS_SIGLIST
   if (n >= 0 && n < NSIG && sys_siglist[n] != 0)
     return sys_siglist[n];
-#endif /* HAVE_DECL_SYS_SIGLIST */
-#endif /* NSIG */
+# endif
+#endif
   sprintf(buf, "Signal %d", n);
   return buf;
 }
