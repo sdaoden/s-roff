@@ -1,28 +1,37 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2001, 2002, 2006
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2001, 2002, 2006
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+#ifndef _CHARINFO_H
+#define _CHARINFO_H
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+#include "config.h"
+#include "troff-config.h"
 
 class macro;
 
-class charinfo : glyph {
+class charinfo
+: glyph
+{
   static int next_index;
+
   charinfo *translation;
   macro *mac;
   unsigned char special_translation;
@@ -36,6 +45,7 @@ class charinfo : glyph {
   char translate_input;		// non-zero means that asciify_code is
 				// active for .asciify (set by .trin)
   char_mode mode;
+
 public:
   enum {		// Values for the flags bitmask.  See groff
 			// manual, description of the `.cflags' request.
@@ -54,7 +64,9 @@ public:
     TRANSLATE_STRETCHABLE_SPACE,
     TRANSLATE_HYPHEN_INDICATOR
   };
+
   symbol nm;
+
   charinfo(symbol);
   glyph *as_glyph();
   int ends_sentence();
@@ -217,3 +229,6 @@ inline symbol *charinfo::get_symbol()
 {
   return( &nm );
 }
+
+#endif // _CHARINFO_H
+// s-it2-mode

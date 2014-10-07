@@ -1,79 +1,58 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2000, 2001, 2002, 2003, 2004, 2005,
-                 2006, 2008
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000 - 2006, 2008 Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-extern int debug_state;
-
-#include "troff.h"
-
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
-#include "dictionary.h"
-#include "hvunits.h"
-#include "stringclass.h"
-#include "mtsm.h"
-#include "env.h"
-#include "file_case.h"
-#include "request.h"
-#include "node.h"
-#include "token.h"
-#include "div.h"
-#include "reg.h"
-#include "font.h"
-#include "charinfo.h"
-#include "input.h"
-#include "geometry.h"
-
-#include "nonposix.h"
-
-#ifdef _POSIX_VERSION
+#include "config.h"
+#include "troff-config.h"
 
 #include <sys/wait.h>
 
-#else /* not _POSIX_VERSION */
+#include <unistd.h>
 
-/* traditional Unix */
+#include "file_case.h"
+#include "font.h"
+#include "geometry.h"
+#include "nonposix.h"
+#include "stringclass.h"
 
-#define WIFEXITED(s) (((s) & 0377) == 0)
-#define WEXITSTATUS(s) (((s) >> 8) & 0377)
-#define WTERMSIG(s) ((s) & 0177)
-#define WIFSTOPPED(s) (((s) & 0377) == 0177)
-#define WSTOPSIG(s) (((s) >> 8) & 0377)
-#define WIFSIGNALED(s) (((s) & 0377) != 0 && (((s) & 0377) != 0177))
+#include "charinfo.h"
+#include "dictionary.h"
+#include "div.h"
+#include "env.h"
+#include "hvunits.h"
+#include "input.h"
+#include "mtsm.h"
+#include "node.h"
+#include "reg.h"
+#include "request.h"
+#include "token.h"
+#include "troff.h"
 
-#endif /* not _POSIX_VERSION */
-
+extern int debug_state;
 // declarations to avoid friend name injections
 class tfont;
 class tfont_spec;
 tfont *make_tfont(tfont_spec &);
 
-
-/*
- *  how many boundaries of images have been written? Useful for
- *  debugging grohtml
- */
-
+// how many boundaries of images have been written? Useful for
+// debugging grohtml
 int image_no = 0;
 static int suppress_start_page = 0;
 
@@ -88,7 +67,7 @@ enum constant_space_type {
   CONSTANT_SPACE_NONE,
   CONSTANT_SPACE_RELATIVE,
   CONSTANT_SPACE_ABSOLUTE
-  };
+};
 
 struct special_font_list {
   int n;
@@ -99,12 +78,14 @@ special_font_list *global_special_fonts;
 static int global_ligature_mode = 1;
 static int global_kern_mode = 1;
 
-class track_kerning_function {
+class track_kerning_function
+{
   int non_zero;
   units min_size;
   hunits min_amount;
   units max_size;
   hunits max_amount;
+
 public:
   track_kerning_function();
   track_kerning_function(units, hunits, units, hunits);
@@ -114,15 +95,18 @@ public:
 };
 
 // embolden fontno when this is the current font
-
-struct conditional_bold {
+class conditional_bold
+{
+public:
   conditional_bold *next;
   int fontno;
   hunits offset;
+
   conditional_bold(int, hunits, conditional_bold * = 0);
 };
 
-class font_info {
+class font_info
+{
   tfont *last_tfont;
   int number;
   font_size last_size;
@@ -139,9 +123,12 @@ class font_info {
   int last_ligature_mode;
   int last_kern_mode;
   conditional_bold *cond_bold_list;
+
   void flush();
+
 public:
   special_font_list *sf;
+
   font_info(symbol, int, symbol, font *);
   int contains(charinfo *);
   void set_bold(hunits);
@@ -165,7 +152,8 @@ public:
   friend symbol get_style_name(int);
 };
 
-class tfont_spec {
+class tfont_spec
+{
 protected:
   symbol name;
   int input_position;
@@ -180,6 +168,7 @@ protected:
   hunits constant_space_width;
   int height;
   int slant;
+
 public:
   tfont_spec(symbol, int, font *, font_size, int, int);
   tfont_spec(const tfont_spec &spec) { *this = spec; }
@@ -188,10 +177,14 @@ public:
   friend tfont *font_info::get_tfont(font_size fs, int, int, int);
 };
 
-class tfont : public tfont_spec {
+class tfont
+: public tfont_spec
+{
   static tfont *tfont_list;
+
   tfont *next;
   tfont *plain_version;
+
 public:
   tfont(tfont_spec &);
   int contains(charinfo *);
@@ -713,12 +706,15 @@ tfont::tfont(tfont_spec &spec) : tfont_spec(spec)
 
 /* output_file */
 
-class real_output_file : public output_file {
+class real_output_file
+: public output_file
+{
 #ifndef POPEN_MISSING
   int piped;
 #endif
   int printing;		// decision via optional page list
   int output_on;	// \O[0] or \O[1] escape calls
+
   virtual void really_transparent_char(unsigned char) = 0;
   virtual void really_print_line(hunits x, vunits y, node *n,
 				 vunits before, vunits after, hunits width) = 0;
@@ -727,8 +723,10 @@ class real_output_file : public output_file {
   virtual void really_put_filename(const char *, int);
   virtual void really_on();
   virtual void really_off();
+
 public:
   FILE *fp;
+
   real_output_file();
   ~real_output_file();
   void flush();
@@ -743,7 +741,9 @@ public:
   void copy_file(hunits x, vunits y, const char *filename);
 };
 
-class suppress_output_file : public real_output_file {
+class suppress_output_file
+: public real_output_file
+{
 public:
   suppress_output_file();
   void really_transparent_char(unsigned char);
@@ -751,7 +751,9 @@ public:
   void really_begin_page(int pageno, vunits page_length);
 };
 
-class ascii_output_file : public real_output_file {
+class ascii_output_file
+: public real_output_file
+{
 public:
   ascii_output_file();
   void really_transparent_char(unsigned char);
@@ -776,7 +778,12 @@ void ascii_output_file::outs(const char *s)
 
 struct hvpair;
 
-class troff_output_file : public real_output_file {
+class troff_output_file
+: public real_output_file
+{
+  friend void space_char_hmotion_node::tprint(troff_output_file *);
+  friend void unbreakable_space_node::tprint(troff_output_file *);
+
   units hpos;
   units vpos;
   units output_vpos;
@@ -798,6 +805,7 @@ class troff_output_file : public real_output_file {
   int begun_page;
   int cur_div_level;
   string tag_list;
+
   void do_motion();
   void put(char c);
   void put(unsigned char c);
@@ -806,6 +814,7 @@ class troff_output_file : public real_output_file {
   void put(const char *s);
   void set_font(tfont *tf);
   void flush_tbuf();
+
 public:
   troff_output_file();
   ~troff_output_file();
@@ -835,8 +844,6 @@ public:
   int get_hpos() { return hpos; }
   int get_vpos() { return vpos; }
   void add_to_tag_list(string s);
-  friend void space_char_hmotion_node::tprint(troff_output_file *);
-  friend void unbreakable_space_node::tprint(troff_output_file *);
 };
 
 static void put_string(const char *s, FILE *fp)
@@ -1816,9 +1823,12 @@ void suppress_output_file::really_transparent_char(unsigned char)
 
 /* glyphs, ligatures, kerns, discretionary breaks */
 
-class charinfo_node : public node {
+class charinfo_node
+: public node
+{
 protected:
   charinfo *ci;
+
 public:
   charinfo_node(charinfo *, statem *, int, node * = 0);
   int ends_sentence();
@@ -1851,17 +1861,22 @@ int charinfo_node::overlaps_vertically()
   return ci->overlaps_vertically();
 }
 
-class glyph_node : public charinfo_node {
+class glyph_node
+: public charinfo_node
+{
   static glyph_node *free_list;
+
 protected:
   tfont *tf;
   color *gcol;
   color *fcol;		/* this is needed for grotty */
 #ifdef STORE_WIDTH
   hunits wid;
+
   glyph_node(charinfo *, tfont *, color *, color *, hunits,
 	     statem *, int, node * = 0);
 #endif
+
 public:
   void *operator new(size_t);
   void operator delete(void *);
@@ -1899,13 +1914,17 @@ public:
 
 glyph_node *glyph_node::free_list = 0;
 
-class ligature_node : public glyph_node {
+class ligature_node
+: public glyph_node
+{
   node *n1;
   node *n2;
+
 #ifdef STORE_WIDTH
   ligature_node(charinfo *, tfont *, color *, color *, hunits,
 		node *, node *, statem *, int, node * = 0);
 #endif
+
 public:
   void *operator new(size_t);
   void operator delete(void *);
@@ -1923,10 +1942,13 @@ public:
   int is_tag();
 };
 
-class kern_pair_node : public node {
+class kern_pair_node
+: public node
+{
   hunits amount;
   node *n1;
   node *n2;
+
 public:
   kern_pair_node(hunits, node *, node *, statem *, int, node * = 0);
   ~kern_pair_node();
@@ -1951,10 +1973,13 @@ public:
   void vertical_extent(vunits *, vunits *);
 };
 
-class dbreak_node : public node {
+class dbreak_node
+: public node
+{
   node *none;
   node *pre;
   node *post;
+
 public:
   dbreak_node(node *, node *, statem *, int, node * = 0);
   ~dbreak_node();
@@ -1980,7 +2005,7 @@ public:
   int is_tag();
 };
 
-void *glyph_node::operator new(size_t n)
+void *glyph_node::operator new(size_t n) // TODO -> ObjectCache!
 {
   assert(n == sizeof(glyph_node));
   if (!free_list) {
@@ -1996,12 +2021,12 @@ void *glyph_node::operator new(size_t n)
   return p;
 }
 
-void *ligature_node::operator new(size_t n)
+void *ligature_node::operator new(size_t n) // TODO ?
 {
   return new char[n];
 }
 
-void glyph_node::operator delete(void *p)
+void glyph_node::operator delete(void *p) // TODO -> ObjectCache!
 {
   if (p) {
     ((glyph_node *)p)->next = free_list;
@@ -2009,7 +2034,7 @@ void glyph_node::operator delete(void *p)
   }
 }
 
-void ligature_node::operator delete(void *p)
+void ligature_node::operator delete(void *p) // TODO ?
 {
   delete[] (char *)p;
 }
@@ -2619,9 +2644,12 @@ hunits dbreak_node::subscript_correction()
   return none ? none->subscript_correction() : H0;
 }
 
-class italic_corrected_node : public node {
+class italic_corrected_node
+: public node
+{
   node *n;
   hunits x;
+
 public:
   italic_corrected_node(node *, hunits, statem *, int, node * = 0);
   ~italic_corrected_node();
@@ -2760,10 +2788,13 @@ int italic_corrected_node::character_type()
   return n->character_type();
 }
 
-class break_char_node : public node {
+class break_char_node
+: public node
+{
   node *ch;
   char break_code;
   color *col;
+
 public:
   break_char_node(node *, int, color *, node * = 0);
   break_char_node(node *, int, color *, statem *, int, node * = 0);
@@ -4205,9 +4236,12 @@ hunits suppress_node::width()
 
 /* composite_node */
 
-class composite_node : public charinfo_node {
+class composite_node
+: public charinfo_node
+{
   node *n;
   tfont *tf;
+
 public:
   composite_node(node *, charinfo *, tfont *, statem *, int, node * = 0);
   ~composite_node();
@@ -4414,7 +4448,7 @@ int word_space_node::merge_space(hunits h, hunits sw, hunits ssw)
 {
   n += h;
   assert(orig_width != 0);
-  width_list *w = orig_width; 
+  width_list *w = orig_width;
   for (; w->next; w = w->next)
     ;
   w->next = new width_list(sw, ssw);
@@ -5090,9 +5124,7 @@ node *node::add_char(charinfo *ci, environment *env,
   return res;
 }
 
-#ifdef __GNUG__
 inline
-#endif
 int same_node(node *n1, node *n2)
 {
   if (n1 != 0) {
@@ -6510,7 +6542,9 @@ void init_output()
     the_output = new troff_output_file;
 }
 
-class next_available_font_position_reg : public reg {
+class next_available_font_position_reg
+: public reg
+{
 public:
   const char *get_string();
 };
@@ -6520,7 +6554,9 @@ const char *next_available_font_position_reg::get_string()
   return i_to_a(next_available_font_position());
 }
 
-class printing_reg : public reg {
+class printing_reg
+: public reg
+{
 public:
   const char *get_string();
 };
@@ -6533,7 +6569,7 @@ const char *printing_reg::get_string()
     return "0";
 }
 
-void init_node_requests()
+void init_node_requests() // TODO move static inits in here?!!
 {
   init_request("bd", bold_font);
   init_request("cs", constant_space);
@@ -6558,3 +6594,5 @@ void init_node_requests()
   number_reg_dictionary.define(".P", new printing_reg);
   soft_hyphen_char = get_charinfo(HYPHEN_SYMBOL);
 }
+
+// s-it2-mode

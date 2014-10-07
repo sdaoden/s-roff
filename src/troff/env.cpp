@@ -1,42 +1,46 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2000, 2001, 2002, 2003, 2004, 2005,
-                 2006
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000 - 2006 Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
+#include "config.h"
+#include "troff-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-#include "troff.h"
-#include "dictionary.h"
-#include "hvunits.h"
-#include "stringclass.h"
-#include "mtsm.h"
-#include "env.h"
-#include "file_case.h"
-#include "request.h"
-#include "node.h"
-#include "token.h"
-#include "div.h"
-#include "reg.h"
-#include "font.h"
-#include "charinfo.h"
-#include "macropath.h"
-#include "input.h"
 #include <math.h>
+
+#include "file_case.h"
+#include "font.h"
+#include "macropath.h"
+#include "stringclass.h"
+
+#include "charinfo.h"
+#include "dictionary.h"
+#include "div.h"
+#include "env.h"
+#include "hvunits.h"
+#include "input.h"
+#include "mtsm.h"
+#include "node.h"
+#include "reg.h"
+#include "request.h"
+#include "token.h"
+#include "troff.h"
 
 symbol default_family("T");
 
@@ -44,16 +48,18 @@ enum { ADJUST_LEFT = 0, ADJUST_BOTH = 1, ADJUST_CENTER = 3, ADJUST_RIGHT = 5 };
 
 enum { HYPHEN_LAST_LINE = 2, HYPHEN_LAST_CHARS = 4, HYPHEN_FIRST_CHARS = 8 };
 
-struct env_list {
+class env_list
+{
+public:
   environment *env;
   env_list *next;
+
   env_list(environment *e, env_list *p) : env(e), next(p) {}
 };
 
 env_list *env_stack;
-const int NENVIRONMENTS = 10;
 environment *env_table[NENVIRONMENTS];
-dictionary env_dictionary(10);
+dictionary env_dictionary(NENVIRONMENTS);
 environment *curenv;
 static int next_line_number = 0;
 extern int suppress_push;
@@ -64,7 +70,13 @@ charinfo *padding_indicator_char;
 
 int translate_space_to_dummy = 0;
 
-class pending_output_line {
+class pending_output_line
+{
+#ifdef WIDOW_CONTROL
+  friend void environment::mark_last_line();
+  friend void environment::output(node *, int, vunits, vunits, hunits, int);
+#endif
+
   node *nd;
   int no_fill;
   int was_centered;
@@ -73,7 +85,8 @@ class pending_output_line {
   hunits width;
 #ifdef WIDOW_CONTROL
   int last_line;		// Is it the last line of the paragraph?
-#endif /* WIDOW_CONTROL */
+#endif
+
 public:
   pending_output_line *next;
 
@@ -81,11 +94,6 @@ public:
 		      pending_output_line * = 0);
   ~pending_output_line();
   int output();
-
-#ifdef WIDOW_CONTROL
-  friend void environment::mark_last_line();
-  friend void environment::output(node *, int, vunits, vunits, hunits, int);
-#endif /* WIDOW_CONTROL */
 };
 
 pending_output_line::pending_output_line(node *n, int nf, vunits v, vunits pv,
@@ -94,7 +102,7 @@ pending_output_line::pending_output_line(node *n, int nf, vunits v, vunits pv,
 : nd(n), no_fill(nf), was_centered(ce), vs(v), post_vs(pv), width(w),
 #ifdef WIDOW_CONTROL
   last_line(0),
-#endif /* WIDOW_CONTROL */
+#endif
   next(p)
 {
 }
@@ -137,13 +145,13 @@ void environment::output(node *nd, int no_fill_flag,
     pending_lines = pending_lines->next;
     delete tem;
   }
-#else /* WIDOW_CONTROL */
+#else
   output_pending_lines();
-#endif /* WIDOW_CONTROL */
+#endif
   if (!trap_sprung_flag && !pending_lines
 #ifdef WIDOW_CONTROL
       && (!widow_control || no_fill_flag)
-#endif /* WIDOW_CONTROL */
+#endif
       ) {
     curenv->construct_format_state(nd, was_centered, !no_fill_flag);
     curdiv->output(nd, no_fill_flag, vs, post_vs, width);
@@ -179,7 +187,6 @@ void environment::output_pending_lines()
 }
 
 #ifdef WIDOW_CONTROL
-
 void environment::mark_last_line()
 {
   if (!widow_control || !pending_lines)
@@ -200,7 +207,6 @@ void widow_control_request()
     curenv->widow_control = 1;
   skip_line();
 }
-
 #endif /* WIDOW_CONTROL */
 
 /* font_size functions */
@@ -209,12 +215,10 @@ size_range *font_size::size_table = 0;
 int font_size::nranges = 0;
 
 extern "C" {
-
 int compare_ranges(const void *p1, const void *p2)
 {
   return ((size_range *)p1)->min - ((size_range *)p2)->min;
 }
-
 }
 
 void font_size::init_size_table(int *sizes)
@@ -939,7 +943,7 @@ int environment::get_bold()
 hunits environment::get_digit_width()
 {
   return env_digit_width(this);
-} 
+}
 
 int environment::get_adjust_mode()
 {
@@ -2461,7 +2465,7 @@ void title()
 		       curenv->total_post_vertical_spacing(), length_title);
   curenv->hyphen_line_count = 0;
   tok.next();
-}  
+}
 
 void adjust()
 {
@@ -2584,7 +2588,7 @@ tab::tab(hunits x, tab_type t) : next(0), pos(x), type(t)
 {
 }
 
-tab_stops::tab_stops(hunits distance, tab_type type) 
+tab_stops::tab_stops(hunits distance, tab_type type)
 : initial_list(0)
 {
   repeated_list = new tab(distance, type);
@@ -2699,7 +2703,7 @@ tab_stops::tab_stops() : initial_list(0), repeated_list(0)
 {
 }
 
-tab_stops::tab_stops(const tab_stops &ts) 
+tab_stops::tab_stops(const tab_stops &ts)
 : initial_list(0), repeated_list(0)
 {
   tab **p = &initial_list;
@@ -2759,7 +2763,7 @@ void tab_stops::operator=(const tab_stops &ts)
     p = &(*p)->next;
   }
 }
-    
+
 void set_tabs()
 {
   hunits pos;
@@ -2965,8 +2969,8 @@ void environment::wrap_up_field()
     add_padding();
   hunits padding = field_distance - (get_text_length() - pre_field_width);
   if (current_tab && tab_field_spaces != 0) {
-    hunits tab_padding = scale(padding, 
-			       tab_field_spaces, 
+    hunits tab_padding = scale(padding,
+			       tab_field_spaces,
 			       field_spaces + tab_field_spaces);
     padding -= tab_padding;
     distribute_space(tab_contents, tab_field_spaces, tab_padding, 1);
@@ -3027,33 +3031,44 @@ typedef vunits (environment::*VUNITS_FUNCP)();
 typedef hunits (environment::*HUNITS_FUNCP)();
 typedef const char *(environment::*STRING_FUNCP)();
 
-class int_env_reg : public reg {
+class int_env_reg
+: public reg
+{
   INT_FUNCP func;
- public:
+
+public:
   int_env_reg(INT_FUNCP);
   const char *get_string();
   int get_value(units *val);
 };
 
-class vunits_env_reg : public reg {
+class vunits_env_reg
+: public reg
+{
   VUNITS_FUNCP func;
- public:
+
+public:
   vunits_env_reg(VUNITS_FUNCP f);
   const char *get_string();
   int get_value(units *val);
 };
 
-
-class hunits_env_reg : public reg {
+class hunits_env_reg
+: public reg
+{
   HUNITS_FUNCP func;
- public:
+
+public:
   hunits_env_reg(HUNITS_FUNCP f);
   const char *get_string();
   int get_value(units *val);
 };
 
-class string_env_reg : public reg {
+class string_env_reg
+: public reg
+{
   STRING_FUNCP func;
+
 public:
   string_env_reg(STRING_FUNCP);
   const char *get_string();
@@ -3073,7 +3088,7 @@ const char *int_env_reg::get_string()
 {
   return i_to_a((curenv->*func)());
 }
- 
+
 vunits_env_reg::vunits_env_reg(VUNITS_FUNCP f) : func(f)
 {
 }
@@ -3113,7 +3128,9 @@ const char *string_env_reg::get_string()
   return (curenv->*func)();
 }
 
-class horizontal_place_reg : public general_reg {
+class horizontal_place_reg
+: public general_reg
+{
 public:
   horizontal_place_reg();
   int get_value(units *);
@@ -3351,7 +3368,7 @@ void environment::print_env()
   errprint("  hyphenation margin: %1u\n", hyphenation_margin.to_units());
 #ifdef WIDOW_CONTROL
   errprint("  widow control: %1\n", widow_control ? "yes" : "no");
-#endif /* WIDOW_CONTROL */
+#endif
 }
 
 void print_env()
@@ -3503,11 +3520,14 @@ void init_env_requests()
 
 struct trie_node;
 
-class trie {
+class trie
+{
   trie_node *tp;
+
   virtual void do_match(int len, void *val) = 0;
   virtual void do_delete(void *) = 0;
   void delete_trie_node(trie_node *);
+
 public:
   trie() : tp(0) {}
   virtual ~trie();		// virtual to shut up g++
@@ -3517,13 +3537,17 @@ public:
   void clear();
 };
 
-class hyphen_trie : private trie {
+class hyphen_trie
+: private trie
+{
   int *h;
+
   void do_match(int i, void *v);
   void do_delete(void *v);
   void insert_pattern(const char *pat, int patlen, int *num);
   void insert_hyphenation(dictionary *ex, const char *pat, int patlen);
   int hpf_getc(file_case *fcp);
+
 public:
   hyphen_trie() {}
   ~hyphen_trie() {}
@@ -3531,10 +3555,13 @@ public:
   void read_patterns_file(const char *name, int append, dictionary *ex);
 };
 
-struct hyphenation_language {
+class hyphenation_language
+{
+public:
   symbol name;
   dictionary exceptions;
   hyphen_trie patterns;
+
   hyphenation_language(symbol nm) : name(nm), exceptions(501) {}
   ~hyphenation_language() { }
 };
@@ -3605,15 +3632,18 @@ static void hyphen_word()
   skip_line();
 }
 
-struct trie_node {
+class trie_node
+{
+public:
   char c;
   trie_node *down;
   trie_node *right;
   void *val;
+
   trie_node(char, trie_node *);
 };
 
-trie_node::trie_node(char ch, trie_node *p) 
+trie_node::trie_node(char ch, trie_node *p)
 : c(ch), down(0), right(p), val(0)
 {
 }
@@ -3628,7 +3658,6 @@ void trie::clear()
   delete_trie_node(tp);
   tp = 0;
 }
-
 
 void trie::delete_trie_node(trie_node *p)
 {
@@ -3675,10 +3704,13 @@ void trie::find(const char *pat, int patlen)
   }
 }
 
-struct operation {
+class operation
+{
+public:
   operation *next;
   short distance;
   short num;
+
   operation(int, int, operation *);
 };
 
@@ -4055,3 +4087,5 @@ void init_hyphen_requests()
   init_request("hpfa", hyphenation_patterns_file_append);
   number_reg_dictionary.define(".hla", new hyphenation_language_reg);
 }
+
+// s-it2-mode

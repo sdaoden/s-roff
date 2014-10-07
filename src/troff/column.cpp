@@ -1,36 +1,40 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2000 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
-
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000 Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 #ifdef COLUMN
 
-#include "troff.h"
-#include "symbol.h"
-#include "dictionary.h"
-#include "hvunits.h"
-#include "env.h"
-#include "request.h"
-#include "node.h"
-#include "token.h"
-#include "div.h"
-#include "reg.h"
+#include "config.h"
+#include "troff-config.h"
+
 #include "stringclass.h"
+#include "symbol.h"
+
+#include "div.h"
+#include "dictionary.h"
+#include "env.h"
+#include "hvunits.h"
+#include "node.h"
+#include "reg.h"
+#include "request.h"
+#include "token.h"
+#include "troff.h"
 
 void output_file::vjustify(vunits, symbol)
 {
@@ -40,12 +44,14 @@ void output_file::vjustify(vunits, symbol)
 struct justification_spec;
 struct output_line;
 
-class column : public output_file {
-private:
+class column
+: public output_file
+{
   output_file *out;
   vunits bottom;
   output_line *col;
   output_line **tail;
+
   void add_output_line(output_line *);
   void begin_page(int pageno, vunits page_length);
   void flush();
@@ -55,6 +61,7 @@ private:
   void copy_file(hunits, vunits, const char *);
   int is_printing();
   void check_bottom();
+
 public:
   column();
   ~column();
@@ -73,8 +80,13 @@ column *the_column = 0;
 struct transparent_output_line;
 struct vjustify_output_line;
 
-class output_line {
+class output_line
+{
+  friend class column;
+  friend class justification_spec;
+
   output_line *next;
+
 public:
   output_line();
   virtual ~output_line();
@@ -85,22 +97,26 @@ public:
   virtual vunits height();
   virtual void reset();
   virtual vunits extra_space();	// post line
-  friend class column;
-  friend class justification_spec;
 };
 
-class position_output_line : public output_line {
+class position_output_line
+: public output_line
+{
   vunits dist;
+
 public:
   position_output_line(vunits);
   vunits distance();
 };
-  
-class node_output_line : public position_output_line {
+
+class node_output_line
+: public position_output_line
+{
   node *nd;
   hunits page_offset;
   vunits before;
   vunits after;
+
 public:
   node_output_line(vunits, node *, hunits, vunits, vunits);
   ~node_output_line();
@@ -109,9 +125,12 @@ public:
   vunits extra_space();
 };
 
-class vjustify_output_line : public position_output_line {
+class vjustify_output_line
+: public position_output_line
+{
   vunits current;
   symbol typ;
+
 public:
   vjustify_output_line(vunits dist, symbol);
   vunits height();
@@ -126,16 +145,22 @@ inline symbol vjustify_output_line::type()
   return typ;
 }
 
-class copy_file_output_line : public position_output_line {
+class copy_file_output_line
+: public position_output_line
+{
   symbol filename;
   hunits hpos;
+
 public:
   copy_file_output_line(vunits, const char *, hunits);
   void output(output_file *, vunits);
 };
 
-class transparent_output_line : public output_line {
+class transparent_output_line
+: public output_line
+{
   string buf;
+
 public:
   transparent_output_line();
   void output(output_file *, vunits);
@@ -310,7 +335,7 @@ void column::begin_page(int pageno, vunits page_length)
   }
   else
     out->begin_page(pageno, page_length);
-    
+
 }
 
 void column::flush()
@@ -442,12 +467,14 @@ vunits column::get_last_extra_space()
   return p->extra_space();
 }
 
-class justification_spec {
+class justification_spec
+{
   vunits height;
   symbol *type;
   vunits *amount;
   int n;
   int maxn;
+
 public:
   justification_spec(vunits);
   ~justification_spec();
@@ -540,7 +567,7 @@ void justification_spec::justify(output_line *col, vunits *bottomp) const
   assert(total == V0);
   *bottomp = height - gap;
 }
-  
+
 void column::justify(const justification_spec &js)
 {
   check_bottom();
@@ -617,7 +644,9 @@ void column_reset()
   skip_line();
 }
 
-class column_bottom_reg : public reg {
+class column_bottom_reg
+: public reg
+{
 public:
   const char *get_string();
 };
@@ -627,7 +656,9 @@ const char *column_bottom_reg::get_string()
   return i_to_a(the_column->get_bottom().to_units());
 }
 
-class column_extra_space_reg : public reg {
+class column_extra_space_reg
+: public reg
+{
 public:
   const char *get_string();
 };
@@ -637,7 +668,9 @@ const char *column_extra_space_reg::get_string()
   return i_to_a(the_column->get_last_extra_space().to_units());
 }
 
-class column_active_reg : public reg {
+class column_active_reg
+: public reg
+{
 public:
   const char *get_string();
 };
@@ -649,8 +682,11 @@ const char *column_active_reg::get_string()
 
 static int no_vjustify_mode = 0;
 
-class vjustify_node : public node {
+class vjustify_node
+: public node
+{
   symbol typ;
+
 public:
   vjustify_node(symbol);
   int reread(int *);
@@ -730,3 +766,4 @@ void init_column_requests()
 }
 
 #endif /* COLUMN */
+// s-it2-mode

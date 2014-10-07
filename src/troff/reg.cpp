@@ -1,31 +1,36 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2000, 2001, 2004
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000, 2001, 2004
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
+#include "config.h"
+#include "troff-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-#include "troff.h"
 #include "dictionary.h"
-#include "token.h"
 #include "request.h"
+#include "token.h"
+#include "troff.h"
+
 #include "reg.h"
 
-object_dictionary number_reg_dictionary(101);
+object_dictionary number_reg_dictionary(101); // FIXME static init -> init fun!
 
 int reg::get_value(units * /*d*/)
 {
@@ -66,14 +71,14 @@ general_reg::general_reg() : format('1'), width(0), inc(0)
 {
 }
 
-static char uppercase_array[] = {
+static char uppercase_array[] = { // FIXME const
   'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
   'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
   'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
   'Y', 'Z',
 };
 
-static char lowercase_array[] = {
+static char lowercase_array[] = { // FIXME const
   'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
   'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
   'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
@@ -211,7 +216,6 @@ const char *general_reg::get_string()
   return number_value_to_ascii(n, format, width);
 }
 
-
 void general_reg::increment()
 {
   int n;
@@ -263,8 +267,11 @@ const char *general_reg::get_format()
   return number_format_to_ascii(format, width);
 }
 
-class number_reg : public general_reg {
+class number_reg
+: public general_reg
+{
   units value;
+
 public:
   number_reg();
   int get_value(units *);
@@ -471,3 +478,5 @@ void init_reg_requests()
   init_request("rnn", rename_reg);
   init_request("pnr", print_number_regs);
 }
+
+// s-it2-mode

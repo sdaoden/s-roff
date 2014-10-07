@@ -1,40 +1,42 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2000, 2001, 2002, 2004
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@ Diversions.
+ *
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000 - 2002, 2004
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-
-// diversions
-
-#include "troff.h"
-#include "dictionary.h"
-#include "hvunits.h"
-#include "stringclass.h"
-#include "mtsm.h"
-#include "env.h"
-#include "request.h"
-#include "node.h"
-#include "token.h"
-#include "div.h"
-#include "reg.h"
+#include "config.h"
+#include "troff-config.h"
 
 #include "nonposix.h"
+#include "stringclass.h"
+
+#include "dictionary.h"
+#include "div.h"
+#include "env.h"
+#include "hvunits.h"
+#include "mtsm.h"
+#include "node.h"
+#include "reg.h"
+#include "request.h"
+#include "token.h"
+#include "troff.h"
 
 int exit_started = 0;		// the exit process has started
 int done_end_macro = 0;		// the end macro (if any) has finished
@@ -51,7 +53,7 @@ static int vertical_position_traps_flag = 1;
 static vunits truncated_space;
 static vunits needed_space;
 
-diversion::diversion(symbol s) 
+diversion::diversion(symbol s)
 : prev(0), nm(s), vertical_position(V0), high_water_mark(V0),
   any_chars_added(0), no_space_mode(0), needs_push(0), saved_seen_break(0),
   saved_seen_space(0), saved_seen_eol(0), saved_suppress_next_eol(0),
@@ -154,7 +156,7 @@ void divert_append()
 {
   do_divert(1, 0);
 }
-  
+
 void box()
 {
   do_divert(0, 1);
@@ -185,7 +187,7 @@ macro_diversion::macro_diversion(symbol s, int append)
       .da a
       .a
       .di
-      
+
       This causes an infinite loop in troff anyway.
       This is because the user could do
 
@@ -206,7 +208,7 @@ macro_diversion::macro_diversion(symbol s, int append)
 
        will work and will make `a' contain two copies of what it contained
        before; in troff, `a' would contain nothing. */
-    request_or_macro *rm 
+    request_or_macro *rm
       = (request_or_macro *)request_dictionary.remove(s);
     if (!rm || (mac = rm->to_macro()) == 0)
       mac = new macro;
@@ -219,7 +221,7 @@ macro_diversion::macro_diversion(symbol s, int append)
   // stored in the macro. When we detect this, we copy the contents.
   mac = new macro(1);
   if (append) {
-    request_or_macro *rm 
+    request_or_macro *rm
       = (request_or_macro *)request_dictionary.lookup(s);
     if (rm) {
       macro *m = rm->to_macro();
@@ -345,7 +347,7 @@ trap *top_level_diversion::find_next_trap(vunits *next_trap_pos)
   for (trap *pt = page_trap_list; pt != 0; pt = pt->next)
     if (!pt->nm.is_null()) {
       if (pt->position >= V0) {
-	if (pt->position > vertical_position 
+	if (pt->position > vertical_position
 	    && pt->position < page_length
 	    && (next_trap == 0 || pt->position < *next_trap_pos)) {
 	  next_trap = pt;
@@ -381,7 +383,7 @@ void top_level_diversion::output(node *nd, int retain_size,
   no_space_mode = 0;
   vunits next_trap_pos;
   trap *next_trap = find_next_trap(&next_trap_pos);
-  if (before_first_page && begin_page()) 
+  if (before_first_page && begin_page())
     fatal("sorry, I didn't manage to begin the first page in time: use an explicit .br request");
   vertical_size v(vs, post_vs);
   for (node *tem = nd; tem != 0; tem = tem->next)
@@ -507,7 +509,7 @@ void top_level_diversion::add_trap(symbol nam, vunits pos)
   }
   else
     *p = new trap(nam, pos, 0);
-}  
+}
 
 void top_level_diversion::remove_trap(symbol nam)
 {
@@ -526,7 +528,7 @@ void top_level_diversion::remove_trap_at(vunits pos)
       return;
     }
 }
-      
+
 void top_level_diversion::change_trap(symbol nam, vunits pos)
 {
   for (trap *p = page_trap_list; p; p = p->next)
@@ -777,7 +779,7 @@ void space_request()
   else
     // The line might have had line spacing that was truncated.
     truncated_space += n;
-  
+
   tok.next();
 }
 
@@ -952,12 +954,14 @@ void vertical_position_traps()
   skip_line();
 }
 
-class page_offset_reg : public reg {
+class page_offset_reg
+: public reg
+{
 public:
   int get_value(units *);
   const char *get_string();
 };
-  
+
 int page_offset_reg::get_value(units *res)
 {
   *res = topdiv->get_page_offset().to_units();
@@ -969,12 +973,14 @@ const char *page_offset_reg::get_string()
   return i_to_a(topdiv->get_page_offset().to_units());
 }
 
-class page_length_reg : public reg {
+class page_length_reg
+: public reg
+{
 public:
   int get_value(units *);
   const char *get_string();
 };
-  
+
 int page_length_reg::get_value(units *res)
 {
   *res = topdiv->get_page_length().to_units();
@@ -986,12 +992,14 @@ const char *page_length_reg::get_string()
   return i_to_a(topdiv->get_page_length().to_units());
 }
 
-class vertical_position_reg : public reg {
+class vertical_position_reg
+: public reg
+{
 public:
   int get_value(units *);
   const char *get_string();
 };
-  
+
 int vertical_position_reg::get_value(units *res)
 {
   if (curdiv == topdiv && topdiv->before_first_page)
@@ -1009,12 +1017,14 @@ const char *vertical_position_reg::get_string()
     return i_to_a(curdiv->get_vertical_position().to_units());
 }
 
-class high_water_mark_reg : public reg {
+class high_water_mark_reg
+: public reg
+{
 public:
   int get_value(units *);
   const char *get_string();
 };
-  
+
 int high_water_mark_reg::get_value(units *res)
 {
   *res = curdiv->get_high_water_mark().to_units();
@@ -1026,12 +1036,14 @@ const char *high_water_mark_reg::get_string()
   return i_to_a(curdiv->get_high_water_mark().to_units());
 }
 
-class distance_to_next_trap_reg : public reg {
+class distance_to_next_trap_reg
+: public reg
+{
 public:
   int get_value(units *);
   const char *get_string();
 };
-  
+
 int distance_to_next_trap_reg::get_value(units *res)
 {
   *res = curdiv->distance_to_next_trap().to_units();
@@ -1043,7 +1055,9 @@ const char *distance_to_next_trap_reg::get_string()
   return i_to_a(curdiv->distance_to_next_trap().to_units());
 }
 
-class diversion_name_reg : public reg {
+class diversion_name_reg
+: public reg
+{
 public:
   const char *get_string();
 };
@@ -1053,7 +1067,9 @@ const char *diversion_name_reg::get_string()
   return curdiv->get_diversion_name();
 }
 
-class page_number_reg : public general_reg {
+class page_number_reg
+: public general_reg
+{
 public:
   page_number_reg();
   int get_value(units *);
@@ -1075,7 +1091,9 @@ int page_number_reg::get_value(units *res)
   return 1;
 }
 
-class next_page_number_reg : public reg {
+class next_page_number_reg
+: public reg
+{
 public:
   const char *get_string();
 };
@@ -1085,7 +1103,9 @@ const char *next_page_number_reg::get_string()
   return i_to_a(topdiv->get_next_page_number());
 }
 
-class page_ejecting_reg : public reg {
+class page_ejecting_reg
+: public reg
+{
 public:
   const char *get_string();
 };
@@ -1095,8 +1115,11 @@ const char *page_ejecting_reg::get_string()
   return i_to_a(topdiv->get_ejecting());
 }
 
-class constant_vunits_reg : public reg {
+class constant_vunits_reg
+: public reg
+{
   vunits *p;
+
 public:
   constant_vunits_reg(vunits *);
   const char *get_string();
@@ -1111,7 +1134,9 @@ const char *constant_vunits_reg::get_string()
   return i_to_a(p->to_units());
 }
 
-class nl_reg : public variable_reg {
+class nl_reg
+: public variable_reg
+{
 public:
   nl_reg();
   void set_value(units);
@@ -1135,7 +1160,9 @@ void nl_reg::set_value(units n)
     topdiv->before_first_page = 2;
 }
 
-class no_space_mode_reg : public reg {
+class no_space_mode_reg
+: public reg
+{
 public:
   int get_value(units *);
   const char *get_string();
@@ -1190,7 +1217,7 @@ void init_div_requests()
   number_reg_dictionary.define(".t", new distance_to_next_trap_reg);
   number_reg_dictionary.define(".trunc",
 			       new constant_vunits_reg(&truncated_space));
-  number_reg_dictionary.define(".vpt", 
+  number_reg_dictionary.define(".vpt",
 		       new constant_int_reg(&vertical_position_traps_flag));
   number_reg_dictionary.define(".z", new diversion_name_reg);
   number_reg_dictionary.define("dl", new variable_reg(&dl_reg_contents));
@@ -1198,3 +1225,5 @@ void init_div_requests()
   number_reg_dictionary.define("nl", new nl_reg);
   number_reg_dictionary.define("%", new page_number_reg);
 }
+
+// s-it2-mode

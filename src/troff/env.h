@@ -1,23 +1,29 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2000, 2001, 2002, 2004, 2005, 2006
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000 - 2002, 2004 - 2006
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+#ifndef _ENV_H
+#define _ENV_H
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+#include "config.h"
+#include "troff-config.h"
 
 class statem;
 
@@ -26,10 +32,13 @@ struct size_range {
   int max;
 };
 
-class font_size {
+class font_size
+{
   static size_range *size_table;
   static int nranges;
+
   int p;
+
 public:
   font_size();
   font_size(int points);
@@ -38,6 +47,7 @@ public:
   int to_units();
   int operator==(font_size);
   int operator!=(font_size);
+
   static void init_size_table(int *sizes);
 };
 
@@ -78,9 +88,11 @@ struct tab;
 
 enum tab_type { TAB_NONE, TAB_LEFT, TAB_CENTER, TAB_RIGHT };
 
-class tab_stops {
+class tab_stops
+{
   tab *initial_list;
   tab *repeated_list;
+
 public:
   tab_stops();
   tab_stops(hunits distance, tab_type type);
@@ -144,7 +156,47 @@ void widow_control_request();
 
 void do_divert(int append, int boxing);
 
-class environment {
+class environment
+{
+  friend void title_length();
+  friend void space_size();
+  friend void fill();
+  friend void no_fill();
+  friend void adjust();
+  friend void no_adjust();
+  friend void center();
+  friend void right_justify();
+  friend void vertical_spacing();
+  friend void post_vertical_spacing();
+  friend void line_spacing();
+  friend void line_length();
+  friend void indent();
+  friend void temporary_indent();
+  friend void do_underline(int);
+  friend void do_input_trap(int);
+  friend void set_tabs();
+  friend void margin_character();
+  friend void no_number();
+  friend void number_lines();
+  friend void leader_character();
+  friend void tab_character();
+  friend void hyphenate_request();
+  friend void no_hyphenate();
+  friend void hyphen_line_max_request();
+  friend void hyphenation_space_request();
+  friend void hyphenation_margin_request();
+  friend void line_width();
+#if 0
+  friend void tabs_save();
+  friend void tabs_restore();
+#endif
+  friend void line_tabs_request();
+  friend void title();
+#ifdef WIDOW_CONTROL
+  friend void widow_control_request();
+#endif /* WIDOW_CONTROL */
+  friend void do_divert(int append, int boxing);
+
   int dummy;			// dummy environment used for \w
   hunits prev_line_length;
   hunits line_length;
@@ -249,6 +301,7 @@ class environment {
   void add_padding();
   node *make_tab_node(hunits d, node *next = 0);
   node *get_prev_char();
+
 public:
   int seen_space;
   int seen_eol;
@@ -259,7 +312,7 @@ public:
   unsigned char control_char;
   unsigned char no_break_control_char;
   charinfo *hyphen_indicator_char;
-  
+
   environment(symbol);
   environment(const environment *);	// for temporary environment
   ~environment();
@@ -297,7 +350,7 @@ public:
   hunits get_prev_char_skew();
   vunits get_prev_char_height();
   vunits get_prev_char_depth();
-  hunits get_text_length();		// .k 
+  hunits get_text_length();		// .k
   hunits get_prev_text_length();	// .n
   hunits get_space_width() { return env_space_width(this); }
   int get_space_size() { return space_size; }	// in ems/36
@@ -360,46 +413,6 @@ public:
   void construct_format_state(node *n, int was_centered, int fill);
   void construct_new_line_state(node *n);
   void dump_troff_state();
-  
-  friend void title_length();
-  friend void space_size();
-  friend void fill();
-  friend void no_fill();
-  friend void adjust();
-  friend void no_adjust();
-  friend void center();
-  friend void right_justify();
-  friend void vertical_spacing();
-  friend void post_vertical_spacing();
-  friend void line_spacing();
-  friend void line_length();
-  friend void indent();
-  friend void temporary_indent();
-  friend void do_underline(int);
-  friend void do_input_trap(int);
-  friend void set_tabs();
-  friend void margin_character();
-  friend void no_number();
-  friend void number_lines();
-  friend void leader_character();
-  friend void tab_character();
-  friend void hyphenate_request();
-  friend void no_hyphenate();
-  friend void hyphen_line_max_request();
-  friend void hyphenation_space_request();
-  friend void hyphenation_margin_request();
-  friend void line_width();
-#if 0
-  friend void tabs_save();
-  friend void tabs_restore();
-#endif
-  friend void line_tabs_request();
-  friend void title();
-#ifdef WIDOW_CONTROL
-  friend void widow_control_request();
-#endif /* WIDOW_CONTROL */
-
-  friend void do_divert(int append, int boxing);
 };
 
 extern environment *curenv;
@@ -416,3 +429,6 @@ extern symbol default_family;
 extern int translate_space_to_dummy;
 
 extern unsigned char hpf_code_table[];
+
+#endif // _ENV_H
+// s-it2-mode

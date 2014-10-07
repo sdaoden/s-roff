@@ -1,31 +1,39 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2001, 2002, 2004, 2005
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2001, 2002, 2004, 2005
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+#ifndef _DIV_H
+#define _DIV_H
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
+#include "config.h"
+#include "troff-config.h"
 
 void do_divert(int append, int boxing);
 void end_diversions();
 void page_offset();
 
-class diversion {
+class diversion
+{
   friend void do_divert(int append, int boxing);
   friend void end_diversions();
+
   diversion *prev;
   node *saved_line;
   hunits saved_width_total;
@@ -33,10 +41,12 @@ class diversion {
   hunits saved_saved_indent;
   hunits saved_target_text_length;
   int saved_prev_line_interrupted;
+
 protected:
   symbol nm;
   vunits vertical_position;
   vunits high_water_mark;
+
 public:
   int any_chars_added;
   int no_space_mode;
@@ -47,6 +57,7 @@ public:
   int saved_suppress_next_eol;
   state_set modified_tag;
   vunits marked_place;
+
   diversion(symbol s = NULL_SYMBOL);
   virtual ~diversion();
   virtual void output(node *nd, int retain_size, vunits vs, vunits post_vs,
@@ -70,11 +81,14 @@ public:
 
 class macro;
 
-class macro_diversion : public diversion {
+class macro_diversion
+: public diversion
+{
   macro *mac;
   hunits max_width;
   symbol diversion_trap;
   vunits diversion_trap_pos;
+
 public:
   macro_diversion(symbol, int);
   ~macro_diversion();
@@ -85,7 +99,7 @@ public:
   void space(vunits distance, int forced = 0);
 #ifdef COLUMN
   void vjustify(symbol);
-#endif /* COLUMN */
+#endif
   vunits distance_to_next_trap();
   void set_diversion_trap(symbol, vunits);
   void clear_diversion_trap();
@@ -93,16 +107,21 @@ public:
   int is_diversion() { return 1; }
 };
 
-struct trap {
+class trap
+{
+public:
   trap *next;
   vunits position;
   symbol nm;
+
   trap(symbol, vunits, trap *);
 };
 
 class output_file;
 
-class top_level_diversion : public diversion {
+class top_level_diversion
+: public diversion
+{
   int page_number;
   int page_count;
   int last_page_count;
@@ -110,13 +129,16 @@ class top_level_diversion : public diversion {
   hunits prev_page_offset;
   hunits page_offset;
   trap *page_trap_list;
-  trap *find_next_trap(vunits *);
   int have_next_page_number;
   int next_page_number;
   int ejecting_page;		// Is the current page being ejected?
+
+  trap *find_next_trap(vunits *);
+
 public:
   int before_first_page;
   top_level_diversion();
+
   void output(node *nd, int retain_size, vunits vs, vunits post_vs,
 	      hunits width);
   void transparent_output(unsigned char);
@@ -170,3 +192,6 @@ void blank_line();
 void begin_page();
 
 extern void cleanup_and_exit(int);
+
+#endif // _DIV_H
+// s-it2-mode

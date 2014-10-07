@@ -1,30 +1,38 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2000, 2001, 2002, 2004
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000 - 2002, 2004
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+#ifndef _TOKEN_H
+#define _TOKEN_H
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
+#include "config.h"
+#include "troff-config.h"
 
 class charinfo;
 struct node;
 class vunits;
 
-class token {
+class token
+{
+  friend void process_input_stack();
+
   symbol nm;
   node *nd;
   unsigned char c;
@@ -52,7 +60,7 @@ class token {
     TOKEN_RIGHT_BRACE,
     TOKEN_SPACE,		// ` ' -- ordinary space
     TOKEN_SPECIAL,		// a special character -- \' \` \- \(xx \[xxx]
-    TOKEN_SPREAD,		// \p -- break and spread output line 
+    TOKEN_SPREAD,		// \p -- break and spread output line
     TOKEN_STRETCHABLE_SPACE,	// \~
     TOKEN_UNSTRETCHABLE_SPACE,	// `\ '
     TOKEN_TAB,			// tab
@@ -61,6 +69,7 @@ class token {
     TOKEN_ZERO_WIDTH_BREAK,	// \:
     TOKEN_EOF			// end of file
   } type;
+
 public:
   token();
   ~token();
@@ -98,8 +107,6 @@ public:
   void make_space();
   void make_newline();
   const char *description();
-
-  friend void process_input_stack();
 };
 
 extern token tok;		// the current token
@@ -137,12 +144,12 @@ void interpolate_number_reg(symbol, int);
 const char *asciify(int c);
 
 inline int token::newline()
-{ 
-  return type == TOKEN_NEWLINE; 
+{
+  return type == TOKEN_NEWLINE;
 }
 
 inline int token::space()
-{ 
+{
   return type == TOKEN_SPACE;
 }
 
@@ -157,7 +164,7 @@ inline int token::unstretchable_space()
 }
 
 inline int token::special()
-{ 
+{
   return type == TOKEN_SPECIAL;
 }
 
@@ -187,7 +194,7 @@ inline int token::page_ejector()
 inline unsigned char token::ch()
 {
   return type == TOKEN_CHAR ? c : 0;
-} 
+}
 
 inline int token::eof()
 {
@@ -240,3 +247,6 @@ inline int token::zero_width_break()
 }
 
 int has_arg();
+
+#endif // _TOKEN_H
+// s-it2-mode

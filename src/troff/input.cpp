@@ -1,66 +1,53 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2000, 2001, 2002, 2003, 2004, 2005,
-                 2006, 2007, 2008
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000 - 2008 Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+#define DEBUGGING // FIXME
 
-This file is part of groff.
+#include "config.h"
+#include "troff-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-#define DEBUGGING
-
-#include "troff.h"
-#include "dictionary.h"
-#include "hvunits.h"
-#include "stringclass.h"
-#include "mtsm.h"
-#include "env.h"
-#include "file_case.h"
-#include "request.h"
-#include "node.h"
-#include "token.h"
-#include "div.h"
-#include "reg.h"
-#include "font.h"
-#include "charinfo.h"
-#include "macropath.h"
-#include "input.h"
 #include "defs.h"
+#include "file_case.h"
+#include "font.h"
+#include "macropath.h"
+#include "nonposix.h"
+#include "posix.h"
+#include "stringclass.h"
 #include "unicode.h"
 
-// Needed for getpid() and isatty()
-#include "posix.h"
+#include "charinfo.h"
+#include "dictionary.h"
+#include "div.h"
+#include "env.h"
+#include "hvunits.h"
+#include "input.h"
+#include "mtsm.h"
+#include "node.h"
+#include "reg.h"
+#include "request.h"
+#include "token.h"
+#include "troff.h"
 
-#include "nonposix.h"
-
-#ifdef NEED_DECLARATION_PUTENV
-extern "C" {
-  int putenv(const char *);
-}
-#endif /* NEED_DECLARATION_PUTENV */
-
-#define MACRO_PREFIX "tmac."
-#define MACRO_POSTFIX ".tmac"
-#define INITIAL_STARTUP_FILE "troffrc"
-#define FINAL_STARTUP_FILE   "troffrc-end"
-#define DEFAULT_INPUT_STACK_LIMIT 1000
-
-#ifndef DEFAULT_WARNING_MASK
 // warnings that are enabled by default
-#define DEFAULT_WARNING_MASK \
+#ifndef DEFAULT_WARNING_MASK
+# define DEFAULT_WARNING_MASK \
      (WARN_CHAR|WARN_NUMBER|WARN_BREAK|WARN_SPACE|WARN_FONT)
 #endif
 
@@ -68,7 +55,6 @@ extern "C" {
 #define ABUF_SIZE 16
 
 extern "C" const char *program_name;
-extern "C" const char *Version_string;
 
 #ifdef COLUMN
 void init_column_requests();
@@ -163,7 +149,6 @@ const char *input_char_description(int);
 void process_input_stack();
 void chop_macro();		// declare to avoid friend name injection
 
-
 void set_escape_char()
 {
   if (has_arg()) {
@@ -201,20 +186,25 @@ void restore_escape_char()
 
 struct arg_list;
 
-class input_iterator {
+class input_iterator
+{
+  friend class input_stack;
+
 public:
+  int is_diversion;
+  statem *diversion_state;
+
   input_iterator();
   input_iterator(int is_div);
   virtual ~input_iterator() {}
   int get(node **);
-  friend class input_stack;
-  int is_diversion;
-  statem *diversion_state;
+
 protected:
   const unsigned char *ptr;
   const unsigned char *eptr;
   input_iterator *next;
-private:
+
+private: // FIXME (almost) abstract virtuals in private:?? ok, but.. ??
   virtual int fill(node **);
   virtual int peek();
   virtual int has_args() { return 0; }
@@ -261,17 +251,23 @@ inline int input_iterator::get(node **p)
   return ptr < eptr ? *ptr++ : fill(p);
 }
 
-class input_boundary : public input_iterator {
+class input_boundary
+: public input_iterator
+{
 public:
   int is_boundary() { return 1; }
 };
 
-class input_return_boundary : public input_iterator {
+class input_return_boundary
+: public input_iterator
+{
 public:
   int is_boundary() { return 2; }
 };
 
-class file_iterator : public input_iterator {
+class file_iterator
+: public input_iterator
+{
   file_case *_fcp;
   int lineno;
   const char *filename;
@@ -279,7 +275,9 @@ class file_iterator : public input_iterator {
   int seen_escape;
   enum { BUF_SIZE = 512 };
   unsigned char buf[BUF_SIZE];
+
   void close();
+
 public:
   file_iterator(file_case *, const char *);
   ~file_iterator();
@@ -411,7 +409,13 @@ int file_iterator::set_location(const char *f, int ln)
 
 input_iterator nil_iterator;
 
-class input_stack {
+class input_stack
+{
+  static input_iterator *top;
+  static int level;
+  static int finish_get(node **);
+  static int finish_peek();
+
 public:
   static int get(node **);
   static int peek();
@@ -446,11 +450,6 @@ public:
   static int limit;
   static int div_level;
   static statem *diversion_state;
-private:
-  static input_iterator *top;
-  static int level;
-  static int finish_get(node **);
-  static int finish_peek();
 };
 
 input_iterator *input_stack::top = &nil_iterator;
@@ -459,7 +458,6 @@ int input_stack::limit = DEFAULT_INPUT_STACK_LIMIT;
 int input_stack::div_level = 0;
 statem *input_stack::diversion_state = NULL;
 int suppress_push=0;
-
 
 inline int input_stack::get_level()
 {
@@ -1130,7 +1128,7 @@ static int get_copy(node **nd, int defining, int handle_escape_E)
       return ESCAPE_RIGHT_PARENTHESIS;
     case '.':
       (void)input_stack::get(0);
-      return c;			
+      return c;
     case '%':
       (void)input_stack::get(0);
       return ESCAPE_PERCENT;
@@ -1145,8 +1143,11 @@ static int get_copy(node **nd, int defining, int handle_escape_E)
   }
 }
 
-class non_interpreted_char_node : public node {
+class non_interpreted_char_node
+: public node
+{
   unsigned char c;
+
 public:
   non_interpreted_char_node(unsigned char);
   node *copy();
@@ -1615,9 +1616,12 @@ token_node *node::get_token_node()
   return 0;
 }
 
-class token_node : public node {
+class token_node
+: public node
+{
 public:
   token tk;
+
   token_node(const token &t);
   node *copy();
   token_node *get_token_node();
@@ -3035,10 +3039,13 @@ void request::invoke(symbol, int)
   (*p)();
 }
 
-struct char_block {
+class char_block
+{
+public:
   enum { SIZE = 128 };
   unsigned char s[SIZE];
   char_block *next;
+
   char_block();
 };
 
@@ -3047,7 +3054,16 @@ char_block::char_block()
 {
 }
 
-class char_list {
+class char_list
+{
+  friend class macro_header;
+  friend class string_iterator;
+
+  unsigned char *ptr;
+  int len;
+  char_block *head;
+  char_block *tail;
+
 public:
   char_list();
   ~char_list();
@@ -3055,13 +3071,6 @@ public:
   void set(unsigned char, int);
   unsigned char get(int);
   int length();
-private:
-  unsigned char *ptr;
-  int len;
-  char_block *head;
-  char_block *tail;
-  friend class macro_header;
-  friend class string_iterator;
 };
 
 char_list::char_list()
@@ -3138,18 +3147,20 @@ unsigned char char_list::get(int offset)
   }
 }
 
-class node_list {
+class node_list
+{
+  friend class macro_header;
+  friend class string_iterator;
+
   node *head;
   node *tail;
+
 public:
   node_list();
   ~node_list();
   void append(node *);
   int length();
   node *extract();
-
-  friend class macro_header;
-  friend class string_iterator;
 };
 
 void node_list::append(node *n)
@@ -3189,11 +3200,13 @@ node_list::~node_list()
   delete_node_list(head);
 }
 
-class macro_header {
+class macro_header
+{
 public:
   int count;
   char_list cl;
   node_list nl;
+
   macro_header() { count = 1; }
   macro_header *copy(int);
 };
@@ -3397,7 +3410,9 @@ void print_macros()
   skip_line();
 }
 
-class string_iterator : public input_iterator {
+class string_iterator
+: public input_iterator
+{
   macro mac;
   const char *how_invoked;
   int newline_flag;
@@ -3407,9 +3422,12 @@ class string_iterator : public input_iterator {
   node *nd;
   int saved_compatible_flag;
   int with_break;		// inherited from the caller
+
 protected:
   symbol nm;
+
   string_iterator();
+
 public:
   string_iterator(const macro &, const char * = 0, symbol = NULL_SYMBOL);
   int fill(node **);
@@ -3540,17 +3558,19 @@ void string_iterator::backtrace()
   }
 }
 
-class temp_iterator : public input_iterator {
+class temp_iterator
+: public input_iterator
+{
+  friend input_iterator *make_temp_iterator(const char *);
+
   unsigned char *base;
+
   temp_iterator(const char *, int len);
 public:
   ~temp_iterator();
-  friend input_iterator *make_temp_iterator(const char *);
 };
 
-#ifdef __GNUG__
 inline
-#endif
 temp_iterator::temp_iterator(const char *s, int len)
 {
   base = new unsigned char[len];
@@ -3564,22 +3584,28 @@ temp_iterator::~temp_iterator()
   a_delete base;
 }
 
-class small_temp_iterator : public input_iterator {
-private:
-  small_temp_iterator(const char *, int);
-  ~small_temp_iterator();
-  enum { BLOCK = 16 };
+class small_temp_iterator
+: public input_iterator
+{
+  friend input_iterator *make_temp_iterator(const char *);
+
   static small_temp_iterator *free_list;
-  void *operator new(size_t);
-  void operator delete(void *);
+
+  enum { BLOCK = 16 };
   enum { SIZE = 12 };
   unsigned char buf[SIZE];
-  friend input_iterator *make_temp_iterator(const char *);
+
+private: // TODO class all private; ok (has friend: public static? !!), but
+  small_temp_iterator(const char *, int);
+  ~small_temp_iterator();
+
+  void *operator new(size_t);
+  void operator delete(void *);
 };
 
 small_temp_iterator *small_temp_iterator::free_list = 0;
 
-void *small_temp_iterator::operator new(size_t n)
+void *small_temp_iterator::operator new(size_t n) // TODO -> object cache
 {
   assert(n == sizeof(small_temp_iterator));
   if (!free_list) {
@@ -3595,10 +3621,8 @@ void *small_temp_iterator::operator new(size_t n)
   return p;
 }
 
-#ifdef __GNUG__
 inline
-#endif
-void small_temp_iterator::operator delete(void *p)
+void small_temp_iterator::operator delete(void *p) // TODO -> nope
 {
   if (p) {
     ((small_temp_iterator *)p)->next = free_list;
@@ -3610,9 +3634,7 @@ small_temp_iterator::~small_temp_iterator()
 {
 }
 
-#ifdef __GNUG__
 inline
-#endif
 small_temp_iterator::small_temp_iterator(const char *s, int len)
 {
   for (int i = 0; i < len; i++)
@@ -3636,10 +3658,13 @@ input_iterator *make_temp_iterator(const char *s)
 
 // this is used when macros with arguments are interpolated
 
-struct arg_list {
+class arg_list
+{
+public:
   macro mac;
   int space_follows;
   arg_list *next;
+
   arg_list(const macro &, int);
   arg_list(const arg_list *);
   ~arg_list();
@@ -3667,10 +3692,13 @@ arg_list::~arg_list()
 {
 }
 
-class macro_iterator : public string_iterator {
+class macro_iterator
+: public string_iterator
+{
   arg_list *args;
   int argc;
-  int with_break;		// whether called as .foo or 'foo
+  int with_break; // whether called as .foo or 'foo
+
 public:
   macro_iterator(symbol, macro &, const char * = "macro", int = 0);
   macro_iterator();
@@ -3749,7 +3777,6 @@ void macro_iterator::shift(int n)
 }
 
 // This gets used by eg .if '\?xxx\?''.
-
 int operator==(const macro &m1, const macro &m2)
 {
   if (m1.len != m2.len)
@@ -5441,7 +5468,7 @@ void device_macro_request()
     macro *m = p->to_macro();
     if (m)
       curenv->add_node(new special_node(*m));
-    else 
+    else
       error("can't transparently throughput a request");
   }
   skip_line();
@@ -5608,7 +5635,7 @@ static void skip_alternative()
       }
     /*
       Note that the level can properly be < 0, eg
-	
+
 	.if 1 \{\
 	.if 0 \{\
 	.\}\}
@@ -5885,7 +5912,6 @@ void while_continue_request()
 }
 
 // .so
-
 void source()
 {
   symbol nm = get_long_name(1);
@@ -5905,7 +5931,6 @@ void source()
 }
 
 // like .so but use popen()
-
 void pipe_source()
 {
   if (!unsafe_flag) {
@@ -6000,7 +6025,7 @@ int parse_bounding_box(char *p, bounding_box *bb)
   return 0;
 }
 
-// This version is taken from psrm.cpp
+// This version is taken from psrm.cpp FIXME DO IT LIKE
 
 #define PS_LINE_MAX 255
 cset white_space("\n\r \t");
@@ -6918,7 +6943,9 @@ void token::process()
   }
 }
 
-class nargs_reg : public reg {
+class nargs_reg
+: public reg
+{
 public:
   const char *get_string();
 };
@@ -6928,7 +6955,9 @@ const char *nargs_reg::get_string()
   return i_to_a(input_stack::nargs());
 }
 
-class lineno_reg : public reg {
+class lineno_reg
+: public reg
+{
 public:
   const char *get_string();
 };
@@ -6942,7 +6971,9 @@ const char *lineno_reg::get_string()
   return i_to_a(line);
 }
 
-class writable_lineno_reg : public general_reg {
+class writable_lineno_reg
+: public general_reg
+{
 public:
   writable_lineno_reg();
   void set_value(units);
@@ -6968,7 +6999,9 @@ void writable_lineno_reg::set_value(units n)
   input_stack::set_location(0, n);
 }
 
-class filename_reg : public reg {
+class filename_reg
+: public reg
+{
 public:
   const char *get_string();
 };
@@ -6983,7 +7016,9 @@ const char *filename_reg::get_string()
     return 0;
 }
 
-class break_flag_reg : public reg {
+class break_flag_reg
+: public reg
+{
 public:
   const char *get_string();
 };
@@ -6993,8 +7028,11 @@ const char *break_flag_reg::get_string()
   return i_to_a(input_stack::get_break_flag());
 }
 
-class constant_reg : public reg {
+class constant_reg
+: public reg
+{
   const char *s;
+
 public:
   constant_reg(const char *);
   const char *get_string();
@@ -7140,7 +7178,6 @@ void copy_file()
 }
 
 #ifdef COLUMN
-
 void vjustify()
 {
   if (curdiv == topdiv && topdiv->before_first_page) {
@@ -7152,8 +7189,7 @@ void vjustify()
     curdiv->vjustify(type);
   skip_line();
 }
-
-#endif /* COLUMN */
+#endif
 
 void transparent_file()
 {
@@ -7192,11 +7228,14 @@ void transparent_file()
   tok.next();
 }
 
-class page_range {
+class page_range
+{
   int first;
   int last;
+
 public:
   page_range *next;
+
   page_range(int, int, page_range *);
   int contains(int n);
 };
@@ -7419,9 +7458,12 @@ static void do_string_assignment(const char *s)
   }
 }
 
-struct string_list {
+class string_list
+{
+public:
   const char *s;
   string_list *next;
+
   string_list(const char *ss) : s(ss), next(0) {}
 };
 
@@ -7444,7 +7486,7 @@ static void add_string(const char *s, string_list **p)
 void usage(FILE *stream, const char *prog)
 {
   fprintf(stream,
-"usage: %s -abcivzCERU -wname -Wname -dcs -ffam -mname -nnum -olist\n"
+"Synopsis: %s -abcivzCERU -wname -Wname -dcs -ffam -mname -nnum -olist\n"
 "       -rcn -Tname -Fdir -Idir -Mdir [files...]\n",
 	  prog);
 }
@@ -7467,7 +7509,7 @@ int main(int argc, char **argv)
   opterr = 0;
   hresolution = vresolution = 1;
   // restore $PATH if called from groff
-  char* groff_path = getenv("GROFF_PATH__");
+  char* groff_path = getenv(U_ROFF_PATH__);
   if (groff_path) {
     string e = "PATH";
     e += '=';
@@ -7482,8 +7524,8 @@ int main(int argc, char **argv)
     { "version", no_argument, 0, 'v' },
     { 0, 0, 0, 0 }
   };
-#if defined(DEBUGGING)
-#define DEBUG_OPTION "D"
+#ifdef DEBUGGING
+# define DEBUG_OPTION "D"
 #endif
   while ((c = getopt_long(argc, argv,
 			  "abciI:vw:W:zCEf:m:n:o:r:d:F:M:T:tqs:RU"
@@ -7492,7 +7534,7 @@ int main(int argc, char **argv)
     switch(c) {
     case 'v':
       {
-	printf("GNU troff (groff) version %s\n", Version_string);
+	printf(L_TROFF " (" T_ROFF ") v" VERSION);
 	exit(0);
 	break;
       }
@@ -7580,7 +7622,7 @@ int main(int argc, char **argv)
     case 'U':
       unsafe_flag = 1;	// unsafe behaviour
       break;
-#if defined(DEBUGGING)
+#ifdef DEBUGGING
     case 'D':
       debug_state = 1;
       break;
@@ -7789,7 +7831,7 @@ void init_input_requests()
   init_request("fchar", define_fallback_character);
 #ifdef WIDOW_CONTROL
   init_request("fpl", flush_pending_lines);
-#endif /* WIDOW_CONTROL */
+#endif
   init_request("hcode", hyphenation_code);
   init_request("hpfcode", hyphenation_patterns_file_code);
   init_request("ie", if_else_request);
@@ -7810,7 +7852,7 @@ void init_input_requests()
   init_request("psbb", ps_bbox_request);
 #ifndef POPEN_MISSING
   init_request("pso", pipe_source);
-#endif /* not POPEN_MISSING */
+#endif
   init_request("rchar", remove_character);
   init_request("rd", read_request);
   init_request("return", return_macro_request);
@@ -7835,7 +7877,7 @@ void init_input_requests()
   init_request("unformat", unformat_macro);
 #ifdef COLUMN
   init_request("vj", vjustify);
-#endif /* COLUMN */
+#endif
   init_request("warn", warn_request);
   init_request("warnscale", warnscale_request);
   init_request("while", while_request);
@@ -8097,7 +8139,7 @@ static void read_color_draw_node(token &start)
 static struct {
   const char *name;
   int mask;
-} warning_table[] = {
+} warning_table[] = { // FIXME const?
   { "char", WARN_CHAR },
   { "range", WARN_RANGE },
   { "break", WARN_BREAK },
@@ -8409,7 +8451,7 @@ charinfo *get_charinfo_by_number(int n)
 
 // This overrides the same function from libgroff; while reading font
 // definition files it puts single-letter glyph names into `charset_table'
-// and converts glyph names of the form `\x' (`x' a single letter) into `x'. 
+// and converts glyph names of the form `\x' (`x' a single letter) into `x'.
 // Consequently, symbol("x") refers to glyph name `\x', not `x'.
 
 glyph *name_to_glyph(const char *nm)
@@ -8434,3 +8476,5 @@ const char *glyph_to_name(glyph *g)
   charinfo *ci = (charinfo *)g; // Every glyph is actually a charinfo.
   return (ci->nm != UNNAMED_SYMBOL ? ci->nm.contents() : NULL);
 }
+
+// s-it2-mode

@@ -1,26 +1,30 @@
-// -*- C++ -*-
-/* Copyright (C) 2001, 2004, 2006 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 2001, 2004, 2006 Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+#ifndef _INPUT_H
+#define _INPUT_H
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
+#include "config.h"
+#include "troff-config.h"
 
 /* special character codes */
-
 #ifndef IS_EBCDIC_HOST
 
 const int ESCAPE_QUESTION = 015;
@@ -46,9 +50,9 @@ const int ESCAPE_SPACE = 037;
 const int TITLE_REQUEST = 0200;
 const int COPY_FILE_REQUEST = 0201;
 const int TRANSPARENT_FILE_REQUEST = 0202;
-#ifdef COLUMN
+# ifdef COLUMN
 const int VJUSTIFY_REQUEST = 0203;
-#endif /* COLUMN */
+# endif
 const int ESCAPE_E = 0204;
 const int LAST_PAGE_EJECTOR = 0205;
 const int ESCAPE_RIGHT_PARENTHESIS = 0206;
@@ -86,9 +90,9 @@ const int ESCAPE_SPACE = 036;
 const int TITLE_REQUEST = 060;
 const int COPY_FILE_REQUEST = 061;
 const int TRANSPARENT_FILE_REQUEST = 062;
-#ifdef COLUMN
+# ifdef COLUMN
 const int VJUSTIFY_REQUEST = 063;
-#endif /* COLUMN */
+# endif
 const int ESCAPE_E = 064;
 const int LAST_PAGE_EJECTOR = 065;
 const int ESCAPE_RIGHT_PARENTHESIS = 066;
@@ -105,3 +109,6 @@ const int DOUBLE_QUOTE = 076;
 
 extern void do_glyph_color(symbol);
 extern void do_fill_color(symbol);
+
+#endif // _INPUT_H
+// s-it2-mode

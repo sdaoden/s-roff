@@ -1,33 +1,31 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992 Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+#ifndef _HVUNITS_H
+#define _HVUNITS_H
 
-This file is part of groff.
+#include "config.h"
+#include "troff-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-
-class vunits {
-  int n;
-public:
-  vunits();
-  vunits(units);
-  units to_units();
-  int is_zero();
-  vunits& operator+=(const vunits&);
-  vunits& operator-=(const vunits&);
+class vunits
+{
   friend inline vunits scale(vunits n, units x, units y); // scale n by x/y
   friend inline vunits scale(vunits n, vunits x, vunits y);
   friend inline vunits operator +(const vunits&, const vunits&);
@@ -43,20 +41,22 @@ public:
   friend inline int operator >=(const vunits&, const vunits&);
   friend inline int operator ==(const vunits&, const vunits&);
   friend inline int operator !=(const vunits&, const vunits&);
+
+  int n;
+
+public:
+  vunits();
+  vunits(units);
+  units to_units();
+  int is_zero();
+  vunits& operator+=(const vunits&);
+  vunits& operator-=(const vunits&);
 };
 
 extern vunits V0;
 
-
-class hunits {
-  int n;
-public:
-  hunits();
-  hunits(units);
-  units to_units();
-  int is_zero();
-  hunits& operator+=(const hunits&);
-  hunits& operator-=(const hunits&);
+class hunits
+{
   friend inline hunits scale(hunits n, units x, units y); // scale n by x/y
   friend inline hunits scale(hunits n, double x);
   friend inline hunits operator +(const hunits&, const hunits&);
@@ -72,6 +72,16 @@ public:
   friend inline int operator >=(const hunits&, const hunits&);
   friend inline int operator ==(const hunits&, const hunits&);
   friend inline int operator !=(const hunits&, const hunits&);
+
+  int n;
+
+public:
+  hunits();
+  hunits(units);
+  units to_units();
+  int is_zero();
+  hunits& operator+=(const hunits&);
+  hunits& operator-=(const hunits&);
 };
 
 extern hunits H0;
@@ -287,7 +297,6 @@ inline int operator !=(const hunits & x, const hunits & y)
   return x.n != y.n;
 }
 
-
 inline hunits& hunits::operator+=(const hunits & x)
 {
   n += x.n;
@@ -338,3 +347,5 @@ inline units points_to_units(units n)
   return scale(n, units_per_inch, 72);
 }
 
+#endif // _HVUNITS_H
+// s-it2-mode

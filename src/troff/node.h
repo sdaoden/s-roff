@@ -1,29 +1,38 @@
-// -*- C++ -*-
-/* Copyright (C) 1989, 1990, 1991, 1992, 2000, 2001, 2002, 2003, 2004, 2006
-   Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000 - 2004, 2006
+ *    Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+#ifndef _NODE_H
+#define _NODE_H
 
-This file is part of groff.
+#include "config.h"
+#include "troff-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-struct hyphen_list {
+class hyphen_list
+{
+public:
   unsigned char hyphen;
   unsigned char breakable;
   unsigned char hyphenation_code;
   hyphen_list *next;
+
   hyphen_list(unsigned char code, hyphen_list *p = 0);
 };
 
@@ -47,13 +56,16 @@ class glyph_node;
 class diverted_space_node;
 class token_node;
 
-struct node {
+class node
+{
+public:
   node *next;
   node *last;
   statem *state;
   statem *push_state;
   int div_nest_level;
   int is_special;
+
   node();
   node(node *);
   node(node *, statem *, int);
@@ -149,7 +161,9 @@ struct breakpoint {
   char hyphenated;
 };
 
-class line_start_node : public node {
+class line_start_node
+: public node
+{
 public:
   line_start_node() {}
   node *copy() { return new line_start_node; }
@@ -160,19 +174,23 @@ public:
   void asciify(macro *);
 };
 
-class space_node : public node {
-private:
+class space_node
+: public node
+{
 #if 0
   enum { BLOCK = 1024 };
   static space_node *free_list;
   void operator delete(void *);
 #endif
+
 protected:
   hunits n;
   char set;
   char was_escape_colon;
   color *col;			/* for grotty */
+
   space_node(hunits, int, int, color *, statem *, int, node * = 0);
+
 public:
   space_node(hunits, color *, statem *, int, node * = 0);
   space_node(hunits, color *, node * = 0);
@@ -201,20 +219,27 @@ public:
   hyphenation_type get_hyphenation_type();
 };
 
-struct width_list {
+class width_list
+{
+public:
   hunits width;
   hunits sentence_width;
   width_list *next;
+
   width_list(hunits, hunits);
   width_list(width_list *);
 };
 
-class word_space_node : public space_node {
+class word_space_node
+: public space_node
+{
 protected:
   width_list *orig_width;
   unsigned char unformat;
+
   word_space_node(hunits, int, color *, width_list *, int, statem *, int,
 		  node * = 0);
+
 public:
   word_space_node(hunits, color *, width_list *, node * = 0);
   ~word_space_node();
@@ -230,8 +255,11 @@ public:
   int is_tag();
 };
 
-class unbreakable_space_node : public word_space_node {
+class unbreakable_space_node
+: public word_space_node
+{
   unbreakable_space_node(hunits, int, color *, statem *, int, node * = 0);
+
 public:
   unbreakable_space_node(hunits, color *, node * = 0);
   node *copy();
@@ -251,9 +279,12 @@ public:
   hyphenation_type get_hyphenation_type();
 };
 
-class diverted_space_node : public node {
+class diverted_space_node
+: public node
+{
 public:
   vunits n;
+
   diverted_space_node(vunits, node * = 0);
   diverted_space_node(vunits, statem *, int, node * = 0);
   node *copy();
@@ -264,10 +295,14 @@ public:
   int is_tag();
 };
 
-class diverted_copy_file_node : public node {
+class diverted_copy_file_node
+: public node
+{
   symbol filename;
+
 public:
   vunits n;
+
   diverted_copy_file_node(symbol, node * = 0);
   diverted_copy_file_node(symbol, statem *, int, node * = 0);
   node *copy();
@@ -278,8 +313,11 @@ public:
   int is_tag();
 };
 
-class extra_size_node : public node {
+class extra_size_node
+: public node
+{
   vunits n;
+
 public:
   extra_size_node(vunits);
   extra_size_node(vunits, statem *, int);
@@ -291,8 +329,11 @@ public:
   int is_tag();
 };
 
-class vertical_size_node : public node {
+class vertical_size_node
+: public node
+{
   vunits n;
+
 public:
   vertical_size_node(vunits, statem *, int);
   vertical_size_node(vunits);
@@ -306,12 +347,15 @@ public:
   int is_tag();
 };
 
-class hmotion_node : public node {
+class hmotion_node
+: public node
+{
 protected:
   hunits n;
   unsigned char was_tab;
   unsigned char unformat;
   color *col;			/* for grotty */
+
 public:
   hmotion_node(hunits i, color *c, node *nxt = 0)
     : node(nxt), n(i), was_tab(0), unformat(0), col(c) {}
@@ -339,7 +383,9 @@ public:
   hyphenation_type get_hyphenation_type();
 };
 
-class space_char_hmotion_node : public hmotion_node {
+class space_char_hmotion_node
+: public hmotion_node
+{
 public:
   space_char_hmotion_node(hunits, color *, node * = 0);
   space_char_hmotion_node(hunits, color *, statem *, int, node * = 0);
@@ -356,9 +402,12 @@ public:
   hyphenation_type get_hyphenation_type();
 };
 
-class vmotion_node : public node {
+class vmotion_node
+: public node
+{
   vunits n;
   color *col;			/* for grotty */
+
 public:
   vmotion_node(vunits, color *);
   vmotion_node(vunits, color *, statem *, int);
@@ -371,9 +420,12 @@ public:
   int is_tag();
 };
 
-class hline_node : public node {
+class hline_node
+: public node
+{
   hunits x;
   node *n;
+
 public:
   hline_node(hunits, node *, node * = 0);
   hline_node(hunits, node *, statem *, int, node * = 0);
@@ -387,9 +439,12 @@ public:
   int is_tag();
 };
 
-class vline_node : public node {
+class vline_node
+: public node
+{
   vunits x;
   node *n;
+
 public:
   vline_node(vunits, node *, node * = 0);
   vline_node(vunits, node *, statem *, int, node * = 0);
@@ -405,7 +460,9 @@ public:
   int is_tag();
 };
 
-class dummy_node : public node {
+class dummy_node
+: public node
+{
 public:
   dummy_node(node *nd = 0) : node(nd) {}
   node *copy();
@@ -416,7 +473,9 @@ public:
   hyphenation_type get_hyphenation_type();
 };
 
-class transparent_dummy_node : public node {
+class transparent_dummy_node
+: public node
+{
 public:
   transparent_dummy_node(node *nd = 0) : node(nd) {}
   node *copy();
@@ -428,8 +487,11 @@ public:
   hyphenation_type get_hyphenation_type();
 };
 
-class zero_width_node : public node {
+class zero_width_node
+: public node
+{
   node *n;
+
 public:
   zero_width_node(node *);
   zero_width_node(node *, statem *, int);
@@ -445,9 +507,12 @@ public:
   void vertical_extent(vunits *, vunits *);
 };
 
-class left_italic_corrected_node : public node {
+class left_italic_corrected_node
+: public node
+{
   node *n;
   hunits x;
+
 public:
   left_italic_corrected_node(node * = 0);
   left_italic_corrected_node(statem *, int, node * = 0);
@@ -477,9 +542,12 @@ public:
   node *merge_glyph_node(glyph_node *);
 };
 
-class overstrike_node : public node {
+class overstrike_node
+: public node
+{
   node *list;
   hunits max_width;
+
 public:
   overstrike_node();
   overstrike_node(statem *, int);
@@ -497,9 +565,12 @@ public:
   hyphenation_type get_hyphenation_type();
 };
 
-class bracket_node : public node {
+class bracket_node
+: public node
+{
   node *list;
   hunits max_width;
+
 public:
   bracket_node();
   bracket_node(statem *, int);
@@ -514,15 +585,19 @@ public:
   int is_tag();
 };
 
-class special_node : public node {
+class special_node
+: public node
+{
   macro mac;
   tfont *tf;
   color *gcol;
   color *fcol;
   int no_init_string;
+
   void tprint_start(troff_output_file *);
   void tprint_char(troff_output_file *, unsigned char);
   void tprint_end(troff_output_file *);
+
 public:
   special_node(const macro &, int = 0);
   special_node(const macro &, tfont *, color *, color *, statem *, int,
@@ -537,12 +612,17 @@ public:
   tfont *get_tfont();
 };
 
-class suppress_node : public node {
+class suppress_node
+: public node
+{
   int is_on;
   int emit_limits;	// must we issue the extent of the area written out?
   symbol filename;
   char position;
   int  image_id;
+
+  void put(troff_output_file *, const char *);
+
 public:
   suppress_node(int, int);
   suppress_node(symbol, char, int);
@@ -555,14 +635,15 @@ public:
   const char *type();
   int force_tprint();
   int is_tag();
-private:
-  void put(troff_output_file *, const char *);
 };
 
-class tag_node : public node {
+class tag_node
+: public node
+{
 public:
   string tag_string;
   int delayed;
+
   tag_node();
   tag_node(string, int);
   tag_node(string, statem *, int, int);
@@ -575,19 +656,25 @@ public:
   int ends_sentence();
 };
 
-struct hvpair {
+class hvpair
+{
+public:
   hunits h;
   vunits v;
+
   hvpair();
 };
 
-class draw_node : public node {
+class draw_node
+: public node
+{
   int npoints;
   font_size sz;
   color *gcol;
   color *fcol;
   char code;
   hvpair *point;
+
 public:
   draw_node(char, hvpair *, int, font_size, color *, color *);
   draw_node(char, hvpair *, int, font_size, color *, color *, statem *, int);
@@ -629,8 +716,10 @@ extern int next_available_font_position();
 extern void init_size_table(int *);
 extern int get_underline_fontno();
 
-class output_file {
+class output_file
+{
   char make_g_plus_plus_shut_up;
+
 public:
   output_file();
   virtual ~output_file();
@@ -647,7 +736,7 @@ public:
   virtual void off();
 #ifdef COLUMN
   virtual void vjustify(vunits, symbol);
-#endif /* COLUMN */
+#endif
   mtsm state;
 };
 
@@ -659,11 +748,14 @@ extern output_file *the_output;
 extern void init_output();
 int in_output_page_list(int);
 
-class font_family {
+class font_family
+{
   int *map;
   int map_size;
+
 public:
   const symbol nm;
+
   font_family(symbol);
   ~font_family();
   int make_definite(int);
@@ -674,3 +766,6 @@ font_family *lookup_family(symbol);
 symbol get_font_name(int, environment *);
 symbol get_style_name(int);
 extern search_path include_search_path;
+
+#endif // _NODE_H
+// s-it2-mode

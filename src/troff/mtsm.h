@@ -1,34 +1,37 @@
-// -*- C++ -*-
-/* Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+/*@ Provides a minimal troff state machine which is necessary to
+ *@ emit meta tags for the post-grohtml device driver.
  *
- *  mtsm.h
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
  *
+ * Copyright (C) 2003, 2004 Free Software Foundation, Inc.
  *    written by Gaius Mulley (gaius@glam.ac.uk)
  *
- *  provides a minimal troff state machine which is necessary to
- *  emit meta tags for the post-grohtml device driver.
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
  */
+#ifndef _MTSM_H
+#define _MTSM_H
 
-/*
-This file is part of groff.
+#include "config.h"
+#include "troff-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-struct int_value {
+class int_value
+{
+public:
   int value;
   int is_known;
+
   int_value();
   ~int_value();
   void diff(FILE *, const char *, int_value);
@@ -38,13 +41,19 @@ struct int_value {
   void set_if_unknown(int);
 };
 
-struct bool_value : public int_value {
+class bool_value
+: public int_value
+{
+public:
   bool_value();
   ~bool_value();
   void diff(FILE *, const char *, bool_value);
 };
 
-struct units_value : public int_value {
+class units_value
+: public int_value
+{
+public:
   units_value();
   ~units_value();
   void diff(FILE *, const char *, units_value);
@@ -52,9 +61,12 @@ struct units_value : public int_value {
   void set(hunits);
 };
 
-struct string_value {
+class string_value
+{
+public:
   string value;
   int is_known;
+
   string_value();
   ~string_value();
   void diff(FILE *, const char *, string_value);
@@ -68,6 +80,7 @@ enum bool_value_state {
   MTSM_BR,
   LAST_BOOL
 };
+
 enum int_value_state {
   MTSM_FI,
   MTSM_RJ,
@@ -75,6 +88,7 @@ enum int_value_state {
   MTSM_SP,
   LAST_INT
 };
+
 enum units_value_state {
   MTSM_IN,
   MTSM_LL,
@@ -82,17 +96,21 @@ enum units_value_state {
   MTSM_TI,
   LAST_UNITS
 };
+
 enum string_value_state {
   MTSM_TA,
   LAST_STRING
 };
 
-struct statem {
+class statem
+{
   int issue_no;
   bool_value bool_values[LAST_BOOL];
   int_value int_values[LAST_INT];
   units_value units_values[LAST_UNITS];
   string_value string_values[LAST_STRING];
+
+public:
   statem();
   statem(statem *);
   ~statem();
@@ -113,22 +131,28 @@ struct statem {
   void update(statem *, statem *, string_value_state);
 };
 
-struct stack {
+class stack
+{
+public:
   stack *next;
   statem *state;
+
   stack();
   stack(statem *, stack *);
   ~stack();
 };
 
-class mtsm {
+class mtsm
+{
   statem *driver;
   stack *sp;
+
   int has_changed(int_value_state, statem *);
   int has_changed(bool_value_state, statem *);
   int has_changed(units_value_state, statem *);
   int has_changed(string_value_state, statem *);
   void inherit(statem *, int);
+
 public:
   mtsm();
   ~mtsm();
@@ -139,11 +163,13 @@ public:
   void add_tag(FILE *, string);
 };
 
-class state_set {
+class state_set
+{
   int boolset;
   int intset;
   int unitsset;
   int stringset;
+
 public:
   state_set();
   ~state_set();
@@ -162,3 +188,6 @@ public:
   void add(units_value_state, int);
   units val(units_value_state);
 };
+
+#endif // _MTSM_H
+// s-it2-mode
