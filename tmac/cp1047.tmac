@@ -1,7 +1,11 @@
-.\" cp1047.tmac
+.\"@ cp1047.tmac
+.\"@ EBCDIC compatibility.
 .\"
+.\" Adapted to S-roff by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+.
 .nr _C \n(.C
 .cp 0
+.
 .trin \[char66]\[^a]
 .trin \[char67]\[:a]
 .trin \[char68]\[`a]
@@ -98,4 +102,7 @@
 .trin \[char252]\[:U]
 .trin \[char253]\[`U]
 .trin \[char254]\['U]
+.
 .cp \n(_C
+.
+.\" s-ts-mode

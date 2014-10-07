@@ -1,9 +1,7 @@
-% This is the groff hyphenation pattern file `hyphen.cs' for Czech.
-%
-% It is based on the TeX pattern file `czhyphen.tex', version 3 (1995),
-% prepared by Pavel ©eveèek <pavel@lingea.cz>.
-%
-% Here is the copyright message:
+%@ This is the groff hyphenation pattern file `hyphen.cs' for Czech.
+%@ It is based on the TeX pattern file `czhyphen.tex', version 3 (1995),
+%@ prepared by Pavel ©eveèek <pavel@lingea.cz>.
+%@ Here is the copyright message:
 %
 %   This is free software; you can redistribute it and/or modify
 %   it under the terms of the GNU General Public License as published by
@@ -23,6 +21,8 @@
 %
 % It has been made suitable for groff by expanding all macros to real
 % characters in latin-2 encoding.
+%
+% Adapted to S-roff by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 %
 \patterns{
 .a2
@@ -3662,9 +3662,4 @@ zù3s
 ¾¹4ti
 ¾¹4tì
 }
-
-% Local Variables:
-% coding: latin-2
-% End:
-%
-% End of file `hyphen.cs'.
+% s-ts-mode

@@ -1,3 +1,6 @@
+.\"@ doc.tmac
+.\"@ Main file for the mdoc semantic markup language.
+.\"
 .\" Copyright (c) 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -42,11 +45,13 @@
 .\" to make it more readable: using long names and many groff features,
 .\" updating and extending documentation, etc.
 .\"
+.\" Adapted to S-roff by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+.\"
 .\" %beginstrip%
 .
 .
 .if !\n(.g \
-.  ab This version of mdoc can be run with GNU troff only!
+.  ab This version of mdoc can only be run with groff (and compatible)!
 .
 .
 .do if d Dd .nx
@@ -56,17 +61,17 @@
 .
 .
 .if (\n[.x]\n[.y] < 118) \
-.  ab You need GNU troff version 1.18 or higher to run this version of mdoc!
+.  ab You need a newer version (v1.18 or higher) to run this version of mdoc!
 .
 .
 .\" Load start-up files
 .ie t \
-.  mso mdoc/doc-ditroff
+.  mso mdoc-ditroff
 .el \
-.  mso mdoc/doc-nroff
+.  mso mdoc-nroff
 .
-.mso mdoc/doc-common
-.mso mdoc/doc-syms
+.mso mdoc-common
+.mso mdoc-syms
 .
 .
 .eo
@@ -6507,4 +6512,4 @@
 .\" load local modifications
 .mso mdoc.local
 .
-.\" EOF
+.\" s-ts-mode

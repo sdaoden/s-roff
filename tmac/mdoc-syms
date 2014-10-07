@@ -1,3 +1,6 @@
+.\"@ mdoc-syms
+.\"@ See doc.tmac for more on the mdoc semantic markup language.
+.\"
 .\" Copyright (c) 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -28,6 +31,7 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     @(#)doc-syms	8.1 (Berkeley) 06/08/93
+.\" Adapted to S-roff by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .\"
 .\"     %beginstrip%
 .
@@ -835,4 +839,4 @@
 .
 .ec
 .
-.\" EOF
+.\" s-ts-mode

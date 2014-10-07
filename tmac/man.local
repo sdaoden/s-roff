@@ -1,2 +1,6 @@
-.\" This file is loaded after an-old.tmac.
-.\" Put any local modifications to an-old.tmac here.
+.\"@ This file is loaded after an-old.tmac.
+.\"@ Put any local modifications to an-old.tmac here.
+.\"
+.\" Adapted to S-roff by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
+.\" s-ts-mode

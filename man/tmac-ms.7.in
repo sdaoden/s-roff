@@ -1,6 +1,10 @@
-'\" t
+'\" t -- preprocess: tbl(1)
 .ig
-Copyright (C) 1989-1995, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+@ @L_ROFF@_ms.7
+
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
+Copyright (C) 1989 - 1995, 2001 - 2007
   Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
@@ -22,19 +26,17 @@ the original English.
 .do nr groff_ms_C \n[.C]
 .cp 0
 .
-.TH GROFF_MS @MAN7EXT@ "@MDATE@" "Groff Version @VERSION@"
+.TH @U_ROFF@_MS @MAN7EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
-.
-.
+.\"
 .SH NAME
 .
-groff_ms \- groff ms macros
+@L_ROFF@_ms \- @T_ROFF@ ms macros
 .
-.
-.
+.\"
 .SH SYNOPSIS
 .
-.B groff
+.B @L_ROFF@
 .B \-ms
 [
 .IR options .\|.\|.\&
@@ -43,7 +45,7 @@ groff_ms \- groff ms macros
 .IR files .\|.\|.\&
 ]
 .br
-.B groff
+.B @L_ROFF@
 .B \-m\ ms
 [
 .IR options .\|.\|.\&
@@ -52,16 +54,9 @@ groff_ms \- groff ms macros
 .IR files .\|.\|.\&
 ]
 .
-.
-.
+.\"
 .SH DESCRIPTION
 .
-This manual page describes the GNU version of the
-.I ms
-macros,
-part of the
-.I groff
-typesetting system.
 The
 .I ms
 macros are mostly compatible with the
@@ -77,8 +72,7 @@ The
 macros are suitable for reports, letters, books, and
 technical documentation.
 .
-.
-.
+.\"
 .SH USAGE
 .
 The
@@ -103,14 +97,14 @@ Other document formats found in AT&T
 .I troff
 are specific to AT&T
 or Berkeley, and are not supported in
-.IR "groff ms" .
+.IR "@T_ROFF@ ms" .
 .
 .TP
 .B "Format and layout"
 By setting number registers,
 you can change your document's type (font and size),
 margins, spacing, headers and footers, and footnotes.
-See 
+See
 .I "Document control registers"
 below for more details.
 .
@@ -135,7 +129,7 @@ which you can add by placing the
 .B TC
 macro at the end of your document.
 .
-.
+.\"
 .SS "Document control registers"
 .
 The following table lists the document control
@@ -258,7 +252,7 @@ _
 .ad
 .RE
 .
-.
+.\"
 .SS "Cover page macros"
 .
 Use the following macros to create a cover page for your document
@@ -271,7 +265,7 @@ The report format creates a separate cover page.
 With no
 .B RP
 macro,
-.I groff
+.I @L_ROFF@
 prints a subset of the
 cover page on page\~1 of your document.
 .
@@ -286,7 +280,7 @@ does not repeat any of the title page information
 on page\~1 of the document.
 .
 .TP
-.B .P1 
+.B .P1
 (P-one) Prints the header on page\~1.
 The default is to suppress the header.
 .
@@ -306,12 +300,12 @@ or the arguments to the macro if any,
 on the title page (if specified)
 but not in the footers.
 This is the default for
-.IR troff .
+.IR @L_TROFF@ .
 .
 .TP
 .B .TL
 Specifies the document title.
-.I Groff
+.I @T_ROFF@
 collects text following the
 .B TL
 macro into the title, until reaching the author name or abstract.
@@ -342,7 +336,7 @@ suppresses this heading.
 .B .AE
 End the abstract.
 .
-.
+.\"
 .SS Paragraphs
 .
 Use the
@@ -356,9 +350,6 @@ macro to create paragraphs with no initial indent.
 The
 .B QP
 macro indents all text at both left and right margins.
-The effect is identical to the HTML
-.B <BLOCKQUOTE>
-element.
 The next paragraph or heading
 returns margins to normal.
 .
@@ -410,7 +401,7 @@ then a page break is forced
 .I before
 the heading is printed.
 .
-.
+.\"
 .SS Headings
 .
 Use headings to create a hierarchical structure
@@ -446,8 +437,7 @@ such as invoking
 .B ".NH\ 3"
 after
 .BR ".NH\ 1" ,
-.I groff
-prints a warning on standard error.
+a warning on standard error is produced.
 .
 .IP
 If the
@@ -629,7 +619,7 @@ in 11.5pt
 .B bold
 text.
 .
-.
+.\"
 .SS Highlighting
 .
 The
@@ -642,8 +632,7 @@ or emphasize text:
 Sets its first argument in
 .BR "bold type" .
 If you specify a second argument,
-.I groff
-prints it in the previous font after
+it is printed in the previous font after
 the bold text, with no intervening space
 (this allows you to set punctuation after
 the highlighted text without highlighting
@@ -665,8 +654,7 @@ prints
 .
 .IP
 If you give this macro no arguments,
-.I groff
-prints all text following in bold until
+all the following text is printed in bold until
 the next highlighting, paragraph, or heading macro.
 .
 .TP
@@ -709,8 +697,7 @@ use a digit-width space (\[rs]0).
 .BI ".UL [" txt " [" post ]]
 Prints its first argument with an underline.
 If you specify a second argument,
-.I groff
-prints it in the previous font after
+it is printed in the previous font after
 the underlined text, with no intervening space.
 .
 .TP
@@ -744,7 +731,7 @@ Print the enclosed
 .I text
 as a superscript.
 .
-.
+.\"
 .SS Indents
 .
 You may need to indent sections of text.
@@ -767,7 +754,7 @@ using multiple, nested pairs of
 and
 .BR RE .
 .
-.
+.\"
 .SS Lists
 .
 The
@@ -797,7 +784,7 @@ list items in the document until specified again.
 .br
 .ne 15
 .
-.
+.\"
 .SS "Tab stops"
 .
 Use the
@@ -810,7 +797,7 @@ You can redefine the
 .B TA
 macro to create a different set of default tab stops.
 .
-.
+.\"
 .SS "Displays and keeps"
 .
 Use displays to show text-based examples or figures
@@ -819,7 +806,7 @@ Displays turn off filling, so lines of code can be
 displayed as-is without inserting
 .B br
 requests in between each line.
-Displays can be 
+Displays can be
 .I kept
 on a single page, or allowed to break across pages.
 The following table shows the display types available.
@@ -901,8 +888,7 @@ When the page breaks,
 whether by an explicit
 .B bp
 request or by reaching the end of the page,
-.I groff
-prints the floating keep at the top of the new page.
+the floating keep is printed at the top of the new page.
 This is useful for printing large graphics or tables
 that do not need to appear exactly where specified.
 .
@@ -919,48 +905,42 @@ ends it.
 Text in the box is automatically placed in a diversion
 (keep).
 .
-.
+.\"
 .SS "Tables, figures, equations, and references"
 .
 The
 .I -ms
 macros support the standard
-.I groff
 preprocessors:
-.IR tbl ,
-.IR pic ,
-.IR eqn ,
+.IR @L_P_TBL@ ,
+.IR @L_P_PIC@ ,
+.IR @L_P_EQN@ ,
 and
-.IR refer .
+.IR @L_P_REFER@ .
 Mark text meant for preprocessors by enclosing it
 in pairs of tags as follows:
 .
 .TP
 .BR ".TS [H]" " and " .TE
 Denotes a table, to be processed by the
-.I tbl
+.I @L_P_TBL@
 preprocessor.
 The optional
 .BR H "\~argument"
-instructs
-.I groff
-to create a running header with the information
-up to the
+instructs to create a running header with the information up to the
 .B TH
 macro.
-.I Groff
-prints the header at the beginning of the table;
+The header is printed at the beginning of the table;
 if the table runs onto another page,
-.I groff
-prints the header on the next page as well.
+the header is printed on the next page as well.
 .
 .TP
 .BR .PS " and " .PE
 Denotes a graphic, to be processed by the
-.I pic
+.I @L_P_PIC@
 preprocessor.
 You can create a
-.I pic
+.I @L_P_PIC@
 file by hand, using the
 AT&T
 .I pic
@@ -971,7 +951,7 @@ or by using a graphics program such as
 .TP
 .BR ".EQ [\fI\,align\/\fP]" " and " .EN
 Denotes an equation, to be processed by the
-.I eqn
+.I @L_P_EQN@
 preprocessor.
 The optional
 .I align
@@ -986,15 +966,15 @@ the equation.
 .TP
 .BR .[ " and " .]
 Denotes a reference, to be processed by the
-.I refer
+.I @L_P_REFER@
 preprocessor.
-The GNU
-.IR @g@refer (@MAN1EXT@)
+The
+.IR @L_P_REFER@ (@MAN1EXT@)
 manual page provides a comprehensive reference
 to the preprocessor and the format of the
 bibliographic database.
 .
-.
+.\"
 .SS Footnotes
 .
 The
@@ -1022,9 +1002,8 @@ and
 macros.
 .
 .PP
-You can control how
-.I groff
-prints footnote numbers by changing the value of the
+You can control how footnote numbers are printed by changing the value
+of the
 .B FF
 register as follows:
 .RS
@@ -1068,7 +1047,7 @@ and the occurrences of
 are in the same order as the corresponding occurrences of
 .BR \[rs]** .
 .
-.
+.\"
 .SS "Headers and footers"
 .
 There are three ways to define headers and footers:
@@ -1125,7 +1104,7 @@ you can define this macro if you need additional processing
 after printing the header
 (for example, to draw a line below the header).
 .
-.
+.\"
 .SS Margins
 .
 You control margins using a set of number registers.
@@ -1154,7 +1133,7 @@ The combination of page offset and line length
 provide the information necessary to
 derive the right margin.
 .
-.
+.\"
 .SS "Multiple columns"
 .
 The
@@ -1191,7 +1170,7 @@ The
 .B MINGW
 number register is the default gutter width.
 .
-.
+.\"
 .SS "Creating a table of contents"
 .
 Wrap text that you want to appear in the
@@ -1229,11 +1208,11 @@ Details of Galactic Formation
 \&.\|.\|.
 \&.XE
 .fi
-.RE  
+.RE
 .
-.LP  
+.LP
 Use the
-.B PX  
+.B PX
 macro to print a manually-generated table of contents
 without resetting the page number.
 .
@@ -1242,15 +1221,13 @@ If you give the argument
 .B no
 to either
 .B PX
-or   
+or
 .BR TC ,
-.I groff
-suppresses printing the title
-specified by the
-.B \[rs]*[TOC]  
-string.
+printing of the title specified by the
+.B \[rs]*[TOC]
+string is suppressed.
 .
-.
+.\"
 .SS "Fractional point sizes"
 .
 Traditionally, the
@@ -1274,52 +1251,51 @@ Due to backwards compatibility, the value of
 .B VS
 must be smaller than 40000 (this is 40.0 points).
 .
-.
-.
+.\"
 .SH "DIFFERENCES FROM troff ms"
 .
 The
-.I "groff ms"
+.I "@T_ROFF@ ms"
 macros are a complete re-implementation,
 using no original AT&T code.
 Since they take advantage of the extended features in
-.IR groff ,
+.IR @T_ROFF@ ,
 they cannot be used with AT&T
 .IR troff .
 Other differences include:
 .
 .IP \(bu 3n
 The internals of
-.I "groff ms"
+.I "@T_ROFF@ ms"
 differ from the internals of Unix
-.IR ms . 
+.IR ms .
 Documents that depend upon implementation details of Unix
 .I ms
 may not format properly with
-.IR "groff ms" .
+.IR "@T_ROFF@ ms" .
 .
 .IP \(bu
 The error-handling policy of
-.I "groff ms"
+.I "@T_ROFF@ ms"
 is to detect and report errors,
 rather than silently to ignore them.
 .
 .IP \(bu
 Some Bell Labs localisms are not implemented by default.
 However, if you call the otherwise undocumented
-.BR SC 
+.BR SC
 section-header macro, you will enable implementations of three other
 archaic Bell Labs macros:
 .BR UC ,
 .BR P1 ,
-and 
+and
 .BR P2 .
-These are not enabled by default because (a)\~they were not documented, 
-in the original 
+These are not enabled by default because (a)\~they were not documented,
+in the original
 .IR "ms manual" ,
 and (b)\~the
 .B P1
-and 
+and
 .B UC
 macros both collide with different macros in the Berkeley version of
 .IR ms .
@@ -1342,7 +1318,7 @@ macros,
 are not implemented.
 .
 .IP \(bu
-.I "Groff ms"
+.I "@T_ROFF@ ms"
 does not work in compatibility mode (e.g., with the
 .B \-C
 option).
@@ -1351,7 +1327,7 @@ option).
 There is no support for typewriter-like devices.
 .
 .IP \(bu
-.I "Groff ms"
+.I "@T_ROFF@ ms"
 does not provide cut marks.
 .
 .IP \(bu
@@ -1368,7 +1344,7 @@ and
 number registers can be used to control the column width and
 gutter width, respectively.
 These number registers are not used in
-.IR "groff ms" .
+.IR "@T_ROFF@ ms" .
 .
 .IP \(bu
 Macros that cause a reset
@@ -1390,7 +1366,7 @@ macros.
 The number register
 .B GS
 is set to\~1 by the
-.I "groff ms"
+.I "@T_ROFF@ ms"
 macros,
 but is not used by the Unix
 .I ms
@@ -1399,12 +1375,12 @@ Documents that need to determine whether
 they are being formatted with Unix
 .I ms
 or
-.I "groff ms"
+.I "@T_ROFF@ ms"
 should use this number register.
 .
 .IP \(bu
 To make
-.I "groff ms"
+.I "@T_ROFF@ ms"
 use the default page offset (which also specifies the left margin),
 the
 .B PO
@@ -1418,11 +1394,11 @@ Remember that accessing an undefined register automatically defines it.
 .br
 .ne 23
 .
-.
+.\"
 .SS Strings
 .
 You can redefine the following strings to adapt the
-.I "groff ms"
+.I "@T_ROFF@ ms"
 macros to languages other than English:
 .TS
 center;
@@ -1463,9 +1439,8 @@ respectively, in
 .I troff
 (and plain quotes in
 .IR nroff ).
-
 .
-.
+.\"
 .SS Text Settings
 .
 The
@@ -1510,19 +1485,17 @@ You can place an accent over most characters
 by specifying the string defining the accent
 directly after the character.
 For example,
-.B n\[rs]*~ 
+.B n\[rs]*~
 produces an n with a tilde over it.
 .
-.
-.
+.\"
 .SH "NAMING CONVENTIONS"
-.
 .
 .LP
 The following conventions are used for names of macros, strings and
 number registers.
 External names available to documents that use the
-.I "groff ms"
+.I "@T_ROFF@ ms"
 macros contain only uppercase letters and digits.
 .
 .LP
@@ -1553,7 +1526,7 @@ Constructed names used to implement arrays are of the form
 .IB \%array ! index\fR.
 .
 .PP
-Thus the groff ms macros reserve the following names:
+Thus the @T_ROFF@ ms macros reserve the following names:
 .
 .IP \(bu 3n
 Names containing the characters
@@ -1565,8 +1538,7 @@ and\~\c
 .IP \(bu
 Names containing only uppercase letters and digits.
 .
-.
-.
+.\"
 .SH FILES
 .
 .B @MACRODIR@/ms.tmac
@@ -1575,21 +1547,19 @@ Names containing only uppercase letters and digits.
 .br
 .B @MACRODIR@/s.tmac
 .
-.
-.
+.\"
 .SH "SEE ALSO"
 .
-.BR groff (@MAN1EXT@),
-.BR @g@troff (@MAN1EXT@),
-.BR @g@tbl (@MAN1EXT@),
-.BR @g@pic (@MAN1EXT@),
-.BR @g@eqn (@MAN1EXT@),
-.BR @g@refer (@MAN1EXT@),
+.BR @L_ROFF@ (@MAN1EXT@),
+.BR @L_TROFF@ (@MAN1EXT@),
+.BR @L_P_TBL@ (@MAN1EXT@),
+.BR @L_P_PIC@ (@MAN1EXT@),
+.BR @L_P_EQN@ (@MAN1EXT@),
+.BR @L_P_REFER@ (@MAN1EXT@),
 .I Groff: The GNU Implementation of troff
 by Trent Fisher and Werner Lemberg.
 .
-.
-.
+.\"
 .SH AUTHOR
 .
 Original manual page by James Clark
@@ -1599,6 +1569,4 @@ rewritten by Larry Kollar
 .
 .cp \n[groff_ms_C]
 .
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
+.\" s-ts-mode

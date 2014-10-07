@@ -1,12 +1,15 @@
-.\" psold.tmac
+.\"@ psold.tmac
+.\"@ In newer PostScript printers, text fonts contain all ISO Latin-1
+.\"@ characters.  The font description files that comes with groff match
+.\"@ these fonts.  The text fonts in older PostScript printers are missing
+.\"@ some of these characters.  This file prevents those characters from
+.\"@ being used.  This will allow the PostScript output to be printed on
+.\"@ such old printers.
 .\"
-.\" In newer PostScript printers, text fonts contain all ISO Latin-1
-.\" characters.  The font description files that comes with groff match
-.\" these fonts.  The text fonts in older PostScript printers are missing
-.\" some of these characters.  This file prevents those characters from
-.\" being used.  This will allow the PostScript output to be printed on
-.\" such old printers.
+.\" Adapted to S-roff by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+.
 .nr _C \n(.C
+.
 .cp 0
 .\" Define an accented character.
 .de ps-achar
@@ -58,4 +61,7 @@ I\h'-.25m'\v'-.33m'\s'\En(.s*6u/10u'\v'.33m'D\v'-.33m'\s0\v'.33m'
 .tr \[char247]\[di]
 .tr \[char253]\['y]
 .tr \[char254]\[Tp]
+.
 .cp \n(_C
+.
+.\" s-ts-mode

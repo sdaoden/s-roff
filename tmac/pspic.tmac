@@ -1,13 +1,11 @@
-.\" pspic.tmac
+.\"@ pspic.tmac
+.\"@ Define the PSPIC macro.
+.\"@ When used other than with -Tps, -Tdvi, -Thtml, or -Txhtml it draws a box
+.\"@ around where the picture would go.
+.\"@ Synopsis:
+.\"@  .PSPIC [-L|-R|-C|-I <indent>] <file> [<width> [<height>]]
 .\"
-.\" Define the PSPIC macro.
-.\"
-.\" When used other than with -Tps, -Tdvi, -Thtml, or -Txhtml it draws a box
-.\" around where the picture would go.
-.\"
-.\" Usage:
-.\"
-.\"   .PSPIC [-L|-R|-C|-I <indent>] <file> [<width> [<height>]]
+.\" Adapted to S-roff by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .
 .do if d PSPIC .nx
 .
@@ -161,4 +159,4 @@
 .
 .cp \n[_C]
 .
-.\" end of pspic.tmac
+.\" s-ts-mode

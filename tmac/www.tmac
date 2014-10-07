@@ -1,16 +1,12 @@
 .ig
-www.tmac - macro package for adding HTML elements to roff documents.
+@ www.tmac - macro package for adding HTML elements to roff documents.
+@ A simple set of macros to provide HTML (or XHTML) documents with basic
+@ www functionality.  It should work with any macro set.  In the following,
+@ HTML always denotes XHTML also.
 
-File position: <groff_source_top>/tmac/www.tmac
-Installed position: groff's main macro directory.
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
-------------------------------------------------------------------------
-    Legalize
-------------------------------------------------------------------------
-
-This file is part of groff, the GNU roff type-setting system.
-
-Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2008
+Copyright (C) 2001 - 2006, 2008
   Free Software Foundation, Inc.
 written by Gaius Mulley <gaius@glam.ac.uk>, with additions by
 Werner Lemberg <wl@gnu.org> and Bernd Warken <bwarken@mayn.de>.
@@ -29,21 +25,10 @@ You should have received a copy of the GNU General Public License
 along with groff; see the file COPYING.  If not, write to the Free
 Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 02110-1301, USA.
-
-
-------------------------------------------------------------------------
-    Description
-------------------------------------------------------------------------
-
-A simple set of macros to provide HTML (or XHTML) documents with basic
-www functionality.  It should work with any macro set.  In the following,
-HTML always denotes XHTML also.
 ..
 .
 .
-.\" --------------------------------------------------------------------
 .\" Setup
-.\" --------------------------------------------------------------------
 .
 .do if d www:lenstr .nx
 .
@@ -79,11 +64,9 @@ HTML always denotes XHTML also.
 .\}
 .
 .
-.\" --------------------------------------------------------------------
 .\" Test for `.substring'; result in register `www.substring_ok'.
 .\" The automated break points in .URL addresses are only added if
 .\" this register is non-zero.
-.\"
 .nr www:substring_ok 0
 .de www:@test_substring
 .  if !d substring \
@@ -113,15 +96,11 @@ HTML always denotes XHTML also.
 .rm www:@test_substring
 .
 .
-.\" --------------------------------------------------------------------
 .\" Local Macros
-.\" --------------------------------------------------------------------
 .
-.\" --------------------------------------------------------------------
 .\" www:paraspace
 .\"
 .\" Space before paragraph. Use \n[PD] if it exists.
-.\"
 .nr www:pd 0.5v
 .
 .de www:paraspace
@@ -131,23 +110,19 @@ HTML always denotes XHTML also.
 .    sp \\n[www:pd]u
 ..
 .
-.\" --------------------------------------------------------------------
 .\" www:error (<test>...)
 .\"
 .\" Print error message.
-.\"
 .de www-error
 .  tm \\n[.F]:\\n[.c]: macro error: \\$*
 ..
 .
 .als www:error www-error
 .
-.\" --------------------------------------------------------------------
 .\" www:lenstr (<register_name> <string_name>)
 .\"
 .\" Store length of string named <string_name> into register named
 .\" <register_name>.
-.\"
 .de www:lenstr
 .  if !(\\n[.$] == 2) \{\
 .    tm .\\$0 expects 2 arguments.
@@ -158,13 +133,11 @@ HTML always denotes XHTML also.
 .  rr \\$0:n
 ..
 .
-.\" --------------------------------------------------------------------
 .\" www:splitstr (<name>)
 .\"
 .\" Add a space character between any two adjacent characters in string
 .\" <name> and restore result into the string variable <name>; space
 .\" characters are first replaced by the word `space'.
-.\"
 .de www:splitstr
 .  if !(\\n[.$] == 1) \
 .    www:error .\\$0 expects 1 argument.
@@ -185,7 +158,7 @@ HTML always denotes XHTML also.
 .    substring \\$0:r 1 -1
 .  \}
 .  if !'\\*[\\$0:s]'' \
-.    substring \\$0:s 1 -1 
+.    substring \\$0:s 1 -1
 .  ds \\$1 \\*[\\$0:s]\"
 .  rm \\$0:c
 .  rr \\$0:n
@@ -193,7 +166,6 @@ HTML always denotes XHTML also.
 .  rm \\$0:s
 ..
 .
-.\" --------------------------------------------------------------------
 .\" www:url_breaks (<string_name>)
 .\"
 .\" Add `\:' (possible break point) within URL strings after `/'.
@@ -201,7 +173,6 @@ HTML always denotes XHTML also.
 .\" Smart about multiple `/', existing `\:', and space characters;
 .\" does not set a break point if less than 5 characters would go to
 .\" the next line.
-.\"
 .de www:url_breaks
 .  if !(\\n[.$] == 1) \
 .    www:error .\\$0 expects 1 argument.
@@ -214,13 +185,11 @@ HTML always denotes XHTML also.
 .  rm \\$0:s
 ..
 .
-.\" --------------------------------------------------------------------
 .\" www:url_breaks_split (<result> <char> [<char>...])
 .\"
 .\" Add `\:' within URL strings, but arguments are a split string.
 .\"
 .\" Arguments: >=2: <result> <char> [<char>...]
-.\"
 .de www:url_breaks_split
 .  nr \\$0:min 5             \" minimal number of characters for next line
 .  if (\\n[.$] < 2) \
@@ -270,15 +239,11 @@ HTML always denotes XHTML also.
 ..
 .
 .
-.\" --------------------------------------------------------------------
 .\" User Interface
-.\" --------------------------------------------------------------------
 .
-.\" --------------------------------------------------------------------
 .\" HTML
 .\"
 .\" The main auxiliary macro for the HTML interface.
-.\"
 .de HTML
 .  if \\n[www-html] \{\
 .    \" was implemented via .nop \&\X^html:\\$*^ but
@@ -294,14 +259,12 @@ HTML always denotes XHTML also.
 .
 .\"
 .\" An auxiliary macro for HTML (without following space).
-.\"
 .de HTML-NS
 .  nop \X^html:\\$*^\c
 ..
 .
 .\"
 .\" Emit an HTML tag after shutting down a (possibly open) paragraph.
-.\"
 .de HTML</p>
 .  ie \\n[www-html] \{\
 .    \" the `\&' makes the vertical mode leave, so to say
@@ -316,7 +279,6 @@ HTML always denotes XHTML also.
 .\"                    then do not shut the paragraph down.
 .\"                    If text was not written, remove the empty
 .\"                    paragraph tag and emit the desired HTML tag.
-.\"
 .de HTML<?p>
 .  if \\n[www-html] \
 .    nop \&\X^html<?p>:\\$*^
@@ -327,13 +289,11 @@ HTML always denotes XHTML also.
 .\"                   then do not shut the paragraph down.
 .\"                   If text was not written, remove the empty
 .\"                   paragraph tag and emit the desired math tag.
-.\"
 .de MATH<?p>
 .  if \\n[www-html] \
 .    nop \&\X^math<?p>:\\$*^
 ..
 .
-.\" --------------------------------------------------------------------
 .\" HX n
 .\"
 .\"   Automatic heading level cut off.
@@ -341,15 +301,12 @@ HTML always denotes XHTML also.
 .\"   N is the depth limit of automatically linked headings.  So a depth
 .\"   of 2 would cause grohtml to generate a list of links for `.NH 1'
 .\"   and `.NH 2' but not for `.NH 3'.
-.\"
 .de HX
 .  if \\n[www-html] \
 .    nop \X^index:\\$*^
 ..
 .
-.\" --------------------------------------------------------------------
 .\" BCL foreground background active not-visited visited
-.\"
 .de BCL
 .  HTML <body "text=""\\$1""" \
               "bgcolor=""\\$2""" \
@@ -358,17 +315,14 @@ HTML always denotes XHTML also.
               "vlink=""\\$5"">"
 ..
 .
-.\" --------------------------------------------------------------------
 .\" BGIMG imagefile
-.\"
 .de BGIMG
 .  HTML <body "background=""\\$1"">"
 ..
 .
 .\" www:url_check_tag str
-.\"    If url named by \*[str] is internal (starts with #), 
+.\"    If url named by \*[str] is internal (starts with #),
 .\"    redefine \*[str] to be the value of the string TAG_url.
-.
 .de www:url_check_tag
 .  ds \\$0:tmp \\*[\\$1]\"
 .  substring \\$0:tmp 0 0
@@ -381,15 +335,13 @@ HTML always denotes XHTML also.
 .      ds \\$1 \\*[\\*[\\$0:tmp]]\"
 .    el \
 .      ds \\$1 see below\"
-.  \} 
+.  \}
 .  rm \\$0:tmp
 ..
 .
-.\" --------------------------------------------------------------------
 .\" URL url [description] [after]
 .\"
 .\"   If description is absent then the url becomes the anchor text.
-.\"
 .de URL
 .  if !'\\$1'' \{\
 .    ds \\$0:adr \\$1\"
@@ -452,14 +404,11 @@ HTML always denotes XHTML also.
 .  rm \\$0:adr
 ..
 .
-.\" --------------------------------------------------------------------
 .\" FTP url description [after]
 .\"
 .\"   Same as URL.
-.\"
 .als FTP URL
 .
-.\" --------------------------------------------------------------------
 .\" MTO address description [after]
 .\"
 .\"   ADDRESS is the email address (without the `mailto:' prefix).
@@ -474,7 +423,6 @@ HTML always denotes XHTML also.
 .\"
 .\"       Foobar has been written by
 .\"       .MTO fred@foo.bar "Fredrick Bloggs" .
-.\"
 .de MTO
 .  ie \\n[www-html] \{\
 .    ie '\\$2'' \
@@ -516,12 +464,10 @@ HTML always denotes XHTML also.
 .  \}
 ..
 .
-.\" --------------------------------------------------------------------
 .\" TAG name [text]
 .\"
 .\"   Generate an HTML name NAME.
 .\"   Define string TAG_NAME to TEXT, if present, otherwise to \n[PN].
-.\"
 .de TAG
 .  HTML <a "name=""\\$1""></a>"
 .  ie '\\$2'' \
@@ -530,7 +476,6 @@ HTML always denotes XHTML also.
 .    ds TAG_\\$1 \\$2\"
 ..
 .
-.\" --------------------------------------------------------------------
 .\" IMG [-R|-L|-C] filename [width] [height]
 .\"
 .\"   Include an image of any type (only works for -Thtml).
@@ -538,7 +483,6 @@ HTML always denotes XHTML also.
 .\"   Alignment is centered by default (-C).
 .\"   Default value for WIDTH is 1i.
 .\"   If HEIGHT is not given, WIDTH is used as the height.
-.\"
 .de IMG
 .  ie \\n[www-html] \{\
 .    ie '\\$2'-R' \
@@ -564,7 +508,6 @@ HTML always denotes XHTML also.
 .    nop \\*[www:open]\f[\\*[www:fontstyle]]\\$1\f[]\\*[www:close]
 ..
 .
-.\" --------------------------------------------------------------------
 .\" PIMG  [-R|-L|-C] filename [width] [height]
 .\"
 .\"   Include a PNG image.  It works for -Tps and -Thtml.
@@ -574,7 +517,6 @@ HTML always denotes XHTML also.
 .\" Note: This macro can only be used with the `-U' option of groff,
 .\"       activating unsafe mode, if not used with -Thtml; the PNG image
 .\"       is then converted to the EPS format using netpbm utilities.
-.\"
 .de PIMG
 .  ds www-pic-align -C\"
 .  ie '\\$1'-R' \{\
@@ -637,9 +579,7 @@ HTML always denotes XHTML also.
 .  \}
 ..
 .
-.\" --------------------------------------------------------------------
 .\" auxiliary definitions for MPIMG
-.\"
 .nr www-left-ll-trap 0
 .nr www-left-po-trap 0
 .nr www-right-ll-trap 0
@@ -698,8 +638,7 @@ HTML always denotes XHTML also.
 .\"                    N1 - name of number register 1=absolute 0=percentage
 .\"                    N2 - number register name for absolute value
 .\"                    S1 - string register name for percentage value
-.\"
-.de www-handle-percent 
+.de www-handle-percent
 .  ds www-percent \\$1\"
 .  substring www-percent -1 -1
 .
@@ -717,7 +656,6 @@ HTML always denotes XHTML also.
 .  \}
 ..
 .
-.\" --------------------------------------------------------------------
 .\" MPIMG [-R|-L] [-G gap] filename [width [height]]
 .\"
 .\"   Include a PNG image and wrap text around it.  It works for
@@ -727,12 +665,10 @@ HTML always denotes XHTML also.
 .\"   The height and width can also be given as a percentage.
 .\"   The PostScript device converts the percentage width into an
 .\"   absolute value by using \\n[.l], and the height by using \\n[.p].
-.\"   
 .\"
 .\" Note: This macro can only be used with the `-U' option of groff,
 .\"       activating unsafe mode, if not used with -Thtml; the PNG image
 .\"       is then converted to the EPS format using netpbm utilities.
-.\"
 .nr www-htmlimage-gap 0
 .
 .de MPIMG
@@ -885,7 +821,6 @@ HTML always denotes XHTML also.
 .  \}
 ..
 .
-.\" --------------------------------------------------------------------
 .\" HnS n
 .\"
 .\"   Begin heading.  Heading level is N.
@@ -897,7 +832,6 @@ HTML always denotes XHTML also.
 .\" If your heading contains URL, FTP, MTO macros you might wish to
 .\" disable automatic links to headings.  This can be done via `-P-l'
 .\" from the command line or by using a cakk to `.HX 0'.
-.\"
 .nr www-heading-no -1
 .
 .de HnS
@@ -914,45 +848,37 @@ HTML always denotes XHTML also.
 .  DEVTAG-EO-H
 ..
 .
-.\" --------------------------------------------------------------------
 .\" LK
 .\"
 .\"   Emit the automatically collected links derived from
 .\"   section/numbered headings at this position.
-.\"
 .de LK
 .  DEVTAG .links
 ..
 .
-.\" --------------------------------------------------------------------
 .\" HR
 .\"
 .\"   Produce a horizontal line.
-.\"
 .de HR
 .  HTML</p> <hr\\*[www->]
 ..
 .
-.\" --------------------------------------------------------------------
 .\" NHR
 .\"
 .\"  Suppress the generation of the top and bottom rules which grohtml
 .\"  emits by default.
-.\"
 .de NHR
 .  DEVTAG .no-auto-rule
 ..
 .
 .\"
 .\" www-end-nowhere - end of input trap called to finish diversion.
-.\"
 .de www-end-nowhere
 .  if !\\n[www-html] \
 .    di
 .  DEVTAG-EO-TL
 ..
 .
-.\" --------------------------------------------------------------------
 .\" HTL
 .\"
 .\"   Generate an HTML title only.  This differs from the -ms .TL macro
@@ -962,7 +888,6 @@ HTML always denotes XHTML also.
 .\"   engine fodder but a graphic title in the document.
 .\"
 .\"   The macro terminates when a space or break is seen (.sp, .br).
-.\"
 .de HTL
 .  DEVTAG .html-tl
 .  if !\\n[www-html] \
@@ -970,9 +895,7 @@ HTML always denotes XHTML also.
 .  it 2 www-end-nowhere
 ..
 .
-.\" --------------------------------------------------------------------
 .\" auxiliary definitions for lists
-.\"
 .ds www-ul-level1 \[bu]\ \ \"
 .ds www-ul-level2 \[sq]\ \ \"
 .ds www-ul-level3 \[ci]\ \ \"
@@ -994,7 +917,6 @@ HTML always denotes XHTML also.
 .
 .\"
 .\" allow nested lists
-.\"
 .nr www-depth 0
 .nr www-li-indent \n[.i]
 .ds www-level0 nop\"
@@ -1024,7 +946,6 @@ HTML always denotes XHTML also.
 .\" www-emit-ltag - shut down a previous open list tag
 .\"                 before issuing a new tag \\$1.
 .\"                 It then records tag \\$1 is open.
-.
 .de www-emit-ltag
 .  if !'\\*[www-ltag\\n[www-depth]]'' \
 .    HTML-NS </\\*[www-ltag\\n[www-depth]]>
@@ -1035,7 +956,6 @@ HTML always denotes XHTML also.
 .
 .\"
 .\" Auxiliary macro for ULS.
-.\"
 .de www-push-ul-level
 .  nr www-ul-level +1
 .  if (\\n[www-ul-level] > 3) \
@@ -1043,7 +963,6 @@ HTML always denotes XHTML also.
 ..
 .\"
 .\" Auxiliary macro for ULE.
-.\"
 .de www-pop-ul-level
 .  if !\\n[www-ul-level] \
 .    www-error ULE: trying to terminate a list which does not exist
@@ -1052,7 +971,6 @@ HTML always denotes XHTML also.
 .
 .\"
 .\" Auxiliary macro for OLS.
-.\"
 .de www-push-ol-level
 .  nr www-ol-level +1
 .  if (\\n[www-ol-level] > 3) \
@@ -1061,18 +979,15 @@ HTML always denotes XHTML also.
 .
 .\"
 .\" Auxiliary macro for OLE.
-.\"
 .de www-pop-ol-level
 .  if !\\n[www-ol-level] \
 .    www-error OLE: trying to terminate a list which does not exist
 .  nr www-ol-level -1
 ..
 .
-.\" --------------------------------------------------------------------
 .\" ULS
 .\"
 .\"   Start an unordered list.
-.\"
 .de ULS
 .  www-push-li www-li-ul
 .  www-push-ul-level
@@ -1084,11 +999,9 @@ HTML always denotes XHTML also.
 .    nr www-li-indent +\w'\\*[www-ul-level\\n[www-ul-level]]'u
 ..
 .
-.\" --------------------------------------------------------------------
 .\" ULE
 .\"
 .\"   End an unordered list.
-.\"
 .de ULE
 .  ie \\n[www-html] \{\
 .    www-emit-ltag
@@ -1102,11 +1015,9 @@ HTML always denotes XHTML also.
 .  www-pop-li
 ..
 .
-.\" --------------------------------------------------------------------
 .\" OLS
 .\"
 .\"   Start an ordered list.
-.\"
 .de OLS
 .  www-push-li www-li-ol
 .  www-push-ol-level
@@ -1119,11 +1030,9 @@ HTML always denotes XHTML also.
 .    nr www-li-indent +\w'\\*[www-ol-tmp]'u
 ..
 .
-.\" --------------------------------------------------------------------
 .\" OLE
 .\"
 .\"   End an ordered list.
-.\"
 .de OLE
 .  ie \\n[www-html] \{\
 .    www-emit-ltag
@@ -1138,11 +1047,9 @@ HTML always denotes XHTML also.
 .  www-pop-li
 ..
 .
-.\" --------------------------------------------------------------------
 .\" DLS
 .\"
 .\"   Start a definition list.
-.\"
 .de DLS
 .  www-push-li www-li-dl
 .  nr www-dl-level +1
@@ -1156,11 +1063,9 @@ HTML always denotes XHTML also.
 .  \}
 ..
 .
-.\" --------------------------------------------------------------------
 .\" DLE
 .\"
 .\"   End a definition list.
-.\"
 .de DLE
 .  ie \\n[www-html] \{\
 .    www-emit-ltag
@@ -1174,7 +1079,6 @@ HTML always denotes XHTML also.
 .  www-pop-li
 ..
 .
-.\" --------------------------------------------------------------------
 .\" LI
 .\"
 .\"   Insert a list item.
@@ -1182,7 +1086,6 @@ HTML always denotes XHTML also.
 .
 .\" ********
 .\" www-li-ul - bulleted list item
-.\"
 .de www-li-ul
 .  ie \\n[www-html] \
 .    www-emit-ltag li
@@ -1196,7 +1099,6 @@ HTML always denotes XHTML also.
 .
 .\" ********
 .\" www-li-ol - numbered list item
-.\"
 .de www-li-ol
 .  ie \\n[www-html] \
 .    www-emit-ltag li
@@ -1210,7 +1112,6 @@ HTML always denotes XHTML also.
 .
 .\" ********
 .\" www-li-dl - definition list item
-.\"
 .de www-li-dl
 .  ie \\n[www-html] \{\
 .    HTML <dt>\\$1</dt>
@@ -1225,7 +1126,6 @@ HTML always denotes XHTML also.
 .  \}
 ..
 .
-.\" --------------------------------------------------------------------
 .\" DC l text [color]
 .\"
 .\"   L is the letter to be dropped and enlarged.
@@ -1234,7 +1134,6 @@ HTML always denotes XHTML also.
 .\"   exceed.
 .\"
 .\"   COLOR is the optional color of the dropped letter (default black).
-.\"
 .de DC
 .  ds www-dropcolor black\"
 .  if !'\\$3'' \
@@ -1282,10 +1181,8 @@ HTML always denotes XHTML also.
 .\" here are some tags specially for -Tps or -Thtml when invoked by
 .\" pre-html to generate PNG images from postscript.
 .
-.\" --------------------------------------------------------------------
 .\" HTML-DO-IMAGE - tell troff to issue an image marker which can be
 .\"                 read back by pre-html
-.\"
 .de HTML-DO-IMAGE
 .  if r ps4html \
 .    nop \O[5\\$2\\$1.png]\O[1]\O[3]
@@ -1293,9 +1190,7 @@ HTML always denotes XHTML also.
 .    nop \O[5\\$2\\$1.png]\O[0]\O[3]
 ..
 .
-.\" --------------------------------------------------------------------
 .\" HTML-IMAGE-END - terminate an image for HTML
-.\"
 .de HTML-IMAGE-END
 .  if r ps4html \
 .    nop \O[4]\O[2]\O[0]
@@ -1305,19 +1200,15 @@ HTML always denotes XHTML also.
 .
 .nr www-png-no 0
 .
-.\" --------------------------------------------------------------------
 .\" www-make-unique-name - generate another unique name in string
 .\"                        `www-unique-name'
-.\"
 .de www-make-unique-name
 .  nr www-png-no +1
 .  ds www-unique-name \\*[www-image-template]\\n[www-png-no]\"
 ..
 .
-.\" --------------------------------------------------------------------
 .\" HTML-IMAGE and friends tell grohtml that this region of text needs
 .\"            to be rendered as an image.
-.\"
 .de HTML-IMAGE
 .  \" generates a centered image
 .  www-make-unique-name
@@ -1342,7 +1233,6 @@ HTML always denotes XHTML also.
 .\"  EQN-HTML-IMAGE and friends check to see whether the equation is
 .\"                 not in an image, in which case it allows HTML
 .\"                 (mathml) to be generated (if -Txhtml was specified).
-.
 .de EQN-HTML-IMAGE
 .  \" generates a centered image
 .  www-make-unique-name
@@ -1364,10 +1254,8 @@ HTML always denotes XHTML also.
 .  EQN-HTML-DO-IMAGE \\*[www-unique-name] i
 ..
 .
-.\" --------------------------------------------------------------------
 .\" EQN-HTML-DO-IMAGE - tell troff to issue an image marker which can be
 .\"                     read back by pre-html
-.\"
 .de EQN-HTML-DO-IMAGE
 .  ie r xhtml \{\
 .    if !(\\n[.O] == 0) \{\
@@ -1381,9 +1269,7 @@ HTML always denotes XHTML also.
 .    HTML-DO-IMAGE \\$*
 ..
 .
-.\" --------------------------------------------------------------------
 .\" EQN-HTML-IMAGE-END - terminate an image for HTML
-.\"
 .de EQN-HTML-IMAGE-END
 .  ie r xhtml \{\
 .    if !(\\n[.O] == 0) \{\
@@ -1397,7 +1283,6 @@ HTML always denotes XHTML also.
 .    HTML-IMAGE-END
 ..
 .
-.\" --------------------------------------------------------------------
 .\" Setup around HTML-IMAGE and friends
 .\"
 .\" now set up TS, TE, EQ, EN default macros
@@ -1405,7 +1290,6 @@ HTML always denotes XHTML also.
 .\" we must not use `.als': the definition of .TE in s.tmac, for example,
 .\" calls .HTML-IMAGE-END, which would refer to itself due to the alias,
 .\" causing an endless loop
-.\"
 .if !d TS \{\
 .  de TS
 .    nop \\*[HTML-IMAGE]\\
@@ -1427,36 +1311,29 @@ HTML always denotes XHTML also.
 .  .
 .\}
 .
-.\" --------------------------------------------------------------------
 .\" JOBNAME
 .\"
 .\"   Generate multiple output files containing the HTML.
 .\"   A file is split whenever a .SH or .NH 1 is encountered.
 .\"   The argument to JOBNAME is the file stem for future output files.
-.\"
 .de JOBNAME
 .  DEVTAG .job-name \\$1
 ..
 .
-.\" --------------------------------------------------------------------
 .\" HEAD
 .\"
 .\"   Add information to the <head> </head> section of the HTML
 .\"   document
-.\"
 .de HEAD
 .  DEVTAG .head "\\$*"
 ..
 .
-.\" --------------------------------------------------------------------
 .\" start of some code
-.\"
 .de CDS
 .  ft C
 .  nf
 ..
 .
-.\" --------------------------------------------------------------------
 .\" end of some code
 .\"
 .de CDE
@@ -1468,9 +1345,7 @@ HTML always denotes XHTML also.
 .nr www-nav-width-left 30
 .nr www-nav-width-right 70
 .
-.\" --------------------------------------------------------------------
 .\" LNS - left navigation start
-.\"
 .de LNS
 .  HTML</p> <table><tr><td "valign=""top""" \
                            "width=""\\n[www-nav-width-left]%""" \
@@ -1481,9 +1356,7 @@ HTML always denotes XHTML also.
 .  nr SH-open 1
 ..
 .
-.\" --------------------------------------------------------------------
 .\" LNE - left navigation end
-.\"
 .de LNE
 .  HTML</p> </td></tr></table>
 .  HR
@@ -1494,7 +1367,6 @@ HTML always denotes XHTML also.
 .
 .\"
 .\" some auxiliary macros for left navigation lists
-.\"
 .de www-SH
 .  if (0\\$1 == 0) \{\
 .    if (\\n[SH-open] == 1) \
@@ -1522,14 +1394,12 @@ HTML always denotes XHTML also.
 .  nr needs-begin 0
 ..
 .
-.\" --------------------------------------------------------------------
 .\" ALN [colour] [left width percentage]
 .\"
 .\"   Turn on automatic left navigation.  This macro should only be
 .\"   called once (normally at the start of the document) as it
 .\"   indicates that all top-level section headings form a navigation
 .\"   list on the left of the main text.
-.\"
 .de ALN
 .  if '\*[.T]'html' \{\
 .    if !'\\$1'' \
@@ -1547,7 +1417,6 @@ HTML always denotes XHTML also.
 .  \}
 ..
 .
-.\" --------------------------------------------------------------------
 .\" LINKSTYLE color [fontstyle [openglyph closeglyph]]
 .\"
 .\"   Initialize www.tmac so that when this macro set is used with
@@ -1555,7 +1424,6 @@ HTML always denotes XHTML also.
 .\"   For example:
 .\"
 .\"   LINKSTYLE blue CR < >
-.\"
 .de LINKSTYLE
 .  if (\\n[.$] < 1) \
 .    www:error .\\$0 expects at least 1 argument.
@@ -1573,16 +1441,12 @@ HTML always denotes XHTML also.
 .
 .\" MATHML - enable eqn mathml output to pass through to the device
 .\"          driver
-.
 .de MATHML
 .  if (\\n[.O] == 0) \
 .    MATH<?p> \\$*
 ..
 .
-.\" --------------------------------------------------------------------
 .\" final setup
-.\" --------------------------------------------------------------------
-.
 .LINKSTYLE blue C \[la] \[ra]
 .
 .if \n[www-html] \{\
@@ -1593,13 +1457,4 @@ HTML always denotes XHTML also.
 .if r ps4html .nop \O[0]
 .cp \n(_C
 .
-.\" now set
-.
-.\" --------------------------------------------------------------------
-.\" Emacs settings
-.\" --------------------------------------------------------------------
-.
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
-.\" EOF
+.\" s-ts-mode

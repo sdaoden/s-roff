@@ -1,24 +1,20 @@
-.\" papersize.tmac
+.\"@ papersize.tmac
+.\"@ Set up groff for various paper sizes.
+.\"@ Synopsis:
+.\"@   groff ... -dpaper=<format> ...
+.\"@ Possible values for `format' are the same as the predefined `papersize'
+.\"@ values (see the groff_font man page) except a7-d7.  An appended `l'
+.\"@ (ell) character denotes landscape orientation.  Examples: `a4', `c3l',
+.\"@ `letterl'.
+.\"@
+.\"@ Most output drivers need additional command line switches `-p' and
+.\"@ `-l' to override the default paper length and orientation as set in
+.\"@ the driver specific DESC file.
+.\"@ For example, use the following for PS output on A4 paper in landscape
+.\"@ orientation::
+.\"@  groff -Tps -dpaper=a4l -P-pa4 -P-l -ms foo.ms > foo.ps
 .\"
-.\" Set up groff for various paper sizes.
-.\"
-.\" Usage:
-.\"
-.\"   groff ... -dpaper=<format> ...
-.\"
-.\" Possible values for `format' are the same as the predefined `papersize'
-.\" values (see the groff_font man page) except a7-d7.  An appended `l'
-.\" (ell) character denotes landscape orientation.  Examples: `a4', `c3l',
-.\" `letterl'.
-.\"
-.\" Most output drivers need additional command line switches `-p' and
-.\" `-l' to override the default paper length and orientation as set in
-.\" the driver specific DESC file.
-.\"
-.\" For example, use the following for PS output on A4 paper in landscape
-.\" orientation::
-.\"
-.\"   groff -Tps -dpaper=a4l -P-pa4 -P-l -ms foo.ms > foo.ps
+.\" Adapted to S-roff by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .
 .nr _C \n(.C
 .cp 0
@@ -158,4 +154,4 @@
 .
 .cp \n[_C]
 .
-.\" EOF
+.\" s-ts-mode

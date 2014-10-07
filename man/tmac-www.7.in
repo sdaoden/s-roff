@@ -1,9 +1,10 @@
-.TH GROFF_WWW @MAN7EXT@ "@MDATE@" "Groff Version @VERSION@"
-.\" Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2008
+.\"@ @L_ROFF@_www.7
+.\"
+.\" Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+.\"
+.\" Copyright (C) 2000 - 2006, 2008
 .\" Free Software Foundation, Inc.
 .\"      Written by Gaius Mulley (gaius@glam.ac.uk)
-.\"
-.\" This file is part of groff.
 .\"
 .\" groff is free software; you can redistribute it and/or modify it under
 .\" the terms of the GNU General Public License as published by the Free
@@ -22,6 +23,8 @@
 .\" user level guide to using the -mwww macroset
 .\"
 .
+.TH @U_ROFF@_WWW @MAN7EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
+.
 .do nr groff_www_C \n[.C]
 .cp 0
 .
@@ -32,23 +35,26 @@
 .\" at the top of the document is suppressed.
 .LK
 .
-.
+.\"
 .SH NAME
-groff_www \- groff macros for authoring web pages
+.
+@L_ROFF@_www \- @T_ROFF@ macros for authoring web pages
 .HR
 .
-.
+.\"
 .SH SYNOPSIS
-.B "groff \-mwww"
+.
+.B "@L_ROFF@ \-mwww"
 [ options ]
 file ...
 .
-.
+.\"
 .SH DESCRIPTION
+.
 This manual page describes the GNU \-mwww macro package, which is part of
-the groff document formatting system.
+the @T_ROFF@ document formatting system.
 The manual page is very a basic guide, and the html device driver
-.RB ( \%grohtml )
+.RB ( \%@L_DEV_HTML@ )
 has been completely rewritten but still remains as in an alpha state.
 It has been included into the distribution so that a lot of people have a
 chance to test it.
@@ -58,10 +64,12 @@ file) if you use
 .B \-Thtml
 or
 .BR \-Txhtml .
+.
 .PP
 To see the hyperlinks in action, please format this man page with the
-.B \%grohtml
+.B \%@L_DEV_HTML@
 device.
+.
 .PP
 Here is a summary of the functions found in this macro set.
 .TS
@@ -102,31 +110,34 @@ l l.
 \&.LNE@end the two-column table.
 \&.LINKSTYLE@initialize default url attributes.
 .TE
+.
 .PP
 Output of the
-.BR pic ,
-.BR eqn ,
-.BR refer ,
+.BR @L_P_PIC@ ,
+.BR @L_P_EQN@ ,
+.BR @L_P_REFER@ ,
 and
-.B tbl
+.B @L_P_TBL@
 preprocessors is acceptable as input.
 .
-.
+.\"
 .SH REQUESTS
+.
 .TP
 .B .JOBNAME filename
 Split output into multiple HTML files.
 A file is split whenever a .SH or .NH\ 1 is encountered.
 Its argument is the file stem name for future output files.
 This option is equivalent to
-.BR \%grohtml 's
+.BR \%@L_DEV_HTML@ 's
 .B \-j
 option.
+.
 .TP
 .B .HX n
 Specify the cut off depth when generating links from section headings.
 For example, a parameter of\~2 would cause
-.B \%grohtml
+.B \%@L_DEV_HTML@
 to generate a list of links for
 .B .NH\ 1
 and
@@ -140,15 +151,16 @@ Whereas
 .B .HX 0
 .fi
 .RE
+.
 .IP
 tells
-.B \%grohtml
+.B \%@L_DEV_HTML@
 that no heading links should be created at all.
 Another method for turning automatic headings off is by issuing the
 the command line switch
 .B \-P\-l
 to
-.BR groff .
+.BR @L_ROFF@ .
 .
 .TP
 .B .BCL foreground background active not-visited visited
@@ -185,20 +197,23 @@ Here is how to encode
 .B .URL http://\[rs]:foo.\[rs]:org/ "foo" :
 .RE
 .IP
-If this is processed by a device other than 
+If this is processed by a device other than
 .B \-Thtml
 or
 .B \-Txhtml
 it appears as:
 .RS
+.
 .IP
 foo \[la]\f[C]http://foo.org\f[]\[ra]:
 .RE
+.
 .IP
 The URL macro can be of any type; for example we can reference
-.URL pic.html "Eric Raymond's pic guide" 
+.URL pic.html "Eric Raymond's pic guide"
 by:
 .RS
+.
 .IP
 .B .URL pic.html \[dq]Eric Raymond's pic guide\[dq]
 .RE
@@ -213,16 +228,18 @@ If an empty argument is given,
 is used instead.
 An optional third argument is stuff printed immediately afterwards.
 Hyphenation is disabled while printing the actual email address.
-For example, 
+For example,
 .MTO joe@user.org "Joe User"
 was achieved by the following macro:
 .RS
+.
 .IP
 .B .MTO joe@user.org \[dq]Joe User\[dq]
 .RE
+.
 .IP
 Note that all the URLs actually are treated as consuming no textual space
-in groff.
+in @L_ROFF@.
 This could be considered as a bug since it causes some problems.
 To circumvent this,
 .B www.tmac
@@ -312,7 +329,7 @@ or
 .B \-Txhtml
 it is necessary to use the
 .B \-U
-option of groff.
+option of @L_ROFF@.
 .
 .TP
 .B .MPIMG [-R|-L] [-G gap] filename [width [height]]
@@ -375,7 +392,7 @@ Example:
 \&.HnS 1
 \&.HR
 GNU Troff
-\&.URL http://groff.ffii.org (Groff) 
+\&.URL http://groff.ffii.org (Groff)
 \&\(em a
 \&.URL http://www.gnu.org/ GNU
 \&project.
@@ -393,7 +410,6 @@ This can be done via
 .B \-P\-l
 from the command line.
 .\" or by using a call to `.HX 0'.
-
 .
 .TP
 .B .HnE
@@ -402,13 +418,13 @@ End heading.
 .TP
 .B .LK
 .TAG LK
-Force \%grohtml to place the automatically generated links at this position.
+Force \%@L_DEV_HTML@ to place the automatically generated links at this
+position.
 If this manual page has been processed with
 .B \-Thtml
 or
 .B \-Txhtml
 those links can be seen right here.
-.
 .LK
 .
 .TP
@@ -427,7 +443,7 @@ by default.
 .TP
 .B .HTL
 Generate an HTML title only.
-This differs from the 
+This differs from the
 .B TL
 macro of the
 .B ms
@@ -541,46 +557,48 @@ The macro set initializes itself with the following call
 .IP
 but these values will be superseded by a user call to LINKSTYLE.
 .
+.\"
 .SH SECTION HEADING LINKS
+.
 By default
-.B \%grohtml
+.B \%@L_DEV_HTML@
 generates links to all section headings and places these at the top of the
 html document. (See
 .URL #LK LINKS
 for details of how to switch this off or alter the position).
 .
+.\"
+.SH LIMITATIONS OF @U_DEV_HTML@
 .
-.SH LIMITATIONS OF GROHTML
 .LP
 .B tbl
 information is currently rendered as a PNG image.
 .
-.
+.\"
 .SH FILES
+.
 @MACRODIR@/www.tmac
 .
-.
+.\"
 .SH "SEE ALSO"
-.BR groff (@MAN1EXT@),
-.BR @g@troff (@MAN1EXT@)
-.BR \%grohtml (@MAN1EXT@),
-.BR netpbm (1)
+
+.BR \%@L_ROFF@ (@MAN1EXT@),
+.BR \%@L_TROFF@ (@MAN1EXT@)
+.BR \%@L_DEV_HTML@ (@MAN1EXT@)
 .
-.
+.\"
 .SH AUTHOR
-.B \%grohtml
+.
+.B \%@L_DEV_HTML@
 was written by
 .MTO gaius@glam.ac.uk "Gaius Mulley"
 .
-.
+.\"
 .SH BUGS
-Report bugs to the
-.MTO bug-groff@\:gnu.org "Groff Bug Mailing List" .
-Include a complete, self-contained example that will allow the bug to be
-reproduced, and say which version of groff you are using.
+.
+Report bugs to
+.MTO @BUGMAIL@ .
 .
 .cp \n[groff_www_C]
 .
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
+.\" s-ts-mode
