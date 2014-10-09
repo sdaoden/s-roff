@@ -799,10 +799,9 @@ void next_file()
   else {
     file_case *fcp = include_search_path.open_file_cautious(nm.contents(),
         fcp->fc_const_path);
-    if (fcp != NULL) {
+    if (fcp != NULL)
       input_stack::next_file(fcp, nm.contents());
-      delete fcp;
-    } else
+    else
       error("can't open `%1': %2", nm.contents(), strerror(errno));
   }
   tok.next();
