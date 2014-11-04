@@ -4,7 +4,7 @@
 #@ on the macro level, rendering backward references via macros impossible).
 #@ Set DBG=1 for more verbosity.
 #@ Synopsis: mdocmx.awk [-v DBG=1] [:- | MDOCFILE.X:]
-#@ TODO doesn't allow .Mx as part of a macro chain, e.g.: `.It Mx Ic Va' ??
+#@ TODO WS normalization is applied (because regex WS skip is lost; search TODO)
 #@ TODO use memory until config. limit exceeded, say 1 MB, only then tmpfile.
 #
 # Written by Steffen (Daode) Nurpmeso, 2014.
@@ -28,7 +28,6 @@ BEGIN {
     TMP_CREATE_RETRIES = 2
 
   # The mdoc macros that support referencable anchors
-  # TODO: what about: Sh, Ss
   MACS_CNT = split("Ar Cm Dv Er Ev Fl Fn Fo Ic Pa Va", MACS)
   # We can support macro mappings on preprocessor level
   # (Since the preprocessor only exists because troff isn't multipass, in which
@@ -113,6 +112,7 @@ function tmpdir() {
 # have parsed another argument from the line.
 # If "no" is >0 we start at $(no); it it is 0, iterate to the next argument.
 # Returns ARG.  Only used when "hot"
+# May NOT use "save".
 function parse_arg(no) { # TODO I WANT `.troffctl 2-pass' INSTEAD!!!!
   if (no < 0) {
     no = __ARG_NO
@@ -147,7 +147,7 @@ function parse_arg(no) { # TODO I WANT `.troffctl 2-pass' INSTEAD!!!!
     ARG = ARG j
     if (!i) {
       if (ARG != j)
-        warn("`.Mx': whitespace (possibly) normalized to single SPACE") # FIXME
+        dbg("`.Mx': whitespace (possibly) normalized to single SPACE") # TODO
       break
     }
   }
@@ -241,28 +241,30 @@ function mx_check_line() {
     j = mx_stack[mx_stack_cnt]
     if (j) {
       if (i != j) {
-        dbg("no stack pop (arg: <" ARG "|" i "> stack<" j ">)")
-        return
+        dbg("no stack pop due key (arg: <" ARG "|" i "> stack<" j ">)")
+        continue
       }
-      delete mx_stack[mx_stack_cnt]
     }
-
-    dbg("pop stack (arg: <" ARG "|" i "> stack<" j ">) -> " mx_stack_cnt - 1)
-    __ANCHOR = ".Mx -anchor-spass " i
 
     # We need the VALUE
     save = ARG
     if (!parse_arg(0))
       fatal(EX_DATAERR, "`.Mx': expected VALUE after `" save "'")
     if (mx_valstack[mx_stack_cnt]) {
-      ARG = mx_valstack[mx_stack_cnt]
+      i = mx_valstack[mx_stack_cnt]
+      if (i != ARG) {
+        dbg("no stack pop due value (arg: <" save "> value<" ARG " != " i ">)")
+        continue
+      }
       delete mx_valstack[mx_stack_cnt]
-      dbg("  ... STACK value <" ARG ">")
+      i = "STACK"
     } else
-      dbg("  ... USER value <" ARG ">")
+      i = "USER"
 
-    mx_anchors[++mx_anchors_cnt] = __ANCHOR " \"" ARG "\""
-    --mx_stack_cnt
+    delete mx_stack[--mx_stack_cnt]
+    dbg("pop stack (macro<" save "> " i " value <" ARG \
+      "> stack<" mx_stack_cnt ">")
+    mx_anchors[++mx_anchors_cnt] = ".Mx -anchor-spass " save " \"" ARG "\""
   }
 }
 
