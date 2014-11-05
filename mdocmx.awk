@@ -1,13 +1,11 @@
 #!/usr/bin/awk -f
 #@ mdoc .Mx preprocessor -- allow the mdoc macro package to create references
-#@ to anchors defined via .Mx (since troff isn't multipass this can't be done
-#@ on the macro level, rendering backward references via macros impossible).
-#@ Set DBG=1 for more verbosity.
+#@ to anchors defined via .Mx.  Set DBG=1 to gain some verbosity and stderr.
 #@ Synopsis: mdocmx.awk [-v DBG=1] [:- | MDOCFILE.X:]
 #@ TODO WS normalization is applied (because regex WS skip is lost; search TODO)
 #@ TODO use memory until config. limit exceeded, say 1 MB, only then tmpfile.
 #
-# Written by Steffen (Daode) Nurpmeso, 2014.
+# Written by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>, 2014.
 # Public Domain
 
 BEGIN {
@@ -95,7 +93,7 @@ function tmpdir() {
   for (i = 1; i <= ENV_TMP_CNT; ++i) {
     j = ENVIRON[ENV_TMP[i]]
     if (j && system("test -d " j) == 0) {
-      dbg("temporary directory 1.: `" j "'")
+      dbg("temporary directory via ENVIRON: `" j "'")
       return j
     }
   }
@@ -103,7 +101,7 @@ function tmpdir() {
   if (system("test -d " j) != 0)
     fatal(EX_TEMPFAIL,
       "Can't find a usable temporary directory, please set $TMPDIR")
-  dbg("temporary directory 2.: `" j "'")
+  dbg("temporary directory, fallback: `" j "'")
   return j
 }
 
@@ -175,7 +173,7 @@ function mx_comm() {
   # No argument: plain push
   if (NF == 1) {
     ++mx_stack_cnt
-    dbg(".Mx: [noarg] -> +1, mx_stack_cnt=" mx_stack_cnt)
+    dbg(".Mx: [noarg] -> +1, stack size=" mx_stack_cnt)
     return
   }
 
@@ -183,7 +181,7 @@ function mx_comm() {
   if (NF == 2 && $2 ~ /^\*[[:digit:]]+$/) {
     i = substr($2, 2) + 0
     mx_stack_cnt += i
-    dbg(".Mx: " $2 " -> +" i ", mx_stack_cnt=" mx_stack_cnt)
+    dbg(".Mx: " $2 " -> +" i ", stack size=" mx_stack_cnt)
     return
   }
 
@@ -200,7 +198,7 @@ function mx_comm() {
       if (save)
         i = save
       mx_stack[++mx_stack_cnt] = i
-      dbg(".Mx: for next `." i "', mx_stack_cnt=" mx_stack_cnt)
+      dbg(".Mx: for next `." i "', stack size=" mx_stack_cnt)
       break
     }
   if (j > MACS_CNT)
@@ -262,8 +260,8 @@ function mx_check_line() {
       i = "USER"
 
     delete mx_stack[--mx_stack_cnt]
-    dbg("pop stack (macro<" save "> " i " value <" ARG \
-      "> stack<" mx_stack_cnt ">")
+    dbg("pop stack: macro<" save "> " i " value <" ARG \
+      "> stack size=" mx_stack_cnt)
     mx_anchors[++mx_anchors_cnt] = ".Mx -anchor-spass " save " \"" ARG "\""
   }
 }
@@ -279,6 +277,7 @@ function mx_check_line() {
     if (NF > 1 && $2 == "-enable")
       fatal(EX_USAGE, "`.Mx -enable' may be used only once")
     mx_comm()
+    print >> mx_fo
   } else if (NF != 2 || $2 != "-enable")
     fatal(EX_USAGE, "`.Mx -enable' must be the first `.Mx' command")
   else
