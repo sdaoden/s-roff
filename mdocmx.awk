@@ -1,7 +1,7 @@
 #!/usr/bin/awk -f
 #@ mdoc .Mx preprocessor -- allow the mdoc macro package to create references
-#@ to anchors defined via .Mx.  Set DBG=1 to gain some verbosity and stderr.
-#@ Synopsis: mdocmx.awk [-v DBG=1] [:- | MDOCFILE.X:]
+#@ to anchors defined via .Mx.  Set VERBOSE=1 for warnings, =2 for verbosity.
+#@ Synopsis: mdocmx.awk [-v VERBOSE=1|2] [:- | MDOCFILE.X:]
 #@ TODO WS normalization is applied (because regex WS skip is lost; search TODO)
 #@ TODO use memory until config. limit exceeded, say 1 MB, only then tmpfile.
 #
@@ -19,10 +19,9 @@ BEGIN {
 
   #  --  >8  --  8<  --  #
 
-  # Debugging mdocmx.awk?
-  if (!DBG)
-    DBG = 0
-  if (DBG)
+  if (!VERBOSE)
+    VERBOSE = 0
+  if (VERBOSE > 1)
     TMP_CREATE_RETRIES = 2
 
   # The mdoc macros that support referencable anchors
@@ -75,12 +74,13 @@ function f_a_l() { # XXX soelim..
 }
 
 function dbg(s) {
-  if (DBG)
+  if (VERBOSE > 1)
     print "DBG@" f_a_l() ": " s >> "/dev/stderr"
 }
 
 function warn(s) {
-  print "WARN@" f_a_l() ": " s "." >> "/dev/stderr"
+  if (VERBOSE > 0)
+    print "WARN@" f_a_l() ": " s "." >> "/dev/stderr"
 }
 
 function fatal(e, s) {
@@ -145,7 +145,7 @@ function parse_arg(no) { # TODO I WANT `.troffctl 2-pass' INSTEAD!!!!
     ARG = ARG j
     if (!i) {
       if (ARG != j)
-        dbg("`.Mx': whitespace (possibly) normalized to single SPACE") # TODO
+        warn("`.Mx': whitespace (possibly) normalized to single SPACE") # TODO
       break
     }
   }
@@ -208,9 +208,9 @@ function mx_comm() {
   if (NF == 2)
     return
   mx_valstack[mx_stack_cnt] = parse_arg(3)
-  dbg("  ... VALUE given: <" ARG ">");
+  dbg("  ... USER VALUE given: <" ARG ">");
   if (parse_arg(-1))
-    fatal(EX_DATAERR, "`.Mx': data after VALUE is faulty syntax")
+    fatal(EX_DATAERR, "`.Mx': data after USER VALUE is faulty syntax")
 }
 
 # mx_stack_cnt is >0, check wether this line will pop the stack
