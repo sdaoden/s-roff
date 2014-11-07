@@ -1,0 +1,199 @@
+'\" m -- preprocess: mdocmx(1)
+.\"@ mdocmx.7 - mdoc .Mx anchor reference manual.
+.\"
+.\" Written by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>, 2014.
+.\" Public Domain
+.
+.Dd November 5, 2014
+.Dt MDOCMX 7
+.Os
+.Mx -enable
+.Sh NAME
+.Nm .Mx
+.Nd Is an extension to the mdoc semantic markup language
+.
+.Sh SYNOPSIS
+.Nm
+.Ar -enable
+.Pp
+.Nm
+.Nm
+.Ar *DIGITS
+.Nm
+.Ar macro
+.Nm
+.Ar macro Ar key
+.
+.Sh DESCRIPTION
+.Nm
+introduces creation of referenceable manual index anchors.
+To enable this extension the standard
+.Xr mdoc 7
+document prologue \(en
+.Ic \&Dd ,
+.Ic \&Dt
+and
+.Ic \&Os
+\(en is augmented with the new command
+.Nm
+.Ar -enable .
+Because macros driven by single-pass troff implementations cannot
+create backward references
+.Xr mdoc 7
+documents which use this extension need to be preprocessed with the
+.Xr mdocmx 1
+preprocessor, which is a regular part of
+.Xr mdocmx 7
+and implemented in portable
+.Xr awk 1 .
+Specialized manual formatters and macros driven by multi-pass troff
+interpreters may not require a preprocessor to support this extension.
+.Pp
+.Em Remarks:
+The
+.Nm
+request cannot share a line with other macros, neither in the document
+prologue nor in its content.
+It may be helpful to enable messages of the
+.Xr mdocmx 1
+preprocessor on standard error when writing a manual \(en a value of `1'
+will give only warnings, any greater value will increase verbosity:
+.Bd -literal -offset indent
+$ mdocmx.awk -v VERBOSE=2 < mdocmx.7 2> stderr.txt | \e
+  groff -Tascii -mdoc | less
+$ cat stderr.txt
+.Ed
+.Pp
+After the extension was
+.Ar -enable Ns
+d in the document prologue the other
+.Nm
+usage forms can be used to enqueue index anchor requests.
+These requests form a stack which will be consumed (popped) by the
+later occurrence of a (corresponding)
+.Xr mdoc 7
+.Ar macro
+which supports referenceable index entries.
+The indices are managed with distinct namespaces for each supported
+.Ar macro ,
+meaning that, e.g., `\&.Mx \&.Ic sendmail' and `\&.Mx \&.Va sendmail'
+will create distinct index anchors.
+.Pp
+Using the plain macro
+.Nm
+without arguments creates a stack entry for which both,
+the name of the
+.Ar macro
+as well as the
+.Ar key
+will be taken from the document content.
+.Nm
+.Ar macro
+will create a stack entry that will be consumed by the next occurrence of
+.Ar macro
+only, then taking the
+.Ar key
+off the document content, whereas
+.Nm
+.Ar macro Ar key
+creates a stack entry that also has its
+.Ar key
+defined, and which will be consumed once an exactly matching macro / key
+pair is seen in the document only.
+(The
+.Sx EXAMPLES
+section gives a use case for this usage form.)
+.Nm
+.Ar *DIGITS
+is a special form of the anonymous plain
+.Nm
+that creates `DIGITS' stack entries with one command.
+The following macros support referenceable anchors via
+.Nm :
+.Bl -tag -width ".It Ic .Dv"
+.Mx *8
+.It Ic .Ar
+Command argument.
+.It Ic .Cm
+Command modifier.
+.It Ic .Dv
+Defined variable or preprocessor constant.
+.It Ic .Er
+Error constant.
+.It Ic .Ev
+Environment variable.
+.It Ic .Fl
+Command line option (flag).
+.It Ic .Fn
+Function name.
+.It Ic .Fo
+Function name (in function block syntax).
+This is mapped to
+.Ic .Fn ,
+.Ic .Fo
+has no index by itself.
+.Mx
+.It Ic .Ic
+Internal or interactive command.
+.Mx
+.It Ic .Pa
+File system path.
+.Mx
+.It Ic .Va
+Variable name.
+.El
+.
+.Sh EXAMPLES
+A complete, but completely fanciful
+.Xr mdoc 7
+document that uses the
+.Xr mdocmx 7
+extension would for example be:
+.Bd -literal -offset indent
+\&.Dd November 4, 2014
+\&.Dt MDOCMX-EXAMPLE 7
+\&.Os
+\&.Mx -enable
+\&.Bl -tag -width ".It Fn _atexit"
+\&.Mx *3
+\&.It Ic .Ar
+This will create an anchor for a macro `Ic', key `.Ar'.
+\&.It Ic .Cm
+Anchor for `Ic', key `.Cm'.
+\&.It Ic .Dv
+And an anchor for `Ic', key `.Dv'.
+\&.Mx Ic
+\&.Mx Ic "final anchor"
+\&.Mx Fn _atexit
+\&.It Fn exit
+No anchor here.
+\&.It Fn at_quick_exit , Fn _atexit
+Not for the first, but for the second `Fn' there will be an
+anchor with the key `_atexit'.
+Note that whitespace is important and may (dependend on the
+formatter) be normalized to a single ASCII space character.
+With `VERBOSE=1' or higher a warning is issued in such cases.
+\&.It Ic "no anchor here"
+\&.It Ic "final anchor"
+Pops the pushed `Ic' / `final anchor' macro / key pair.
+\&.It Ic ciao
+Pops the `Ic' and assigns the key `Ciao'.
+\&.El
+.Ed
+.
+.Sh SEE ALSO
+.Xr awk 1 ,
+.Xr mandoc 1 ,
+.Xr troff 1 ,
+.Xr mdoc 7
+.Sh HISTORY
+The
+.Nm
+environment appeared in 2014.
+.
+.Sh AUTHORS
+Original idea and draft implementation by
+.An Steffen Po Daode Pc Nurpmeso Aq Mt sdaoden@users.sf.net .
+Command design by
+.An Ingo Schwarze Aq Mt schwarze@openbsd.org .
+.\" s-ts-mode
