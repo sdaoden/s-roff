@@ -1,21 +1,55 @@
 #!/usr/bin/awk -f
 #@ mdoc .Mx preprocessor -- allow the mdoc macro package to create references
-#@ to anchors defined via .Mx.  Set VERBOSE=1 for warnings, =2 for verbosity.
+#@ to anchors defined via the new .Mx command and the existing .Sx command.
+#@ Set VERBOSE=1 for warnings, =2 for verbosity.
 #@ Synopsis: mdocmx.awk [-v VERBOSE=1|2] [:- | MDOCFILE.X:]
-#@ TODO WS normalization is applied (because regex WS skip is lost; search TODO)
-#@ TODO use memory until config. limit exceeded, say 1 MB, only then tmpfile.
 #
-# Written by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>, 2014.
+# TODO use memory until config. limit exceeded, say 1 MB, only then tmpfile.
+#
+# Written 2014 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 # Public Domain
 
 BEGIN {
   TMPDIR = "/tmp"
 
   # xxx TMP/TEMP are Windows, why test them?
-  ENV_TMP_CNT = split("TMPDIR TMP TEMP", ENV_TMP)
+  split("TMPDIR TMP TEMP", ENV_TMP)
 
   # Number of times we try to create our temporary file
   TMP_CREATE_RETRIES = 421
+
+  # The mdoc macros that support referencable anchors.
+  # .Sh and .Ss also create anchors, but since they don't require .Mx they are
+  # treated special and handled directly
+  # Update manual on change!
+  UMACS = "Ar Cm Dv Er Ev Fl Fn Fo Ic Pa Va"
+
+  # We can support macro mappings on preprocessor level
+  # (Since the preprocessor only exists because troff isn't multipass, in which
+  # case the macros could solely act by themselves, it doesn't seem pretty
+  # useful to outsource mapping knowledge from them, though.  But for testing.)
+  # Update manual on change!
+  MACS_MAP["Fo"] = "Fn"
+
+  # A list of all mdoc commands; taken from mdocml, "mdoc.c,v 1.226 2014/10/16"
+  UCOMMS = \
+      "%A %B %C %D %I %J %N %O %P %Q %R %T %U %V " \
+      "Ac Ad An Ao Ap Aq Ar At Bc Bd " \
+        "Bf Bk Bl Bo Bq Brc Bro Brq Bsx Bt Bx " \
+      "Cd Cm D1 Db Dc Dd Dl Do Dq Dt Dv Dx " \
+      "Ec Ed Ef Ek El Em En Eo Er Es Ev Ex Fa Fc Fd Fl Fn Fo Fr Ft Fx " \
+      "Hf " \
+      "Ic In It " \
+      "Lb Li Lk Lp " \
+      "Ms Mt Nd Nm No Ns Nx " \
+      "Oc Oo Op Os Ot Ox Pa Pc Pf Po Pp Pq " \
+      "Qc Ql Qo Qq Re Rs Rv " \
+      "Sc Sh Sm So Sq Ss St Sx Sy Ta Tn " \
+      "Ud Ux Va Vt Xc Xo Xr " \
+      "br ll sp "
+
+  # Punctuation to be ignored (without changing current mode
+  UPUNCT = ". , : ; ( ) [ ] ? !"
 
   #  --  >8  --  8<  --  #
 
@@ -24,24 +58,38 @@ BEGIN {
   if (VERBOSE > 1)
     TMP_CREATE_RETRIES = 2
 
-  # The mdoc macros that support referencable anchors
-  MACS_CNT = split("Ar Cm Dv Er Ev Fl Fn Fo Ic Pa Va", MACS)
-  # We can support macro mappings on preprocessor level
-  # (Since the preprocessor only exists because troff isn't multipass, in which
-  # case the macros could act by themselves, it doesn't seem pretty useful to
-  # outsource mapping knowledge from them, though.  Except for testing.)
-  #MACS_MAP["Fo"] = "Fn"
+  split(UMACS, savea)
+  for (i in savea) {
+    i = savea[i]
+    MACS[i] = i
+  }
+
+  split(UCOMMS, savea)
+  for (i in savea) {
+    i = savea[i]
+    COMMS[i] = i
+  }
+
+  split(UPUNCTS, savea)
+  for (i in savea) {
+    i = savea[i]
+    PUNCTS[i] = i
+  }
 
   EX_USAGE = 64
   EX_DATAERR = 65
   EX_TEMPFAIL = 75
 
+  #mx_sh[]        # Arrays which store headlines, and their sizes
+  #mx_sh_cnt
+  #mx_ss[]
+  #mx_ss_cnt
   #mx_fo = ""     # Our temporary output fork (cleaned of .Mx)
   #mx_anchors[]   # Readily prepared anchors..
   #mx_anchors_cnt # ..number thereof
   #mx_stack[]     # Stack of future anchors to be parsed off..
   #mx_stack_cnt   # ..number thereof
-  #mx_valstack[]  # User specified `.Mx MACRO VALUE': store VALUE somewhere
+  #mx_keystack[]  # User specified `.Mx MACRO KEY': store KEY somewhere
   #ARG, [..]      # Next parsed argument (from parse_arg() helper)
 }
 
@@ -52,17 +100,19 @@ END {
     if (mx_stack_cnt > 0)
       warn("At end of file: index stack not empty (" mx_stack_cnt " levels)")
 
-    for (i = 1; i <= mx_anchors_cnt; ++i) {
-      print mx_anchors[i]
-      delete mx_anchors[i]
-    }
+    for (i in mx_sh)
+      print ".Mx -anchor-spass", mx_sh[i]
+    for (i in mx_ss)
+      print ".Mx -anchor-spass", mx_ss[i]
+    for (i in mx_anchors)
+      print ".Mx -anchor-spass", mx_anchors[i]
     while (getline < mx_fo)
       print
     system("rm -f " mx_fo)
   }
 }
 
-## Note: beware of recursion issues of used temporaries: i, j, save, [_fal]
+## Note: beware of recursion issues of used temporaries: i, j, k, save, [_fal]
 
 function f_a_l() { # XXX soelim..
   if (!_fal) {
@@ -85,12 +135,12 @@ function warn(s) {
 
 function fatal(e, s) {
   print "FATAL@" f_a_l() ": " s "." >> "/dev/stderr"
-  exit e;
+  exit e
 }
 
 #
 function tmpdir() {
-  for (i = 1; i <= ENV_TMP_CNT; ++i) {
+  for (i in ENV_TMP) {
     j = ENVIRON[ENV_TMP[i]]
     if (j && system("test -d " j) == 0) {
       dbg("temporary directory via ENVIRON: `" j "'")
@@ -110,15 +160,15 @@ function tmpdir() {
 # have parsed another argument from the line.
 # If "no" is >0 we start at $(no); it it is 0, iterate to the next argument.
 # Returns ARG.  Only used when "hot"
-# May NOT use "save".
-function parse_arg(no) { # TODO I WANT `.troffctl 2-pass' INSTEAD!!!!
+# May NOT use: "k", "save".
+function parse_arg(no) { # TODO this is our problem.. (no, -troff-2pass is..)
   if (no < 0) {
-    no = __ARG_NO
-    __ARG_NO = 0
+    no = _pa_no
+    _pa_no = 0
     return no < NF
   }
   if (no == 0)
-    no = __ARG_NO + 1
+    no = _pa_no + 1
 
   ARG = ""
   for (i = 0; no <= NF; ++no) {
@@ -145,11 +195,12 @@ function parse_arg(no) { # TODO I WANT `.troffctl 2-pass' INSTEAD!!!!
     ARG = ARG j
     if (!i) {
       if (ARG != j)
-        warn("`.Mx': whitespace (possibly) normalized to single SPACE") # TODO
+        # This is documented in the manual (several times i think)
+        warn("`.Mx': whitespace (possibly) normalized to single SPACE")
       break
     }
   }
-  __ARG_NO = no
+  _pa_no = no
   return ARG
 }
 
@@ -192,25 +243,22 @@ function mx_comm() {
     i = substr(i, 2)
   }
 
-  for (j = 1; j <= MACS_CNT; ++j)
-    if (i == MACS[j]) {
-      save = MACS_MAP[i]
-      if (save)
-        i = save
-      mx_stack[++mx_stack_cnt] = i
-      dbg(".Mx: for next `." i "', stack size=" mx_stack_cnt)
-      break
-    }
-  if (j > MACS_CNT)
+  j = MACS[i]
+  if (!j)
     fatal(EX_DATAERR, "`.Mx': macro `" i "' not supported")
+  j = MACS_MAP[i]
+  if (j)
+    i = j
+  mx_stack[++mx_stack_cnt] = i
+  dbg(".Mx: for next `." i "', stack size=" mx_stack_cnt)
 
-  # Do we also have a fixed value?
+  # Do we also have a fixed key?
   if (NF == 2)
     return
-  mx_valstack[mx_stack_cnt] = parse_arg(3)
-  dbg("  ... USER VALUE given: <" ARG ">");
+  mx_keystack[mx_stack_cnt] = parse_arg(3)
+  dbg("  ... USER KEY given: <" ARG ">");
   if (parse_arg(-1))
-    fatal(EX_DATAERR, "`.Mx': data after USER VALUE is faulty syntax")
+    fatal(EX_DATAERR, "`.Mx': data after USER KEY is faulty syntax")
 }
 
 # mx_stack_cnt is >0, check wether this line will pop the stack
@@ -219,59 +267,97 @@ function mx_check_line() {
   if ($0 !~ /^[[:space:]]*[.'][[:space:]]*[^"#]/)
     return
 
-  # What do we have on the stack?
+  # Iterate over all arguments and try to classify them, comparing them against
+  # stack content as applicable
+  _mcl_mac = ""
+  _mcl_cont = 0
   for (parse_arg(-1); parse_arg(0);) {
-    i = ARG
-    if (i ~ /^[.']/) # XXX ?
-      i = substr(i, 2)
-
-    # We of course only take care of macros we know about
-    for (j = 1; j <= MACS_CNT; ++j)
-      if (i == MACS[j]) {
-        save = MACS_MAP[i]
-        if (save)
-          i = save
-        break
-      }
-    if (j > MACS_CNT)
+    # Solely ignore sole punctuation, we're too stupid for such things
+    if (PUNCTS[ARG])
       continue
 
+    # (xxx Do this at the end of the loop instead, after decrement?)
+    if (mx_stack_cnt == 0) {
+      dbg("stack empty, stopping arg processing before <" ARG ">")
+      break
+    }
+
     j = mx_stack[mx_stack_cnt]
+
+    # Is this something we consider a macro?
+    _mcl_cont = 0
+    if (ARG ~ /^\./)
+      ARG = substr(ARG, 2)
+    i = MACS[ARG]
+    if (i)
+      _mcl_mac = i
+    else {
+      if (!_mcl_mac)
+        continue
+      # It may be some mdoc command nonetheless, ensure it doesn't fool our
+      # simpleminded processing, and end possible _mcl_mac savings
+      if (COMMS[ARG]) {
+        if (j)
+          dbg("NO POP due macro (got<" ARG "> want<" j ">)")
+        _mcl_mac = ""
+        continue
+      }
+      i = _mcl_mac
+      _mcl_cont = 1
+    }
+
+    # Current command matches the one on the stack, if there is any
     if (j) {
       if (i != j) {
-        dbg("no stack pop due key (arg: <" ARG "|" i "> stack<" j ">)")
+        dbg("NO POP due macro (got<" i "> want<" j ">)")
+        _mcl_mac = ""
         continue
       }
     }
 
-    # We need the VALUE
-    save = ARG
-    if (!parse_arg(0))
-      fatal(EX_DATAERR, "`.Mx': expected VALUE after `" save "'")
-    if (mx_valstack[mx_stack_cnt]) {
-      i = mx_valstack[mx_stack_cnt]
+    # We need the KEY
+    if (!_mcl_cont && !parse_arg(0))
+      fatal(EX_DATAERR, "`.Mx': expected KEY after `" _mcl_mac "'")
+    if (mx_keystack[mx_stack_cnt]) {
+      i = mx_keystack[mx_stack_cnt]
       if (i != ARG) {
-        dbg("no stack pop due value (arg: <" save "> value<" ARG " != " i ">)")
+        dbg("NO POP mac<" _mcl_mac "> due key (got<" ARG "> want <" i ">)")
         continue
       }
-      delete mx_valstack[mx_stack_cnt]
+      delete mx_keystack[mx_stack_cnt]
       i = "STACK"
     } else
       i = "USER"
 
     delete mx_stack[--mx_stack_cnt]
-    dbg("pop stack: macro<" save "> " i " value <" ARG \
-      "> stack size=" mx_stack_cnt)
-    mx_anchors[++mx_anchors_cnt] = ".Mx -anchor-spass " save " \"" ARG "\""
+    dbg("POP mac<" _mcl_mac "> " i " key <" ARG "> stack size=" mx_stack_cnt)
+    mx_anchors[++mx_anchors_cnt] = _mcl_mac " \"" ARG "\""
   }
+}
+
+# Handle a `.Sh' or `.Ss'
+function sh_ss_comm() {
+  save = ""
+  k = 0
+  for (parse_arg(-1); parse_arg(0); ++k) {
+    if (k < 1)
+      continue
+    if (k > 1)
+      save = save " "
+    save = save ARG
+  }
+  if ($1 ~ /Sh/)
+    mx_sh[++mx_sh_cnt] = "Sh \"" save "\""
+  else
+    mx_ss[++mx_ss_cnt] = "Ss \"" save "\""
 }
 
 # `.Mx' is a line that we care about
 /^[[:space:]]*\.[[:space:]]*M[Xx][[:space:]]*/ {
   # Strip possible existent trailing comment (xxx primitively)
-  i = index($0, "#")
-  if (i-- > 0)
-    $0 = substr($0, 1, i)
+  #i = index($0, "#")
+  #if (i-- > 0)
+  #  $0 = substr($0, 1, i)
 
   if (mx_fo) {
     if (NF > 1 && $2 == "-enable")
@@ -283,6 +369,13 @@ function mx_check_line() {
   else
     mx_enable()
   next
+}
+
+# `.Sh' and `.Ss' are also lines we care about, but always store the data in
+# main memory, since those commands occur in each mdoc file
+/^[[:space:]]*\.[[:space:]]*S[hs][[:space:]]+/ {
+  sh_ss_comm()
+  # ..and process normally, too
 }
 
 # All other lines are uninteresting unless mdocmx is -enable'd and we have

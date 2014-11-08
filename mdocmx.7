@@ -1,16 +1,16 @@
 '\" m -- preprocess: mdocmx(1)
 .\"@ mdocmx.7 - mdoc .Mx anchor reference manual.
 .\"
-.\" Written by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>, 2014.
+.\" Written 2014 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .\" Public Domain
 .
-.Dd November 5, 2014
+.Dd November 8, 2014
 .Dt MDOCMX 7
 .Os
 .Mx -enable
 .Sh NAME
 .Nm .Mx
-.Nd Is an extension to the mdoc semantic markup language
+.Nd Reference extension for the mdoc semantic markup language
 .
 .Sh SYNOPSIS
 .Nm
@@ -48,27 +48,16 @@ and implemented in portable
 .Xr awk 1 .
 Specialized manual formatters and macros driven by multi-pass troff
 interpreters may not require a preprocessor to support this extension.
-.Pp
-.Em Remarks:
-The
-.Nm
-request cannot share a line with other macros, neither in the document
-prologue nor in its content.
-It may be helpful to enable messages of the
-.Xr mdocmx 1
-preprocessor on standard error when writing a manual \(en a value of `1'
-will give only warnings, any greater value will increase verbosity:
-.Bd -literal -offset indent
-$ mdocmx.awk -v VERBOSE=2 < mdocmx.7 2> stderr.txt | \e
-  groff -Tascii -mdoc | less
-$ cat stderr.txt
-.Ed
+It is also possible to preprocess the manual once and distribute the
+resulting document \(en refer to the
+.Sx COMPATIBILITY
+section for more on that.
 .Pp
 After the extension was
 .Ar -enable Ns
 d in the document prologue the other
 .Nm
-usage forms can be used to enqueue index anchor requests.
+usage forms will enqueue index anchor requests.
 These requests form a stack which will be consumed (popped) by the
 later occurrence of a (corresponding)
 .Xr mdoc 7
@@ -76,7 +65,7 @@ later occurrence of a (corresponding)
 which supports referenceable index entries.
 The indices are managed with distinct namespaces for each supported
 .Ar macro ,
-meaning that, e.g., `\&.Mx \&.Ic sendmail' and `\&.Mx \&.Va sendmail'
+meaning that, e.g., `\&.Mx Ic sendmail' and `\&.Mx Va sendmail'
 will create distinct index anchors.
 .Pp
 Using the plain macro
@@ -102,13 +91,29 @@ defined, and which will be consumed once an exactly matching macro / key
 pair is seen in the document only.
 (The
 .Sx EXAMPLES
-section gives a use case for this usage form.)
+section gives a use case for this form.)
 .Nm
 .Ar *DIGITS
 is a special form of the anonymous plain
 .Nm
 that creates `DIGITS' stack entries with one command.
-The following macros support referenceable anchors via
+.Pp
+Using the
+.Xr mdocmx 1
+preprocessor will also create referenceable anchors for the
+.Xr mdoc 7
+section header macros
+.Ic .Sh
+and
+.Ic .Ss ,
+so that a
+.Xr mdoc 7
+macro package which supports the
+.Xr mdocmx 7
+extension will be enabled to actually create references with the
+.Ic .Sx
+macro.
+The following macros gain support for referenceable anchors via
 .Nm :
 .Bl -tag -width ".It Ic .Dv"
 .Mx *8
@@ -143,6 +148,35 @@ File system path.
 Variable name.
 .El
 .
+.Sh IMPLEMENTATION NOTES
+The
+.Nm
+request cannot share a line with other macros, neither in the document
+prologue nor in its content.
+It may be helpful to enable messages of the
+.Xr mdocmx 1
+preprocessor on standard error when writing a manual \(en a value of `1'
+will give only warnings, any greater value will increase verbosity:
+.Bd -literal -offset indent
+$ mdocmx.awk -v VERBOSE=2 < mdocmx.7 2> stderr.txt | \e
+  groff -Tascii -mdoc | less
+$ cat stderr.txt
+.Ed
+.Pp
+The
+.Xr mdocmx 1
+preprocessor is implemented in
+.Xr awk 1
+and relies on that utilities' input field splitting capabilities.
+This means that whitespace in between fields is lost on input and
+reinstantiated as a single space character on output.
+With `VERBOSE=1' or higher a warning is issued in cases where this
+could actually be a problem.
+.Pp
+The preprocessor also doesn't handle escaped whitespace well, e.g.,
+`White\e Space' isn't well supported; arguments with embedded whitespace
+should instead be enclosed in quotation marks.
+.
 .Sh EXAMPLES
 A complete, but completely fanciful
 .Xr mdoc 7
@@ -150,10 +184,15 @@ document that uses the
 .Xr mdocmx 7
 extension would for example be:
 .Bd -literal -offset indent
-\&.Dd November 4, 2014
+\&.Dd November 8, 2014
 \&.Dt MDOCMX-EXAMPLE 7
 \&.Os
 \&.Mx -enable
+\&.Sh NAME
+\&.Nm mdocmx-example
+\&.Nd An example for the mdocmx mdoc reference extension
+\&.Sh DESCRIPTION
+Sors salutis et virtutis michi nunc contraria.
 \&.Bl -tag -width ".It Fn _atexit"
 \&.Mx *3
 \&.It Ic .Ar
@@ -167,12 +206,9 @@ And an anchor for `Ic', key `.Dv'.
 \&.Mx Fn _atexit
 \&.It Fn exit
 No anchor here.
-\&.It Fn at_quick_exit , Fn _atexit
+\&.It Fn at_quick_exit , _atexit
 Not for the first, but for the second `Fn' there will be an
 anchor with the key `_atexit'.
-Note that whitespace is important and may (dependend on the
-formatter) be normalized to a single ASCII space character.
-With `VERBOSE=1' or higher a warning is issued in such cases.
 \&.It Ic "no anchor here"
 \&.It Ic "final anchor"
 Pops the pushed `Ic' / `final anchor' macro / key pair.
@@ -180,6 +216,19 @@ Pops the pushed `Ic' / `final anchor' macro / key pair.
 Pops the `Ic' and assigns the key `Ciao'.
 \&.El
 .Ed
+.
+.Sh COMPATIBILITY
+Using the
+.Xr mdocmx 7
+extension in
+.Xr mdoc 7
+manual pages should not cause any compatibility problems in sofar as
+all tested environments silently ignore the unknown commands by default.
+Because of this, and due to the nature of this extension, an
+interesting, backward as well as forward compatible approach to use
+.Xr mdocmx 7
+may be to preprocess manuals on developer machines and instead
+distribute the resulting documents.
 .
 .Sh SEE ALSO
 .Xr awk 1 ,
