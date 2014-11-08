@@ -2,9 +2,10 @@
 #@ mdoc .Mx preprocessor -- allow the mdoc macro package to create references
 #@ to anchors defined via the new .Mx command and the existing .Sx command.
 #@ Set VERBOSE=1 for warnings, =2 for verbosity.
-#@ Synopsis: mdocmx.awk [-v VERBOSE=1|2] [:- | MDOCFILE.X:]
+#@ Synopsis: mdocmx.awk [-v VERBOSE=1|2] [-v TOC=[Sh|Ss]] [MDOCFILE.X]
 #
 # TODO use memory until config. limit exceeded, say 1 MB, only then tmpfile.
+# TODO TOC=Ss mode not yet implemented
 #
 # Written 2014 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 # Public Domain
@@ -106,8 +107,27 @@ END {
       print ".Mx -anchor-spass", mx_ss[i]
     for (i in mx_anchors)
       print ".Mx -anchor-spass", mx_anchors[i]
-    while (getline < mx_fo)
-      print
+
+    if (TOC && TOC == "Sh") {
+      while (getline < mx_fo) {
+        if ($0 ~ /^[[:space:]]*\.[[:space:]]*Mx[[:space:]]+-toc[[:space:]]*$/) {
+          print ".Sh TABLE OF CONTENTS"
+          print ".Bl -tag"
+          for (i in mx_sh) {
+            i = mx_sh[i]
+            i = substr(i, 4)
+            print ".It Sx", i
+          }
+          print ".El"
+          continue
+        }
+        print
+      }
+    } else {
+      while (getline < mx_fo)
+        print
+    }
+
     system("rm -f " mx_fo)
   }
 }
@@ -229,10 +249,15 @@ function mx_comm() {
   }
 
   # `.Mx *DIGITS' awaits DIGITS anchors to come
-  if (NF == 2 && $2 ~ /^\*[[:digit:]]+$/) {
-    i = substr($2, 2) + 0
-    mx_stack_cnt += i
-    dbg(".Mx: " $2 " -> +" i ", stack size=" mx_stack_cnt)
+  # Also: `.Mx -toc'
+  if (NF == 2) {
+    if ($2 ~ /^\*[[:digit:]]+$/) {
+      i = substr($2, 2) + 0
+      mx_stack_cnt += i
+      dbg(".Mx: " $2 " -> +" i ", stack size=" mx_stack_cnt)
+    } else if ($2 == "-toc") {
+      # Ignored sofar
+    }
     return
   }
 

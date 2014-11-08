@@ -23,6 +23,11 @@
 .Ar macro
 .Nm
 .Ar macro Ar key
+.Pp
+.Nm
+.Ar -toc
+.
+.Mx -toc
 .
 .Sh DESCRIPTION
 .Nm
@@ -55,9 +60,9 @@ section for more on that.
 .Pp
 After the extension was
 .Ar -enable Ns
-d in the document prologue the other
+d in the document prologue the second group of
 .Nm
-usage forms will enqueue index anchor requests.
+usage forms can be used to enqueue index anchor requests.
 These requests form a stack which will be consumed (popped) by the
 later occurrence of a (corresponding)
 .Xr mdoc 7
@@ -147,6 +152,23 @@ File system path.
 .It Ic .Va
 Variable name.
 .El
+.Pp
+The final group of usage forms of the
+.Xr mdocmx 7
+reference extension allows the creation of a document table of content,
+which is of special interest when converting a
+.Xr mdoc 7
+document into formats such as HTML, XHTML and PDF.
+If the
+.Xr mdocmx 1
+preprocessor is invoked with the `TOC' variable set to `Sh' (see
+.Sx IMPLEMENTATION NOTES
+for an example) then any occurrence of `.Mx -toc' in the document will
+be replaced with a table of contents;
+if `TOC' is not set `.Mx -toc' will remain a vivid part of the document
+text and thus target of interpretation of the actual document formatter,
+which ought to ignore such commands except when the document target
+format is one of the mentioned.
 .
 .Sh IMPLEMENTATION NOTES
 The
@@ -158,7 +180,7 @@ It may be helpful to enable messages of the
 preprocessor on standard error when writing a manual \(en a value of `1'
 will give only warnings, any greater value will increase verbosity:
 .Bd -literal -offset indent
-$ mdocmx.awk -v VERBOSE=2 < mdocmx.7 2> stderr.txt | \e
+$ mdocmx.awk -v VERBOSE=2 -v TOC=Sh < mdocmx.7 2> stderr.txt | \e
   groff -Tascii -mdoc | less
 $ cat stderr.txt
 .Ed
