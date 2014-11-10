@@ -5,7 +5,6 @@
 #@ Synopsis: mdocmx.awk [-v VERBOSE=1|2] [-v TOC=[Sh|Ss]] [MDOCFILE.X]
 #
 # TODO use memory until config. limit exceeded, say 1 MB, only then tmpfile.
-# TODO TOC=Ss mode not yet implemented
 #
 # Written 2014 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 # Public Domain
@@ -85,6 +84,7 @@ BEGIN {
   #mx_sh_cnt
   #mx_ss[]
   #mx_ss_cnt
+  #mx_sh_ss[]     # With TOC we need relation of .Ss with its .Sh
   #mx_fo = ""     # Our temporary output fork (cleaned of .Mx)
   #mx_anchors[]   # Readily prepared anchors..
   #mx_anchors_cnt # ..number thereof
@@ -92,12 +92,14 @@ BEGIN {
   #mx_stack_cnt   # ..number thereof
   #mx_keystack[]  # User specified `.Mx MACRO KEY': store KEY somewhere
   #ARG, [..]      # Next parsed argument (from parse_arg() helper)
+  # Global temporaries: i, j, k, save (further notes as applicable)
 }
 
 END {
   # If we were forced to create referenceable anchors, dump the temporary file
   # after writing our table-of-anchors (TAO :)
   if (mx_fo) {
+    #fflush("") # FIXMEs a problem with mawk(1.3.4 20141027)
     if (mx_stack_cnt > 0)
       warn("At end of file: index stack not empty (" mx_stack_cnt " levels)")
 
@@ -108,24 +110,40 @@ END {
     for (i in mx_anchors)
       print ".Mx -anchor-spass", mx_anchors[i]
 
-    if (TOC && TOC == "Sh") {
+    # If we're about to produce a TOC, intercept `.Mx -toc' lines and replace
+    # them with the desired TOC content
+    if (!TOC) {
+      while (getline < mx_fo)
+        print
+    } else {
       while (getline < mx_fo) {
         if ($0 ~ /^[[:space:]]*\.[[:space:]]*Mx[[:space:]]+-toc[[:space:]]*$/) {
           print ".Sh TABLE OF CONTENTS"
-          print ".Bl -tag"
-          for (i in mx_sh) {
-            i = mx_sh[i]
-            i = substr(i, 4)
-            print ".It Sx", i
+          if (mx_sh_cnt > 0) {
+            print ".Bl -inset"
+            for (i in mx_sh) {
+              j = i
+              i = mx_sh[i]
+              i = substr(i, 4)
+              print ".It Sx", i
+              if (TOC == "Ss")
+                toc_print_ss(j)
+            }
+            print ".El"
           }
-          print ".El"
-          continue
-        }
-        print
+          # Rather illegal, but it maybe we have .Ss yet no .Sh
+          else if (TOC == "Ss" && mx_ss_cnt > 0) {
+            print ".Bl -tag"
+            for (i in mx_ss) {
+              i = mx_ss[i]
+              i = substr(i, 4)
+              print ".It Sx", i
+            }
+            print ".El"
+          }
+        } else
+          print
       }
-    } else {
-      while (getline < mx_fo)
-        print
     }
 
     system("rm -f " mx_fo)
@@ -173,6 +191,28 @@ function tmpdir() {
       "Can't find a usable temporary directory, please set $TMPDIR")
   dbg("temporary directory, fallback: `" j "'")
   return j
+}
+
+# Dump all .Ss which belong to the .Sh with the index sh_idx, if any
+function toc_print_ss(sh_idx)
+{
+  any = 0
+  for (i in mx_sh_ss) {
+    j = mx_sh_ss[i]
+    if (j < sh_idx)
+      continue
+    if (j > sh_idx)
+      break
+    if (!any) {
+      any = 1
+      print ".Bl -tag -offset indent"
+    }
+    j = mx_ss[i]
+    j = substr(j, 4)
+    print ".It Sx", j
+  }
+  if (any)
+    print ".El"
 }
 
 # Parse the next _roff_ argument from the awk(1) line (in $0).
@@ -373,8 +413,10 @@ function sh_ss_comm() {
   }
   if ($1 ~ /Sh/)
     mx_sh[++mx_sh_cnt] = "Sh \"" save "\""
-  else
+  else {
     mx_ss[++mx_ss_cnt] = "Ss \"" save "\""
+    mx_sh_ss[mx_ss_cnt] = mx_sh_cnt
+  }
 }
 
 # `.Mx' is a line that we care about
