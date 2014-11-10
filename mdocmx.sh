@@ -1,14 +1,67 @@
-#!/usr/bin/awk -f
+#!/bin/sh -
 #@ mdoc .Mx preprocessor -- allow the mdoc macro package to create references
 #@ to anchors defined via the new .Mx command and the existing .Sx command.
-#@ Set VERBOSE=1 for warnings, =2 for verbosity.
-#@ Synopsis: mdocmx.awk [-v VERBOSE=1|2] [-v TOC=[Sh|Ss]] [MDOCFILE.X]
+#@ Synopsis: mdoxmx[.sh] [:-v:] [-t Sh|Ss] [FILE]
+#@ -v: increase verbosity; -t: wether TOC shall be expanded (for .Sh / .Sh+.Ss)
 #
 # TODO use memory until config. limit exceeded, say 1 MB, only then tmpfile.
 #
 # Written 2014 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 # Public Domain
 
+AWK= V=0 T= F=
+EX_USAGE=64
+
+find_awk() {
+  i=${IFS}
+  IFS=:
+  set -- ${PATH}:/bin
+  IFS=${i}
+  AWK=
+  # for i; do -- new in POSIX Issue 7 + TC1
+  for i
+  do
+    if [ -x "${i}/awk" ]; then
+      AWK="${i}/awk"
+      return 0
+    fi
+  done
+  return 1
+}
+
+synopsis() {
+  ex=${1} msg=${2}
+  [ -n "${msg}" ] && echo >&2 ${msg}
+  echo >&2 "Synopsis: ${0} [:-v:] [-t Sh|Ss] [FILE]"
+  exit ${ex}
+}
+
+##
+
+find_awk || synopsis 1 "Cannot find a usable awk(1) implementation"
+
+while getopts vt: i; do
+  case ${i} in
+  v)
+    V=`expr ${V} + 1`;;
+  t)
+    case "${OPTARG}" in
+    Sh) T=Sh;;
+    Ss) T=Ss;;
+    *)  synopsis ${EX_USAGE} "Invalid -t argument: -- ${OPTARG}";;
+    esac;;
+  ?)
+    synopsis ${EX_USAGE} "";;
+  esac
+done
+OPTIND=`expr ${OPTIND} - 1`
+shift ${OPTIND}
+
+[ ${#} -gt 1 ] && synopsis ${EX_USAGE} "Excess arguments given"
+[ ${#} -eq 0 ] && F=- || F="${1}"
+
+# Let's go awk {{{
+exec ${AWK} -v VERBOSE=${V} -v TOC="${T}" '
 BEGIN {
   TMPDIR = "/tmp"
 
@@ -19,14 +72,14 @@ BEGIN {
   TMP_CREATE_RETRIES = 421
 
   # The mdoc macros that support referencable anchors.
-  # .Sh and .Ss also create anchors, but since they don't require .Mx they are
+  # .Sh and .Ss also create anchors, but since they do not require .Mx they are
   # treated special and handled directly
   # Update manual on change!
   UMACS = "Ar Cm Dv Er Ev Fl Fn Fo Ic Pa Va"
 
   # We can support macro mappings on preprocessor level
-  # (Since the preprocessor only exists because troff isn't multipass, in which
-  # case the macros could solely act by themselves, it doesn't seem pretty
+  # (Since the preprocessor only exists because troff is not multipass, in which
+  # case the macros could solely act by themselves, it does not seem pretty
   # useful to outsource mapping knowledge from them, though.  But for testing.)
   # Update manual on change!
   MACS_MAP["Fo"] = "Fn"
@@ -90,7 +143,7 @@ BEGIN {
   #mx_anchors_cnt # ..number thereof
   #mx_stack[]     # Stack of future anchors to be parsed off..
   #mx_stack_cnt   # ..number thereof
-  #mx_keystack[]  # User specified `.Mx MACRO KEY': store KEY somewhere
+  #mx_keystack[]  # User specified ".Mx MACRO KEY": store KEY somewhere
   #ARG, [..]      # Next parsed argument (from parse_arg() helper)
   # Global temporaries: i, j, k, save (further notes as applicable)
 }
@@ -110,7 +163,7 @@ END {
     for (i in mx_anchors)
       print ".Mx -anchor-spass", mx_anchors[i]
 
-    # If we're about to produce a TOC, intercept `.Mx -toc' lines and replace
+    # If we are about to produce a TOC, intercept ".Mx -toc" lines and replace
     # them with the desired TOC content
     if (!TOC) {
       while (getline < mx_fo)
@@ -181,15 +234,15 @@ function tmpdir() {
   for (i in ENV_TMP) {
     j = ENVIRON[ENV_TMP[i]]
     if (j && system("test -d " j) == 0) {
-      dbg("temporary directory via ENVIRON: `" j "'")
+      dbg("temporary directory via ENVIRON: \"" j "\"")
       return j
     }
   }
   j = TMPDIR
   if (system("test -d " j) != 0)
     fatal(EX_TEMPFAIL,
-      "Can't find a usable temporary directory, please set $TMPDIR")
-  dbg("temporary directory, fallback: `" j "'")
+      "Cannot find a usable temporary directory, please set $TMPDIR")
+  dbg("temporary directory, fallback: \"" j "\"")
   return j
 }
 
@@ -234,18 +287,18 @@ function parse_arg(no) { # TODO this is our problem.. (no, -troff-2pass is..)
   for (i = 0; no <= NF; ++no) {
     j = $(no)
     if (j ~ /^.+".+/)
-        fatal(EX_DATAERR, "`.Mx': quoting rules too complicated for mdocmx")
+        fatal(EX_DATAERR, "\".Mx\": quoting rules too complicated for mdocmx")
 
     if (j ~ /^"/) {
       if (i)
-        fatal(EX_DATAERR, "`.Mx': quoting rules too complicated for mdocmx")
+        fatal(EX_DATAERR, "\".Mx\": quoting rules too complicated for mdocmx")
       i = 1;
       j = substr(j, 2)
     }
 
     if (j ~ /"$/) {
       if (!i)
-        fatal(EX_DATAERR, "`.Mx': quoting rules too complicated for mdocmx")
+        fatal(EX_DATAERR, "\".Mx\": quoting rules too complicated for mdocmx")
       i = 0
       j = substr(j, 1, length(j) - 1)
     }
@@ -256,7 +309,7 @@ function parse_arg(no) { # TODO this is our problem.. (no, -troff-2pass is..)
     if (!i) {
       if (ARG != j)
         # This is documented in the manual (several times i think)
-        warn("`.Mx': whitespace (possibly) normalized to single SPACE")
+        warn("\".Mx\": whitespace (possibly) normalized to single SPACE")
       break
     }
   }
@@ -264,22 +317,22 @@ function parse_arg(no) { # TODO this is our problem.. (no, -troff-2pass is..)
   return ARG
 }
 
-# `.Mx -enable' seen, create temporary file storage
+# ".Mx -enable" seen, create temporary file storage
 function mx_enable() {
   j = tmpdir()
   for (i = 1; i <= TMP_CREATE_RETRIES; ++i) {
     mx_fo = j "/mdocmx-" i ".mx"
     # RW by user only, avoid overwriting of existing files
     if (system("{ umask 077; set -C; :> " mx_fo "; } >/dev/null 2>&1") == 0) {
-      dbg("`.Mx -enable' ok, temporary file: `" mx_fo "'")
+      dbg("\".Mx -enable\" ok, temporary file: \"" mx_fo "\"")
       print ".Mx -enable"
       return
     }
   }
-  fatal(EX_TEMPFAIL, "Can't create a temporary file within `" j "/'")
+  fatal(EX_TEMPFAIL, "Cannot create a temporary file within \"" j "/\"")
 }
 
-# Deal with a non-`-enable' `.Mx' request
+# Deal with a non-"-enable" ".Mx" request
 function mx_comm() {
   # No argument: plain push
   if (NF == 1) {
@@ -288,8 +341,8 @@ function mx_comm() {
     return
   }
 
-  # `.Mx *DIGITS' awaits DIGITS anchors to come
-  # Also: `.Mx -toc'
+  # ".Mx *DIGITS" awaits DIGITS anchors to come
+  # Also: ".Mx -toc"
   if (NF == 2) {
     if ($2 ~ /^\*[[:digit:]]+$/) {
       i = substr($2, 2) + 0
@@ -304,18 +357,18 @@ function mx_comm() {
   # This explicitly specifies the macro to create an anchor for next
   i = $2
   if (i ~ /^\./) {
-    warn("`.Mx': stripping dot prefix from `" i "'")
+    warn("\".Mx\": stripping dot prefix from \"" i "\"")
     i = substr(i, 2)
   }
 
   j = MACS[i]
   if (!j)
-    fatal(EX_DATAERR, "`.Mx': macro `" i "' not supported")
+    fatal(EX_DATAERR, "\".Mx\": macro \"" i "\" not supported")
   j = MACS_MAP[i]
   if (j)
     i = j
   mx_stack[++mx_stack_cnt] = i
-  dbg(".Mx: for next `." i "', stack size=" mx_stack_cnt)
+  dbg(".Mx: for next \"." i "\", stack size=" mx_stack_cnt)
 
   # Do we also have a fixed key?
   if (NF == 2)
@@ -323,13 +376,13 @@ function mx_comm() {
   mx_keystack[mx_stack_cnt] = parse_arg(3)
   dbg("  ... USER KEY given: <" ARG ">");
   if (parse_arg(-1))
-    fatal(EX_DATAERR, "`.Mx': data after USER KEY is faulty syntax")
+    fatal(EX_DATAERR, "\".Mx\": data after USER KEY is faulty syntax")
 }
 
 # mx_stack_cnt is >0, check wether this line will pop the stack
 function mx_check_line() {
   # Must be a non-comment macro line
-  if ($0 !~ /^[[:space:]]*[.'][[:space:]]*[^"#]/)
+  if ($0 !~ /^[[:space:]]*[.'\''][[:space:]]*[^"#]/)
     return
 
   # Iterate over all arguments and try to classify them, comparing them against
@@ -337,7 +390,7 @@ function mx_check_line() {
   _mcl_mac = ""
   _mcl_cont = 0
   for (parse_arg(-1); parse_arg(0);) {
-    # Solely ignore sole punctuation, we're too stupid for such things
+    # Solely ignore sole punctuation, we are too stupid for such things
     if (PUNCTS[ARG])
       continue
 
@@ -359,7 +412,7 @@ function mx_check_line() {
     else {
       if (!_mcl_mac)
         continue
-      # It may be some mdoc command nonetheless, ensure it doesn't fool our
+      # It may be some mdoc command nonetheless, ensure it does not fool our
       # simpleminded processing, and end possible _mcl_mac savings
       if (COMMS[ARG]) {
         if (j)
@@ -382,7 +435,7 @@ function mx_check_line() {
 
     # We need the KEY
     if (!_mcl_cont && !parse_arg(0))
-      fatal(EX_DATAERR, "`.Mx': expected KEY after `" _mcl_mac "'")
+      fatal(EX_DATAERR, "\".Mx\": expected KEY after \"" _mcl_mac "\"")
     if (mx_keystack[mx_stack_cnt]) {
       i = mx_keystack[mx_stack_cnt]
       if (i != ARG) {
@@ -400,7 +453,7 @@ function mx_check_line() {
   }
 }
 
-# Handle a `.Sh' or `.Ss'
+# Handle a .Sh or .Ss
 function sh_ss_comm() {
   save = ""
   k = 0
@@ -419,7 +472,7 @@ function sh_ss_comm() {
   }
 }
 
-# `.Mx' is a line that we care about
+# .Mx is a line that we care about
 /^[[:space:]]*\.[[:space:]]*M[Xx][[:space:]]*/ {
   # Strip possible existent trailing comment (xxx primitively)
   #i = index($0, "#")
@@ -428,24 +481,24 @@ function sh_ss_comm() {
 
   if (mx_fo) {
     if (NF > 1 && $2 == "-enable")
-      fatal(EX_USAGE, "`.Mx -enable' may be used only once")
+      fatal(EX_USAGE, "\".Mx -enable\" may be used only once")
     mx_comm()
     print >> mx_fo
   } else if (NF != 2 || $2 != "-enable")
-    fatal(EX_USAGE, "`.Mx -enable' must be the first `.Mx' command")
+    fatal(EX_USAGE, "\".Mx -enable\" must be the first \".Mx\" command")
   else
     mx_enable()
   next
 }
 
-# `.Sh' and `.Ss' are also lines we care about, but always store the data in
+# .Sh and .Ss are also lines we care about, but always store the data in
 # main memory, since those commands occur in each mdoc file
 /^[[:space:]]*\.[[:space:]]*S[hs][[:space:]]+/ {
   sh_ss_comm()
   # ..and process normally, too
 }
 
-# All other lines are uninteresting unless mdocmx is -enable'd and we have
+# All other lines are uninteresting unless mdocmx is -enabled and we have
 # pending anchor creation requests on the stack
 {
   if (!mx_fo)
@@ -456,5 +509,7 @@ function sh_ss_comm() {
     print >> mx_fo
   }
 }
+' "${F}"
+# }}}
 
 # s-it2-mode
