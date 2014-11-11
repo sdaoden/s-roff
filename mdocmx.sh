@@ -152,7 +152,7 @@ END {
   # If we were forced to create referenceable anchors, dump the temporary file
   # after writing our table-of-anchors (TAO :)
   if (mx_fo) {
-    #fflush("") # FIXMEs a problem with mawk(1.3.4 20141027)
+    close(mx_fo)
     if (mx_stack_cnt > 0)
       warn("At end of file: index stack not empty (" mx_stack_cnt " levels)")
 
