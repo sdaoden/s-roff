@@ -1,0 +1,65 @@
+'\" m -- preprocess: mdocmx(1)
+.\"@ mdocmx.1 - mdocmx(7) preprocessor for single-pass troff.
+.\"
+.\" Written 2014 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+.\" Public Domain
+.
+.Dd November 11, 2014
+.Dt MDOCMX 1
+.Os
+.Mx -enable
+.
+.Sh NAME
+.Nm mdocmx
+.Nd Preprocessor for the mdoc semantic markup language reference extension
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl v
+.Op Fl t Ar \&Sh | \&Ss
+.
+.Mx -toc
+.
+.Sh DESCRIPTION
+.Nm
+can be used to overcome the restriction that single-pass troff
+implementations cannot create forward references.
+It will collect all referenceable anchors of the
+.Xr mdoc 7
+semantic markup language, i.e.,
+.Ic .Sh
+and
+.Ic .Ss ,
+as well as those from the
+.Xr mdocmx 7
+reference extension (solely controlled by the command
+.Ic .Mx ) Ns .
+The resulting document can then be used by the normal (yet
+.Xr mdocmx 7
+enabled)
+.Xr mdoc 7
+macros to create references to all anchors in and of the document.
+.
+.Sh COMPATIBILITY
+.Nm
+is implemented in portable
+.Xr sh 1
+and
+.Xr awk 1 .
+.
+.Sh SEE ALSO
+.Xr awk 1 ,
+.Xr sh 1 ,
+.Xr troff 1 ,
+.Xr mdoc 7 ,
+.Xr mdocmx 7
+.
+.Sh HISTORY
+The
+.Nm
+environment appeared in 2014.
+.
+.Sh AUTHORS
+Written by
+.An Steffen Po Daode Pc Nurpmeso Aq Mt sdaoden@users.sf.net .
+.\" s-ts-mode

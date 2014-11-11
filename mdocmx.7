@@ -8,6 +8,7 @@
 .Dt MDOCMX 7
 .Os
 .Mx -enable
+.
 .Sh NAME
 .Nm .Mx
 .Nd Reference extension for the mdoc semantic markup language
@@ -43,7 +44,7 @@ and
 .Nm
 .Ar -enable .
 Because macros driven by single-pass troff implementations cannot
-create backward references
+create forward references
 .Xr mdoc 7
 documents which use this extension need to be preprocessed with the
 .Xr mdocmx 1
@@ -186,7 +187,7 @@ preprocessor on its standard error I/O channel by using the
 .Fl v
 command line flag in order to get a notion on what is going on:
 .Bd -literal -offset indent
-$ mdocmx.sh -vv -t Sh < mdocmx.7 2> stderr.txt | \e
+$ mdocmx -vv -t Sh < mdocmx.7 2> stderr.txt | \e
   groff -Tascii -mdoc | less
 $ cat stderr.txt
 .Ed
@@ -221,6 +222,7 @@ extension would for example be:
 \&.Sh NAME
 \&.Nm mdocmx-example
 \&.Nd An example for the mdocmx mdoc reference extension
+\&.Mx -toc
 \&.Sh DESCRIPTION
 Sors salutis et virtutis michi nunc contraria.
 \&.Bl -tag -width ".It Fn _atexit"
@@ -267,6 +269,7 @@ distribute the resulting documents.
 .Xr sh 1 ,
 .Xr troff 1 ,
 .Xr mdoc 7
+.
 .Sh HISTORY
 The
 .Nm
