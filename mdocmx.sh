@@ -111,22 +111,22 @@ BEGIN {
   if (VERBOSE > 1)
     TMP_CREATE_RETRIES = 2
 
-  split(UMACS, savea)
-  for (i in savea) {
-    i = savea[i]
-    MACS[i] = i
+  i = split(UMACS, savea)
+  for (j = 1; j <= i; ++j) {
+    k = savea[j]
+    MACS[k] = k
   }
 
-  split(UCOMMS, savea)
-  for (i in savea) {
-    i = savea[i]
-    COMMS[i] = i
+  i = split(UCOMMS, savea)
+  for (j = 1; j <= i; ++j) {
+    k = savea[j]
+    COMMS[k] = k
   }
 
-  split(UPUNCTS, savea)
-  for (i in savea) {
-    i = savea[i]
-    PUNCTS[i] = i
+  i = split(UPUNCTS, savea)
+  for (j = 1; j <= i; ++j) {
+    k = savea[j]
+    PUNCTS[k] = k
   }
 
   EX_USAGE = 64
@@ -153,12 +153,13 @@ END {
   # after writing our table-of-anchors (TAO :)
   if (mx_fo) {
     close(mx_fo)
+
     if (mx_stack_cnt > 0)
       warn("At end of file: index stack not empty (" mx_stack_cnt " levels)")
 
-    for (i in mx_sh)
+    for (i = 1; i <= mx_sh_cnt; ++i)
       print ".Mx -anchor-spass", mx_sh[i]
-    for (i in mx_ss)
+    for (i = 1; i <= mx_ss_cnt; ++i)
       print ".Mx -anchor-spass", mx_ss[i]
     for (i in mx_anchors)
       print ".Mx -anchor-spass", mx_anchors[i]
@@ -174,24 +175,18 @@ END {
           print ".Sh TABLE OF CONTENTS"
           if (mx_sh_cnt > 0) {
             print ".Bl -inset"
-            for (i in mx_sh) {
-              j = i
-              i = mx_sh[i]
-              i = substr(i, 4)
-              print ".It Sx", i
+            for (i = 1; i <= mx_sh_cnt; ++i) {
+              print ".It Sx", substr(mx_sh[i], 4)
               if (TOC == "Ss")
-                toc_print_ss(j)
+                toc_print_ss(i)
             }
             print ".El"
           }
           # Rather illegal, but it maybe we have .Ss yet no .Sh
           else if (TOC == "Ss" && mx_ss_cnt > 0) {
             print ".Bl -tag"
-            for (i in mx_ss) {
-              i = mx_ss[i]
-              i = substr(i, 4)
-              print ".It Sx", i
-            }
+            for (i = 1; i <= mx_ss_cnt; ++i)
+              print ".It Sx", substr(mx_ss[i], 4)
             print ".El"
           }
         } else
@@ -203,15 +198,13 @@ END {
   }
 }
 
-## Note: beware of recursion issues of used temporaries: i, j, k, save, [_fal]
-
 function f_a_l() { # XXX soelim..
-  if (!_fal) {
-    _fal = FILENAME
-    if (!_fal || _fal == "-")
-      _fal = "<stdin>"
+  if (!fal) {
+    fal = FILENAME
+    if (!fal || fal == "-")
+      fal = "<stdin>"
   }
-  return _fal ":" NR
+  return fal ":" NR
 }
 
 function dbg(s) {
@@ -231,40 +224,40 @@ function fatal(e, s) {
 
 #
 function tmpdir() {
-  for (i in ENV_TMP) {
-    j = ENVIRON[ENV_TMP[i]]
-    if (j && system("test -d " j) == 0) {
-      dbg("temporary directory via ENVIRON: \"" j "\"")
-      return j
+  for (t_i in ENV_TMP) {
+    t_j = ENVIRON[ENV_TMP[t_i]]
+    if (t_j && system("test -d " t_j) == 0) {
+      dbg("temporary directory via ENVIRON: \"" t_j "\"")
+      return t_j
     }
   }
-  j = TMPDIR
-  if (system("test -d " j) != 0)
+  t_j = TMPDIR
+  if (system("test -d " t_j) != 0)
     fatal(EX_TEMPFAIL,
       "Cannot find a usable temporary directory, please set $TMPDIR")
-  dbg("temporary directory, fallback: \"" j "\"")
-  return j
+  dbg("temporary directory, fallback: \"" t_j "\"")
+  return t_j
 }
 
 # Dump all .Ss which belong to the .Sh with the index sh_idx, if any
 function toc_print_ss(sh_idx)
 {
-  any = 0
-  for (i in mx_sh_ss) {
-    j = mx_sh_ss[i]
-    if (j < sh_idx)
+  tps_any = 0
+  for (tps_i = 1; tps_i <= mx_ss_cnt; ++tps_i) {
+    tps_j = mx_sh_ss[tps_i]
+    if (tps_j < sh_idx)
       continue
-    if (j > sh_idx)
+    if (tps_j > sh_idx)
       break
-    if (!any) {
-      any = 1
+    if (!tps_any) {
+      tps_any = 1
       print ".Bl -tag -offset indent"
     }
-    j = mx_ss[i]
-    j = substr(j, 4)
-    print ".It Sx", j
+    tps_j = mx_ss[tps_i]
+    tps_j = substr(tps_j, 4)
+    print ".It Sx", tps_j
   }
-  if (any)
+  if (tps_any)
     print ".El"
 }
 
@@ -276,52 +269,52 @@ function toc_print_ss(sh_idx)
 # May NOT use: "k", "save".
 function parse_arg(no) { # TODO this is our problem.. (no, -troff-2pass is..)
   if (no < 0) {
-    no = _pa_no
-    _pa_no = 0
+    no = pa_no
+    pa_no = 0
     return no < NF
   }
   if (no == 0)
-    no = _pa_no + 1
+    no = pa_no + 1
 
   ARG = ""
-  for (i = 0; no <= NF; ++no) {
-    j = $(no)
-    if (j ~ /^.+".+/)
+  for (pa_i = 0; no <= NF; ++no) {
+    pa_j = $(no)
+    if (pa_j ~ /^.+".+/)
         fatal(EX_DATAERR, "\".Mx\": quoting rules too complicated for mdocmx")
 
-    if (j ~ /^"/) {
-      if (i)
+    if (pa_j ~ /^"/) {
+      if (pa_i)
         fatal(EX_DATAERR, "\".Mx\": quoting rules too complicated for mdocmx")
-      i = 1;
-      j = substr(j, 2)
+      pa_i = 1;
+      pa_j = substr(pa_j, 2)
     }
 
-    if (j ~ /"$/) {
-      if (!i)
+    if (pa_j ~ /"$/) {
+      if (!pa_i)
         fatal(EX_DATAERR, "\".Mx\": quoting rules too complicated for mdocmx")
-      i = 0
-      j = substr(j, 1, length(j) - 1)
+      pa_i = 0
+      pa_j = substr(pa_j, 1, length(pa_j) - 1)
     }
 
     if (ARG)
-      j = " " j
-    ARG = ARG j
-    if (!i) {
-      if (ARG != j)
+      pa_j = " " pa_j
+    ARG = ARG pa_j
+    if (!pa_i) {
+      if (ARG != pa_j)
         # This is documented in the manual (several times i think)
         warn("\".Mx\": whitespace (possibly) normalized to single SPACE")
       break
     }
   }
-  _pa_no = no
+  pa_no = no
   return ARG
 }
 
 # ".Mx -enable" seen, create temporary file storage
 function mx_enable() {
-  j = tmpdir()
-  for (i = 1; i <= TMP_CREATE_RETRIES; ++i) {
-    mx_fo = j "/mdocmx-" i ".mx"
+  mxe_j = tmpdir()
+  for (mxe_i = 1; mxe_i <= TMP_CREATE_RETRIES; ++mxe_i) {
+    mx_fo = mxe_j "/mdocmx-" mxe_i ".mx"
     # RW by user only, avoid overwriting of existing files
     if (system("{ umask 077; set -C; :> " mx_fo "; } >/dev/null 2>&1") == 0) {
       dbg("\".Mx -enable\" ok, temporary file: \"" mx_fo "\"")
@@ -329,7 +322,7 @@ function mx_enable() {
       return
     }
   }
-  fatal(EX_TEMPFAIL, "Cannot create a temporary file within \"" j "/\"")
+  fatal(EX_TEMPFAIL, "Cannot create a temporary file within \"" mxe_j "/\"")
 }
 
 # Deal with a non-"-enable" ".Mx" request
@@ -345,9 +338,9 @@ function mx_comm() {
   # Also: ".Mx -toc"
   if (NF == 2) {
     if ($2 ~ /^\*[[:digit:]]+$/) {
-      i = substr($2, 2) + 0
-      mx_stack_cnt += i
-      dbg(".Mx: " $2 " -> +" i ", stack size=" mx_stack_cnt)
+      mxc_i = substr($2, 2) + 0
+      mx_stack_cnt += mxc_i
+      dbg(".Mx: " $2 " -> +" mxc_i ", stack size=" mx_stack_cnt)
     } else if ($2 == "-toc") {
       # Ignored sofar
     }
@@ -355,20 +348,20 @@ function mx_comm() {
   }
 
   # This explicitly specifies the macro to create an anchor for next
-  i = $2
-  if (i ~ /^\./) {
-    warn("\".Mx\": stripping dot prefix from \"" i "\"")
-    i = substr(i, 2)
+  mxc_i = $2
+  if (mxc_i ~ /^\./) {
+    warn("\".Mx\": stripping dot prefix from \"" mxc_i "\"")
+    mxc_i = substr(mxc_i, 2)
   }
 
-  j = MACS[i]
-  if (!j)
-    fatal(EX_DATAERR, "\".Mx\": macro \"" i "\" not supported")
-  j = MACS_MAP[i]
-  if (j)
-    i = j
-  mx_stack[++mx_stack_cnt] = i
-  dbg(".Mx: for next \"." i "\", stack size=" mx_stack_cnt)
+  mxc_j = MACS[mxc_i]
+  if (!mxc_j)
+    fatal(EX_DATAERR, "\".Mx\": macro \"" mxc_i "\" not supported")
+  mxc_j = MACS_MAP[mxc_i]
+  if (mxc_j)
+    mxc_i = mxc_j
+  mx_stack[++mx_stack_cnt] = mxc_i
+  dbg(".Mx: for next \"." mxc_i "\", stack size=" mx_stack_cnt)
 
   # Do we also have a fixed key?
   if (NF == 2)
@@ -387,8 +380,8 @@ function mx_check_line() {
 
   # Iterate over all arguments and try to classify them, comparing them against
   # stack content as applicable
-  _mcl_mac = ""
-  _mcl_cont = 0
+  mcl_mac = ""
+  mcl_cont = 0
   for (parse_arg(-1); parse_arg(0);) {
     # Solely ignore sole punctuation, we are too stupid for such things
     if (PUNCTS[ARG])
@@ -400,74 +393,75 @@ function mx_check_line() {
       break
     }
 
-    j = mx_stack[mx_stack_cnt]
+    mcl_j = mx_stack[mx_stack_cnt]
 
     # Is this something we consider a macro?
-    _mcl_cont = 0
+    mcl_cont = 0
     if (ARG ~ /^\./)
       ARG = substr(ARG, 2)
-    i = MACS[ARG]
-    if (i)
-      _mcl_mac = i
+    mcl_i = MACS[ARG]
+    if (mcl_i)
+      mcl_mac = mcl_i
     else {
-      if (!_mcl_mac)
+      if (!mcl_mac)
         continue
       # It may be some mdoc command nonetheless, ensure it does not fool our
-      # simpleminded processing, and end possible _mcl_mac savings
+      # simpleminded processing, and end possible mcl_mac savings
       if (COMMS[ARG]) {
-        if (j)
-          dbg("NO POP due macro (got<" ARG "> want<" j ">)")
-        _mcl_mac = ""
+        if (mcl_j)
+          dbg("NO POP due macro (got<" ARG "> want<" mcl_j ">)")
+        mcl_mac = ""
         continue
       }
-      i = _mcl_mac
-      _mcl_cont = 1
+      mcl_i = mcl_mac
+      mcl_cont = 1
     }
 
     # Current command matches the one on the stack, if there is any
-    if (j) {
-      if (i != j) {
-        dbg("NO POP due macro (got<" i "> want<" j ">)")
-        _mcl_mac = ""
+    if (mcl_j) {
+      if (mcl_i != mcl_j) {
+        dbg("NO POP due macro (got<" mcl_i "> want<" mcl_j ">)")
+        mcl_mac = ""
         continue
       }
     }
 
     # We need the KEY
-    if (!_mcl_cont && !parse_arg(0))
-      fatal(EX_DATAERR, "\".Mx\": expected KEY after \"" _mcl_mac "\"")
+    if (!mcl_cont && !parse_arg(0))
+      fatal(EX_DATAERR, "\".Mx\": expected KEY after \"" mcl_mac "\"")
     if (mx_keystack[mx_stack_cnt]) {
-      i = mx_keystack[mx_stack_cnt]
-      if (i != ARG) {
-        dbg("NO POP mac<" _mcl_mac "> due key (got<" ARG "> want <" i ">)")
+      mcl_i = mx_keystack[mx_stack_cnt]
+      if (mcl_i != ARG) {
+        dbg("NO POP mac<" mcl_mac "> due key (got<" ARG "> want <" mcl_i ">)")
         continue
       }
       delete mx_keystack[mx_stack_cnt]
-      i = "STACK"
+      mcl_i = "STACK"
     } else
-      i = "USER"
+      mcl_i = "USER"
 
     delete mx_stack[--mx_stack_cnt]
-    dbg("POP mac<" _mcl_mac "> " i " key <" ARG "> stack size=" mx_stack_cnt)
-    mx_anchors[++mx_anchors_cnt] = _mcl_mac " \"" ARG "\""
+    dbg("POP mac<" mcl_mac "> " mcl_i " key <" ARG \
+      "> stack size=" mx_stack_cnt)
+    mx_anchors[++mx_anchors_cnt] = mcl_mac " \"" ARG "\""
   }
 }
 
 # Handle a .Sh or .Ss
 function sh_ss_comm() {
-  save = ""
-  k = 0
-  for (parse_arg(-1); parse_arg(0); ++k) {
-    if (k < 1)
+  ssc_s = ""
+  ssc_i = 0
+  for (parse_arg(-1); parse_arg(0); ++ssc_i) {
+    if (ssc_i < 1)
       continue
-    if (k > 1)
-      save = save " "
-    save = save ARG
+    if (ssc_i > 1)
+      ssc_s = ssc_s " "
+    ssc_s = ssc_s ARG
   }
   if ($1 ~ /Sh/)
-    mx_sh[++mx_sh_cnt] = "Sh \"" save "\""
+    mx_sh[++mx_sh_cnt] = "Sh \"" ssc_s "\""
   else {
-    mx_ss[++mx_ss_cnt] = "Ss \"" save "\""
+    mx_ss[++mx_ss_cnt] = "Ss \"" ssc_s "\""
     mx_sh_ss[mx_ss_cnt] = mx_sh_cnt
   }
 }
