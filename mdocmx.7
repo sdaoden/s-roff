@@ -4,7 +4,7 @@
 .\" Written 2014 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .\" Public Domain
 .
-.Dd November 8, 2014
+.Dd November 11, 2014
 .Dt MDOCMX 7
 .Os
 .Mx -enable
@@ -50,6 +50,8 @@ documents which use this extension need to be preprocessed with the
 preprocessor, which is a regular part of
 .Xr mdocmx 7
 and implemented in portable
+.Xr sh 1
+and
 .Xr awk 1 .
 Specialized manual formatters and macros driven by multi-pass troff
 interpreters may not require a preprocessor to support this extension.
@@ -57,6 +59,7 @@ It is also possible to preprocess the manual once and distribute the
 resulting document \(en refer to the
 .Sx COMPATIBILITY
 section for more on that.
+.
 .Ss Creating referenceable anchors
 After the extension was
 .Ar -enable Ns
@@ -152,6 +155,7 @@ File system path.
 .It Ic .Va
 Variable name.
 .El
+.
 .Ss Creating a table of contents
 The final group of usage forms of the
 .Xr mdocmx 7
@@ -159,44 +163,48 @@ reference extension allows the creation of a document table of content,
 which is of special interest when converting a
 .Xr mdoc 7
 document into formats such as HTML, XHTML and PDF.
-If the
+If so desired the
 .Xr mdocmx 1
-preprocessor is invoked with the `TOC' variable set to `Sh' (see
+preprocessor will replace any occurrence of `.Mx -toc' in the document
+with a table of contents (see
 .Sx IMPLEMENTATION NOTES
-for an example) then any occurrence of `.Mx -toc' in the document will
-be replaced with a table of contents;
-if `TOC' is not set `.Mx -toc' will remain a vivid part of the document
-text and thus target of interpretation of the actual document formatter,
-which ought to ignore such commands except when the document target
-format is one of the mentioned.
+for an example), otherwise `.Mx -toc' lines will remain a vivid part of
+the document text and thus target of interpretation of the actual
+document formatter, which ought to ignore such commands (except when it
+directly supports the
+.Xr mdocmx 7
+extension and the document target format is one of the mentioned, in
+which case it may create a regulary table of content in place).
 .
 .Sh IMPLEMENTATION NOTES
 The
 .Nm
 request cannot share a line with other macros, neither in the document
 prologue nor in its content.
-It may be helpful to enable messages of the
-.Xr mdocmx 1
-preprocessor on standard error when writing a manual \(en a value of `1'
-will give only warnings, any greater value will increase verbosity:
+When developing a manual it may be helpful to increase verbosity of the
+preprocessor on its standard error I/O channel by using the
+.Fl v
+command line flag in order to get a notion on what is going on:
 .Bd -literal -offset indent
-$ mdocmx.awk -v VERBOSE=2 -v TOC=Sh < mdocmx.7 2> stderr.txt | \e
+$ mdocmx.sh -vv -t Sh < mdocmx.7 2> stderr.txt | \e
   groff -Tascii -mdoc | less
 $ cat stderr.txt
 .Ed
 .Pp
 The
 .Xr mdocmx 1
-preprocessor is implemented in
+preprocessor is implemented in standard
+.Xr sh 1
+and
 .Xr awk 1
-and relies on that utilities' input field splitting capabilities.
+and relies on the latter utilities' input field splitting capabilities.
 This means that whitespace in between fields is lost on input and
 reinstantiated as a single space character on output.
-With `VERBOSE=1' or higher a warning is issued in cases where this
-could actually be a problem.
+With verbosity enabled a warning is issued in cases where this could
+actually be a problem.
 .Pp
 The preprocessor also doesn't handle escaped whitespace well, e.g.,
-`White\e Space' isn't well supported; arguments with embedded whitespace
+"White\e Space" isn't well supported; arguments with embedded whitespace
 should instead be enclosed in quotation marks.
 .
 .Sh EXAMPLES
@@ -255,6 +263,8 @@ distribute the resulting documents.
 .Sh SEE ALSO
 .Xr awk 1 ,
 .Xr mandoc 1 ,
+.Xr mdocmx 1 ,
+.Xr sh 1 ,
 .Xr troff 1 ,
 .Xr mdoc 7
 .Sh HISTORY
