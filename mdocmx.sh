@@ -17,7 +17,6 @@ find_awk() {
   IFS=:
   set -- ${PATH}:/bin
   IFS=${i}
-  AWK=
   # for i; do -- new in POSIX Issue 7 + TC1
   for i
   do
@@ -61,6 +60,7 @@ shift ${OPTIND}
 [ ${#} -eq 0 ] && F=- || F="${1}"
 
 # Let's go awk {{{
+APOSTROPHE=\'
 exec ${AWK} -v VERBOSE=${V} -v TOC="${T}" '
 BEGIN {
   TMPDIR = "/tmp"
@@ -73,8 +73,7 @@ BEGIN {
 
   # The mdoc macros that support referencable anchors.
   # .Sh and .Ss also create anchors, but since they do not require .Mx they are
-  # treated special and handled directly
-  # Update manual on change!
+  # treated special and handled directly -- update manual on change!
   UMACS = "Ar Cm Dv Er Ev Fl Fn Fo Ic Pa Va"
 
   # We can support macro mappings on preprocessor level
@@ -101,7 +100,7 @@ BEGIN {
       "Ud Ux Va Vt Xc Xo Xr " \
       "br ll sp "
 
-  # Punctuation to be ignored (without changing current mode
+  # Punctuation to be ignored (without changing current mode)
   UPUNCT = ". , : ; ( ) [ ] ? !"
 
   #  --  >8  --  8<  --  #
@@ -145,7 +144,6 @@ BEGIN {
   #mx_stack_cnt   # ..number thereof
   #mx_keystack[]  # User specified ".Mx MACRO KEY": store KEY somewhere
   #ARG, [..]      # Next parsed argument (from parse_arg() helper)
-  # Global temporaries: i, j, k, save (further notes as applicable)
 }
 
 END {
@@ -155,13 +153,13 @@ END {
     close(mx_fo)
 
     if (mx_stack_cnt > 0)
-      warn("At end of file: index stack not empty (" mx_stack_cnt " levels)")
+      warn("At end of file: \".Mx\" stack not empty (" mx_stack_cnt " levels)")
 
     for (i = 1; i <= mx_sh_cnt; ++i)
       print ".Mx -anchor-spass", mx_sh[i]
     for (i = 1; i <= mx_ss_cnt; ++i)
       print ".Mx -anchor-spass", mx_ss[i]
-    for (i in mx_anchors)
+    for (i = 1; i <= mx_anchors_cnt; ++i)
       print ".Mx -anchor-spass", mx_anchors[i]
 
     # If we are about to produce a TOC, intercept ".Mx -toc" lines and replace
@@ -198,7 +196,7 @@ END {
   }
 }
 
-function f_a_l() { # XXX soelim..
+function f_a_l() {
   if (!fal) {
     fal = FILENAME
     if (!fal || fal == "-")
@@ -249,13 +247,12 @@ function toc_print_ss(sh_idx)
       continue
     if (tps_j > sh_idx)
       break
+
     if (!tps_any) {
       tps_any = 1
       print ".Bl -tag -offset indent"
     }
-    tps_j = mx_ss[tps_i]
-    tps_j = substr(tps_j, 4)
-    print ".It Sx", tps_j
+    print ".It Sx", substr(mx_ss[tps_i], 4)
   }
   if (tps_any)
     print ".El"
@@ -264,10 +261,9 @@ function toc_print_ss(sh_idx)
 # Parse the next _roff_ argument from the awk(1) line (in $0).
 # If "no" < 0, reset the parser and return wether the former state would
 # have parsed another argument from the line.
-# If "no" is >0 we start at $(no); it it is 0, iterate to the next argument.
+# If "no" is >0 we start at $(no); if it is 0, iterate to the next argument.
 # Returns ARG.  Only used when "hot"
-# May NOT use: "k", "save".
-function parse_arg(no) { # TODO this is our problem.. (no, -troff-2pass is..)
+function parse_arg(no) { # TODO this is our (documented!) WS problem..
   if (no < 0) {
     no = pa_no
     pa_no = 0
@@ -342,7 +338,7 @@ function mx_comm() {
       mx_stack_cnt += mxc_i
       dbg(".Mx: " $2 " -> +" mxc_i ", stack size=" mx_stack_cnt)
     } else if ($2 == "-toc") {
-      # Ignored sofar
+      # Nothing to do here
     }
     return
   }
@@ -375,7 +371,7 @@ function mx_comm() {
 # mx_stack_cnt is >0, check wether this line will pop the stack
 function mx_check_line() {
   # Must be a non-comment macro line
-  if ($0 !~ /^[[:space:]]*[.'\''][[:space:]]*[^"#]/)
+  if ($0 !~ /^[[:space:]]*[.'${APOSTROPHE}'][[:space:]]*[^"#]/)
     return
 
   # Iterate over all arguments and try to classify them, comparing them against
@@ -383,7 +379,7 @@ function mx_check_line() {
   mcl_mac = ""
   mcl_cont = 0
   for (parse_arg(-1); parse_arg(0);) {
-    # Solely ignore sole punctuation, we are too stupid for such things
+    # Solely ignore punctuation (are we too stupid here?)
     if (PUNCTS[ARG])
       continue
 
