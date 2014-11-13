@@ -133,6 +133,16 @@
 .ds an-extra1
 .ds an-extra2
 .ds an-extra3
+.\" Print volume headers like mdoc(7) does
+.ds an-doc-volume-ds-1 General Commands Manual
+.ds an-doc-volume-ds-2 System Calls Manual
+.ds an-doc-volume-ds-3 Library Functions Manual
+.ds an-doc-volume-ds-4 Kernel Interfaces Manual
+.ds an-doc-volume-ds-5 File Formats Manual
+.ds an-doc-volume-ds-6 Games Manual
+.ds an-doc-volume-ds-7 Miscellaneous Information Manual
+.ds an-doc-volume-ds-8 System Manager's Manual
+.ds an-doc-volume-ds-9 Kernel Developer's Manual
 .
 .\" .TH title section extra1 extra2 extra3
 .de1 TH
@@ -148,9 +158,23 @@
 .    ds an-extra1 "\\$3\"
 .    ie (\\n[.$] > 3) .ds an-extra2 "\\$4\"
 .    el               .ds an-extra2 \"Sun Release 4.0
-.    ie (\\n[.$] > 4) .ds an-extra3 "\\$5\"
-.    el               .ds an-extra3 \"System Programmer's Manual
-.    ds an-init
+.
+.   ie (\\n[.$] > 4)  .ds  an-extra3 "\\$5\"
+.   el \{
+.     rm an-extra3
+.     if '\\$2'1'     .als an-extra3 an-doc-volume-ds-1
+.     if '\\$2'2'     .als an-extra3 an-doc-volume-ds-2
+.     if '\\$2'3'     .als an-extra3 an-doc-volume-ds-3
+.     if '\\$2'3p'    .ds  an-extra3 Perl Programmers Reference Guide
+.     if '\\$2'4'     .als an-extra3 an-doc-volume-ds-4
+.     if '\\$2'5'     .als an-extra3 an-doc-volume-ds-5
+.     if '\\$2'6'     .als an-extra3 an-doc-volume-ds-6
+.     if '\\$2'7'     .als an-extra3 an-doc-volume-ds-7
+.     if '\\$2'8'     .als an-extra3 an-doc-volume-ds-8
+.     if '\\$2'9'     .als an-extra3 an-doc-volume-ds-9
+.     if !d an-extra3 .ds  an-extra3
+.   \}
+.   ds an-init
 \\..
 .
 .  DT
