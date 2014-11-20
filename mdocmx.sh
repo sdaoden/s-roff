@@ -132,6 +132,7 @@ BEGIN {
   EX_DATAERR = 65
   EX_TEMPFAIL = 75
 
+  mx_bypass = 0   # Avoid preprocessing if parsing preprocessed file!
   #mx_sh[]        # Arrays which store headlines, and their sizes
   #mx_sh_cnt
   #mx_ss[]
@@ -308,13 +309,22 @@ function parse_arg(no) { # TODO this is our (documented!) WS problem..
 
 # ".Mx -enable" seen, create temporary file storage
 function mx_enable() {
+  # However, are we running on an already preprocessed document?  Bypass!
+  if (NF > 2) {
+    if (NF > 3 || $3 != "-preprocessed")
+      fatal(EX_DATAERR, "\".Mx\": synopsis: \".Mx -enable\"")
+    mx_bypass = 1
+    print ".Mx -enable -preprocessed"
+    return
+  }
+
   mxe_j = tmpdir()
   for (mxe_i = 1; mxe_i <= TMP_CREATE_RETRIES; ++mxe_i) {
     mx_fo = mxe_j "/mdocmx-" mxe_i ".mx"
     # RW by user only, avoid overwriting of existing files
     if (system("{ umask 077; set -C; :> " mx_fo "; } >/dev/null 2>&1") == 0) {
       dbg("\".Mx -enable\" ok, temporary file: \"" mx_fo "\"")
-      print ".Mx -enable"
+      print ".Mx -enable -preprocessed"
       return
     }
   }
@@ -466,17 +476,17 @@ function sh_ss_comm() {
 
 # .Mx is a line that we care about
 /^[[:space:]]*\.[[:space:]]*M[Xx][[:space:]]*/ {
-  # Strip possible existent trailing comment (xxx primitively)
-  #i = index($0, "#")
-  #if (i-- > 0)
-  #  $0 = substr($0, 1, i)
+  if (mx_bypass) {
+    print
+    next
+  }
 
   if (mx_fo) {
     if (NF > 1 && $2 == "-enable")
       fatal(EX_USAGE, "\".Mx -enable\" may be used only once")
     mx_comm()
     print >> mx_fo
-  } else if (NF != 2 || $2 != "-enable")
+  } else if (NF < 2 || $2 != "-enable")
     fatal(EX_USAGE, "\".Mx -enable\" must be the first \".Mx\" command")
   else
     mx_enable()
@@ -486,7 +496,8 @@ function sh_ss_comm() {
 # .Sh and .Ss are also lines we care about, but always store the data in
 # main memory, since those commands occur in each mdoc file
 /^[[:space:]]*\.[[:space:]]*S[hs][[:space:]]+/ {
-  sh_ss_comm()
+  if (mx_fo)
+    sh_ss_comm()
   # ..and process normally, too
 }
 
