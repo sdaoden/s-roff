@@ -76,12 +76,13 @@ BEGIN {
   # treated special and handled directly -- update manual on change!
   UMACS = "Ar Cm Dv Er Ev Fl Fn Fo Ic Pa Va"
 
-  # We can support macro mappings on preprocessor level
-  # (Since the preprocessor only exists because troff is not multipass, in which
-  # case the macros could solely act by themselves, it does not seem pretty
-  # useful to outsource mapping knowledge from them, though.  But for testing.)
-  # Update manual on change!
-  MACS_MAP["Fo"] = "Fn"
+  # We could support macro mappings on preprocessor level.
+  # But the preprocessor only exists because currently no troff is multipass,
+  # in which case the macros could solely act by themselves.
+  # And also mdoc(7) argument parsing is quite hairy.
+  # Thus: simply pass through anything to the macros, let them do the work.
+  # [Update manual on change!]
+  #MACS_MAP["Fo"] = "Fn"
 
   # A list of all mdoc commands; taken from mdocml, "mdoc.c,v 1.226 2014/10/16"
   UCOMMS = \
@@ -365,9 +366,9 @@ function mx_comm() {
   mxc_j = MACS[mxc_i]
   if (!mxc_j)
     fatal(EX_DATAERR, "\".Mx\": macro \"" mxc_i "\" not supported")
-  mxc_j = MACS_MAP[mxc_i]
-  if (mxc_j)
-    mxc_i = mxc_j
+  #mxc_j = MACS_MAP[mxc_i]
+  #if (mxc_j)
+  #  mxc_i = mxc_j
   mx_stack[++mx_stack_cnt] = mxc_i
   dbg(".Mx: for next \"." mxc_i "\", stack size=" mx_stack_cnt)
 
