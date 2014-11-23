@@ -19,8 +19,6 @@
 .Pp
 .Nm
 .Nm
-.Ar *DIGITS
-.Nm
 .Ar macro
 .Nm
 .Ar macro Ar key
@@ -101,11 +99,6 @@ pair is seen in the document only.
 (The
 .Sx EXAMPLES
 section gives a use case for this form.)
-.Nm
-.Ar *DIGITS
-is a special form of the anonymous plain
-.Nm
-that creates `DIGITS' stack entries with one command.
 .Pp
 Using the
 .Xr mdocmx 1
@@ -125,21 +118,28 @@ macro.
 The following macros gain support for referenceable anchors via
 .Nm :
 .Bl -tag -width ".It Ic .Dv"
-.Mx *8
+.Mx
 .It Ic .Ar
 Command argument.
+.Mx
 .It Ic .Cm
 Command modifier.
+.Mx
 .It Ic .Dv
 Defined variable or preprocessor constant.
+.Mx
 .It Ic .Er
 Error constant.
+.Mx
 .It Ic .Ev
 Environment variable.
+.Mx
 .It Ic .Fl
 Command line option (flag).
+.Mx
 .It Ic .Fn
 Function name.
+.Mx
 .It Ic .Fo
 Function name (in function block syntax).
 This is mapped to
@@ -226,11 +226,13 @@ extension would for example be:
 \&.Sh DESCRIPTION
 Sors salutis et virtutis michi nunc contraria.
 \&.Bl -tag -width ".It Fn _atexit"
-\&.Mx *3
+\&.Mx
 \&.It Ic .Ar
 This will create an anchor for a macro `Ic', key `.Ar'.
+\&.Mx
 \&.It Ic .Cm
 Anchor for `Ic', key `.Cm'.
+\&.Mx
 \&.It Ic .Dv
 And an anchor for `Ic', key `.Dv'.
 \&.Mx Ic

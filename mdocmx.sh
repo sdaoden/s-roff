@@ -341,16 +341,9 @@ function mx_comm() {
     return
   }
 
-  # ".Mx *DIGITS" awaits DIGITS anchors to come
-  # Also: ".Mx -toc"
+  # ".Mx -toc"
   if (NF == 2) {
-    if (substr($2, 0, 1) == "*") {
-      if ($2 !~ /^\*[[:digit:]]+$/)
-        fatal(EX_DATAERR, "\".Mx\": synopsis: \".Mx *DIGITS\"")
-      mxc_i = substr($2, 2) + 0
-      mx_stack_cnt += mxc_i
-      dbg(".Mx: " $2 " -> +" mxc_i ", stack size=" mx_stack_cnt)
-    } else if ($2 == "-toc") {
+    if ($2 == "-toc") {
       # Nothing to do here
     }
     return
