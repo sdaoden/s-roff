@@ -342,10 +342,8 @@ function mx_comm() {
   }
 
   # ".Mx -toc"
-  if (NF == 2) {
-    if ($2 == "-toc") {
-      # Nothing to do here
-    }
+  if ($2 == "-toc") {
+    # Nothing to do here, do not check device arguments
     return
   }
 
