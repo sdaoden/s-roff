@@ -102,7 +102,7 @@ BEGIN {
       "br ll sp "
 
   # Punctuation to be ignored (without changing current mode)
-  UPUNCT = ". , : ; ( ) [ ] ? !"
+  UPUNCTS = ". , : ; ( ) [ ] ? !"
 
   #  --  >8  --  8<  --  #
 
