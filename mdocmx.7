@@ -4,7 +4,7 @@
 .\" Written 2014 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .\" Public Domain
 .
-.Dd November 11, 2014
+.Dd November 26, 2014
 .Dt MDOCMX 7
 .Os
 .Mx -enable
@@ -24,7 +24,7 @@
 .Ar macro Ar key
 .Pp
 .Nm
-.Ar -toc
+.Ar -toc Op Ar output formats
 .
 .Mx -toc
 .
@@ -171,11 +171,16 @@ with a table of contents (see
 .Sx IMPLEMENTATION NOTES
 for an example), otherwise `.Mx -toc' lines will remain a vivid part of
 the document text and thus target of interpretation of the actual
-document formatter, which ought to ignore such commands (except when it
+document formatter, which ought to ignore such commands, except when it
 directly supports the
 .Xr mdocmx 7
 extension and the document target format is one of the mentioned, in
-which case it may create a regulary table of content in place).
+which case it may create a regular table of content in place.
+In the latter case any additional arguments control for which output
+formats (devices) the table of content is actually generated;
+here `tty' can be used for any typewriter-like device, e.g.:
+.Pp
+.Dl .Mx -toc html xhtml pdf tty
 .
 .Sh IMPLEMENTATION NOTES
 The
