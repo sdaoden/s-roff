@@ -76,13 +76,9 @@ BEGIN {
   # treated special and handled directly -- update manual on change!
   UMACS = "Ar Cm Dv Er Ev Fl Fn Fo Ic Pa Va"
 
-  # We could support macro mappings on preprocessor level.
-  # But the preprocessor only exists because currently no troff is multipass,
-  # in which case the macros could solely act by themselves.
-  # And also mdoc(7) argument parsing is quite hairy.
-  # Thus: simply pass through anything to the macros, let them do the work.
-  # [Update manual on change!]
-  #MACS_MAP["Fo"] = "Fn"
+  # Some of those impose special rules for their arguments; mdocmx(1) solves
+  # this by outsourcing such desires in argument parse preparation hooks
+  UMACS_KEYHOOKS = "Fl Fn"
 
   # A list of all mdoc commands; taken from mdocml, "mdoc.c,v 1.226 2014/10/16"
   UCOMMS = \
@@ -117,6 +113,12 @@ BEGIN {
     MACS[k] = k
   }
 
+  i = split(UMACS_KEYHOOKS, savea)
+  for (j = 1; j <= i; ++j) {
+    k = savea[j]
+    MACS_KEYHOOKS[k] = k
+  }
+
   i = split(UCOMMS, savea)
   for (j = 1; j <= i; ++j) {
     k = savea[j]
@@ -134,6 +136,13 @@ BEGIN {
   EX_TEMPFAIL = 75
 
   mx_bypass = 0   # Avoid preprocessing if parsing preprocessed file!
+
+  mx_nlcont = ""  # Line continuation in progress?  (Then: data so far)
+  mx_nlcontfun = 0 # Which function to call after line complete
+  NLCONT_SH_SS_COMM = 1
+  NLCONT_MX_COMM = 2
+  NLCONT_MX_CHECK_LINE = 3
+
   #mx_sh[]        # Arrays which store headlines, and their sizes
   #mx_sh_cnt
   #mx_ss[]
@@ -145,7 +154,7 @@ BEGIN {
   #mx_stack[]     # Stack of future anchors to be parsed off..
   #mx_stack_cnt   # ..number thereof
   #mx_keystack[]  # User specified ".Mx MACRO KEY": store KEY somewhere
-  #ARG, [..]      # Next parsed argument (from parse_arg() helper)
+  #ARG, [..]      # Next parsed argument (from arg_parse() helper)
 }
 
 END {
@@ -214,11 +223,11 @@ function dbg(s) {
 
 function warn(s) {
   if (VERBOSE > 0)
-    print "WARN@" f_a_l() ": " s "." >> "/dev/stderr"
+    print "WARN@" f_a_l() ": mdocmx(7): " s "." >> "/dev/stderr"
 }
 
 function fatal(e, s) {
-  print "FATAL@" f_a_l() ": " s "." >> "/dev/stderr"
+  print "FATAL@" f_a_l() ": mdocmx(7): " s "." >> "/dev/stderr"
   exit e
 }
 
@@ -265,31 +274,45 @@ function toc_print_ss(sh_idx)
 # have parsed another argument from the line.
 # If "no" is >0 we start at $(no); if it is 0, iterate to the next argument.
 # Returns ARG.  Only used when "hot"
-function parse_arg(no) { # TODO this is our (documented!) WS problem..
+function arg_pushback() { pa_pushback = ARG }
+function arg_parse(no) { # TODO this is our (documented!) WS problem..
   if (no < 0) {
     no = pa_no
     pa_no = 0
+    pa_pushback = ""
     return no < NF
   }
-  if (no == 0)
+  if (no == 0) {
+    if (pa_pushback) {
+      ARG = pa_pushback
+      pa_pushback = ""
+      return ARG
+    }
     no = pa_no + 1
+  }
+  pa_pushback = ""
 
   ARG = ""
   for (pa_i = 0; no <= NF; ++no) {
     pa_j = $(no)
+
+    # TODO We currently cannot handle "XY" enclosed in single quotes,
+    # TODO even though this special case is handled by mandoc(1) + mdoc(7)
     if (pa_j ~ /^.+".+/)
-        fatal(EX_DATAERR, "\".Mx\": quoting rules too complicated for mdocmx")
+      fatal(EX_DATAERR, "\".Mx\": quoting rules too complicated for mdocmx(1)")
 
     if (pa_j ~ /^"/) {
       if (pa_i)
-        fatal(EX_DATAERR, "\".Mx\": quoting rules too complicated for mdocmx")
+        fatal(EX_DATAERR,
+          "\".Mx\": quoting rules too complicated for mdocmx(1)")
       pa_i = 1;
       pa_j = substr(pa_j, 2)
     }
 
     if (pa_j ~ /"$/) {
       if (!pa_i)
-        fatal(EX_DATAERR, "\".Mx\": quoting rules too complicated for mdocmx")
+        fatal(EX_DATAERR,
+          "\".Mx\": quoting rules too complicated for mdocmx(1)")
       pa_i = 0
       pa_j = substr(pa_j, 1, length(pa_j) - 1)
     }
@@ -300,12 +323,22 @@ function parse_arg(no) { # TODO this is our (documented!) WS problem..
     if (!pa_i) {
       if (ARG != pa_j)
         # This is documented in the manual (several times i think)
-        warn("\".Mx\": whitespace (possibly) normalized to single SPACE")
+        warn("Whitespace (possibly) normalized to single SPACE")
       break
     }
   }
   pa_no = no
   return ARG
+}
+
+function arg_cleanup() {
+  # Deal with common special glyphs etc.
+  # Note: must be in sync with mdoc(7) macros!
+  ac_i = match(ARG, /([ \t]|\\&|\\%|\\c)+$/)
+  if (ac_i)
+    ARG = substr(ARG, 1, ac_i - 1)
+  while (ARG ~ /^([ \t]|\\&|\\%|\\c)/)
+    ARG = substr(ARG, 3)
 }
 
 # ".Mx -enable" seen, create temporary file storage
@@ -357,23 +390,23 @@ function mx_comm() {
   mxc_j = MACS[mxc_i]
   if (!mxc_j)
     fatal(EX_DATAERR, "\".Mx\": macro \"" mxc_i "\" not supported")
-  #mxc_j = MACS_MAP[mxc_i]
-  #if (mxc_j)
-  #  mxc_i = mxc_j
   mx_stack[++mx_stack_cnt] = mxc_i
   dbg(".Mx: for next \"." mxc_i "\", stack size=" mx_stack_cnt)
 
   # Do we also have a fixed key?
   if (NF == 2)
     return
-  mx_keystack[mx_stack_cnt] = parse_arg(3)
+  mx_keystack[mx_stack_cnt] = arg_parse(3)
   dbg("  ... USER KEY given: <" ARG ">");
-  if (parse_arg(-1))
+  if (arg_parse(-1))
     fatal(EX_DATAERR, "\".Mx\": data after USER KEY is faulty syntax")
 }
 
 # mx_stack_cnt is >0, check wether this line will pop the stack
 function mx_check_line() {
+  # May be line continuation in the middle of nowhere
+  if (!mx_stack_cnt)
+    return
   # Must be a non-comment macro line
   if ($0 !~ /^[[:space:]]*[.'${APOSTROPHE}'][[:space:]]*[^"#]/)
     return
@@ -382,7 +415,7 @@ function mx_check_line() {
   # stack content as applicable
   mcl_mac = ""
   mcl_cont = 0
-  for (parse_arg(-1); parse_arg(0);) {
+  for (arg_parse(-1); arg_parse(0);) {
     # Solely ignore punctuation (are we too stupid here?)
     if (PUNCTS[ARG])
       continue
@@ -427,8 +460,12 @@ function mx_check_line() {
     }
 
     # We need the KEY
-    if (!mcl_cont && !parse_arg(0))
+    if (!mcl_cont && !arg_parse(0))
       fatal(EX_DATAERR, "\".Mx\": expected KEY after \"" mcl_mac "\"")
+    arg_cleanup()
+    if (MACS_KEYHOOKS[mcl_mac])
+      _mx_check_line_keyhook()
+
     if (mx_keystack[mx_stack_cnt]) {
       mcl_i = mx_keystack[mx_stack_cnt]
       if (mcl_i != ARG) {
@@ -443,7 +480,50 @@ function mx_check_line() {
     delete mx_stack[--mx_stack_cnt]
     dbg("POP mac<" mcl_mac "> " mcl_i " key <" ARG \
       "> stack size=" mx_stack_cnt)
-    mx_anchors[++mx_anchors_cnt] = mcl_mac " \"" ARG "\""
+
+    # Warn about and ignore duplicate anchors
+    ARG = mcl_mac " \"" ARG "\""
+    for (mcl_i = 1; mcl_i <= mx_anchors_cnt; ++mcl_i)
+      if (mx_anchors[mcl_i] == ARG)
+        break
+    if (mcl_i > mx_anchors_cnt)
+      mx_anchors[++mx_anchors_cnt] = ARG
+    else
+      warn("\".Mx\": duplicate anchor avoided: " ARG)
+  }
+}
+
+function _mx_check_line_keyhook() {
+  # .Fl: arguments may be continued via |, as in ".Fl a | b | c"
+  if (mcl_mac == "Fl") {
+    mclpkh_i = ARG
+    for (mclpkh_j = 0;; ++mclpkh_j) {
+      if (!arg_parse(0))
+        break
+      if (ARG != "|") {
+        arg_pushback()
+        break
+      }
+      if (!arg_parse(0)) {
+        warn("Premature end of \".Fl\" continuation via \"|\"")
+        break
+      }
+      # XXX We do not mind wether this ARG is a macro or whatever.
+      # XXX Such complicated recursions are simply not supported
+      arg_cleanup()
+      mclpkh_i = mclpkh_i " | " ARG
+    }
+    if (mclpkh_j > 0) {
+      ARG = mclpkh_i
+    }
+  }
+  # .Fn: in ".Fn const char *funcname" all we want is "funcname"
+  else if (mcl_mac == "Fn") {
+    if (ARG ~ /[*&[:space:]]/) {
+      mclpkh_i = match(ARG, /[^*&[:space:]]+$/)
+      ARG = substr(ARG, mclpkh_i)
+      arg_cleanup()
+    }
   }
 }
 
@@ -451,7 +531,7 @@ function mx_check_line() {
 function sh_ss_comm() {
   ssc_s = ""
   ssc_i = 0
-  for (parse_arg(-1); parse_arg(0); ++ssc_i) {
+  for (arg_parse(-1); arg_parse(0); ++ssc_i) {
     if (ssc_i < 1)
       continue
     if (ssc_i > 1)
@@ -466,17 +546,43 @@ function sh_ss_comm() {
   }
 }
 
-# .Mx is a line that we care about
-/^[[:space:]]*\.[[:space:]]*M[Xx][[:space:]]*/ {
-  if (mx_bypass) {
-    print
-    next
-  }
+# This is our *very* primitive way of dealing with line continuation
+function line_nlcont_add(fun) {
+  mx_nlcont = mx_nlcont $0
+  mx_nlcont = substr(mx_nlcont, 1, length(mx_nlcont) - 1)
+  if (!mx_nlcontfun)
+    mx_nlcontfun = fun
+}
 
-  if (mx_fo) {
+function line_nlcont_done() {
+  lnd_save = $0
+  $0 = mx_nlcont $0
+  mx_nlcont = ""
+  if (mx_nlcontfun == NLCONT_SH_SS_COMM)
+    sh_ss_comm()
+  else if (mx_nlcontfun == NLCONT_MX_COMM)
+    mx_comm()
+  else if (mx_nlcontfun == NLCONT_MX_CHECK_LINE)
+    mx_check_line()
+  else
+    fatal(EX_DATAERR, "mdocmx(1) implementation error: line_nlcont_done()")
+  mx_nlcontfun = 0
+  $0 = lnd_save # simplify callees life
+}
+
+# .Mx is a line that we care about
+/^[[:space:]]*[.'${APOSTROPHE}'][[:space:]]*M[Xx][[:space:]]*/ {
+  if (mx_bypass)
+    print
+  else if (mx_fo) {
     if (NF > 1 && $2 == "-enable")
       fatal(EX_USAGE, "\".Mx -enable\" may be used only once")
-    mx_comm()
+    if (mx_nlcont)
+      fatal(EX_DATAERR, "Line continuation too complicated for mdocmx(1)")
+    if ($0 ~ /\\$/)
+      line_nlcont_add(NLCONT_MX_COMM)
+    else
+      mx_comm()
     print >> mx_fo
   } else if (NF < 2 || $2 != "-enable")
     fatal(EX_USAGE, "\".Mx -enable\" must be the first \".Mx\" command")
@@ -487,10 +593,17 @@ function sh_ss_comm() {
 
 # .Sh and .Ss are also lines we care about, but always store the data in
 # main memory, since those commands occur in each mdoc file
-/^[[:space:]]*\.[[:space:]]*S[hs][[:space:]]+/ {
-  if (mx_fo)
-    sh_ss_comm()
-  # ..and process normally, too
+/^[[:space:]]*[.'${APOSTROPHE}'][[:space:]]*S[hs][[:space:]]+/ {
+  if (mx_fo) {
+    if (mx_nlcont)
+      fatal(EX_DATAERR, "Line continuation too complicated for mdocmx(1)")
+    if ($0 ~ /\\$/)
+      line_nlcont_add(NLCONT_SH_SS_COMM)
+    else
+      sh_ss_comm()
+    print >> mx_fo
+    next
+  }
 }
 
 # All other lines are uninteresting unless mdocmx is -enabled and we have
@@ -499,7 +612,18 @@ function sh_ss_comm() {
   if (!mx_fo)
     print
   else {
-    if (mx_stack_cnt)
+    # TODO No support for any macro END but ..
+    if (/^[[:space:]]*[.'${APOSTROPHE}'][[:space:]]*dei?1?[[:space:]]+/) {
+      if (mx_nlcont)
+        fatal(EX_DATAERR, "Line continuation too complicated for mdocmx(1)")
+      print >> mx_fo
+      while (getline && $0 !~ /^\.\.$/)
+        print >> mx_fo
+    } else if ($0 ~ /\\$/)
+      line_nlcont_add(NLCONT_MX_CHECK_LINE)
+    else if (mx_nlcont)
+      line_nlcont_done()
+    else if (mx_stack_cnt)
       mx_check_line()
     print >> mx_fo
   }
