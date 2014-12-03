@@ -1,10 +1,12 @@
 '\" m -- preprocess: mdocmx(1)
 .\"@ mdocmx.1 - mdocmx(7) preprocessor for single-pass troff.
+.\"@ mdocmx(7) extends the mdoc(7) semantic markup language by references,
+.\"@ allowing mdoc(7) to create anchors and table of contents.
 .\"
 .\" Written 2014 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .\" Public Domain
 .
-.Dd November 11, 2014
+.Dd December 03, 2014
 .Dt MDOCMX 1
 .Os
 .Mx -enable
@@ -15,8 +17,8 @@
 .
 .Sh SYNOPSIS
 .Nm
+.Op Fl t | Fl T Ar \&Sh | sh | \&Ss | ss
 .Op Fl v
-.Op Fl t Ar \&Sh | \&Ss
 .
 .Mx -toc html xhtml pdf ps
 .
@@ -24,21 +26,73 @@
 .Nm
 can be used to overcome the restriction that single-pass troff
 implementations cannot create forward references.
-It will collect all referenceable anchors of the
+It will collect all referenceable anchors in a
 .Xr mdoc 7
-semantic markup language, i.e.,
+document, i.e.,
 .Ic .Sh
 and
-.Ic .Ss ,
-as well as those from the
+.Ic .Ss
+section headers as well as the anchors of the
 .Xr mdocmx 7
-reference extension (solely controlled by the command
-.Ic .Mx ) Ns .
-The resulting document can then be used by the normal (yet
-.Xr mdocmx 7
-enabled)
+reference extension.
+The resulting
 .Xr mdoc 7
-macros to create references to all anchors in and of the document.
+document is itself distributable.
+It will be displayed normally unless
+.Xr mdocmx 7
+enabled
+.Xr mdoc 7
+macros or special formatter programs with
+.Xr mdocmx 7
+support are used which can make use of the generated anchors.
+.
+.Bl -tag -width ".Fl _[9] Ar _"
+.Mx
+.It Fl t
+Replace any
+.Sq .Mx -toc
+command line in the document with a table of content that consists of
+section headers only.
+.Mx
+.It Fl T Ar \&Sh | sh | \&Ss | ss
+Replace any
+.Sq .Mx -toc
+command line in the document with a table of contents that either
+consists of only section headers
+.Ns ( Sq sh Ns )
+or the full tree of headers and their subsections
+.Ns ( Sq ss Ns ) .
+.It Fl v
+Enable warning messages.
+Use multiple times for more verbosity.
+Verbosity is highly recommendet when developing
+.Xr mdocmx 7
+enabled
+.Xr mdoc 7
+documents.
+.El
+.
+.Sh IMPLEMENTATION NOTES
+.Nm
+is not ment to be able to deal with all the possibilities that the
+.Xr mdoc 7
+semantic markup language has to offer.
+I.e., it is not capable to deal with heavily interlocked macro usage.
+A future multi-pass
+.Xr troff 1
+will not require any preprocessor at all, nor do specialized formatters
+already today.
+It works good enough for most real-life
+.Xr mdoc 7
+documents in existence, though.
+Note that these restrictions should apply to
+.Xr mdocmx 7
+enabled documents that make use of anchors created by the extension
+command
+.Ic .Mx
+only \(en normal
+.Xr mdoc 7
+command based anchors should always be parsed correctly in all cases.
 .
 .Sh COMPATIBILITY
 .Nm
