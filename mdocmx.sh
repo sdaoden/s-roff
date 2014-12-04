@@ -1,8 +1,11 @@
 #!/bin/sh -
-#@ mdoc .Mx preprocessor -- allow the mdoc macro package to create references
-#@ to anchors defined via the new .Mx command and the existing .Sx command.
-#@ Synopsis: mdoxmx[.sh] [:-v:] [-t Sh|Ss] [FILE]
-#@ -v: increase verbosity; -t: wether TOC shall be expanded (for .Sh / .Sh+.Ss)
+#@ mdocmx.sh - mdocmx(7) preprocessor for single-pass troff.
+#@ mdocmx(7) extends the mdoc(7) semantic markup language by references,
+#@ allowing mdoc(7) to create anchors and table of contents.
+#@ Synopsis: mdocmx[.sh] [:-v:] [-t | -T Sh|sh|Ss|ss] [FILE]
+#@ -v: increase verbosity
+#@ -t: wether -toc lines shall be expanded (as defined)
+#@ -T: wether -toc lines shall be expanded as specified: only .Sh / .Sh + .Ss.
 #
 # TODO use memory until config. limit exceeded, say 1 MB, only then tmpfile.
 #
@@ -31,7 +34,7 @@ find_awk() {
 synopsis() {
   ex=${1} msg=${2}
   [ -n "${msg}" ] && echo >&2 ${msg}
-  echo >&2 "Synopsis: ${0} [:-v:] [-t Sh|Ss] [FILE]"
+  echo >&2 "Synopsis: ${0} [:-v:] [-t | -T Sh|sh|Ss|ss] [FILE]"
   exit ${ex}
 }
 
@@ -39,15 +42,19 @@ synopsis() {
 
 find_awk || synopsis 1 "Cannot find a usable awk(1) implementation"
 
-while getopts vt: i; do
+while getopts vtT: i; do
   case ${i} in
   v)
     V=`expr ${V} + 1`;;
   t)
+    [ x != x"${T}" ] && synopsis ${EX_USAGE} "-toc line expansion yet defined"
+    T=Sh;;
+  T)
+    [ x != x"${T}" ] && synopsis ${EX_USAGE} "-toc line expansion yet defined"
     case "${OPTARG}" in
-    Sh) T=Sh;;
-    Ss) T=Ss;;
-    *)  synopsis ${EX_USAGE} "Invalid -t argument: -- ${OPTARG}";;
+    [Ss]h)  T=Sh;;
+    [Ss]s)  T=Ss;;
+    *)      synopsis ${EX_USAGE} "Invalid -T argument: -- ${OPTARG}";;
     esac;;
   ?)
     synopsis ${EX_USAGE} "";;
@@ -167,9 +174,10 @@ END {
       warn("At end of file: \".Mx\" stack not empty (" mx_stack_cnt " levels)")
 
     for (i = 1; i <= mx_sh_cnt; ++i)
-      print ".Mx -anchor-spass", mx_sh[i]
-    for (i = 1; i <= mx_ss_cnt; ++i)
-      print ".Mx -anchor-spass", mx_ss[i]
+      print ".Mx -anchor-spass", mx_sh[i], i
+    for (i = 1; i <= mx_ss_cnt; ++i) {
+      print ".Mx -anchor-spass", mx_ss[i], mx_sh_ss[i]
+    }
     for (i = 1; i <= mx_anchors_cnt; ++i)
       print ".Mx -anchor-spass", mx_anchors[i]
 
@@ -180,7 +188,7 @@ END {
         print
     } else {
       while (getline < mx_fo) {
-        if ($0 ~ /^[[:space:]]*\.[[:space:]]*Mx[[:space:]]+-toc[[:space:]]*$/) {
+        if ($0 ~ /^[[:space:]]*\.[[:space:]]*Mx[[:space:]]+-toc[[:space:]]*/) {
           print ".Sh TABLE OF CONTENTS"
           if (mx_sh_cnt > 0) {
             print ".Bl -inset"
@@ -274,7 +282,7 @@ function toc_print_ss(sh_idx)
 # have parsed another argument from the line.
 # If "no" is >0 we start at $(no); if it is 0, iterate to the next argument.
 # Returns ARG.  Only used when "hot"
-function arg_pushback() { pa_pushback = ARG }
+function arg_pushback(arg) { pa_pushback = arg }
 function arg_parse(no) { # TODO this is our (documented!) WS problem..
   if (no < 0) {
     no = pa_no
@@ -331,14 +339,17 @@ function arg_parse(no) { # TODO this is our (documented!) WS problem..
   return ARG
 }
 
-function arg_cleanup() {
+function arg_cleanup(arg) {
   # Deal with common special glyphs etc.
   # Note: must be in sync with mdoc(7) macros!
-  ac_i = match(ARG, /([ \t]|\\&|\\%|\\c)+$/)
+  ac_i = match(arg, /([ \t]|\\&|\\%|\\c)+$/)
   if (ac_i)
-    ARG = substr(ARG, 1, ac_i - 1)
-  while (ARG ~ /^([ \t]|\\&|\\%|\\c)/)
-    ARG = substr(ARG, 3)
+    arg = substr(arg, 1, ac_i - 1)
+  while (arg ~ /^[ \t]/)
+    arg = substr(arg, 1)
+  while (arg ~ /^(\\&|\\%|\\c)/)
+    arg = substr(arg, 3)
+  return arg
 }
 
 # ".Mx -enable" seen, create temporary file storage
@@ -462,7 +473,7 @@ function mx_check_line() {
     # We need the KEY
     if (!mcl_cont && !arg_parse(0))
       fatal(EX_DATAERR, "\".Mx\": expected KEY after \"" mcl_mac "\"")
-    arg_cleanup()
+    ARG = arg_cleanup(ARG)
     if (MACS_KEYHOOKS[mcl_mac])
       _mx_check_line_keyhook()
 
@@ -477,7 +488,7 @@ function mx_check_line() {
     } else
       mcl_i = "USER"
 
-    delete mx_stack[--mx_stack_cnt]
+    delete mx_stack[mx_stack_cnt--]
     dbg("POP mac<" mcl_mac "> " mcl_i " key <" ARG \
       "> stack size=" mx_stack_cnt)
 
@@ -501,28 +512,32 @@ function _mx_check_line_keyhook() {
       if (!arg_parse(0))
         break
       if (ARG != "|") {
-        arg_pushback()
+        arg_pushback(ARG)
         break
       }
       if (!arg_parse(0)) {
         warn("Premature end of \".Fl\" continuation via \"|\"")
         break
       }
-      # XXX We do not mind wether this ARG is a macro or whatever.
-      # XXX Such complicated recursions are simply not supported
-      arg_cleanup()
+      # Be aware that this argument may indeed be a macro
+      # XXX However, only support another Fl as in
+      # XXX  .Op Fl T | Fl t Ar \&Sh | sh | \&Ss | ss
+      # XXX We are too stupid to recursively process any possible thing,
+      # XXX more complicated recursions are simply not supported
+      if (ARG == "Fl") {
+        arg_pushback(ARG)
+        break
+      }
+      ARG = arg_cleanup(ARG)
       mclpkh_i = mclpkh_i " | " ARG
     }
-    if (mclpkh_j > 0) {
-      ARG = mclpkh_i
-    }
+    ARG = mclpkh_i
   }
   # .Fn: in ".Fn const char *funcname" all we want is "funcname"
   else if (mcl_mac == "Fn") {
     if (ARG ~ /[*&[:space:]]/) {
       mclpkh_i = match(ARG, /[^*&[:space:]]+$/)
-      ARG = substr(ARG, mclpkh_i)
-      arg_cleanup()
+      ARG = arg_cleanup(substr(ARG, mclpkh_i))
     }
   }
 }
@@ -538,6 +553,7 @@ function sh_ss_comm() {
       ssc_s = ssc_s " "
     ssc_s = ssc_s ARG
   }
+  ssc_s = arg_cleanup(ssc_s)
   if ($1 ~ /Sh/)
     mx_sh[++mx_sh_cnt] = "Sh \"" ssc_s "\""
   else {
