@@ -4,7 +4,7 @@
 #@ allowing mdoc(7) to create anchors and table of contents.
 #@ Synopsis: mdocmx[.sh] [:-v:] [-t | -T Sh|sh|Ss|ss] [FILE]
 #@ -v: increase verbosity
-#@ -t: wether -toc lines shall be expanded (as defined)
+#@ -t: wether -toc lines shall be expanded to a flat .Sh TOC
 #@ -T: wether -toc lines shall be expanded as specified: only .Sh / .Sh + .Ss.
 #
 # TODO use memory until config. limit exceeded, say 1 MB, only then tmpfile.
@@ -356,11 +356,13 @@ function arg_cleanup(arg) {
 function mx_enable() {
   # However, are we running on an already preprocessed document?  Bypass!
   if (NF > 2) {
-    if (NF > 3 || $3 != "-preprocessed")
-      fatal(EX_DATAERR, "\".Mx\": synopsis: \".Mx -enable\"")
-    mx_bypass = 1
-    print ".Mx -enable -preprocessed"
-    return
+    if (NF > 3 && $3 == "-preprocessed") {
+      $1 = $2 = $3 = ""
+      $0 = substr($0, 3)
+      print ".Mx -enable -preprocessed" $0
+      mx_bypass = 1
+      return
+    }
   }
 
   mxe_j = tmpdir()
@@ -369,7 +371,9 @@ function mx_enable() {
     # RW by user only, avoid overwriting of existing files
     if (system("{ umask 077; set -C; :> " mx_fo "; } >/dev/null 2>&1") == 0) {
       dbg("\".Mx -enable\" ok, temporary file: \"" mx_fo "\"")
-      print ".Mx -enable -preprocessed"
+      $1 = $2 = ""
+      $0 = substr($0, 2)
+      print ".Mx -enable -preprocessed" $0
       return
     }
   }
