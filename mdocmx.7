@@ -21,6 +21,9 @@
 .Op Ar output-formats
 .Pp
 .Nm
+.Fl disable
+.Pp
+.Nm
 .Nm
 .Ar macro
 .Nm
@@ -37,7 +40,11 @@
 .
 .Sh DESCRIPTION
 .Nm
-introduces creation of referenceable manual index anchors.
+introduces referenceable index anchors to the
+.Xr mdoc 7
+semantic markup language that is used for
+.Ux
+manual pages.
 To enable this extension the standard
 .Xr mdoc 7
 document prologue \(en
@@ -78,10 +85,23 @@ resulting document \(en refer to the
 .Sx COMPATIBILITY
 section for more on that.
 .
+.Pp
+Sometimes it may be desirable to actively suppress that any processing
+is performed by the
+.Xr mdocmx 7
+reference extension.
+This can either be accomplished by using
+.Nm
+with the
+.Fl disable
+argument or by defining the string `mdocmx-disable', as in
+.Pp
+.Dl < xy.z mdocmx.sh | troff -Tutf8 -mdoc -a -dmdocmx-disable=1
+.
 .Ss Creating referenceable anchors
 After the extension was
 .Fl enable Ns
-d in the document prologue the second group of
+d in the document prologue the third group of
 .Nm
 usage forms can be used to enqueue index anchor requests.
 These requests form a stack which will be consumed (popped) by the
@@ -263,7 +283,7 @@ extension would for example be:
 \&.Dd November 8, 2014
 \&.Dt MDOCMX-EXAMPLE 7
 \&.Os
-\&.Mx -enable
+\&.Mx -enable tty
 \&.
 \&.Sh NAME
 \&.Nm mdocmx-example

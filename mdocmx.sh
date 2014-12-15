@@ -389,9 +389,9 @@ function mx_comm() {
     return
   }
 
-  # ".Mx -toc"
-  if ($2 == "-toc") {
-    # Nothing to do here, do not check device arguments
+  # ".Mx -toc", ".Mx -disable"
+  if ($2 == "-toc" || $2 == "-disable") {
+    # Nothing to do here (and do not check device arguments)
     return
   }
 
