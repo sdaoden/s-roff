@@ -6,6 +6,7 @@
 #@ -v: increase verbosity
 #@ -t: wether -toc lines shall be expanded to a flat .Sh TOC
 #@ -T: wether -toc lines shall be expanded as specified: only .Sh / .Sh + .Ss.
+#@ Set $AWK environment to force a special awk(1) interpreter.
 #
 # TODO use memory until config. limit exceeded, say 1 MB, only then tmpfile.
 #
@@ -16,6 +17,7 @@ AWK= V=0 T= F=
 EX_USAGE=64
 
 find_awk() {
+  [ -n "${AWK}" ] && return 0
   i=${IFS}
   IFS=:
   set -- ${PATH}:/bin
@@ -23,10 +25,10 @@ find_awk() {
   # for i; do -- new in POSIX Issue 7 + TC1
   for i
   do
-    if [ -x "${i}/awk" ]; then
-      AWK="${i}/awk"
-      return 0
-    fi
+    for j in m '' g; do
+      AWK="${i}/${j}awk"
+      [ -x "${AWK}" ] && return 0
+    done
   done
   return 1
 }
