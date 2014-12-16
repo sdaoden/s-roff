@@ -158,8 +158,9 @@ BEGIN {
   #mx_ss_cnt
   #mx_sh_ss[]     # With TOC we need relation of .Ss with its .Sh
   #mx_fo = ""     # Our temporary output fork (cleaned of .Mx)
-  #mx_anchors[]   # Readily prepared anchors..
-  #mx_anchors_cnt # ..number thereof
+  #mx_macros[]    # Readily prepared anchors: macros..
+  #mx_keys[]      # ..: keys
+  #mx_anchors_cnt # ..number of anchors
   #mx_stack[]     # Stack of future anchors to be parsed off..
   #mx_stack_cnt   # ..number thereof
   #mx_keystack[]  # User specified ".Mx MACRO KEY": store KEY somewhere
@@ -176,12 +177,14 @@ END {
       warn("At end of file: \".Mx\" stack not empty (" mx_stack_cnt " levels)")
 
     for (i = 1; i <= mx_sh_cnt; ++i)
-      print ".Mx -anchor-spass", mx_sh[i], i
+      printf ".Mx -anchor-spass Sh \"%s\" %d\n", arg_quote(mx_sh[i]), i
     for (i = 1; i <= mx_ss_cnt; ++i) {
-      print ".Mx -anchor-spass", mx_ss[i], mx_sh_ss[i]
+      printf ".Mx -anchor-spass Ss \"%s\" %d\n",
+        arg_quote(mx_ss[i]), mx_sh_ss[i]
     }
     for (i = 1; i <= mx_anchors_cnt; ++i)
-      print ".Mx -anchor-spass", mx_anchors[i]
+      printf ".Mx -anchor-spass %s \"%s\"\n",
+        mx_macros[i], arg_quote(mx_keys[i])
 
     # If we are about to produce a TOC, intercept ".Mx -toc" lines and replace
     # them with the desired TOC content
@@ -195,7 +198,7 @@ END {
           if (mx_sh_cnt > 0) {
             print ".Bl -inset"
             for (i = 1; i <= mx_sh_cnt; ++i) {
-              print ".It Sx", substr(mx_sh[i], 4)
+              printf ".It Sx \"%s\"\n", arg_quote(mx_sh[i])
               if (TOC == "Ss")
                 toc_print_ss(i)
             }
@@ -205,7 +208,7 @@ END {
           else if (TOC == "Ss" && mx_ss_cnt > 0) {
             print ".Bl -tag"
             for (i = 1; i <= mx_ss_cnt; ++i)
-              print ".It Sx", substr(mx_ss[i], 4)
+              print ".It Sx \"%s\"\n", arg_quote(mx_ss[i])
             print ".El"
           }
         } else
@@ -273,7 +276,7 @@ function toc_print_ss(sh_idx)
       tps_any = 1
       print ".Bl -tag -offset indent"
     }
-    print ".It Sx", substr(mx_ss[tps_i], 4)
+    printf ".It Sx \"%s\"\n", arg_quote(mx_ss[tps_i])
   }
   if (tps_any)
     print ".El"
@@ -284,60 +287,69 @@ function toc_print_ss(sh_idx)
 # have parsed another argument from the line.
 # If "no" is >0 we start at $(no); if it is 0, iterate to the next argument.
 # Returns ARG.  Only used when "hot"
-function arg_pushback(arg) { pa_pushback = arg }
-function arg_parse(no) { # TODO this is our (documented!) WS problem..
+function arg_pushback(arg) { ap_pushback = arg }
+function arg_parse(no) {
   if (no < 0) {
-    no = pa_no
-    pa_no = 0
-    pa_pushback = ""
+    no = ap_no
+    ap_no = 0
+    ap_pushback = ""
     return no < NF
   }
   if (no == 0) {
-    if (pa_pushback) {
-      ARG = pa_pushback
-      pa_pushback = ""
+    if (ap_pushback) {
+      ARG = ap_pushback
+      ap_pushback = ""
       return ARG
     }
-    no = pa_no + 1
+    no = ap_no + 1
   }
-  pa_pushback = ""
+  ap_pushback = ""
 
   ARG = ""
-  for (pa_i = 0; no <= NF; ++no) {
-    pa_j = $(no)
+  for (ap_i = 0; no <= NF; ++no) {
+    ap_j = $(no)
 
-    # TODO We currently cannot handle "XY" enclosed in single quotes,
-    # TODO even though this special case is handled by mandoc(1) + mdoc(7)
-    if (pa_j ~ /^.+".+/)
-      fatal(EX_DATAERR, "\".Mx\": quoting rules too complicated for mdocmx(1)")
+    # The good news about quotation mode is that entering it requires
+    # a preceeding space: we get it almost for free with awk(1)!
+    if (!ap_i) {
+      if (ap_j ~ /^"/) {
+        ap_i = 1
+        ap_j = substr(ap_j, 2)
+      } else {
+        ARG = ap_j
+        break
+      }
+    } else
+      ARG = ARG " "
 
-    if (pa_j ~ /^"/) {
-      if (pa_i)
-        fatal(EX_DATAERR,
-          "\".Mx\": quoting rules too complicated for mdocmx(1)")
-      pa_i = 1;
-      pa_j = substr(pa_j, 2)
-    }
-
-    if (pa_j ~ /"$/) {
-      if (!pa_i)
-        fatal(EX_DATAERR,
-          "\".Mx\": quoting rules too complicated for mdocmx(1)")
-      pa_i = 0
-      pa_j = substr(pa_j, 1, length(pa_j) - 1)
-    }
-
-    if (ARG)
-      pa_j = " " pa_j
-    ARG = ARG pa_j
-    if (!pa_i) {
-      if (ARG != pa_j)
-        # This is documented in the manual (several times i think)
-        warn("Whitespace (possibly) normalized to single SPACE")
-      break
-    }
+    if ((ap_k = index(ap_j, "\"")) != 0) {
+      do {
+        # The bad news on quotation mode are:
+        # - "" inside it resolves to a single "
+        # - " need not mark EOS, but any " that is not followed by "
+        #   ends quotation mode and marks the beginning of the next arg
+        # - awk(1) has not goto;
+        if (ap_k == length(ap_j)) {
+          ARG = ARG substr(ap_j, 1, ap_k - 1)
+          ap_no = no
+          ap_i = 0
+          return ARG
+        } else if (substr(ap_j, ap_k + 1, 1) == "\"") {
+          ARG = ARG substr(ap_j, 1, ap_k)
+          ap_j = substr(ap_j, ap_k + 2)
+        } else {
+          ARG = ARG substr(ap_j, 1, ap_k)
+          ap_j = substr(ap_j, ap_k + 1)
+          $(no) = ap_j
+          ap_no = no
+          ap_i = 0
+          return ARG
+        }
+      } while ((ap_k = index(ap_j, "\"")) > 0)
+    } else
+      ARG = ARG ap_j
   }
-  pa_no = no
+  ap_no = no
   return ARG
 }
 
@@ -352,6 +364,12 @@ function arg_cleanup(arg) {
   while (arg ~ /^(\\&|\\%|\\c)/)
     arg = substr(arg, 3)
   return arg
+}
+
+function arg_quote(arg) {
+  aq_a = arg
+  gsub("\"", "\"\"", aq_a)
+  return aq_a
 }
 
 # ".Mx -enable" seen, create temporary file storage
@@ -499,13 +517,14 @@ function mx_check_line() {
       "> stack size=" mx_stack_cnt)
 
     # Warn about and ignore duplicate anchors
-    ARG = mcl_mac " \"" ARG "\""
     for (mcl_i = 1; mcl_i <= mx_anchors_cnt; ++mcl_i)
-      if (mx_anchors[mcl_i] == ARG)
+      if (mx_macros[mcl_i] == mcl_mac && mx_keys[mcl_i] == ARG)
         break
-    if (mcl_i > mx_anchors_cnt)
-      mx_anchors[++mx_anchors_cnt] = ARG
-    else
+    if (mcl_i > mx_anchors_cnt) {
+      ++mx_anchors_cnt
+      mx_macros[mx_anchors_cnt] = mcl_mac
+      mx_keys[mx_anchors_cnt] = ARG
+    } else
       warn("\".Mx\": duplicate anchor avoided: " ARG)
   }
 }
@@ -561,9 +580,9 @@ function sh_ss_comm() {
   }
   ssc_s = arg_cleanup(ssc_s)
   if ($1 ~ /Sh/)
-    mx_sh[++mx_sh_cnt] = "Sh \"" ssc_s "\""
+    mx_sh[++mx_sh_cnt] = ssc_s
   else {
-    mx_ss[++mx_ss_cnt] = "Ss \"" ssc_s "\""
+    mx_ss[++mx_ss_cnt] = ssc_s
     mx_sh_ss[mx_ss_cnt] = mx_sh_cnt
   }
 }
