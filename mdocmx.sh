@@ -8,13 +8,20 @@
 #@ -T: wether -toc lines shall be expanded as specified: only .Sh / .Sh + .Ss.
 #@ Set $AWK environment to force a special awk(1) interpreter.
 #
-# TODO use memory until config. limit exceeded, say 1 MB, only then tmpfile.
-#
 # Written 2014 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 # Public Domain
 
-AWK= V=0 T= F=
+: ${TMPDIR:=/tmp}
+: ${ENV_TMP="${TMPDIR} ${TMP} ${TEMP}"}
+
+#  --  >8  --  8<  --  #
+
+#AWK=
 EX_USAGE=64
+EX_DATAERR=65
+EX_TEMPFAIL=75
+
+V=0 T= F=
 
 find_awk() {
   [ -n "${AWK}" ] && return 0
@@ -68,18 +75,51 @@ shift ${OPTIND}
 [ ${#} -gt 1 ] && synopsis ${EX_USAGE} "Excess arguments given"
 [ ${#} -eq 0 ] && F=- || F="${1}"
 
+##
+
+# awk(1) doesn't support signal handlers, which means that, when we're part of
+# a pipe which the user terminates, we are not capable to deal with the broken
+# pipe case that our END{} handler will generate when we had to perform any
+# preprocessing, and that in turn would result in a dangling temporary file!
+# Thus the only sane option seems to be to always create the temporary file,
+# wether we need it or not, not to exec(1) awk(1) but keep on running the shell
+# in order to remove the temporary after awk(1) has finished, whichever way.
+
+tmpdir() {
+  for tmpdir in ${ENV_TMP}; do
+    [ -d "${tmpdir}" ] && return 0
+  done
+  tmpdir=${TMPDIR}
+  if [ ! -d "${tmpdir}" ]; then
+    echo >&2 'Cannot find a usable temporary directory, please set $TMPDIR'
+    exit ${EX_TEMPFAIL}
+  fi
+  return 0
+}
+tmpdir
+
+max=421
+[ ${V} -gt 1 ] && max=2
+i=1
+# RW by user only, avoid overwriting of existing files
+u=`umask`
+umask 077
+set -C
+while [ 1 ]; do
+  tmpfile="${tmpdir}/mdocmx-${i}.mx"
+  { : > "${tmpfile}"; } && break
+  i=`expr ${i} + 1`
+  if [ ${i} -gt ${max} ]; then
+    echo >&2 'Cannot create a temporary file within '"${tmpdir}"
+    exit ${EX_TEMPFAIL}
+  fi
+done
+
 # Let's go awk {{{
 APOSTROPHE=\'
-exec ${AWK} -v VERBOSE=${V} -v TOC="${T}" '
-BEGIN {
-  TMPDIR = "/tmp"
-
-  # xxx TMP/TEMP are Windows, why test them?
-  split("TMPDIR TMP TEMP", ENV_TMP)
-
-  # Number of times we try to create our temporary file
-  TMP_CREATE_RETRIES = 421
-
+${AWK} -v VERBOSE=${V} -v TOC="${T}" -v MX_FO="${tmpfile}" \
+  -v EX_USAGE="${EX_USAGE}" -v EX_DATAERR="${EX_DATAERR}" \
+'BEGIN {
   # The mdoc macros that support referencable anchors.
   # .Sh and .Ss also create anchors, but since they do not require .Mx they are
   # treated special and handled directly -- update manual on change!
@@ -111,11 +151,6 @@ BEGIN {
 
   #  --  >8  --  8<  --  #
 
-  if (!VERBOSE)
-    VERBOSE = 0
-  if (VERBOSE > 1)
-    TMP_CREATE_RETRIES = 2
-
   i = split(UMACS, savea)
   for (j = 1; j <= i; ++j) {
     k = savea[j]
@@ -139,10 +174,6 @@ BEGIN {
     k = savea[j]
     PUNCTS[k] = k
   }
-
-  EX_USAGE = 64
-  EX_DATAERR = 65
-  EX_TEMPFAIL = 75
 
   mx_bypass = 0   # Avoid preprocessing if parsing preprocessed file!
 
@@ -215,8 +246,6 @@ END {
           print
       }
     }
-
-    system("rm -f " mx_fo)
   }
 }
 
@@ -242,23 +271,6 @@ function warn(s) {
 function fatal(e, s) {
   print "FATAL@" f_a_l() ": mdocmx(7): " s "." >> "/dev/stderr"
   exit e
-}
-
-#
-function tmpdir() {
-  for (t_i in ENV_TMP) {
-    t_j = ENVIRON[ENV_TMP[t_i]]
-    if (t_j && system("test -d " t_j) == 0) {
-      dbg("temporary directory via ENVIRON: \"" t_j "\"")
-      return t_j
-    }
-  }
-  t_j = TMPDIR
-  if (system("test -d " t_j) != 0)
-    fatal(EX_TEMPFAIL,
-      "Cannot find a usable temporary directory, please set $TMPDIR")
-  dbg("temporary directory, fallback: \"" t_j "\"")
-  return t_j
 }
 
 # Dump all .Ss which belong to the .Sh with the index sh_idx, if any
@@ -372,7 +384,7 @@ function arg_quote(arg) {
   return aq_a
 }
 
-# ".Mx -enable" seen, create temporary file storage
+# ".Mx -enable" seen
 function mx_enable() {
   # However, are we running on an already preprocessed document?  Bypass!
   if (NF > 2) {
@@ -384,20 +396,10 @@ function mx_enable() {
       return
     }
   }
-
-  mxe_j = tmpdir()
-  for (mxe_i = 1; mxe_i <= TMP_CREATE_RETRIES; ++mxe_i) {
-    mx_fo = mxe_j "/mdocmx-" mxe_i ".mx"
-    # RW by user only, avoid overwriting of existing files
-    if (system("{ umask 077; set -C; :> " mx_fo "; } >/dev/null 2>&1") == 0) {
-      dbg("\".Mx -enable\" ok, temporary file: \"" mx_fo "\"")
-      $1 = $2 = ""
-      $0 = substr($0, 2)
-      print ".Mx -enable -preprocessed" $0
-      return
-    }
-  }
-  fatal(EX_TEMPFAIL, "Cannot create a temporary file within \"" mxe_j "/\"")
+  mx_fo = MX_FO
+  $1 = $2 = ""
+  $0 = substr($0, 2)
+  print ".Mx -enable -preprocessed" $0
 }
 
 # Deal with a non-"-enable" ".Mx" request
@@ -668,8 +670,12 @@ function line_nlcont_done() {
       mx_check_line()
     print >> mx_fo
   }
-}
-' "${F}"
+}' "${F}"
 # }}}
+
+# Delete our temporary storage
+ES=${?}
+rm -f "${tmpfile}"
+exit ${ES}
 
 # s-it2-mode
