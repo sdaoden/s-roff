@@ -452,6 +452,7 @@ function mx_check_line() {
   # stack content as applicable
   mcl_mac = ""
   mcl_cont = 0
+  mcl_firstmac = 1
   for (arg_parse(-1); arg_parse(0);) {
     # Solely ignore punctuation (are we too stupid here?)
     if (PUNCTS[ARG])
@@ -467,8 +468,9 @@ function mx_check_line() {
 
     # Is this something we consider a macro?
     mcl_cont = 0
-    if (ARG ~ /^\./)
+    if (mcl_firstmac && ARG ~ /^\./)
       ARG = substr(ARG, 2)
+    mcl_firstmac = 0
     mcl_i = MACS[ARG]
     if (mcl_i)
       mcl_mac = mcl_i
