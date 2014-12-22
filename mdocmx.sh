@@ -225,11 +225,11 @@ END {
     } else {
       while (getline < mx_fo) {
         if ($0 ~ /^[[:space:]]*\.[[:space:]]*Mx[[:space:]]+-toc[[:space:]]*/) {
-          print ".Sh TABLE OF CONTENTS"
+          print ".Sh \"TABLE OF CONTENTS\""
           if (mx_sh_cnt > 0) {
             print ".Bl -inset"
             for (i = 1; i <= mx_sh_cnt; ++i) {
-              printf ".It Sx \"%s\"\n", arg_quote(mx_sh[i])
+              printf ".It %d. Sx \"%s\"\n", i, arg_quote(mx_sh[i])
               if (TOC == "Ss")
                 toc_print_ss(i)
             }
@@ -237,7 +237,7 @@ END {
           }
           # Rather illegal, but it maybe we have .Ss yet no .Sh
           else if (TOC == "Ss" && mx_ss_cnt > 0) {
-            print ".Bl -tag"
+            print ".Bl -tag -compact"
             for (i = 1; i <= mx_ss_cnt; ++i)
               print ".It Sx \"%s\"\n", arg_quote(mx_ss[i])
             print ".El"
@@ -286,7 +286,7 @@ function toc_print_ss(sh_idx)
 
     if (!tps_any) {
       tps_any = 1
-      print ".Bl -tag -offset indent"
+      print ".Bl -tag -offset indent -compact"
     }
     printf ".It Sx \"%s\"\n", arg_quote(mx_ss[tps_i])
   }
