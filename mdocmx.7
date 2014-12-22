@@ -6,7 +6,7 @@
 .\" Written 2014 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .\" Public Domain
 .
-.Dd December 15, 2014
+.Dd December 22, 2014
 .Dt MDOCMX 7
 .Os
 .Mx -enable
@@ -345,8 +345,8 @@ The
 environment appeared in 2014.
 .
 .Sh AUTHORS
-Original idea and draft implementation by
-.An Steffen Po Daode Pc Nurpmeso Aq Mt sdaoden@users.sf.net .
+Idea and first implementation by
+.An Steffen Nurpmeso Aq Mt sdaoden@users.sf.net .
 Command design by
 .An Ingo Schwarze Aq Mt schwarze@openbsd.org .
 .
@@ -367,8 +367,8 @@ preprocessor on its standard error I/O channel by using the
 .Fl v
 command line flag in order to get a notion on what is going on:
 .Bd -literal -offset indent
-$ mdocmx -vv -t Sh < mdocmx.7 2> stderr.txt | \e
-  groff -Tascii -mdoc | less
+$ mdocmx -vv -T Sh < mdocmx.7 2> stderr.txt | \e
+  groff -Tutf8 -mdoc | less
 $ cat stderr.txt
 .Ed
 .
