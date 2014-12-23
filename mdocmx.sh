@@ -368,12 +368,12 @@ function arg_parse(no) {
 function arg_cleanup(arg) {
   # Deal with common special glyphs etc.
   # Note: must be in sync with mdoc(7) macros!
-  ac_i = match(arg, /([ \t]|\\&|\\%|\\c)+$/)
+  ac_i = match(arg, /([ \t]|\\&|\\%|\\\/|\\c)+$/)
   if (ac_i)
     arg = substr(arg, 1, ac_i - 1)
   while (arg ~ /^[ \t]/)
     arg = substr(arg, 1)
-  while (arg ~ /^(\\&|\\%|\\c)/)
+  while (arg ~ /^(\\&|\\%)/)
     arg = substr(arg, 3)
   return arg
 }
