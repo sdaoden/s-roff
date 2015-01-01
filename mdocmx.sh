@@ -185,6 +185,7 @@ ${AWK} -v VERBOSE=${V} -v TOC="${T}" -v MX_FO="${tmpfile}" \
 
   #mx_sh[]        # Arrays which store headlines, and their sizes
   #mx_sh_cnt
+  #mx_sh_toc      # Special avoidance of multiple TOC anchors needed
   #mx_ss[]
   #mx_ss_cnt
   #mx_sh_ss[]     # With TOC we need relation of .Ss with its .Sh
@@ -225,7 +226,7 @@ END {
     } else {
       while (getline < mx_fo) {
         if ($0 ~ /^[[:space:]]*\.[[:space:]]*Mx[[:space:]]+-toc[[:space:]]*/) {
-          print ".Sh \"TABLE OF CONTENTS\""
+          print ".Sh \"\\*[mdocmx-toc]\""
           if (mx_sh_cnt > 0) {
             print ".Bl -inset"
             for (i = 1; i <= mx_sh_cnt; ++i) {
@@ -411,9 +412,19 @@ function mx_comm() {
     return
   }
 
-  # ".Mx -toc", ".Mx -disable"
-  if ($2 == "-toc" || $2 == "-disable") {
+  # ".Mx -disable"
+  if ($2 == "-disable") {
     # Nothing to do here (and do not check device arguments)
+    return
+  }
+
+  # ".Mx -toc"
+  if ($2 == "-toc") {
+    # With TOC creation we surely want the TOC to have an anchor, too!
+    if (!mx_sh_toc++)
+      mx_sh[++mx_sh_cnt] = "\\*[mdocmx-toc]"
+    else
+      warn("\".Mx -toc\": multiple TOCs?  Duplicate anchor avoided")
     return
   }
 
@@ -444,7 +455,7 @@ function mx_check_line() {
   # May be line continuation in the middle of nowhere
   if (!mx_stack_cnt)
     return
-  # Must be a non-comment macro line
+  # Must be a non-comment, non-escaped macro line
   if ($0 !~ /^[[:space:]]*[.'${APOSTROPHE}'][[:space:]]*[^"#]/)
     return
 
