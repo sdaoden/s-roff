@@ -6,16 +6,20 @@
 .\" Written 2014 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .\" Public Domain
 .
-.Dd December 22, 2014
+.Dd December 29, 2014
 .Dt MDOCMX 7
 .Os
 .Mx -enable
 .
+.
 .Sh NAME
+.
 .Nm .Mx
 .Nd Reference extension for the mdoc semantic markup language
 .
+.
 .Sh SYNOPSIS
+.
 .Nm
 .Fl enable
 .Op Ar output-formats
@@ -36,9 +40,12 @@
 .Op Fl tree Ar output-formats
 .Ek
 .
+.
 .Mx -toc -tree html xhtml pdf ps
 .
+.
 .Sh DESCRIPTION
+.
 .Nm
 introduces referenceable index anchors to the
 .Xr mdoc 7
@@ -94,11 +101,15 @@ This can either be accomplished by using
 .Nm
 with the
 .Fl disable
-argument or by defining the string `mdocmx-disable', as in
+argument or by defining the string
+.Ql Dv mdocmx-disable ,
+as in
+.
 .Pp
 .Dl < xy.z mdocmx.sh | troff -Tutf8 -mdoc -a -dmdocmx-disable=1
 .
 .Ss Creating referenceable anchors
+.
 After the extension was
 .Fl enable Ns
 d in the document prologue the third group of
@@ -111,7 +122,10 @@ later occurrence of a (corresponding)
 which supports referenceable index entries.
 The indices are managed with distinct namespaces for each supported
 .Ar macro ,
-meaning that, e.g., `\&.Mx Ic sendmail' and `\&.Mx Va sendmail'
+meaning that, e.g.,
+.Ql .Mx \&Ic sendmail
+and
+.Ql .Mx \&Va sendmail
 will create distinct index anchors.
 .
 .Pp
@@ -158,7 +172,8 @@ extension will be enabled to actually create references with the
 macro.
 The following macros gain support for referenceable anchors via
 .Nm :
-.Bl -tag -width ".It Ic ._B[10]"
+.
+.Bl -tag -width ".It Ic ._B"
 .Mx
 .It Ic .Ar
 Command argument.
@@ -199,6 +214,7 @@ Variable name.
 .El
 .
 .Ss Creating table of contents
+.
 The final usage form of the
 .Xr mdocmx 7
 reference extension allows the creation of a document table of content,
@@ -238,13 +254,38 @@ see a flat table of contents with only section headers.
 .Dl .Mx -toc pdf tty
 .Dl .Mx -toc tty -tree html pdf
 .
+.Ss Strings that affect mdocmx
+.
+.Bl -tag -width ".It Dv _docmx-_isable"
+.Mx
+.It Dv mdocmx-debug
+If defined
+.Xr mdocmx 7
+macros will offer some verbosity.
+In addition not only references will produce visual output, but also
+anchors.
+.
+.Mx
+.It Dv mdocmx-disable
+Has the same effect as
+.Ql .Mx -disable .
+.
+.Mx
+.It Dv mdocmx-toc
+If defined its content is used as the headline of the table of contents,
+which can be used for, e.g., localization purposes.
+.El
+.
+.
 .Sh IMPLEMENTATION NOTES
+.
 The
 .Nm
 request cannot share a line with other macros, neither in the document
 prologue nor in its content.
 .
 .Ss Internal extended synopsis
+.
 In addition to those usage forms that have been described above the
 .Ic .Mx
 multiplexer command also understands further flags and arguments which
@@ -273,7 +314,9 @@ for
 commands it instead specifies the index of the section header they
 belong to, therefore creating the possibility to generate TOCs.
 .
+.
 .Sh EXAMPLES
+.
 A complete, but completely fanciful
 .Xr mdoc 7
 document that uses the
@@ -317,7 +360,9 @@ Pops the `Ic' and assigns the key `Ciao'.
 \&.El
 .Ed
 .
+.
 .Sh COMPATIBILITY
+.
 Using the
 .Xr mdocmx 7
 extension in
@@ -331,7 +376,9 @@ may be to preprocess manuals with
 .Xr mdocmx 1
 on developer machines and instead distribute the resulting documents.
 .
+.
 .Sh SEE ALSO
+.
 .Xr awk 1 ,
 .Xr mandoc 1 ,
 .Xr mdocmx 1 ,
@@ -339,26 +386,36 @@ on developer machines and instead distribute the resulting documents.
 .Xr troff 1 ,
 .Xr mdoc 7
 .
+.
 .Sh HISTORY
+.
 The
 .Nm
 environment appeared in 2014.
 .
+.
 .Sh AUTHORS
+.
 Idea and first implementation by
 .An Steffen Nurpmeso Aq Mt sdaoden@users.sf.net .
 Command design by
 .An Ingo Schwarze Aq Mt schwarze@openbsd.org .
 .
+.
 .Sh CAVEATS
+.
 Be aware that the content of the
 .Fl width
 argument to
 .Xr mdoc 7
-lists etc. is evaluated as if it were normal document content, e.g.,
-in `.Bl -tag -width ".It Fn _atexit"' the `Fn _atexit' will be evaluated
-and may thus get used by
-.Nm .
+lists etc. is evaluated as if it were normal document content; e.g., in
+the following example the
+.Ql \&Fn _atexit
+will be evaluated and may thus get used by
+.Nm :
+.
+.Pp
+.Dl ".Bl -tag -width "".It Fn _atexit"""
 .
 .Pp
 When developing a manual it may be helpful to increase verbosity of the
