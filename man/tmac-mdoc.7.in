@@ -1,11 +1,11 @@
 '\" t -- preprocess: tbl(1)
 .\"@ @L_ROFF@_mdoc.7
-.\"
-.\"   A complete reference of the mdoc macro package for GNU troff.
-.\"
-.\" Based on NetBSD's mdoc.samples.7, version 1.21.
-.\"
-.\"   Warning: You can't format this file with the old mdoc macros!
+.\"@ A complete reference of the mdoc macro package.
+.\"@ Based on NetBSD's mdoc.samples.7, version 1.21.
+.\"@ Warning: You can't format this file with the old mdoc macros!
+.\"@ This reference invokes every macro in the package several
+.\"@ times and is guaranteed to give a worst case performance
+.\"@ for an already extremely slow package.
 .\"
 .\" Copyright (c) 1990, 1993
 .\"     The Regents of the University of California.  All rights reserved.
@@ -37,15 +37,11 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     @(#)mdoc.samples.7 8.2 (Berkeley) 12/30/93
-.\"
-.\" This reference invokes every macro in the package several
-.\" times and is guaranteed to give a worst case performance
-.\" for an already extremely slow package.
-.\"
 .
-.Dd October 6, 2014
-.Os
+.Dd December 23, 2014
 .Dt @U_ROFF@_MDOC 7
+.Os
+.Mx -enable
 .
 .
 .Sh NAME
@@ -71,9 +67,11 @@ and
 .Em domain Ns -based
 formatting package.
 Its predecessor, the
-.Xr \-man 7
+.Xr man 7
 package, addressed page layout leaving the manipulation of fonts and other
 typesetting details to the individual author.
+.
+.Pp
 In
 .Nm \-mdoc ,
 page layout macros make up the
@@ -81,6 +79,8 @@ page layout macros make up the
 which consists of macros for titles, section headers, displays and lists
 \(en essentially items which affect the physical position of text on a
 formatted page.
+.
+.Pp
 In addition to the page structure domain, there are two more domains, the
 .Em manual
 domain and the
@@ -99,6 +99,7 @@ These domain items have value for both the author and the future user of the
 manual page.
 Hopefully, the consistency gained across the manual set will provide easier
 translation to future documentation tools.
+.
 .Pp
 Throughout the
 .Ux
@@ -113,7 +114,7 @@ of actual length and without sexist intention.
 .  ne 7
 .
 .
-.Sh "TROFF IDIOSYNCRASIES"
+.Sh TROFF IDIOSYNCRASIES
 .
 The
 .Nm \-mdoc
@@ -128,7 +129,7 @@ And, too, be forewarned, this package is
 .Em not
 fast.
 .
-.Ss "Macro Usage"
+.Ss Macro Usage
 .
 As in
 .Xr @L_TROFF@ 1 ,
@@ -153,6 +154,7 @@ a macro invocation, precede the
 .Ql \e&
 escape sequence which translates literally to a zero-width space, and is
 never displayed in the output.
+.
 .Pp
 In general,
 .Xr @L_TROFF@ 1
@@ -160,11 +162,12 @@ macros accept an unlimited number of arguments (contrary to other versions
 of troff which can't handle more than nine arguments).
 In limited cases, arguments may be continued or extended on the next
 line (See
-.Sx Extended Arguments
+.Sx "Extended Arguments"
 below).
 Almost all macros handle quoted arguments (see
-.Sx Passing Space Characters in an Argument
+.Sx "Passing Space Characters in an Argument"
 below).
+.
 .Pp
 Most of the
 .Nm \-mdoc
@@ -172,11 +175,11 @@ general text domain and manual domain macros are special in that their
 argument lists are
 .Em parsed
 for callable macro names.
-This means an argument on the argument list which matches a general text or
-manual domain macro name (and which is defined to be callable) will be
+This means an argument on the argument list which matches a general text
+or manual domain macro name (and which is defined to be callable) will be
 executed or called when it is processed.
-In this case the argument, although the name of a macro, is not preceded by
-a
+In this case the argument, although the name of a macro, is not preceded
+by a
 .Ql .\&
 (dot).
 This makes it possible to nest macros; for example the option macro,
@@ -189,7 +192,7 @@ and
 .Ql \&Ar ,
 to specify an optional flag with an argument:
 .
-.Bl -tag -width ".Op Fl s Ar bytes" -offset indent
+.Bl -tag -width ".Op Fl _ Ar bytes" -offset indent
 .It Op Fl s Ar bytes
 is produced by
 .Ql ".Op Fl s Ar bytes"
@@ -242,7 +245,7 @@ Additionally, it makes
 .Nm \-mdoc
 working faster.
 For example, the function command
-.Ql .Fn
+.Ql Ic .Fn
 expects the first argument to be the name of a function and any remaining
 arguments to be function parameters.
 As
@@ -252,6 +255,7 @@ parameter list, each parameter is guaranteed to be at minimum a two word
 string.
 For example,
 .Fa int foo .
+.
 .Pp
 There are two possible ways to pass an argument which contains
 an embedded space.
@@ -273,6 +277,7 @@ a paddable (i.e.\& stretchable), unbreakable space (this is a
 .Xr @L_TROFF@ 1
 extension).
 The second method is to enclose the string with double quotes.
+.
 .Pp
 For example:
 .
@@ -293,13 +298,9 @@ or double quotes in the second example
 were omitted,
 .Ql .Fn
 would see three arguments, and the result would be:
+.
 .Pp
 .Dl Fn fetch char *str
-.Pp
-.\" For an example of what happens when the parameter list overlaps a newline
-.\" boundary, see the
-.\" .Sx BUGS
-.\" section.
 .
 .Ss "Trailing Blank Space Characters"
 .
@@ -333,11 +334,12 @@ to preserve the backslash.
 A warning is emitted when an empty input line is found outside of displays
 (see below).
 Use
-.Ql .sp
+.Ql Ic .sp
 instead.
 (Well, it is even better to use
 .Nm \-mdoc
 macros to avoid the usage of low-level commands.)
+.
 .Pp
 Leading spaces will cause a break and are output directly.
 Avoid this behaviour if possible.
@@ -345,15 +347,18 @@ Similarly, do not use more than one space character between words in an
 ordinary text line; contrary to other text formatters, they are
 .Em not
 replaced with a single space.
+.
 .Pp
-You can't pass
+You can only pass
 .Ql \*[q]
-directly as an argument.
-Use
+as an argument by doubling it inside a double-quoted string, as in
+.Ql \*[q]hello, \*[q]\*[q]world\*[q]\*[q]\*[q] .
+Using
 .Ql \e*[q]
 (or
 .Ql \e*q )
-instead.
+may thus be advisable to achieve the desired result.
+.
 .Pp
 By default,
 .Xr @L_TROFF@ 1
@@ -382,8 +387,8 @@ test
 \&.No test.
 test
 .Ed
-.Pp
 .
+.Pp
 gives
 .
 .Bd -filled -offset indent
@@ -401,17 +406,18 @@ test
 .No test.
 test
 .Ed
-.Pp
 .
+.Pp
 As can be seen in the first and third line,
 .Nm \-mdoc
 handles punctuation characters specially in macro arguments.
 This will be explained in section
-.Sx General Syntax
+.Sx "General Syntax"
 below.
 In the same way, you have to protect trailing full stops of abbreviations
 with a trailing zero-width space:
 .Ql e.g.\e& .
+.
 .Pp
 A comment in the source file of a man page can be either started with
 .Ql .\e"
@@ -467,22 +473,23 @@ The body of a man page is easily constructed from a basic template:
 \&.\e" .Sh CAVEATS
 \&.\e" .Sh BUGS
 .Ed
-.Pp
 .
+.Pp
 The first items in the template are the commands
-.Ql .Dd ,
-.Ql .Dt ,
+.Ql Ic .Dd ,
+.Ql Ic .Dt ,
 and
-.Ql .Os ;
+.Ql Ic .Os ;
 the document date, the operating system the man page or subject source is
 developed or modified for, and the man page title (in
 .Em upper case )
 along with the section of the manual the page belongs in.
 These commands identify the page and are discussed below in
-.Sx TITLE MACROS .
+.Sx "TITLE MACROS" .
+.
 .Pp
 The remaining items in the template are section headers
-.Pf ( Li .Sh ) ;
+.Pf ( Ic .Sh ) ;
 of which
 .Em NAME ,
 .Em SYNOPSIS ,
@@ -502,7 +509,7 @@ about content macros before page layout macros is recommended.
 In the description of all macros below, optional arguments are put into
 brackets.
 An ellipsis
-.Pf ( Sq ... )
+.Pf ( Ic .Sq Ns " ..." )
 represents zero or more additional arguments.
 Alternative values for a parameter are separated with
 .Ql | .
@@ -511,6 +518,7 @@ If there are alternative values for a mandatory parameter, braces are used
 .Ql | )
 to enclose the value set.
 Meta-variables are specified within angles.
+.
 .Pp
 Example:
 .
@@ -525,6 +533,7 @@ Example:
 .
 .Pp
 Except stated explicitly, all macros are parsed and callable.
+.
 .Pp
 Note that a macro takes effect up to the next nested macro.
 For example,
@@ -533,23 +542,24 @@ doesn't produce
 .Sq Ic "foo <bar>"
 but
 .Sq Ic foo Aq bar .
-Consequently, a warning message is emitted for most commands if the first
-argument is a macro itself since it cancels the effect of the calling
-command completely.
+Consequently, a warning message is emitted for most commands if the
+first argument is a macro itself since it cancels the effect of the
+calling command completely.
 Another consequence is that quoting macros never insert literal quotes;
 .Sq Ic "foo <bar>"
 has been produced by
 .Ql ".Ic \*[q]foo <bar>\*[q]" .
+.
 .Pp
-Most macros have a default width value which can be used to specify a label
-width
+Most macros have a default width value which can be used to specify
+a label width
 .Pf ( Fl width )
 or offset
 .Pf ( Fl offset )
 for the
-.Ql .Bl
+.Ql Ic .Bl
 and
-.Ql .Bd
+.Ql Ic .Bd
 macros.
 It is recommended not to use this rather obscure feature to avoid
 dependencies on local modifications of the
@@ -562,13 +572,15 @@ package.
 The title macros are part of the page structure domain but are presented
 first and separately for someone who wishes to start writing a man page
 yesterday.
-Three header macros designate the document title or manual page title, the
-operating system, and the date of authorship.
-These macros are called once at the very beginning of the document and are
-used to construct headers and footers only.
+Three header macros designate the document title or manual page title,
+the operating system, and the date of authorship.
+These macros are called once at the very beginning of the document and
+are used to construct headers and footers only.
+.
 .
 .Bl -tag -width 6n
-.It Li .Dt Xo
+.Mx
+.It Ic .Dt Xo
 .Op Aq document title
 .Op Aq section number
 .Op Aq volume
@@ -593,21 +605,22 @@ used.
 Under
 .Tn \*[operating-system] ,
 the following sections are defined:
+.
 .Pp
 .TS
 l l l.
-1	\*[volume-operating-system] \*[volume-ds-1]
-2	\*[volume-operating-system] \*[volume-ds-2]
-3	\*[volume-operating-system] \*[volume-ds-3]
-4	\*[volume-operating-system] \*[volume-ds-4]
-5	\*[volume-operating-system] \*[volume-ds-5]
-6	\*[volume-operating-system] \*[volume-ds-6]
-7	\*[volume-operating-system] \*[volume-ds-7]
-8	\*[volume-operating-system] \*[volume-ds-8]
-9	\*[volume-operating-system] \*[volume-ds-9]
+1	\*[volume-operating-system]	\*[volume-ds-1]
+2	\*[volume-operating-system]	\*[volume-ds-2]
+3	\*[volume-operating-system]	\*[volume-ds-3]
+4	\*[volume-operating-system]	\*[volume-ds-4]
+5	\*[volume-operating-system]	\*[volume-ds-5]
+6	\*[volume-operating-system]	\*[volume-ds-6]
+7	\*[volume-operating-system]	\*[volume-ds-7]
+8	\*[volume-operating-system]	\*[volume-ds-8]
+9	\*[volume-operating-system]	\*[volume-ds-9]
 .TE
-.Pp
 .
+.Pp
 A volume name may be arbitrary or one of the following:
 .
 .Pp
@@ -624,8 +637,8 @@ IND	\*[volume-ds-IND]
 LOCAL	\*[volume-ds-LOCAL]
 CON	\*[volume-ds-CON]
 .TE
-.Pp
 .
+.Pp
 For compatibility,
 .Ql MMI
 can be used for
@@ -640,7 +653,7 @@ its value is prepended to the default volume name as specified by the
 second parameter.
 By default, the following architecture keywords are defined:
 .
-\# we use `No' to avoid hyphenation
+.\" we use `No' to avoid hyphenation
 .Bd -ragged -offset indent
 .No acorn26 , acorn32 , algor , alpha , amd64 , amiga , amigappc ,
 .No arc , arm , arm26 , arm32 , armish , atari , aviion ,
@@ -655,14 +668,15 @@ By default, the following architecture keywords are defined:
 .No socppc , solbourne , sparc , sparc64 , sun2 , sun3 ,
 .No tahoe , vax , x68k , x86_64 , xen , zaurus
 .Ed
-.Pp
 .
-If the section number is neither a numeric expression in the range 1 to\~9
-nor one of the above described keywords, the third parameter is used
-verbatim as the volume name.
 .Pp
-In the following examples, the left (which is identical to the right) and
-the middle part of the manual page header strings are shown.
+If the section number is neither a numeric expression in the range
+1 to\~9 nor one of the above described keywords, the third parameter is
+used verbatim as the volume name.
+.
+.Pp
+In the following examples, the left (which is identical to the right)
+and the middle part of the manual page header strings are shown.
 Note how
 .Ql \e&
 prevents the digit\~7 from being a valid numeric expression.
@@ -686,8 +700,8 @@ prevents the digit\~7 from being a valid numeric expression.
 .Ql bar
 .El
 .Ed
-.Pp
 .
+.Pp
 Local, OS-specific additions might be found in the file
 .Pa mdoc.local ;
 look for strings named
@@ -697,12 +711,15 @@ look for strings named
 (for the latter type);
 .Ql XXX
 then denotes the keyword to be used with the
-.Ql .Dt
+.Ql Ic .Dt
 macro.
+.
 .Pp
 This macro is neither callable nor parsed.
 .
-.It Li .Os Xo
+.
+.Mx
+.It Ic .Os Xo
 .Op Aq operating system
 .Op Aq release
 .Xc
@@ -722,7 +739,7 @@ specified.
 In the following table, the possible second arguments for some predefined
 operating systems are listed.
 Similar to
-.Ql .Dt ,
+.Ql Ic .Dt ,
 local additions might be defined in
 .Pa mdoc.local ;
 look for strings named
@@ -768,8 +785,8 @@ the release ID.
 13.0.0, 13.1.0, 13.2.0, 13.3.0, 13.4.0, 14.0.0
 .El
 .Ed
-.Pp
 .
+.Pp
 For
 .Tn ATT ,
 an unknown second parameter will be replaced with the string
@@ -778,46 +795,55 @@ for the other predefined acronyms it will be ignored and a warning message
 emitted.
 Unrecognized arguments are displayed as given in the page footer.
 For instance, a typical footer might be:
+.
 .Pp
 .Dl .Os BSD 4.3
+.
 .Pp
 giving
 .Ql 4.3\~Berkeley Distribution ,
 or for a locally produced set
+.
 .Pp
 .Dl .Os CS Department
+.
 .Pp
 which will produce
 .Ql CS\~Department .
+.
 .Pp
 If the
-.Ql .Os
+.Ql Ic .Os
 macro is not present, the bottom left corner of the manual page will be
 ugly.
+.
 .Pp
 This macro is neither callable nor parsed.
 .
-.It Li .Dd Oo
+.
+.Mx
+.It Ic .Dd Oo
 .Aq month
 .Aq day ,
 .Aq year
 .Oc
 If
-.Ql Dd
+.Ql Ic .Dd
 has no arguments,
 .Ql Epoch
 is used for the date string.
 If it has exactly three arguments, they are concatenated, separated with
 unbreakable space:
+.
 .Pp
 .Dl .Dd January 25, 2001
+.
 .Pp
 The month's name shall not be abbreviated.
-.Pp
 With any other number of arguments, the current date is used, ignoring
 the parameters.
-.Pp
 As a special exception, the format
+.
 .Bd -filled -offset indent
 .Li .Dd $Mdocdate:
 .Aq month
@@ -825,11 +851,13 @@ As a special exception, the format
 .Aq year
 .Li $
 .Ed
+.
 .Pp
 is also recognized.
 It is used in
 .Ox
 manuals to automatically insert the current date when committing.
+.
 .Pp
 This macro is neither callable nor parsed.
 .El
@@ -837,7 +865,7 @@ This macro is neither callable nor parsed.
 .
 .Sh "INTRODUCTION OF MANUAL AND GENERAL TEXT DOMAINS"
 .
-.Ss "What's in a Name" Ns ...
+.Ss "What's in a Name..."
 .
 The manual domain macro names are derived from the day to day informal
 language used to describe commands, subroutines and related files.
@@ -853,6 +881,7 @@ command
 .Nm \-mdoc
 macros, and third, the description of a command to a user in the verbal
 sense; that is, discussion of a command in the text of a man page.
+.
 .Pp
 In the first case,
 .Xr @L_TROFF@ 1
@@ -862,9 +891,9 @@ command is:
 .Bd -filled -offset indent
 .Li ".Xx argument1 argument2" ...
 .Ed
-.Pp
 .
-.Ql .Xx
+.Pp
+.Ql Ic .Xx
 is a macro command, and anything following it are arguments to
 be processed.
 In the second case, the description of a
@@ -878,8 +907,8 @@ command line might be displayed as:
 .Op Fl flag
 .Ao Ar infile Ac Ao Ar outfile Ac
 .Ed
-.Pp
 .
+.Pp
 Here,
 .Nm filter
 is the command name and the
@@ -896,8 +925,8 @@ and
 .Ao Ar outfile Ac
 are called
 .Em meta arguments ;
-in this example, the user has to replace the meta expressions given in angle
-brackets with real file names.
+in this example, the user has to replace the meta expressions given in
+angle brackets with real file names.
 Note that in this document meta arguments are used to describe
 .Nm \-mdoc
 commands; in most man pages, meta variables are not specifically written
@@ -909,8 +938,8 @@ The macros which formatted the above example:
 \&.Op Fl flag
 \&.Ao Ar infile Ac Ao Ar outfile Ac
 .Ed
-.Pp
 .
+.Pp
 In the third case, discussion of commands and command syntax includes both
 examples above, but may add more detail.
 The arguments
@@ -954,7 +983,7 @@ package does not have a macro for an argument
 .Em to
 a flag.
 Instead the
-.Ql \&Ar
+.Ql Ic .Ar
 argument macro is used for an operand or file argument like
 .Ar target
 as well as an argument to a flag like
@@ -977,52 +1006,61 @@ The make command line was produced from:
 .Pp
 .
 The
-.Ql .Bk
+.Ql Ic .Bk
 and
-.Ql .Ek
+.Ql Ic .Ek
 macros are explained in
 .Sx Keeps .
 .
 .Ss "General Syntax"
 .
-The manual domain and general text domain macros share a similar syntax with
-a few minor deviations; most notably,
-.Ql .Ar ,
-.Ql .Fl ,
-.Ql .Nm ,
+The manual domain and general text domain macros share a similar syntax
+with a few minor deviations; most notably,
+.Ql Ic .Ar ,
+.Ql Ic .Fl ,
+.Ql Ic .Nm ,
 and
-.Ql .Pa
+.Ql Ic .Pa
 differ only when called without arguments; and
-.Ql .Fn
+.Ql Ic .Fn
 and
-.Ql .Xr
+.Ql Ic .Xr
 impose an order on their argument lists.
 All content macros are capable of recognizing and properly handling
-punctuation, provided each punctuation character is separated by a leading
-space.
+punctuation, provided each punctuation character is separated by
+a leading space.
 If a command is given:
+.
 .Pp
-.Dl \&.Ar sptr, ptr),
+.Dl .Ar sptr, ptr),
+.
 .Pp
 The result is:
+.
 .Pp
 .Dl Ar sptr, ptr),
+.
 .Pp
 The punctuation is not recognized and all is output in the
 font used by
-.Ql .Ar .
+.Ql Ic .Ar .
 If the punctuation is separated by a leading white space:
+.
 .Pp
-.Dl \&.Ar "sptr , ptr ) ,"
+.Dl .Ar "sptr , ptr ) ,"
+.
 .Pp
 The result is:
+.
 .Pp
 .Dl Ar sptr , ptr ) ,
+.
 .Pp
 The punctuation is now recognized and output in the default font
 distinguishing it from the argument strings.
 To remove the special meaning from a punctuation character escape it with
 .Ql \e& .
+.
 .Pp
 The following punctuation characters are recognized by
 .Nm \-mdoc :
@@ -1031,8 +1069,8 @@ The following punctuation characters are recognized by
 .It Li .\& Ta Li ,\& Ta Li :\& Ta Li ;\& Ta Li (\&
 .It Li )\& Ta Li [\& Ta Li ]\& Ta Li ?\& Ta Li !\&
 .El
-.Pp
 .
+.Pp
 .Xr @T_TROFF 1
 is limited as a macro language, and has difficulty when presented with a
 string containing a member of the mathematical, logical or quotation set:
@@ -1040,8 +1078,8 @@ string containing a member of the mathematical, logical or quotation set:
 .Bd -literal -offset indent-two
 {+,\-,/,*,%,<,>,<=,>=,=,==,&,`,',"}
 .Ed
-.Pp
 .
+.Pp
 The problem is that
 .Xr @L_TROFF@ 1
 may assume it is supposed to actually perform the operation or evaluation
@@ -1057,8 +1095,11 @@ Typical syntax is shown in the first content macro displayed below,
 .Ss Addresses
 .
 The address macro identifies an address construct.
+.
 .Pp
-.Dl Usage: .Ad Ao address Ac ...
+.Mx
+.Dl Usage: Ic .Ad Ao address Ac ...
+.
 .Pp
 .Bl -tag -width ".Li .Ad\ f1\ ,\ f2\ ,\ f3\ :" -compact -offset 15n
 .It Li ".Ad addr1"
@@ -1072,19 +1113,21 @@ The address macro identifies an address construct.
 .It Li ".Ad addr ) ) ,"
 .Ad addr ) ) ,
 .El
-.Pp
 .
+.Pp
 The default width is 12n.
 .
 .Ss "Author Name"
 .
 The
-.Ql .An
+.Ql Ic .An
 macro is used to specify the name of the author of the item being
 documented, or the name of the author of the actual manual page.
+.
 .Pp
-.Dl Usage: .An Ao author name Ac ...
-.Pp
+.Mx
+.Dl Usage: Ic .An Ao author name Ac ...
+.
 .Bl -tag -width ".Li .An\ \*[q]Joe\ Author\*[q]\ )\ )\ ," -offset 15n
 .It Li ".An \*[q]Joe Author\*[q]"
 .An "Joe Author"
@@ -1095,14 +1138,15 @@ documented, or the name of the author of the actual manual page.
 .It Li ".An \*[q]Joe Author\*[q] ) ) ,"
 .An "Joe Author" ) ) ,
 .El
-.Pp
 .
+.Pp
 The default width is 12n.
+.
 .Pp
 In the
 .Em AUTHORS
 section, the
-.Ql .An
+.Ql Ic .An
 command causes a line break allowing each new name to appear on its own
 line.
 If this is not desirable,
@@ -1110,8 +1154,8 @@ If this is not desirable,
 .Bd -literal -offset indent
 \&.An \-nosplit
 .Ed
-.Pp
 .
+.Pp
 call will turn this off.
 To turn splitting back on, write
 .
@@ -1122,13 +1166,16 @@ To turn splitting back on, write
 .Ss "Arguments"
 .
 The
-.Li .Ar
+.Ic .Ar
 argument macro may be used whenever an argument is referenced.
 If called without arguments, the
 .Sq Ar
 string is output.
+.
 .Pp
-.Dl Usage: .Ar Oo Ao argument Ac Oc ...
+.Mx
+.Dl Usage: Ic .Ar Oo Ao argument Ac Oc ...
+.
 .Pp
 .Bl -tag -width ".Li .Ar\ file1\ file2" -compact -offset 15n
 .It Li .Ar
@@ -1144,40 +1191,44 @@ string is output.
 .It Li ".Ar file ) ) ,"
 .Ar file ) ) ,
 .El
-.Pp
 .
+.Pp
 The default width is 12n.
 .
-.Ss "Configuration Declaration (Section Four Only)"
+.Ss Configuration Declarations (Section Four Only)
 .
 The
-.Ql .Cd
+.Ql Ic .Cd
 macro is used to demonstrate a
 .Xr config 8
 declaration for a device interface in a section four manual.
+.
 .Pp
-.Dl Usage: .Cd Ao argument Ac ...
-.Pp
+.Mx
+.Dl Usage: Ic .Cd Ao argument Ac ...
+.
 .Bl -tag -width ".Li .Cd\ Xdevice\ le0\ at\ scode?X" -offset 15n
 .It Li ".Cd \*[q]device le0 at scode?\*[q]"
 .Cd "device le0 at scode?"
 .El
+.
 .Pp
 In the
 .Sx SYNOPSIS
 section a
-.Ql .Cd
+.Ql Ic .Cd
 command causes a line break before and after its arguments are printed.
-.Pp
 .
+.Pp
 The default width is 12n.
 .
 .Ss "Command Modifiers"
 .
 The command modifier is identical to the
-.Ql .Fl
+.Ql Ic .Fl
 (flag) command with the exception that the
-.Ql .Cm
+.Mx
+.Ql Ic .Cm
 macro does not assert a dash in front of every argument.
 Traditionally flags are marked by the preceding dash, however, some commands
 or subsets of commands do not use them.
@@ -1185,6 +1236,7 @@ Command modifiers may also be specified in conjunction with interactive
 commands such as editor commands.
 See
 .Sx Flags .
+.
 .Pp
 The default width is 10n.
 .
@@ -1192,9 +1244,12 @@ The default width is 10n.
 .
 A variable (or constant) which is defined in an include file
 is specified by the macro
-.Ql .Dv .
+.Ql Ic .Dv .
+.
 .Pp
-.Dl Usage: .Dv Ao defined variable Ac ...
+.Mx
+.Dl Usage: Ic .Dv Ao defined variable Ac ...
+.
 .Pp
 .Bl -tag -width ".Li .Dv\ MAXHOSTNAMELEN" -compact -offset 15n
 .It Li ".Dv MAXHOSTNAMELEN"
@@ -1202,22 +1257,27 @@ is specified by the macro
 .It Li ".Dv TIOCGPGRP )"
 .Dv TIOCGPGRP )
 .El
+.
 .Pp
 The default width is 12n.
 .
 .Ss Errno's
 .
 The
-.Ql .Er
-errno macro specifies the error return value for section 2, 3, and\~9 library
-routines.
+.Ql Ic .Er
+errno macro specifies the error return value for section 2, 3, and\~9
+library routines.
 The second example below shows
-.Ql .Er
+.Ql Ic .Er
 used with the
-.Ql .Bq
-general text domain macro, as it would be used in a section two manual page.
+.Ql Ic .Bq
+general text domain macro, as it would be used in a section two manual
+page.
+.
 .Pp
-.Dl Usage: .Er Ao errno type Ac ...
+.Mx
+.Dl Usage: Ic .Er Ao errno type Ac ...
+.
 .Pp
 .Bl -tag -width ".Li .Bq\ Er\ ENOTDIR" -compact -offset 15n
 .It Li ".Er ENOENT"
@@ -1227,17 +1287,20 @@ general text domain macro, as it would be used in a section two manual page.
 .It Li ".Bq Er ENOTDIR"
 .Bq Er ENOTDIR
 .El
-.Pp
 .
+.Pp
 The default width is 17n.
 .
 .Ss "Environment Variables"
 .
 The
-.Ql .Ev
+.Ql Ic .Ev
 macro specifies an environment variable.
+.
 .Pp
-.Dl Usage: .Ev Ao argument Ac ...
+.Mx
+.Dl Usage: Ic .Ev Ao argument Ac ...
+.
 .Pp
 .Bl -tag -width ".Li .Ev\ PRINTER\ )\ )\ ," -compact -offset 15n
 .It Li ".Ev DISPLAY"
@@ -1247,23 +1310,27 @@ macro specifies an environment variable.
 .It Li ".Ev PRINTER ) ) ,"
 .Ev PRINTER ) ) ,
 .El
+.
 .Pp
 The default width is 15n.
 .
 .Ss Flags
 .
 The
-.Ql .Fl
+.Ql Ic .Fl
 macro handles command line flags.
 It prepends a dash,
 .Ql \- ,
 to the flag.
 For interactive command flags, which are not prepended with a dash, the
-.Ql .Cm
+.Ql Ic .Cm
 (command modifier)
 macro is identical, but without the dash.
+.
 .Pp
-.Dl Usage: .Fl Ao argument Ac ...
+.Mx
+.Dl Usage: Ic .Fl Ao argument Ac ...
+.
 .Pp
 .Bl -tag -width ".Li .Fl\ xyz\ )\ ," -compact -offset 15n
 .It Li .Fl
@@ -1281,46 +1348,52 @@ macro is identical, but without the dash.
 .It Li ".Fl xyz ) ,"
 .Fl xyz ) ,
 .It Li ".Fl |"
-.Fl |
+.Fl \|
 .El
+.
 .Pp
 The
-.Ql .Fl
+.Ql Ic .Fl
 macro without any arguments results in a dash representing stdin/stdout.
 Note that giving
-.Ql .Fl
+.Ql Ic .Fl
 a single dash will result in two dashes.
+.
 .Pp
 The default width is 12n.
 .
 .Ss "Function Declarations"
 .
 The
-.Ql .Fd
+.Ql Ic .Fd
 macro is used in the
 .Sx SYNOPSIS
 section with section two or three functions.
 It is neither callable nor parsed.
+.
 .Pp
-.Dl Usage: .Fd Ao argument Ac ...
+.Mx
+.Dl Usage: Ic .Fd Ao argument Ac ...
+.
 .Pp
 .Bl -tag -width ".Li .Fd\ X#include\ <sys/types.h>X" -compact -offset 15n
 .It Li ".Fd \*[q]#include <sys/types.h>\*[q]"
 .Fd "#include <sys/types.h>"
 .El
+.
 .Pp
 In the
 .Sx SYNOPSIS
 section a
-.Ql .Fd
-command causes a line break if a function has already been presented and a
-break has not occurred.
-This leaves a nice vertical space in between the previous function call and
-the declaration for the next function.
+.Ql Ic .Fd
+command causes a line break if a function has already been presented and
+a break has not occurred.
+This leaves a nice vertical space in between the previous function call
+and the declaration for the next function.
 .
 .Pp
 The
-.Ql .In
+.Ql Ic .In
 macro, while in the
 .Sx SYNOPSIS
 section, represents the
@@ -1328,12 +1401,16 @@ section, represents the
 statement, and is the short form of the above example.
 It specifies the C\~header file as being included in a C\~program.
 It also causes a line break.
+.
 .Pp
 While not in the
 .Sx SYNOPSIS
 section, it represents the header file enclosed in angle brackets.
+.
 .Pp
-.Dl Usage: .In Ao header file Ac
+.Mx
+.Dl Usage: Ic .In Ao header file Ac
+.
 .Pp
 .Bl -tag -width ".Li .In\ stdio.h" -compact -offset 15n
 .nr in-synopsis-section 1
@@ -1349,13 +1426,17 @@ section, it represents the header file enclosed in angle brackets.
 This macro is intended for the
 .Sx SYNOPSIS
 section.
-It may be used anywhere else in the man page without problems, but its main
-purpose is to present the function type in kernel normal form for the
+It may be used anywhere else in the man page without problems, but its
+main purpose is to present the function type in kernel normal form for
+the
 .Sx SYNOPSIS
 of sections two and three (it causes a line break, allowing the function
 name to appear on the next line).
+.
 .Pp
-.Dl Usage: .Ft Ao type Ac ...
+.Mx
+.Dl Usage: Ic .Ft Ao type Ac ...
+.
 .Pp
 .Bl -tag -width ".Li .Ft\ struct\ stat" -compact -offset 15n
 .It Li ".Ft struct stat"
@@ -1365,12 +1446,15 @@ name to appear on the next line).
 .Ss "Functions (Library Routines)"
 .
 The
-.Ql .Fn
+.Ql Ic .Fn
 macro is modeled on
 .Tn ANSI\~C
 conventions.
+.
 .Pp
-.Dl Usage: .Fn Ao function Ac Oo Ao parameter Ac Oc ...
+.Mx
+.Dl Usage: Ic .Fn Ao function Ac Oo Ao parameter Ac Oc ...
+.
 .Pp
 .Bl -tag -width ".Li .Fn\ align\ Xchar\ *ptrX\ ," -compact -offset 15n
 .It Li ".Fn getchar"
@@ -1380,20 +1464,25 @@ conventions.
 .It Li ".Fn align \*[q]char *ptr\*[q] ,"
 .Fn align "char *ptr" ,
 .El
+.
 .Pp
 Note that any call to another macro signals the end of the
-.Ql .Fn
+.Ql Ic .Fn
 call (it will insert a closing parenthesis at that point).
+.
 .Pp
 For functions with many parameters (which is rare), the macros
-.Ql .Fo
+.Mx
+.Ql Ic .Fo
 (function open)
 and
-.Ql .Fc
+.Mx
+.Ql Ic .Fc
 (function close)
 may be used with
-.Ql .Fa
+.Ql Ic .Fa
 (function argument).
+.
 .Pp
 Example:
 .
@@ -1411,6 +1500,7 @@ Example:
 \&.Fa "int buflen"
 \&.Fc
 .Ed
+.
 .Pp
 Produces:
 .
@@ -1428,42 +1518,46 @@ Produces:
 .Fa "int buflen"
 .Fc
 .Ed
-.Pp
 .
+.Pp
 In the
 .Sx SYNOPSIS
 section, the function will always begin at the beginning of line.
 If there is more than one function presented in the
 .Sx SYNOPSIS
 section and a function type has not been given, a line break will occur,
-leaving a nice vertical space between the current function name and the one
-prior.
+leaving a nice vertical space between the current function name and the
+one prior.
+.
 .Pp
 The default width values of
-.Ql .Fn
+.Ql Ic .Fn
 and
-.Ql .Fo
+.Ql Ic .Fo
 are 12n and 16n, respectively.
 .
 .Ss "Function Arguments"
 .
 The
-.Ql .Fa
+.Ql Ic .Fa
 macro is used to refer to function arguments (parameters) outside of the
 .Sx SYNOPSIS
 section of the manual or inside the
 .Sx SYNOPSIS
 section if the enclosure macros
-.Ql .Fo
+.Ql Ic .Fo
 and
-.Ql .Fc
+.Ql Ic .Fc
 instead of
-.Ql .Fn
+.Ql Ic .Fn
 are used.
-.Ql .Fa
+.Ql Ic .Fa
 may also be used to refer to structure members.
+.
 .Pp
-.Dl Usage: .Fa Ao function argument Ac ...
+.Mx
+.Dl Usage: Ic .Fa Ao function argument Ac ...
+.
 .Pp
 .Bl -tag -width ".Li .Fa\ d_namlen\ )\ )\ ," -compact -offset 15n
 .It Li ".Fa d_namlen ) ) ,"
@@ -1471,18 +1565,22 @@ may also be used to refer to structure members.
 .It Li ".Fa iov_len"
 .Fa iov_len
 .El
+.
 .Pp
 The default width is 12n.
 .
 .Ss "Return Values"
 .
 The
-.Ql .Rv
+.Ql Ic .Rv
 macro generates text for use in the
-.Sx RETURN VALUES
+.Sx "RETURN VALUES"
 section.
+.
 .Pp
-.Dl Usage: .Rv Oo \-std Oc Op Ao function Ac ...
+.Mx
+.Dl Usage: Ic .Rv Oo \-std Oc Op Ao function Ac ...
+.
 .Pp
 For example,
 .Ql ".Rv \-std atexit"
@@ -1495,6 +1593,7 @@ produces:
 .Rv -std atexit
 .ds section "\*[section-old]
 .Ed
+.
 .Pp
 The
 .Fl std
@@ -1506,12 +1605,15 @@ flag.
 .Ss "Exit Status"
 .
 The
-.Ql .Ex
+.Ql Ic .Ex
 macro generates text for use in the
 .Sx DIAGNOSTICS
 section.
+.
 .Pp
-.Dl Usage: .Ex Oo \-std Oc Op Ao utility Ac ...
+.Mx
+.Dl Usage: Ic .Ex Oo \-std Oc Op Ao utility Ac ...
+.
 .Pp
 For example,
 .Ql ".Ex \-std cat"
@@ -1524,6 +1626,7 @@ produces:
 .Ex -std cat
 .ds section "\*[section-old]
 .Ed
+.
 .Pp
 The
 .Fl std
@@ -1535,10 +1638,13 @@ flag.
 .Ss "Interactive Commands"
 .
 The
-.Ql .Ic
+.Ql Ic .Ic
 macro designates an interactive or internal command.
+.
 .Pp
-.Dl Usage: .Ic Ao argument Ac ...
+.Mx
+.Dl Usage: Ic .Ic Ao argument Ac ...
+.
 .Pp
 .Bl -tag -width ".Li .Ic\ setenv\ ,\ unsetenv" -compact -offset 15n
 .It Li ".Ic :wq"
@@ -1548,20 +1654,24 @@ macro designates an interactive or internal command.
 .It Li ".Ic setenv , unsetenv"
 .Ic setenv , unsetenv
 .El
+.
 .Pp
 The default width is 12n.
 .
 .Ss "Library Names"
 .
 The
-.Ql .Lb
-macro is used to specify the library where a particular function is compiled
-in.
+.Ql Ic .Lb
+macro is used to specify the library where a particular function is
+compiled in.
+.
 .Pp
-.Dl Usage: .Lb Ao argument Ac ...
+.Mx
+.Dl Usage: Ic .Lb Ao argument Ac ...
+.
 .Pp
 Available arguments to
-.Ql .Lb
+.Ql Ic .Lb
 and their results are:
 .
 .Pp
@@ -1707,6 +1817,7 @@ and their results are:
 .It Li libz
 .Lb libz
 .El
+.
 .Pp
 Local, OS-specific additions might be found in the file
 .Pa mdoc.local ;
@@ -1714,24 +1825,27 @@ look for strings named
 .Ql str\-Lb\-XXX .
 .Ql XXX
 then denotes the keyword to be used with the
-.Ql .Lb
+.Ql Ic .Lb
 macro.
+.
 .Pp
 In the
 .Em LIBRARY
 section an
-.Ql .Lb
+.Ql Ic .Lb
 command causes a line break before and after its arguments are printed.
-.Pp
 .
 .Ss Literals
 .
 The
-.Ql .Li
-literal macro may be used for special characters, variable constants, etc.\&
-\- anything which should be displayed as it would be typed.
+.Ql Ic .Li
+literal macro may be used for special characters, variable constants,
+etc.\&\- anything which should be displayed as it would be typed.
+.
 .Pp
-.Dl Usage: .Li Ao argument Ac ...
+.Mx
+.Dl Usage: Ic .Li Ao argument Ac ...
+.
 .Pp
 .Bl -tag -width ".Li .Li\ cntrl\-D\ )\ ,"  -compact -offset 15n
 .It Li ".Li \een"
@@ -1743,31 +1857,33 @@ literal macro may be used for special characters, variable constants, etc.\&
 .It Li ".Li 1024 ..."
 .Li 1024 ...
 .El
+.
 .Pp
 The default width is 16n.
 .
 .Ss Names
 .
 The
-.Ql .Nm
+.Ql Ic .Nm
 macro is used for the document title or subject name.
-It has the peculiarity of remembering the first argument it was called with,
-which should always be the subject name of the page.
+It has the peculiarity of remembering the first argument it was called
+with, which should always be the subject name of the page.
 When called without arguments,
-.Ql .Nm
-regurgitates this initial name for the sole purpose of making less work for
-the author.
-.Ql .Nm
+.Ql Ic .Nm
+regurgitates this initial name for the sole purpose of making less work
+for the author.
+.Ql Ic .Nm
 causes a line break within the
 .Sx SYNOPSIS
 section.
+.
 .Pp
 Note: A section two or three document function name is addressed with the
-.Ql .Nm
+.Ql Ic .Nm
 in the
 .Em NAME
 section, and with
-.Ql .Fn
+.Ql Ic .Fn
 in the
 .Sx SYNOPSIS
 and remaining sections.
@@ -1776,16 +1892,19 @@ For interactive commands, such as the
 command keyword in
 .Xr csh 1 ,
 the
-.Ql .Ic
+.Ql Ic .Ic
 macro should be used.
 While
-.Ql .Ic
+.Ql Ic .Ic
 is nearly identical
 to
-.Ql .Nm ,
+.Ql Ic .Nm ,
 it can not recall the first argument it was invoked with.
+.
 .Pp
-.Dl Usage: .Nm Oo Ao argument Ac Oc ...
+.Mx
+.Dl Usage: Ic .Nm Oo Ao argument Ac Oc ...
+.
 .Pp
 .Bl -tag -width ".Li .Nm\ groff_mdoc" -compact -offset 15n
 .It Li ".Nm groff_mdoc"
@@ -1797,26 +1916,31 @@ it can not recall the first argument it was invoked with.
 .It Li ".Nm :"
 .Nm :
 .El
+.
 .Pp
 The default width is 10n.
 .
 .Ss Options
 .
 The
-.Ql .Op
+.Ql Ic .Op
 macro places option brackets around any remaining arguments on the
 command line, and places any trailing punctuation outside the brackets.
 The macros
-.Ql .Oo
+.Ql Ic .Oo
 and
-.Ql .Oc
-(which produce an opening and a closing option bracket respectively) may be used
-across one or more lines or to specify the exact position of the closing
-parenthesis.
+.Ql Ic .Oc
+(which produce an opening and a closing option bracket respectively) may
+be used across one or more lines or to specify the exact position of the
+closing parenthesis.
+.
 .Pp
-.Dl Usage: .Op Oo Ao option Ac Oc ...
+.Mx
+.Dl Usage: Ic .Op Oo Ao option Ac Oc ...
+.
 .Pp
-.Bl -tag -width ".Li .Op\ Fl\ c\ Ar\ objfil\ Op\ Ar\ corfil\ ," -compact -offset 15n
+.Bl -tag -width ".Li .Op\ Fl\ c\ Ar\ objfil\ Op\ Ar\ corfil\ ," \
+  -compact -offset 15n
 .It Li .Op
 .Op
 .It Li ".Op Fl k"
@@ -1836,11 +1960,12 @@ parenthesis.
 .It Li ".Li .Op Oo Ao option Ac Oc ..."
 .Li .Op Oo Ao option Ac Oc ...
 .El
+.
 .Pp
 Here a typical example of the
-.Ql .Oo
+.Ql Ic .Oo
 and
-.Ql .Oc
+.Ql Ic .Oc
 macros:
 .
 .Bd -literal -offset indent
@@ -1850,6 +1975,7 @@ macros:
 \&.Op Fl c Ar count
 \&.Oc
 .Ed
+.
 .Pp
 Produces:
 .
@@ -1862,21 +1988,24 @@ Produces:
 .Ed
 .Pp
 The default width values of
-.Ql .Op
+.Ql Ic .Op
 and
-.Ql .Oo
+.Ql Ic .Oo
 are 14n and 10n, respectively.
 .
 .Ss Pathnames
 .
 The
-.Ql .Pa
+.Ql Ic .Pa
 macro formats path or file names.
 If called without arguments, the
 .Sq Pa
 string is output, which represents the current user's home directory.
+.
 .Pp
-.Dl Usage: .Pa Oo Ao pathname Ac Oc ...
+.Mx
+.Dl Usage: Ic .Pa Oo Ao pathname Ac Oc ...
+.
 .Pp
 .Bl -tag -width ".Li .Pa\ /tmp/fooXXXXX\ )\ ." -compact -offset 15n
 .It Li .Pa
@@ -1886,16 +2015,20 @@ string is output, which represents the current user's home directory.
 .It Li ".Pa /tmp/fooXXXXX ) ."
 .Pa /tmp/fooXXXXX ) .
 .El
+.
 .Pp
 The default width is 32n.
 .
 .Ss Standards
 .
 The
-.Ql .St
+.Ql Ic .St
 macro replaces standard abbreviations with their formal names.
+.
 .Pp
-.Dl Usage: .St Ao abbreviation Ac ...
+.Mx
+.Dl Usage: Ic .St Ao abbreviation Ac ...
+.
 .Pp
 Available pairs for
 .Dq Abbreviation/Formal Name
@@ -1903,6 +2036,7 @@ are:
 .
 .Pp
 .Tn ANSI/ISO C
+.
 .Pp
 .Bl -tag -width ".Li \-p1003.1g\-2000" -compact -offset indent
 .It Li \-ansiC
@@ -1918,9 +2052,11 @@ are:
 .It Li \-isoC\-2011
 .St -isoC-2011
 .El
+.
 .Pp
 .Tn POSIX
 Part 1: System API
+.
 .Pp
 .Bl -tag -width ".Li \-p1003.1g\-2000" -compact -offset indent
 .It Li \-iso9945\-1\-90
@@ -1950,9 +2086,11 @@ Part 1: System API
 .It Li \-p1003.1\-2008
 .St -p1003.1-2008
 .El
+.
 .Pp
 .Tn POSIX
 Part 2: Shell and Utilities
+.
 .Pp
 .Bl -tag -width ".Li \-p1003.1g\-2000" -compact -offset indent
 .It Li \-iso9945\-2\-93
@@ -1964,8 +2102,10 @@ Part 2: Shell and Utilities
 .It Li \-p1003.2a\-92
 .St -p1003.2a-92
 .El
+.
 .Pp
 X/Open
+.
 .Pp
 .Bl -tag -width ".Li \-p1003.1g\-2000" -compact -offset indent
 .It Li \-susv2
@@ -1993,8 +2133,10 @@ X/Open
 .It Li \-xsh5
 .St -xsh5
 .El
+.
 .Pp
 Miscellaneous
+.
 .Pp
 .Bl -tag -width ".Li \-p1003.1g\-2000" -compact -offset indent
 .It Li \-ieee754
@@ -2008,13 +2150,17 @@ Miscellaneous
 .Ss "Variable Types"
 .
 The
-.Ql .Vt
+.Ql Ic .Vt
 macro may be used whenever a type is referenced.
 In the
 .Sx SYNOPSIS
-section, it causes a line break (useful for old style variable declarations).
+section, it causes a line break (useful for old style variable
+declarations).
+.
 .Pp
-.Dl Usage: .Vt Ao type Ac ...
+.Mx
+.Dl Usage: Ic .Vt Ao type Ac ...
+.
 .Pp
 .Bl -tag -width ".Li .Vt\ extern\ char\ *optarg\ ;" -compact -offset 15n
 .It Li ".Vt extern char *optarg ;"
@@ -2026,8 +2172,11 @@ section, it causes a line break (useful for old style variable declarations).
 .Ss Variables
 .
 Generic variable reference.
+.
 .Pp
-.Dl Usage: .Va Ao variable Ac ...
+.Mx
+.Dl Usage: Ic .Va Ao variable Ac ...
+.
 .Pp
 .Bl -tag -width ".Li .Va\ Xchar\ sX\ ]\ )\ )\ ," -compact -offset 15n
 .It Li ".Va count"
@@ -2039,18 +2188,22 @@ Generic variable reference.
 .It Li ".Va \*[q]char s\*[q] ] ) ) ,"
 .Va "char s" ] ) ) ,
 .El
+.
 .Pp
 The default width is 12n.
 .
 .Ss "Manual Page Cross References"
 .
 The
-.Ql .Xr
+.Ql Ic .Xr
 macro expects the first argument to be a manual page name.
-The optional second argument, if a string (defining the manual section), is
-put into parentheses.
+The optional second argument, if a string (defining the manual section),
+is put into parentheses.
+.
 .Pp
-.Dl Usage: .Xr Ao man page name Ac Oo Ao section Ac Oc ...
+.Mx
+.Dl Usage: Ic .Xr Ao man page name Ac Oo Ao section Ac Oc ...
+.
 .Pp
 .Bl -tag -width ".Li .Xr\ xinit\ 1x\ ;" -compact -offset 15n
 .It Li ".Xr mdoc"
@@ -2062,6 +2215,7 @@ put into parentheses.
 .It Li ".Xr xinit 1x ;"
 .Xr xinit 1x ;
 .El
+.
 .Pp
 The default width is 10n.
 .
@@ -2071,7 +2225,9 @@ The default width is 10n.
 .Ss "AT&T Macro"
 .
 .Pp
-.Dl Usage: .At Oo Ao version Ac Oc ...
+.Mx
+.Dl Usage: Ic .At Oo Ao version Ac Oc ...
+.
 .Pp
 .Bl -tag -width ".Li .At\ v6\ ." -compact -offset 15n
 .It Li .At
@@ -2079,18 +2235,22 @@ The default width is 10n.
 .It Li ".At v6 ."
 .At v6 .
 .El
+.
 .Pp
 The following values for
 .Ao version Ac
 are possible:
+.
 .Pp
 .Dl 32v, v1, v2, v3, v4, v5, v6, v7, III, V, V.1, V.2, V.3, V.4
 .
 .Ss "BSD Macro"
 .
 .Pp
-.Dl "Usage: .Bx" Bro \-alpha | \-beta | \-devel Brc ...
-.Dl "       .Bx" Oo Ao version Ac Oo Ao release Ac Oc Oc ...
+.Mx
+.Dl  Usage: Ic .Bx Bro \-alpha | \-beta | \-devel Brc ...
+.Dl "       Ic .Bx" Oo Ao version Ac Oo Ao release Ac Oc Oc ...
+.
 .Pp
 .Bl -tag -width ".Li .Bx\ -devel" -compact -offset 15n
 .It Li .Bx
@@ -2100,6 +2260,7 @@ are possible:
 .It Li ".Bx \-devel"
 .Bx -devel
 .El
+.
 .Pp
 .Ao version Ac
 will be prepended to the string
@@ -2107,13 +2268,16 @@ will be prepended to the string
 The following values for
 .Ao release Ac
 are possible:
+.
 .Pp
 .Dl Reno, reno, Tahoe, tahoe, Lite, lite, Lite2, lite2
 .
 .Ss "NetBSD Macro"
 .
 .Pp
-.Dl Usage: .Nx Oo Ao version Ac Oc ...
+.Mx
+.Dl Usage: Ic .Nx Oo Ao version Ac Oc ...
+.
 .Pp
 .Bl -tag -width ".Li .Nx\ 1.4\ ." -compact -offset 15n
 .It Li .Nx
@@ -2121,18 +2285,21 @@ are possible:
 .It Li ".Nx 1.4 ."
 .Nx 1.4 .
 .El
+.
 .Pp
 For possible values of
 .Ao version Ac
 see the description of the
-.Ql .Os
+.Ql Ic .Os
 command above in section
 .Sx "TITLE MACROS" .
 .
 .Ss "FreeBSD Macro"
 .
 .Pp
-.Dl Usage: .Fx Oo Ao version Ac Oc ...
+.Mx
+.Dl Usage: Ic .Fx Oo Ao version Ac Oc ...
+.
 .Pp
 .Bl -tag -width ".Li .Fx\ 2.2\ ." -compact -offset 15n
 .It Li .Fx
@@ -2140,18 +2307,21 @@ command above in section
 .It Li ".Fx 2.2 ."
 .Fx 2.2 .
 .El
+.
 .Pp
 For possible values of
 .Ao version Ac
 see the description of the
-.Ql .Os
+.Ql Ic .Os
 command above in section
 .Sx "TITLE MACROS" .
 .
 .Ss "DragonFly Macro"
 .
 .Pp
-.Dl Usage: .Dx Oo Ao version Ac Oc ...
+.Mx
+.Dl Usage: Ic .Dx Oo Ao version Ac Oc ...
+.
 .Pp
 .Bl -tag -width ".Li .Dx\ 1.4\ ." -compact -offset 15n
 .It Li .Dx
@@ -2159,18 +2329,21 @@ command above in section
 .It Li ".Dx 1.4 ."
 .Dx 1.4 .
 .El
+.
 .Pp
 For possible values of
 .Ao version Ac
 see the description of the
-.Ql .Os
+.Ql Ic .Os
 command above in section
 .Sx "TITLE MACROS" .
 .
 .Ss "OpenBSD Macro"
 .
 .Pp
-.Dl Usage: .Ox Oo Ao version Ac Oc ...
+.Mx
+.Dl Usage: Ic .Ox Oo Ao version Ac Oc ...
+.
 .Pp
 .Bl -tag -width ".Li .Ox\ 1.0" -compact -offset 15n
 .It Li ".Ox 1.0"
@@ -2180,7 +2353,9 @@ command above in section
 .Ss "BSD/OS Macro"
 .
 .Pp
-.Dl Usage: .Bsx Oo Ao version Ac Oc ...
+.Mx
+.Dl Usage: Ic .Bsx Oo Ao version Ac Oc ...
+.
 .Pp
 .Bl -tag -width ".Li .Bsx\ 1.0" -compact -offset 15n
 .It Li ".Bsx 1.0"
@@ -2190,7 +2365,9 @@ command above in section
 .Ss "UNIX Macro"
 .
 .Pp
-.Dl Usage: .Ux ...
+.Mx
+.Dl Usage: Ic .Ux Ns " ..."
+.
 .Pp
 .Bl -tag -width ".Li .Ux" -compact -offset 15n
 .It Li .Ux
@@ -2200,11 +2377,14 @@ command above in section
 .Ss "Emphasis Macro"
 .
 Text may be stressed or emphasized with the
-.Ql .Em
+.Ql Ic .Em
 macro.
 The usual font for emphasis is italic.
+.
 .Pp
-.Dl Usage: .Em Ao argument Ac ...
+.Mx
+.Dl Usage: Ic .Em Ao argument Ac ...
+.
 .Pp
 .Bl -tag -width ".Li .Em\ vide\ infra\ )\ )\ ," -compact -offset 15n
 .It Li ".Em does not"
@@ -2214,25 +2394,27 @@ The usual font for emphasis is italic.
 .It Li ".Em vide infra ) ) ,"
 .Em vide infra ) ) ,
 .El
+.
 .Pp
 The default width is 10n.
 .
 .Ss "Font Mode"
 .
 The
-.Ql .Bf
+.Ql Ic .Bf
 font mode must be ended with the
-.Ql .Ef
+.Ql Ic .Ef
 macro (the latter takes no arguments).
 Font modes may be nested within other font modes.
+.
 .Pp
-.Ql .Bf
-has the following syntax:
-.Pp
-.Dl .Bf Ao font mode Ac
+.Mx
+.Dl Usage: Ic .Bf Ao font mode Ac
+.
 .Pp
 .Ao font mode Ac
 must be one of the following three types:
+.
 .Pp
 .Bl -tag -width ".Sy \&Sy | Fl symbolic" -compact -offset indent
 .It Sy \&Em | Fl emphasis
@@ -2248,30 +2430,33 @@ Same as if the
 .Ql .Sy
 macro was used for the entire block of text.
 .El
+.
 .Pp
 Both macros are neither callable nor parsed.
 .
 .Ss "Enclosure and Quoting Macros"
 .
 The concept of enclosure is similar to quoting.
-The object being to enclose one or more strings between a pair of characters
-like quotes or parentheses.
-The terms quoting and enclosure are used interchangeably throughout this
-document.
+The object being to enclose one or more strings between a pair of
+characters like quotes or parentheses.
+The terms quoting and enclosure are used interchangeably throughout
+this document.
 Most of the one-line enclosure macros end in small letter
 .Ql q
 to give a hint of quoting, but there are a few irregularities.
-For each enclosure macro there is also a pair of open and close macros which
-end in small letters
+For each enclosure macro there is also a pair of open and close macros
+which end in small letters
 .Ql o
 and
 .Ql c
 respectively.
+.
 .Pp
 \# XXX
 .if t \
 .  ne 10
 .
+FIXME
 .TS
 lb lb lb lb lb
 l l l l l.
@@ -2281,11 +2466,13 @@ Quote	Open	Close	Function	Result
 \&.Brq	.Bro	.Brc	Brace Enclosure	{string}
 \&.Dq	.Do	.Dc	Double Quote	"string"
 \&.Eq	.Eo	.Ec	Enclose String (in XX)	XXstring
+\&.Pf			Suppress intervening WS	AB
 \&.Pq	.Po	.Pc	Parenthesis Enclosure	(string)
 \&.Ql			Quoted Literal	\*[Lq]string\*[Rq] or string
 \&.Qq	.Qo	.Qc	Straight Double Quote	"string"
 \&.Sq	.So	.Sc	Single Quote	'string'
 .TE
+.
 .Pp
 All macros ending with
 .Sq q
@@ -2293,36 +2480,62 @@ and
 .Sq o
 have a default width value of 12n.
 .
-.Bl -tag -width ".Li .Ec , .Eo"
-.It Li .Eo , .Ec
-These macros expect the first argument to be the opening and closing strings
-respectively.
-.It Li .Es , .En
+.
+.Bl -tag -width ".Ic .E__ , Ic .E__ , Ic .E__"
+.Mx
+.It Ic .Ap
+The
+.Ql Ic .Ap
+macro inserts an apostrophe and exits any special text modes, continuing in
+.Ql Ic .No
+mode.
+.
+.Mx
+.Mx
+.Mx
+.It Ic .Aq , .Ao , .Ac
+Enclose in angle brackets.
+.
+.Mx
+.Mx
+.Mx
+.It Ic .Bq , .Bo , .Bc
+Enclose in brackets.
+.
+.Mx
+.Mx
+.Mx
+.It Ic .Brq , .Bro , .Brc
+Enclose in braces.
+.
+.Mx
+.Mx
+.Mx
+.It Ic .Dq , .Do , .Dc
+Enclose in double quotes.
+.
+.Mx
+.Mx
+.Mx
+.It Ic .Eq , .Eo , .Ec
+These macros expect the first argument to be the opening and closing
+strings respectively.
+.
+.Mx
+.Mx
+.It Ic .Es , .En
 Due to the nine-argument limit in the original troff program two other
 macros have been implemented which are now rather obsolete:
-.Ql .Es
-takes the first and second parameter as the left and right enclosure string,
-which are then used to enclose the arguments of
-.Ql .En .
+.Ql Ic .Es
+takes the first and second parameter as the left and right enclosure
+string, which are then used to enclose the arguments of
+.Ql Ic .En .
 The default width value is 12n for both macros.
-.It Li .Eq
-The first and second arguments of this macro are the opening and
-closing strings respectively, followed by the arguments to be enclosed.
-.It Li .Ql
-The quoted literal macro behaves differently in troff and nroff mode.
-If formatted with
-.Xr @L_NROFF@ 1 ,
-a quoted literal is always quoted.
-If formatted with troff, an item is only quoted if the width of the item is
-less than three constant width characters.
-This is to make short strings more visible where the font change to literal
-(constant width) is less noticeable.
-.Pp
-The default width is 16n.
-.It Li .Pf
+.
+.Mx
+.It Ic .Pf
 The prefix macro suppresses the whitespace between its first and second
 argument:
-.
 .Bl -tag -width ".Li .Pf\ (\ Fa\ name2" -offset indent
 .It Li ".Pf ( Fa name2"
 .Pf ( Fa name2
@@ -2331,17 +2544,42 @@ argument:
 The default width is 12n.
 .Pp
 The
-.Ql .Ns
+.Ql Ic .Ns
 macro (see below) performs the analogous suffix function.
-.It Li .Ap
-The
-.Ql .Ap
-macro inserts an apostrophe and exits any special text modes, continuing in
-.Ql .No
-mode.
-.El
-.Pp
 .
+.Mx
+.Mx
+.Mx
+.It Ic .Pq , .Po , .Pc
+Parenthesis enclosure.
+.
+.Mx
+.It Ic .Ql
+The quoted literal macro behaves differently in troff and nroff mode.
+If formatted with
+.Xr @L_NROFF@ 1 ,
+a quoted literal is always quoted.
+If formatted with troff, an item is only quoted if the width of the item
+is less than three constant width characters.
+This is to make short strings more visible where the font change to
+literal (constant width) is less noticeable.
+.Pp
+The default width is 16n.
+.
+.Mx
+.Mx
+.Mx
+.It Ic .Qq , .Qo , .Qc
+Enclose in straight double quotes.
+.
+.Mx
+.Mx
+.Mx
+.It Ic .Sq , .So , .Sc
+Enclose in single quotes.
+.El
+.
+.Pp
 Examples of quoting:
 .
 .Pp
@@ -2375,22 +2613,23 @@ Examples of quoting:
 .It Li ".Em or Ap ing"
 .Em or Ap ing
 .El
+.
 .Pp
 For a good example of nested enclosure macros, see the
-.Ql .Op
+.Ql Ic .Op
 option macro.
-It was created from the same underlying enclosure macros as those presented
-in the list above.
+It was created from the same underlying enclosure macros as those
+presented in the list above.
 The
-.Ql .Xo
+.Ql Ic .Xo
 and
-.Ql .Xc
+.Ql Ic .Xc
 extended argument list macros are discussed below.
 .
 .Ss "No-Op or Normal Text Macro"
 .
 The
-.Ql .No
+.Ql Ic .No
 macro can be used in a macro command line for parameters which should
 .Em not
 be formatted.
@@ -2399,57 +2638,69 @@ Be careful to add
 to the word
 .Ql \&No
 if you really want that English word (and not the macro) as a parameter.
+.
 .Pp
-.Dl Usage: .No Ao argument Ac ...
+.Mx
+.Dl Usage: Ic .No Ao argument Ac ...
+.
 .Pp
 .Bl -tag -width ".Li .No\ test\ Ta\ with\ Ta\ tabs" -compact -offset 15n
 .It Li ".No test Ta with Ta tabs"
 .No test Ta with Ta tabs
 .El
+.
 .Pp
 The default width is 12n.
 .
 .Ss "No-Space Macro"
 .
 The
-.Ql .Ns
+.Ql Ic .Ns
 macro suppresses insertion of a space between the current position and its
 first parameter.
 For example, it is useful for old style argument lists where there is no
 space between the flag and argument:
+.
 .Pp
-.Dl "Usage:" ... Ao argument Ac \&Ns Oo Ao argument Ac Oc ...
-.Dl "      " .Ns Ao argument Ac ...
+.Mx
+.Dl "Usage:" Ic .Ns Ao argument Ac ...
+.Dl "      " ... Ao argument Ac Ic \&Ns Oo Ao argument Ac Oc ...
+.
 .Pp
 .Bl -tag -width ".Li .Op\ Fl\ I\ Ns\ Ar\ directory" -compact -offset 15n
 .It Li ".Op Fl I Ns Ar directory"
 .Op Fl I Ns Ar directory
 .El
+.
 .Pp
 Note: The
-.Ql .Ns
+.Ql Ic .Ns
 macro always invokes the
-.Ql .No
+.Ql Ic .No
 macro after eliminating the space unless another macro name follows it.
-If used as a command (i.e., the second form above in the
+If used as a command (i.e., the first form above in the
 .Sq Usage
 line),
-.Ql .Ns
+.Ql Ic .Ns
 is identical to
-.Ql .No .
+.Ql Ic .No .
 .
 .Ss "Section Cross References"
 .
 The
-.Ql .Sx
-macro designates a reference to a section header within the same document.
+.Ql Ic .Sx
+macro designates a reference to a section header within the same
+document.
+.
 .Pp
-.Dl Usage: .Sx Ao section reference Ac ...
-.Pp
+.Mx
+.Dl Usage: Ic .Sx Ao section reference Ac ...
+.
 .Bl -tag -width ".Li .Sx\ FILES" -offset 15n
 .It Li ".Sx FILES"
 .Sx FILES
 .El
+.
 .Pp
 The default width is 16n.
 .
@@ -2457,26 +2708,34 @@ The default width is 16n.
 .
 The symbolic emphasis macro is generally a boldface macro in either the
 symbolic sense or the traditional English usage.
+.
 .Pp
-.Dl Usage: .Sy Ao symbol Ac ...
+.Mx
+.Dl Usage: Ic .Sy Ao symbol Ac ...
+.
 .Pp
 .Bl -tag -width ".Li .Sy\ Important\ Notice" -compact -offset 15n
 .It Li ".Sy Important Notice"
 .Sy Important Notice
 .El
+.
 .Pp
 The default width is 6n.
 .
 .Ss Mathematical Symbols
 .
 Use this macro for mathematical symbols and similar things.
+.
 .Pp
-.Dl Usage: .Ms Ao math symbol Ac ...
+.Mx
+.Dl Usage: Ic .Ms Ao math symbol Ac ...
+.
 .Pp
 .Bl -tag -width ".Li .Ms\ sigma" -compact -offset 15n
 .It Li ".Ms sigma"
 .Ms sigma
 .El
+.
 .Pp
 The default width is 6n.
 .
@@ -2486,60 +2745,79 @@ The following macros make a modest attempt to handle references.
 At best, the macros make it convenient to manually drop in a subset of
 .Xr @L_P_REFER@ 1
 style references.
+.
 .Pp
 .Bl -tag -width 6n -offset indent -compact
-.It Li .Rs
+.Mx
+.It Ic .Rs
 Reference start (does not take arguments).
 Causes a line break in the
 .Sx "SEE ALSO"
-section and begins collection of reference information until the reference
-end macro is read.
-.It Li .Re
+section and begins collection of reference information until the
+reference end macro is read.
+.Mx
+.It Ic .Re
 Reference end (does not take arguments).
 The reference is printed.
-.It Li .%A
+.Mx
+.It Ic .%A
 Reference author name; one name per invocation.
-.It Li .%B
+.Mx
+.It Ic .%B
 Book title.
-.It Li .%C
+.Mx
+.It Ic .%C
 City/place.
-.It Li .%D
+.Mx
+.It Ic .%D
 Date.
-.It Li .%I
+.Mx
+.It Ic .%I
 Issuer/publisher name.
-.It Li .%J
+.Mx
+.It Ic .%J
 Journal name.
-.It Li .%N
+.Mx
+.It Ic .%N
 Issue number.
-.It Li .%O
+.Mx
+.It Ic .%O
 Optional information.
-.It Li .%P
+.Mx
+.It Ic .%P
 Page number.
-.It Li .%Q
+.Mx
+.It Ic .%Q
 Corporate or foreign author.
-.It Li .%R
+.Mx
+.It Ic .%R
 Report name.
-.It Li .%T
+.Mx
+.It Ic .%T
 Title of article.
-.It Li .%U
+.Mx
+.It Ic .%U
 Optional hypertext reference.
-.It Li .%V
+.Mx
+.It Ic .%V
 Volume.
 .El
+.
 .Pp
 Macros beginning with
 .Ql %
 are not callable but accept multiple arguments in the usual way.
 Only the
 .Ql .Tn
-macro is handled properly as a parameter; other macros will cause strange
-output.
+macro is handled properly as a parameter; other macros will cause
+strange output.
 .Ql .%B
 and
 .Ql .%T
 can be used outside of the
 .Ql .Rs/.Re
 environment.
+.
 .Pp
 Example:
 .
@@ -2554,6 +2832,7 @@ Example:
 \&.%D "April 1991"
 \&.Re
 .Ed
+.
 .Pp
 produces
 .
@@ -2572,9 +2851,13 @@ produces
 .Ss "Trade Names (or Acronyms and Type Names)"
 .
 The trade name macro prints its arguments in a smaller font.
-Its intended use is to imitate a small caps fonts for uppercase acronyms.
+Its intended use is to imitate a small caps fonts for uppercase
+acronyms.
+.
 .Pp
-.Dl Usage: .Tn Ao symbol Ac ...
+.Mx
+.Dl Usage: Ic .Tn Ao symbol Ac ...
+.
 .Pp
 .Bl -tag -width ".Li .Tn\ ASCII" -compact -offset 15n
 .It Li ".Tn DEC"
@@ -2582,28 +2865,32 @@ Its intended use is to imitate a small caps fonts for uppercase acronyms.
 .It Li ".Tn ASCII"
 .Tn ASCII
 .El
+.
 .Pp
 The default width is 10n.
 .
 .Ss "Extended Arguments"
 .
 The
-.Li .Xo
+.Mx
+.Ic .Xo
 and
-.Li .Xc
+.Mx
+.Ic .Xc
 macros allow one to extend an argument list on a macro boundary for the
-.Ql .It
+.Ql Ic .It
 macro (see below).
 Note that
-.Li .Xo
+.Ic .Xo
 and
-.Li .Xc
+.Ic .Xc
 are implemented similarly to all other macros opening and closing an
 enclosure (without inserting characters, of course).
 This means that the following is true for those macros also.
+.
 .Pp
 Here is an example of
-.Ql .Xo
+.Ql Ic .Xo
 using the space mode macro to turn spacing off:
 .
 .Bd -literal -offset indent
@@ -2613,6 +2900,7 @@ using the space mode macro to turn spacing off:
 \&.Xc
 \&.Sm on
 .Ed
+.
 .Pp
 produces
 .
@@ -2625,8 +2913,8 @@ produces
 .Sm on
 .El
 .Ed
-.Pp
 .
+.Pp
 Another one:
 .
 .Bd -literal -offset indent
@@ -2637,6 +2925,7 @@ Another one:
 \&.Xc
 \&.Sm on
 .Ed
+.
 .Pp
 produces
 .
@@ -2650,9 +2939,10 @@ produces
 .Sm on
 .El
 .Ed
+.
 .Pp
 Another example of
-.Ql .Xo
+.Ql Ic .Xo
 and enclosure macros: Test the value of a variable.
 .
 .Bd -literal -offset indent
@@ -2662,6 +2952,7 @@ and enclosure macros: Test the value of a variable.
 \&.Ar operator variable ...
 \&.Oc Xc
 .Ed
+.
 .Pp
 produces
 .
@@ -2681,17 +2972,19 @@ produces
 .Ss "Section Headers"
 .
 The following
-.Ql .Sh
+.Mx
+.Ql Ic .Sh
 section header macros are required in every man page.
 The remaining section headers are recommended at the discretion of the
 author writing the manual page.
 The
-.Ql .Sh
+.Ql Ic .Sh
 macro is parsed but not generally callable.
 It can be used as an argument in a call to
-.Ql .Sh
+.Ql Ic .Sh
 only; it then reactivates the default font for
-.Ql .Sh .
+.Ql Ic .Sh .
+.
 .Pp
 The default width is 8n.
 .
@@ -2700,22 +2993,24 @@ The default width is 8n.
 The
 .Ql ".Sh NAME"
 macro is mandatory.
-If not specified, headers, footers and page layout defaults will not be set
-and things will be rather unpleasant.
+If not specified, headers, footers and page layout defaults will not be
+set and things will be rather unpleasant.
 The
 .Em NAME
 section consists of at least three items.
 The first is the
-.Ql .Nm
+.Ql Ic .Nm
 name macro naming the subject of the man page.
 The second is the name description macro,
-.Ql .Nd ,
+.\" TODO bad .Mx placement for .Nd, otherwise not documented
+.Mx
+.Ql Ic .Nd ,
 which separates the subject name from the third item, which is the
 description.
-The description should be the most terse and lucid possible, as the space
-available is small.
+The description should be the most terse and lucid possible, as the
+space available is small.
 .Pp
-.Ql .Nd
+.Ql Ic .Nd
 first prints
 .Ql \- ,
 then all its arguments.
@@ -2723,7 +3018,7 @@ then all its arguments.
 .It Li ".Sh LIBRARY"
 This section is for section two and three function calls.
 It should consist of a single
-.Ql .Lb
+.Ql Ic .Lb
 macro call;
 see
 .Sx "Library Names" .
@@ -2733,31 +3028,30 @@ The
 .Sx SYNOPSIS
 section describes the typical usage of the subject of a man page.
 The macros required are either
-.Ql .Nm ,
-.Ql .Cd ,
+.Ql Ic .Nm ,
+.Ql Ic .Cd ,
 or
-.Ql .Fn
+.Ql Ic .Fn
 (and possibly
-.Ql .Fo ,
-.Ql .Fc ,
-.Ql .Fd ,
+.Ql Ic .Fo ,
+.Ql Ic .Fc ,
+.Ql Ic .Fd ,
 and
-.Ql .Ft ) .
+.Ql Ic .Ft ) .
 The function name macro
-.Ql .Fn
-is required for manual page sections\~2 and\~3; the command and general name
-macro
-.Ql .Nm
+.Ql Ic .Fn
+is required for manual page sections\~2 and\~3; the command and general
+name macro
+.Ql Ic .Nm
 is required for sections 1, 5, 6, 7, and\~8.
 Section\~4 manuals require a
-.Ql .Nm ,
-.Ql .Fd
+.Ql Ic .Nm ,
+.Ql Ic .Fd
 or a
-.Ql .Cd
+.Ql Ic .Cd
 configuration device usage macro.
-Several other macros may be necessary to produce the synopsis line as shown
-below:
-.
+Several other macros may be necessary to produce the synopsis line as
+shown below:
 .Bd -filled -offset indent
 .Nm cat
 .Op Fl benstuv
@@ -2775,17 +3069,17 @@ The following macros were used:
 .It Li ".Sh DESCRIPTION"
 In most cases the first text in the
 .Sx DESCRIPTION
-section is a brief paragraph on the command, function or file, followed by a
-lexical list of options and respective explanations.
+section is a brief paragraph on the command, function or file, followed
+by a lexical list of options and respective explanations.
 To create such a list, the
-.Ql .Bl
+.Ql Ic .Bl
 (begin list),
-.Ql .It
+.Ql Ic .It
 (list item) and
-.Ql .El
+.Ql Ic .El
 (end list)
 macros are used (see
-.Sx Lists and Columns
+.Sx "Lists and Columns"
 below).
 .
 .It Li ".Sh IMPLEMENTATION NOTES"
@@ -2794,16 +3088,17 @@ Implementation specific information should be placed here.
 .It Li ".Sh RETURN VALUES"
 Sections 2, 3 and\~9 function return values should go here.
 The
-.Ql .Rv
+.Ql Ic .Rv
 macro may be used to generate text for use in the
-.Sx RETURN VALUES
+.Sx "RETURN VALUES"
 section for most section 2 and 3 library functions;
 see
 .Sx "Return Values" .
 .El
+.
 .Pp
 The following
-.Ql .Sh
+.Ql Ic .Sh
 section headers are part of the preferred manual page layout and must be
 used appropriately to maintain consistency.
 They are listed in the order in which they would be used.
@@ -2812,13 +3107,13 @@ They are listed in the order in which they would be used.
 .It Li ".Sh ENVIRONMENT"
 The
 .Em ENVIRONMENT
-section should reveal any related environment variables and clues to their
-behavior and/or usage.
+section should reveal any related environment variables and clues to
+their behavior and/or usage.
 .
 .It Li ".Sh FILES"
-Files which are used or created by the man page subject should be listed via
-the
-.Ql .Pa
+Files which are used or created by the man page subject should be listed
+via the
+.Ql Ic .Pa
 macro in the
 .Sx FILES
 section.
@@ -2832,7 +3127,7 @@ section below for details.
 .It Li ".Sh DIAGNOSTICS"
 Diagnostic messages from a command should be placed in this section.
 The
-.Ql .Ex
+.Ql Ic .Ex
 macro may be used to generate text for use in the
 .Sx DIAGNOSTICS
 section for most section 1, 6 and\~8 commands;
@@ -2847,16 +3142,16 @@ should be listed here.
 Specific error handling, especially from library functions (man page
 sections 2, 3, and\~9) should go here.
 The
-.Ql .Er
+.Ql Ic .Er
 macro is used to specify an error (errno).
 .
 .It Li ".Sh SEE ALSO"
-References to other material on the man page topic and cross references to
-other relevant man pages should be placed in the
+References to other material on the man page topic and cross references
+to other relevant man pages should be placed in the
 .Sx "SEE ALSO"
 section.
 Cross references are specified using the
-.Ql .Xr
+.Ql Ic .Xr
 macro.
 Currently
 .Xr @L_P_REFER@ 1
@@ -2879,8 +3174,8 @@ implementation such as
 or
 .St -ansiC
 this should be noted here.
-If the command does not adhere to any standard, its history should be noted
-in the
+If the command does not adhere to any standard, its history should be
+noted in the
 .Em HISTORY
 section.
 .
@@ -2891,18 +3186,20 @@ outlined historically in this section.
 .It Li ".Sh AUTHORS"
 Credits should be placed here.
 Use the
-.Ql .An
+.Ql Ic .An
 macro for names and the
-.Ql .Aq
+.Ql Ic .Aq
 macro for e-mail addresses within optional contact information.
 Explicitly indicate whether the person authored the initial manual page
 or the software or whatever the person is being credited for.
+.
 .It Li ".Sh BUGS"
 Blatant problems with the topic go here.
 .El
+.
 .Pp
 User-specified
-.Ql .Sh
+.Ql Ic .Sh
 sections may be added; for example, this section was set with:
 .
 .Bd -literal -offset 15n
@@ -2912,182 +3209,66 @@ sections may be added; for example, this section was set with:
 .Ss "Subsection Headers"
 .
 Subsection headers have exactly the same syntax as section headers:
-.Ql .Ss
+.Mx
+.Ql Ic .Ss
 is parsed but not generally callable.
 It can be used as an argument in a call to
-.Ql .Ss
+.Ql Ic .Ss
 only; it then reactivates the default font for
-.Ql .Ss .
+.Ql Ic .Ss .
 .Pp
 The default width is 8n.
 .
 .Ss "Paragraphs and Line Spacing"
 .
-.Bl -tag -width ".Li .Pp"
-.It Li .Pp
 The
-.Ql .Pp
+.Mx
+.Ql Ic .Pp
 paragraph command may be used to specify a line space where necessary.
 The macro is not necessary after a
-.Ql .Sh
+.Ql Ic .Sh
 or
-.Ql .Ss
+.Ql Ic .Ss
 macro or before a
-.Ql .Bl
+.Ql Ic .Bl
 or
-.Ql .Bd
+.Ql Ic .Bd
 macro (which both assert a vertical distance unless the
 .Fl compact
 flag is given).
+.
 .Pp
 The macro is neither callable nor parsed and takes no arguments; an
 alternative name is
-.Ql .Lp .
-.El
-.
-.\" XXX
-.
-.\" This worked with version one, need to redo for version three
-.\" .Pp
-.\" .Ds I
-.\" .Cw (ax+bx+c) \ is\ produced\ by\ \&
-.\" .\".Cw (ax+bx+c) \&.Va_by_) \&_and_\& \&[?/]m_b1_e1_f1[?/]\&
-.\" .Cl Cx \t\t
-.\" .Li \&.Cx\ (
-.\" .Cx
-.\" .Cl Cx \t\t
-.\" .Li \&.Va ax
-.\" .Cx
-.\" .Cl Cx \t\t
-.\" .Li \&.Sy \+
-.\" .Cx
-.\" .Cl Cx \&(\&
-.\" .Va ax
-.\" .Cx +
-.\" .Va by
-.\" .Cx +
-.\" .Va c )
-.\" .Cx \t
-.\" .Em is produced by
-.\" .Cx \t
-.\" .Li \&.Va by
-.\" .Cx
-.\" .Cl Cx \t\t
-.\" .Li \&.Sy \+
-.\" .Cx
-.\" .Cl Cx \t\t
-.\" .Li \&.Va c )
-.\" .Cx
-.\" .Cl Cx \t\t
-.\" .Li \&.Cx
-.\" .Cx
-.\" .Cw
-.\" .De
-.\" .Pp
-.\" This example shows the same equation in a different format.
-.\" The spaces
-.\" around the
-.\" .Li \&+
-.\" signs were forced with
-.\" .Li \e :
-.\" .Pp
-.\" .Ds I
-.\" .Cw (ax\ +\ bx\ +\ c) \ is\ produced\ by\ \&
-.\" .\".Cw (ax+bx+c) \&.Va_by_) \&_and_\& \&[?/]m_b1_e1_f1[?/]\&
-.\" .Cl Cx \t\t
-.\" .Li \&.Cx\ (
-.\" .Cx
-.\" .Cl Cx \t\t
-.\" .Li \&.Va a
-.\" .Cx
-.\" .Cl Cx \t\t
-.\" .Li \&.Sy x
-.\" .Cx
-.\" .Cl Cx \t\t
-.\" .Li \&.Cx \e\ +\e\ \e&
-.\" .Cx
-.\" .Cl Cx \&(\&
-.\" .Va a
-.\" .Sy x
-.\" .Cx \ +\ \&
-.\" .Va b
-.\" .Sy y
-.\" .Cx \ +\ \&
-.\" .Va c )
-.\" .Cx \t
-.\" .Em is produced by
-.\" .Cl Cx \t\t
-.\" .Li \&.Va b
-.\" .Cx
-.\" .Cl Cx \t\t
-.\" .Li \&.Sy y
-.\" .Cx
-.\" .Cl Cx \t\t
-.\" .Li \&.Cx \e\ +\e\ \e&
-.\" .Cx
-.\" .Cl Cx \t\t
-.\" .Li \&.Va c )
-.\" .Cx
-.\" .Cl Cx \t\t
-.\" .Li \&.Cx
-.\" .Cx
-.\" .Cw
-.\" .De
-.\" .Pp
-.\" The incantation below was
-.\" lifted from the
-.\" .Xr adb 1
-.\" manual page:
-.\" .Pp
-.\" .Ds I
-.\" .Cw \&[?/]m_b1_e1_f1[?/]\& is\ produced\ by
-.\" .Cl Cx \t\t
-.\" .Li \&.Cx Op Sy ?/
-.\" .Cx
-.\" .Cl Cx \t\t
-.\" .Li \&.Nm m
-.\" .Cx
-.\" .Cl Cx Op Sy ?/
-.\" .Nm m
-.\" .Ad \ b1 e1 f1
-.\" .Op Sy ?/
-.\" .Cx \t
-.\" .Em is produced by
-.\" .Cx \t
-.\" .Li \&.Ar \e\ b1 e1 f1
-.\" .Cx
-.\" .Cl Cx \t\t
-.\" .Li \&.Op Sy ?/
-.\" .Cx
-.\" .Cl Cx \t\t
-.\" .Li \&.Cx
-.\" .Cx
-.\" .Cw
-.\" .De
-.\" .Pp
+.Mx
+.Ql Ic .Lp .
 .
 .Ss Keeps
 .
 The only keep that is implemented at this time is for words.
 The macros are
-.Ql .Bk
+.Mx
+.Ql Ic .Bk
 (begin keep)
 and
-.Ql .Ek
+.Mx
+.Ql Ic .Ek
 (end keep).
 The only option that
-.Ql .Bk
+.Ql Ic .Bk
 accepts currently is
 .Fl words
 (this is also the default if no option is given) which is useful for
 preventing line breaks in the middle of options.
 In the example for the make command line arguments (see
-.Sx What's in a Name ) ,
+.Sx "What's in a Name..." ) ,
 the keep prevented
 .Xr @L_NROFF@ 1
 from placing up the flag and the argument on separate lines.
+.
 .Pp
 Both macros are neither callable nor parsed.
+.
 .Pp
 More work needs to be done with the keep macros; specifically, a
 .Fl line
@@ -3096,9 +3277,10 @@ option should be added.
 .Ss "Examples and Displays"
 .
 There are seven types of displays.
-.Pp
-.Bl -tag -width ".Li .D1"
-.It Li .D1
+.
+.Bl -tag -width ".Li .D_"
+.Mx
+.It Ic .D1
 (This is D-one.)
 Display one line of indented text.
 This macro is parsed but not callable.
@@ -3108,17 +3290,18 @@ This macro is parsed but not callable.
 The above was produced by:
 .Li ".D1 Fl ldghfstru" .
 .
-.It Li .Dl
+.Mx
+.It Ic .Dl
 (This is D-ell.)
 Display one line of indented
 .Em literal
 text.
 The
-.Ql .Dl
+.Ql Ic .Dl
 example macro has been used throughout this file.
 It allows the indentation (display) of one line of text.
 Its default font is set to constant width (literal).
-.Ql .Dl
+.Ql Ic .Dl
 is parsed but not callable.
 .Pp
 .Dl % ls \-ldg /usr/local/bin
@@ -3126,12 +3309,13 @@ is parsed but not callable.
 The above was produced by:
 .Li ".Dl % ls \e\-ldg /usr/local/bin" .
 .
-.It Li .Bd
+.Mx
+.It Ic .Bd
 Begin display.
 The
-.Ql .Bd
+.Ql Ic .Bd
 display must be ended with the
-.Ql .Ed
+.Ql Ic .Ed
 macro.
 It has the following syntax:
 .Pp
@@ -3143,40 +3327,47 @@ It has the following syntax:
 .El
 .Ed
 .
+.Pp
 .Bl -tag -width ".Fl file Ao Ar file name Ac " -compact
 .It Fl ragged
 Fill, but do not adjust the right margin (only left-justify).
+.
 .It Fl centered
 Center lines between the current left and right margin.
 Note that each single line is centered.
+.
 .It Fl unfilled
 Do not fill; display a block of text as typed, using line breaks as
 specified by the user.
 This can produce overlong lines without warning messages.
+.
 .It Fl filled
 Display a filled block.
-The block of text is formatted (i.e., the text is justified on both the left
-and right side).
+The block of text is formatted (i.e., the text is justified on both the
+left and right side).
+.
 .It Fl literal
 Display block with literal font (usually fixed-width).
 Useful for source code or simple tabbed or spaced text.
+.
 .It Fl file Ao Ar file name Ac
 The file whose name follows the
 .Fl file
 flag is read and displayed before any data enclosed with
-.Ql .Bd
+.Ql Ic .Bd
 and
-.Ql .Ed ,
+.Ql Ic .Ed ,
 using the selected display type.
 Any
-.Xr troff/ Ns Nm \-mdoc
+.Xr troff 1 Ns / Ns Nm \-mdoc
 commands in the file will be processed.
+.
 .It Fl offset Ao Ar string Ac
 If
 .Fl offset
-is specified with one of the following strings, the string is interpreted to
-indicate the level of indentation for the forthcoming block of text:
-.
+is specified with one of the following strings, the string is
+interpreted to indicate the level of indentation for the forthcoming
+block of text:
 .Pp
 .Bl -tag -width ".Ar indent-two" -compact
 .It Ar left
@@ -3189,12 +3380,12 @@ imaginary center margin.
 .It Ar indent
 Indent by one default indent value or tab.
 The default indent value is also used for the
-.Ql .D1
+.Ql Ic .D1
 and
-.Ql .Dl
+.Ql Ic .Dl
 macros, so one is guaranteed the two types of displays will line up.
-The indentation value is normally set to\~6n or about two thirds of an inch
-(six constant width characters).
+The indentation value is normally set to\~6n or about two thirds of an
+inch (six constant width characters).
 .It Ar indent\-two
 Indent two times the default indent value.
 .It Ar right
@@ -3224,13 +3415,14 @@ This is approximately the width of the letters
 and
 .Sq n
 respectively
-of the current font (for nroff output, both scale indicators give the same
-values).
+of the current font (for nroff output, both scale indicators give the
+same values).
 If
 .Ao string Ac
 isn't a numeric expression, it is tested whether it is an
 .Nm \-mdoc
-macro name, and the default offset value associated with this macro is used.
+macro name, and the default offset value associated with this macro is
+used.
 Finally, if all tests fail,
 the width of
 .Ao string Ac
@@ -3239,52 +3431,64 @@ the width of
 Suppress insertion of vertical space before begin of display.
 .El
 .
-.It Li .Ed
+.Mx
+.It Ic .Ed
 End display (takes no arguments).
 .El
 .
 .Ss "Lists and Columns"
 .
 There are several types of lists which may be initiated with the
-.Ql .Bl
+.Mx
+.Ql Ic .Bl
 begin-list macro.
 Items within the list are specified with the
-.Ql .It
+.\" TODO bad .Mx placement for .It, otherwise not documented
+.Mx
+.Ql Ic .It
 item macro, and each list must end with the
-.Ql .El
+.\" TODO bad .Mx placement for .El, otherwise not documented
+.Mx
+.Ql Ic .El
 macro.
 Lists may be nested within themselves and within displays.
-The use of columns inside of lists or lists inside of columns is unproven.
+The use of columns inside of lists or lists inside of columns is
+unproven.
+.
 .Pp
-In addition, several list attributes may be specified such as the width of a
-tag, the list offset, and compactness (blank lines between items allowed or
-disallowed).
+In addition, several list attributes may be specified such as the width
+of a tag, the list offset, and compactness (blank lines between items
+allowed or disallowed).
 Most of this document has been formatted with a tag style list
 .Pf ( Fl tag ) .
+.
 .Pp
 It has the following syntax forms:
 .
+.Pp
 .Bd -ragged -compact
 .Bl -tag -width ".Li .Bl" -offset indent -compact
-.It Li .Bl Xo
+.It Ic .\&Bl Xo
 .Bro \-hang | \-ohang | \-tag | \-diag | \-inset Brc
 .Oo \-width Ao string Ac Oc
 .Oo \-offset Ao string Ac Oc Oo \-compact Oc Xc
-.It Li .Bl Xo
+.
+.It Ic .\&Bl Xo
 .No \-column Oo \-offset Ao string Ac Oc
 .Ao string1 Ac Ao string2 Ac ... Xc
-.It Li .Bl Xo
+.
+.It Ic .\&Bl Xo
 .Bro \-item | \-enum Oo \-nested Oc | \-bullet | \-hyphen | \-dash Brc
 .Oo \-offset Ao string Ac Oc Oo \-compact Oc Xc
 .El
 .Ed
+.
 .Pp
 And now a detailed description of the list types.
 .
-.Bl -tag -width ".Fl column" -compact
+.Bl -tag -width ".Fl column"
 .It Fl bullet
 A bullet list.
-.
 .Bd -literal -offset indent
 \&.Bl \-bullet \-offset indent \-compact
 \&.It
@@ -3295,7 +3499,7 @@ Bullet two here.
 .Ed
 .Pp
 Produces:
-.
+.Pp
 .Bl -bullet -offset indent -compact
 .It
 Bullet one goes here.
@@ -3305,7 +3509,6 @@ Bullet two here.
 .
 .It Fl dash No ( or Fl hyphen )
 A dash list.
-.
 .Bd -literal -offset indent
 \&.Bl \-dash \-offset indent \-compact
 \&.It
@@ -3316,7 +3519,7 @@ Dash two here.
 .Ed
 .Pp
 Produces:
-.
+.Pp
 .Bl -dash -offset indent -compact
 .It
 Dash one goes here.
@@ -3326,7 +3529,6 @@ Dash two here.
 .
 .It Fl enum
 An enumerated list.
-.
 .Bd -literal -offset indent
 \&.Bl \-enum \-offset indent \-compact
 \&.It
@@ -3337,7 +3539,7 @@ And item two here.
 .Ed
 .Pp
 The result:
-.
+.Pp
 .Bl -enum -offset indent -compact
 .It
 Item one goes here.
@@ -3348,7 +3550,6 @@ And item two here.
 If you want to nest enumerated lists, use the
 .Fl nested
 flag (starting with the second-level list):
-.
 .Bd -literal -offset indent
 \&.Bl \-enum \-offset indent \-compact
 \&.It
@@ -3365,7 +3566,7 @@ And item four here.
 .Ed
 .Pp
 Result:
-.
+.Pp
 .Bl -enum -offset indent -compact
 .It
 Item one goes here.
@@ -3383,7 +3584,6 @@ And item four here.
 A list of type
 .Fl item
 without list markers.
-.
 .Bd -literal -offset indent
 \&.Bl \-item \-offset indent
 \&.It
@@ -3398,7 +3598,6 @@ Item two here.
 .Ed
 .Pp
 Produces:
-.
 .Bl -item -offset indent
 .It
 Item one goes here.
@@ -3415,7 +3614,7 @@ A list with tags.
 Use
 .Fl width
 to specify the tag width.
-.
+.Pp
 .Bl -tag -width "PPID" -compact -offset indent
 .It SL
 sleep time of the process (seconds blocked)
@@ -3432,7 +3631,7 @@ numerical id of parent of process priority
 .El
 .Pp
 The raw text:
-.
+.Pp
 .Bd -literal -offset indent
 \&.Bl \-tag \-width "PPID" \-compact \-offset indent
 \&.It SL
@@ -3458,7 +3657,6 @@ The
 flag is not meaningful in this context.
 .Pp
 Example:
-.
 .Bd -literal -offset indent
 \&.Bl \-diag
 \&.It You can't use Sy here.
@@ -3467,7 +3665,6 @@ The message says all.
 .Ed
 .Pp
 produces
-.
 .Bl -diag
 .It You can't use Sy here.
 The message says all.
@@ -3475,7 +3672,6 @@ The message says all.
 .
 .It Fl hang
 A list with hanging tags.
-.
 .Bl -hang -offset indent
 .It Em Hanged
 labels appear similar to tagged lists when the
@@ -3486,7 +3682,6 @@ tagged paragraph labels.
 .El
 .Pp
 And the unformatted text which created it:
-.
 .Bd -literal -offset indent
 \&.Bl \-hang \-offset indent
 \&.It Em Hanged
@@ -3499,9 +3694,8 @@ tagged paragraph labels.
 .Ed
 .
 .It Fl ohang
-Lists with overhanging tags do not use indentation for the items; tags are
-written to a separate line.
-.
+Lists with overhanging tags do not use indentation for the items; tags
+are written to a separate line.
 .Bl -ohang -offset indent
 .It Sy SL
 sleep time of the process (seconds blocked)
@@ -3518,7 +3712,6 @@ numerical id of parent of process priority
 .El
 .Pp
 The raw text:
-.
 .Bd -literal -offset indent
 \&.Bl \-ohang \-offset indent
 \&.It Sy SL
@@ -3538,7 +3731,6 @@ numerical id of parent of process priority
 .
 .It Fl inset
 Here is an example of inset labels:
-.
 .Bl -inset -offset indent
 .It Em Tag
 The tagged list (also called a tagged paragraph)
@@ -3563,7 +3755,6 @@ manuals to other formats.
 .El
 .Pp
 Here is the source text which produced the above example:
-.
 .Bd -literal -offset indent
 \&.Bl \-inset \-offset indent
 \&.It Em Tag
@@ -3611,14 +3802,15 @@ Otherwise, the width of
 column width.
 .Pp
 Each
-.Ql .It
-argument is parsed to make a row, each column within the row is a separate
-argument separated by a tab or the
-.Ql .Ta
+.Ql Ic .It
+argument is parsed to make a row, each column within the row is
+a separate argument separated by a tab or the
+.\" TODO bad .Mx placement for .Ta, otherwise not documented
+.Mx
+.Ql Ic .Ta
 macro.
 .Pp
 The table:
-.
 .Bl -column -offset indent ".Sy String" ".Sy Nroff" ".Sy Troff"
 .It Sy String Ta Sy Nroff Ta Sy Troff
 .It Li <= Ta <= Ta \*(<=
@@ -3626,7 +3818,6 @@ The table:
 .El
 .Pp
 was produced by:
-.
 .Bd -literal
 \&.Bl \-column \-offset indent ".Sy String" ".Sy Nroff" ".Sy Troff"
 \&.It Sy String Ta Sy Nroff Ta Sy Troff
@@ -3640,6 +3831,7 @@ For more complicated cases it might be far better and easier to use
 .Xr @L_P_TBL@ 1 ,
 the table preprocessor.
 .El
+.
 .Pp
 Other keywords:
 .
@@ -3657,7 +3849,6 @@ and use the width of the result.
 Almost all lists in this document use this option.
 .Pp
 Example:
-.
 .Bd -literal -offset indent
 \&.Bl \-tag \-width ".Fl test Ao Ar string Ac"
 \&.It Fl test Ao Ar string Ac
@@ -3668,7 +3859,6 @@ flag works in combination with a tag list.
 .Ed
 .Pp
 gives:
-.
 .Bl -tag -width ".Fl test Ao Ar string Ac"
 .It Fl test Ao Ar string Ac
 This is a longer sentence to show how the
@@ -3711,36 +3901,39 @@ This is approximately the width of the letters
 and
 .Sq n
 respectively
-of the current font (for nroff output, both scale indicators give the same
-values).
+of the current font (for nroff output, both scale indicators give the
+same values).
 If
 .Aq Ar string
 isn't a numeric expression, it is tested whether it is an
 .Nm \-mdoc
-macro name, and the default width value associated with this macro is used.
+macro name, and the default width value associated with this macro is
+used.
 Finally, if all tests fail,
 the width of
 .Aq Ar string
 (typeset with a fixed-width font) is taken as the width.
 .Pp
 If a width is not specified for the tag list type, every time
-.Ql .It
+.Ql Ic .It
 is invoked, an attempt is made to determine an appropriate width.
 If the first argument to
-.Ql .It
+.Ql Ic .It
 is a callable macro, the default width for that macro will be used;
 otherwise, the default width of
-.Ql .No
+.Ql Ic .No
 is used.
+.
 .It Fl offset Ao Ar string Ac
 If
 .Aq Ar string
 is
 .Ar indent ,
-a default indent value (normally set to\~6n, similar to the value used in
-.Ql .Dl
+a default indent value (normally set to\~6n, similar to the value used
+in
+.Ql Ic .Dl
 or
-.Ql .Bd )
+.Ql Ic .Bd )
 is used.
 If
 .Aq Ar string
@@ -3761,46 +3954,49 @@ This is approximately the width of the letters
 and
 .Sq n
 respectively
-of the current font (for nroff output, both scale indicators give the same
-values).
+of the current font (for nroff output, both scale indicators give the
+same values).
 If
 .Aq Ar string
 isn't a numeric expression, it is tested whether it is an
 .Nm \-mdoc
-macro name, and the default offset value associated with this macro is used.
-Finally, if all tests fail,
-the width of
+macro name, and the default offset value associated with this macro is
+used.
+Finally, if all tests fail, the width of
 .Aq Ar string
 (typeset with a fixed-width font) is taken as the offset.
+.
 .It Fl compact
-Suppress insertion of vertical space before the list and between list items.
+Suppress insertion of vertical space before the list and between list
+items.
 .El
 .
 .
 .Sh "MISCELLANEOUS MACROS"
 .
-Here a list of the remaining macros which do not fit well into one of the
-above sections.
+Here a list of the remaining macros which do not fit well into one of
+the above sections.
 We couldn't find real examples for the following macros:
-.Ql .Me
+.Ql Ic .Me
 and
-.Ql .Ot .
+.Ql Ic .Ot .
 They are documented here for completeness \- if you know how to use them
 properly please send a mail to
 .Mt @BUGMAIL@
 (including an example).
 .
 .Bl -tag -width ".Li .Bt"
-.It Li .Bt
+.Mx
+.It Ic .Bt
 prints
-.
 .Bd -ragged -offset indent
 .Bt
 .Ed
 .Pp
 It is neither callable nor parsed and takes no arguments.
 .
-.It Li .Fr
+.Mx
+.It Ic .Fr
 .Pp
 .Dl Usage: .Fr Ao function return value Ac ...
 .Pp
@@ -3811,7 +4007,8 @@ Use
 .Ql \e\[ti]
 to tie the return value to the previous word.
 .
-.It Li .Hf
+.Mx
+.It Ic .Hf
 Use this macro to include a (header) file literally.
 It first prints
 .Ql File:
@@ -3822,10 +4019,12 @@ followed by the file name, then the contents of
 .Pp
 It is neither callable nor parsed.
 .
-.It Li .Lk
+.Mx
+.It Ic .Lk
 To be written.
 .
-.It Li .Me
+.Mx
+.It Ic .Me
 Exact usage unknown.
 The documentation in the
 .Nm \-mdoc
@@ -3834,17 +4033,20 @@ source file describes it as a macro for
 .Pp
 Its default width is 6n.
 .
-.It Li .Mt
+.Mx
+.It Ic .Mt
 To be written.
 .
-.It Li .Ot
+.Mx
+.It Ic .Ot
 Exact usage unknown.
 The documentation in the
 .Nm \-mdoc
 source file describes it as
 .Dq old function type (fortran) .
 .
-.It Li .Sm
+.Mx
+.It Ic .Sm
 Activate (toggle) space mode.
 .Pp
 .Dl Usage: .Sm Oo on | off Oc ...
@@ -3857,9 +4059,9 @@ nor
 .Ql .Sm
 toggles space mode.
 .
-.It Li .Ud
+.Mx
+.It Ic .Ud
 prints
-.
 .Bd -ragged -offset indent
 .Ud
 .Ed
@@ -3871,6 +4073,7 @@ It is neither callable nor parsed and takes no arguments.
 .Sh "PREDEFINED STRINGS"
 .
 The following strings are predefined:
+.
 .Pp
 .TS
 lb lb lb lb
@@ -3896,6 +4099,7 @@ Am	\*[Am]	\*[Am]	ampersand
 Na	\*[Na]	\*[Na]	not a number
 Ba	\*[Ba]	\*[Ba]	vertical bar
 .TE
+.
 .Pp
 The names of the columns
 .Sy Nroff
@@ -3914,6 +4118,7 @@ device will have proper glyph representations for all strings, whereas the
 enhancement for a Latin1
 .Tn TTY Ns - Ns
 device is only the plus-minus sign.
+.
 .Pp
 String names which consist of two characters can be written as
 .Ql \e*(xx ;
@@ -3929,7 +4134,8 @@ extension).
 .Sh DIAGNOSTICS
 .
 The debugging macro
-.Ql .Db
+.Mx
+.Ql Ic .Db
 available in previous versions of
 .Nm \-mdoc
 has been removed since
@@ -3937,14 +4143,16 @@ has been removed since
 provides better facilities to check parameters; additionally, many error and
 warning messages have been added to this macro package, making it both more
 robust and verbose.
+.
 .Pp
 The only remaining debugging macro is
-.Ql .Rd
+.Mx
+.Ql Ic .Rd
 which yields a register dump of all global registers and strings.
 A normal user will never need it.
 .
 .
-.Sh "FORMATTING WITH @U_ROFF@, TROFF, AND NROFF"
+.Sh FORMATTING WITH @U_ROFF@, TROFF, AND NROFF
 .
 By default, the package inhibits page breaks, headers, and footers if
 displayed with a
@@ -3952,7 +4160,7 @@ displayed with a
 device like
 .Sq latin1
 or
-.Sq unicode ,
+.Sq utf8 ,
 to make the manual more efficient for viewing on-line.
 This behaviour can be changed (e.g.\& to create a hardcopy of the
 .Tn TTY
@@ -3961,34 +4169,43 @@ output) by setting the register
 to zero while calling
 .Xr @L_ROFF@ 1 ,
 resulting in multiple pages instead of a single, very long page:
+.
 .Pp
 .Dl @L_ROFF@ \-Tlatin1 \-rcR=0 \-mdoc foo.man > foo.txt
+.
 .Pp
 For double-sided printing, set register
 .Ql D
 to\~1:
+.
 .Pp
 .Dl @L_ROFF@ \-Tps \-rD1 \-mdoc foo.man > foo.ps
+.
 .Pp
 To change the document font size to 11pt or 12pt, set register
 .Ql S
 accordingly:
+.
 .Pp
 .Dl @L_ROFF@ \-Tdvi \-rS11 \-mdoc foo.man > foo.dvi
+.
 .Pp
 Register
 .Ql S
 is ignored for
 .Tn TTY
 devices.
+.
 .Pp
 The line and title length can be changed by setting the registers
 .Ql LL
 and
 .Ql LT ,
 respectively:
+.
 .Pp
 .Dl @L_ROFF@ \-Tutf8 \-rLL=100n \-rLT=100n \-mdoc foo.man | less
+.
 .Pp
 If not set, both registers default to 78n for TTY devices and 6.5i
 otherwise.
@@ -3997,26 +4214,39 @@ otherwise.
 .Sh FILES
 .
 .Bl -tag -width mdoc-ditroff -compact
+.Mx
 .It Pa doc.tmac
 The main manual macro package.
+.
+.Mx
 .It Pa mdoc.tmac
 A wrapper file to call
 .Pa doc.tmac .
+.
+.Mx
 .It Pa mdoc-common
 Common strings, definitions, stuff related typographic output.
+.
+.Mx
 .It Pa mdoc-nroff
 Definitions used for a
 .Tn TTY
 output device.
+.
+.Mx
 .It Pa mdoc-ditroff
 Definitions used for all other devices.
+.
+.Mx
 .It Pa mdoc.local
 Local additions and customizations.
+.
+.Mx
 .It Pa andoc.tmac
 Use this file if you don't know whether the
 .Nm \-mdoc
 or the
-.Nm \-man
+.Xr man 7
 package should be used.
 Multiple man pages (in either format) can be handled.
 .El
@@ -4033,11 +4263,13 @@ Multiple man pages (in either format) can be handled.
 .Sh BUGS
 .
 Section 3f has not been added to the header routines.
+.
 .Pp
 .Ql \&.Nm
 font should be changed in
 .Em NAME
 section.
+.
 .Pp
 .Ql \&.Fn
 needs to have a check to prevent splitting up
@@ -4045,46 +4277,9 @@ if the line length is too short.
 Occasionally it
 separates the last parenthesis, and sometimes
 looks ridiculous if a line is in fill mode.
+.
 .Pp
 The list and display macros do not do any keeps
 and certainly should be able to.
-.\" Note what happens if the parameter list overlaps a newline
-.\" boundary.
-.\" to make sure a line boundary is crossed:
-.\" .Bd -literal
-.\" \&.Fn struct\e\ dictionarytable\e\ *dictionarylookup struct\e\ dictionarytable\e\ *tab[]
-.\" .Ed
-.\" .Pp
-.\" produces, nudge nudge,
-.\" .Fn struct\ dictionarytable\ *dictionarylookup char\ *h struct\ dictionarytable\ *tab[] ,
-.\" .Fn struct\ dictionarytable\ *dictionarylookup char\ *h struct\ dictionarytable\ *tab[] ,
-.\" nudge
-.\" .Fn struct\ dictionarytable\ *dictionarylookup char\ *h struct\ dictionarytable\ *tab[] .
-.\" .Pp
-.\" If double quotes are used, for example:
-.\" .Bd -literal
-.\" \&.Fn \*qstruct dictionarytable *dictionarylookup\*q \*qchar *h\*q \*qstruct dictionarytable *tab[]\*q
-.\" .Ed
-.\" .Pp
-.\" produces, nudge nudge,
-.\" .Fn "struct dictionarytable *dictionarylookup" "char *h" "struct dictionarytable *tab[]" ,
-.\" nudge
-.\" .Fn "struct dictionarytable *dictionarylookup" "char *h" "struct dictionarytable *tab[]" ,
-.\" nudge
-.\" .Fn "struct dictionarytable *dictionarylookup" "char *h" "struct dictionarytable *tab[]" .
-.\" .Pp
-.\" Not a pretty sight...
-.\" In a paragraph, a long parameter containing unpaddable spaces as
-.\" in the former example will cause
-.\" .Xr troff
-.\" to break the line and spread
-.\" the remaining words out.
-.\" The latter example will adjust nicely to
-.\" justified margins, but may break in between an argument and its
-.\" declaration.
-.\" In
-.\" .Xr nroff
-.\" the right margin adjustment is normally ragged and the problem is
-.\" not as severe.
 .
 .\" s-ts-mode
