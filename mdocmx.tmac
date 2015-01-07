@@ -1,0 +1,651 @@
+.\"@ mdocmx.tmac - mdocmx(7) macros.
+.\"@ mdocmx(7) extends the mdoc(7) semantic markup language by references,
+.\"@ allowing mdoc(7) to create anchors and table of contents.
+.\"
+.\" Written 2014 - 2015 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+.\" Public Domain
+.eo
+.
+.\"@ For mdoc(7) copy & paste -- comments can be found below: {{{
+.\" .\" NS mdocmx(7) extension
+.\" .\" NS Only loaded upon request, yet we need stub dummies otherwise:
+.\" .\" NS - .Mx is the user interface
+.\" .\" NS - .mx-mac-(enter|add-arg|sequence|leave) are the call-in
+.\" .\" NS   hooks for mdoc(7) macros (as long as mdoc(7) itself isn't
+.\" .\" NS   rewritten to use a yet non-existing
+.\" .\" NS     .doc-output-node TYPE [DATA]"
+.\" .\" NS   to produce output etc. instead of directly doing so.
+.\" .\" NS Note: mdocmx(7) tests \n[doc-in-synopsis-section] (less doc-)
+.\" .de Mx
+.\" .  mso mdocmx.tmac
+.\" .  Mx \$@
+.\" ..
+.\" .de mx-mac-enter
+.\" ..
+.\" .de mx-mac-add-arg
+.\" ..
+.\" .de mx-mac-sequence
+.\" ..
+.\" .de mx-mac-leave
+.\" ..
+.\" @}}}
+.
+.\"@ User strings:
+.\" mx-debug
+.\" mx-disable
+.\" mx-toc-emerged
+.\" mx-toc-force
+.if !d mx-toc-name .ds mx-toc-name TABLE OF CONTENTS
+.\" mx-toc-numbered
+.
+.\" --  >8  --  8<  --
+.
+.\" ds mx:enabled
+.\" ds mx:preprocessed
+.\" ds mx:gogogo
+.\" ds mx:istty
+.\" ds mx:cleans - storage of .mx:cleanup-string
+.nr mx:refno 1
+.nr mx:stack-no 0
+.
+.\" NS Mx user macro {{{
+.de Mx
+. if d mx:enabled .if !d mx:gogogo .return
+.
+. \" Mx is an extension and may not be used by noone else
+. if \n[doc-arg-limit] \{\
+.   if !'Mx'\*[doc-macro-name]' \{\
+.     mx:perr ".Mx not callable by other macros"
+.     doc-reset-args
+.     rm mx:gogogo
+.     return
+. \}\}
+.
+. \" I. "-enable [-preprocessed] [devices]" extension in document prologue
+. if '-enable'\$1' \{\
+.   shift
+.   if d mx:enabled \{\
+.     mx:perr ".Mx -enable may be used once only!"
+.     rm mx:gogogo
+.     return
+.   \}
+.   ds mx:enabled
+.
+.   if (\n[.$] > 0) \{\
+.     if '-preprocessed'\$1' \{\
+.       shift
+.       ds mx:preprocessed
+.   \}\}
+.   \" For now, only
+.   if !d mx:preprocessed \{\
+.     mx:perr "document not preprocessed by mdocmx(1)"
+.     return
+.   \}
+.
+.   \" If the string "mx-disable" is defined, suppress mdocmx(7)
+.   if d mx-disable .return
+.   \" Since the TTY device will disable production of mdocmx(7)
+.   \" sequences when $GROFF_NO_MDOCMX is set, honour that, too
+.   if !'\V[GROFF_NO_MDOCMX]''. return
+.   ds mx:gogogo
+.
+.   ie     'utf8'\*[.T]'   .ds mx:istty
+.   el .ie 'latin1'\*[.T]' .ds mx:istty
+.   el .ie 'ascii'\*[.T]'  .ds mx:istty
+.   \" TODO For HTML and PDF devices include their respective support
+.   \" TODO packages and inject anchors and references as appropriate
+.   \" TODO Requires mdoc(7) output reword via a .doc-out-put TYPE [DATA]
+.   \" TODO that is doc-out-flush'ed at the end, so that a completely
+.   \" TODO prepared recursion tree can be inspected as a whole.
+.   \" TODO Then: the actual output we produce, in mx:mac-key-find,
+.   \" TODO should instead call-by-reference device-dependend hooks.
+.   \" TODO And: if mx-debug is defined anchors should also be visual!
+.   el .ie 'pdf'\*[.T]'    .rm mx:gogogo
+.   el .ie 'html'\*[.T]'   .rm mx:gogogo
+.   el                     .rm mx:gogogo
+.
+.   ie d mx:istty .ds mx#s1 tty
+.   el                .ds mx#s1 \*[.T]
+.   rm mx#s2
+.   while (\n[.$] > 0) \{\
+.     ds mx#s2
+.     if '-preprocessed'\$1' \{\
+.       mx:perr "synopsis: .Mx -enable [devices]"
+.       break
+.     \}
+.     if '\$1'\*[mx#s1]' \{\
+.       rm mx#s2
+.       break
+.     \}
+.     shift
+.   \}
+.   if d mx#s2 .rm mx:gogogo
+.   rm mx#s2
+.   rm mx#s1
+.   return
+. \}
+.
+. if !d mx:enabled \{\
+.   mx:perr "not enabled via -enable in the document prologue!"
+.   rm mx:gogogo
+.   return
+. \}
+.
+. \" III. "-disable" to actively suppress mdocmx(7)
+. if '-disable'\$1' \{\
+.   rm mx:gogogo
+.   return
+. \}
+.
+. \" II. "-toc [devices] [-tree] [devices]" for creating a table of contents
+. if '-toc'\$1' \{\
+.   ie d mx:istty .ds mx#s1 tty
+.   el                .ds mx#s1 \*[.T]
+.   rm mx#s2
+.   rm mx#s3
+.   while (\n[.$] > 1) \{\
+.     shift
+.     if '-tree'\$1' \{\
+.       ds mx#s2 -tree
+.       continue
+.     \}
+.     if '\$1'\*[mx#s1]' \{\
+.       rm mx#s3
+.       break
+.     \}
+.     ds mx#s3
+.   \}
+.   if d mx-toc-force .rm mx#s3
+.   if !d mx#s3 .mx:toc-dump \*[mx#s2]
+.   rm mx#s3
+.   rm mx#s2
+.   rm mx#s1
+.   return
+. \}
+.
+. \" III. "-anchor-spass MAC KEY [REL]" single-pass info gen. by mdocmx(1)
+. if '-anchor-spass'\$1' \{\
+.   mx:check-macname-mapped "\$2"
+.   if !d mx#s1 \{\
+.     mx:perr ".Mx -anchor-spass: invalid argument: \$2"
+.     rm mx:gogogo
+.     return
+.   \}
+.   if d mx#s2 \{\
+.     if !(\n[.$] == 4) \{\
+.       mx:perr ".Mx -anchor-spass: missing .Sh / .Ss relation"
+.       rm mx:gogogo
+.       return
+.     \}
+.   \}
+.   nr mx:\*[mx#s1]-no +1
+.   ds mx:\*[mx#s1]-\n[mx:\*[mx#s1]-no]-arg \$3
+.   if d mx#s2 \
+.     ds mx:\*[mx#s1]-\n[mx:\*[mx#s1]-no]-rel \$4
+.   ds mx:\*[mx#s1]-\n[mx:\*[mx#s1]-no]-ref \n[mx:refno]
+.   nr mx:refno +1
+.   \" Anchor is placed when we actually see it
+.   \"rm mx:\*[mx#s1]-\n[mx:\*[mx#s1]-no]-anchor
+.   rm mx#s2
+.   rm mx#s1
+.   return
+. \}
+.
+. \" IV. .Mx stack handling
+. if \n[in-synopsis-section] \{\
+.   mx:perr "in SYNOPSIS .Mx only supports -enable or -toc"
+.   return
+. \}
+.
+. \" IV.1. No argument: any supported macro, any content
+. if (\n[.$] == 0) \{\
+.   nr mx:stack-no +1
+.   return
+. \}
+.
+. \" IV.2. MACRO: exactly MACRO, any content
+. nr mx:stack-no +1
+. mx:check-macname "\$1"
+. if d mx#s2 .rm mx#s1
+. rm mx#s2
+. if !d mx#s1 \{\
+.   mx:perr ".Mx: cannot enqueue an anchor for macro \$1"
+.   rm mx:gogogo
+.   return
+. \}
+. ds mx:stack-mac-\n[mx:stack-no] \*[mx#s1]
+. rm mx#s1
+.
+. \" IV.3. MACRO/KEY: exactly MACRO with exactly content KEY.
+. if (\n[.$] > 1) \{\
+.   while (\n[.$] > 1) \{\
+.     shift
+.     mx:cleanup-string "\$1"
+.     ie d mx#s1 .ds mx#s1 \*[mx#s1] \*[mx:cleans]
+.     el             .ds mx#s1 \*[mx:cleans]
+.   \}
+.   ds mx:stack-arg-\n[mx:stack-no] \*[mx#s1]
+.   rm mx#s1
+. \}
+..
+.\" }}} .Mx
+.
+.\" mdocmx(7) hook call-ins for mdoc(7) macros {{{
+.\" In theory a macro would call mx-mac-enter, giving its name,
+.\" then repeatedly call mx-mac-add-arg for each argument and
+.\" finalize that iteration via mx-mac-leave.
+.\" Since most mdoc(7) macros go through doc-print-recursive, that
+.\" one would drive the latter two in most cases.
+.\"
+.\" But it is complicated to get (1) at all macro arguments and
+.\" (2) arguments in text form: there is no "textof" or "stringof"
+.\" in GNU troff as of the time of this writing.
+.\" And without "textof" or "stringof" it is not gracefully possible
+.\" to get at the arguments since many macros inject format
+.\" information into them, leave alone user formatting stuff.
+.\" The latter can't be helped, but the former usually can be
+.\" prevented by collecting the argument *before* the formatting
+.\" injection occurs: to support this, mx-mac-enter may be
+.\" given those arguments, too, in which case any mx-mac-add-arg
+.\" before the next mx-mac-leave is effectively turned into a noop.
+.\"
+.\" Of course the above is a naive view on the recursive mdoc(7)
+.\" approach, with some commands which only change formatting styles
+.\" or similar (.Dq, .Do/.Dc..), and with others which switch some
+.\" global status to bypass the NS recursion (.Bk/.Ek, .Fo/.Fc..).
+.\"
+.\" The real approach that should be graceful:
+.\" Prepare output via a new "node-put TYPE [DATA]" macro just like it
+.\" is currently done for input so that, once the uppermost recursion
+.\" level is about to be left we can traverse the entire recursion as
+.\" a flat tree!  With a .textof / .stringof we should be able?
+.
+.\" Recursion depth
+.nr mx:ard 0
+.\" Define "a hashmap" of all macros which require that upon -leave
+.\" time the arguments are splitted up again, e.g. <^.Fn "int funcname"$>
+.ds mx:mac-needs-argsplit-Fn
+.\" A "hashmap" of all macros for which no error should be reported if
+.\" no KEY is seen: e.g., .Fl can be used without arguments, which causes
+.\" "-" to be printed, but i won't be parsed by us.  (Obviously neither
+.\" anchors nor references to these default values can be generated.)
+.ds mx:mac-empty-key-ok-Fl
+.
+.de mx-mac-enter
+. if !d mx:gogogo .return
+. if \n[in-synopsis-section] .return
+.
+. \" Deal with automatic macro reopens after punctuation characters.
+. \" As in ".Va arg1 , arg2": both are .Va here.  But it may also be
+. \" (silly example) ".Va arg1, Fl flag1", in which case the .Fl has
+. \" to terminate the former .Va, which is what we do here.  See below.
+. if d mx:mac-leave-last \{\
+.   mx:mac-cleanup-level
+.   nr mx:ard -1
+. \}
+. ie (\n[mx:ard] <= 0) .nr mx:ard 1
+. el .nr mx:ard +1
+. mx:mac-cleanup-level
+.
+. mx:check-macname-extended-mapped "\$1"
+. rm mx#s2
+. \" Bypass this level!
+. if !d mx#s1 \{\
+.   ds mx:arx\n[mx:ard]
+.   return
+. \}
+. ds mx:arn\n[mx:ard] \*[mx#s1]
+. \" Some macros don't have their own index but are warped to another
+. \" macro's index - our .Mx stack however uses the real name!
+. if !'\$1'\*[mx#s1]' .ds mx:arw\n[mx:ard] \$1
+. rm mx#s1
+.
+. \" Deal with clean arguments?
+. shift
+. if (\n[.$] == 0) .return
+. while (\n[.$] > 0) \{\
+.   mx-mac-add-arg "\$1"
+.   shift
+. \}
+. \" Turn further mx-mac-add-arg into noops!
+. ds mx:arx\n[mx:ard]
+..
+.
+.de mx-mac-add-arg
+. if !d mx:gogogo .return
+. if \n[in-synopsis-section] .return
+. \" Be aware of cases where some recursive print sidesteps into us
+. if (\n[mx:ard] <= 0) .return
+.
+. rm mx:mac-leave-last
+.
+. \" Level ignored?
+. if d mx:arx\n[mx:ard] .return
+.
+. mx:cleanup-string "\$*"
+. ie d mx:ara\n[mx:ard]   \
+.     ds mx:ara\n[mx:ard] \*[mx:ara\n[mx:ard]] \*[mx:cleans]
+. el .ds mx:ara\n[mx:ard] \*[mx:cleans]
+..
+.
+.\" Deal with doc-print-recursive sequencing:
+.\" from our point of view punctuation characters finalize the current
+.\" macro and immediately reopen the very same macro.
+.\" GNU mdoc(7) seems to do it like that for e.g. .Va, but not for .Fn.
+.\" But this is beyond our level of understanding, if a new macro is
+.\" invoked it'll start a new mx-mac-enter cycle, which will truly
+.\" finalize the current macro.
+.de mx-mac-sequence
+. if !d mx:gogogo .return
+. if \n[in-synopsis-section] .return
+. \" Be aware of cases where some recursive print sidesteps into us
+. if (\n[mx:ard] <= 0) .return
+.
+. ds mx:mac-noclose
+. mx-mac-leave
+. rm mx:mac-noclose
+..
+.
+.de mx-mac-leave
+. if !d mx:gogogo .return
+. if \n[in-synopsis-section] .return
+. \" Be aware of cases where some recursive print sidesteps into us
+. if (\n[mx:ard] <= 0) .return
+.
+. \" After mx-mac-sequence we may get called again immediately
+. if d mx:mac-leave-last \{\
+.   if !d mx:mac-noclose \{\
+.     mx:mac-cleanup-level
+.     nr mx:ard -1
+.   \}
+.   return
+. \}
+. ds mx:mac-leave-last
+.
+. \" Level ignored?
+. if d mx:arx\n[mx:ard] \{\
+.   \" TODO It may however also be one of the -mac-enter argument hacks.
+.   \" TODO In this case simply return.
+.   if !d mx:arn\n[mx:ard] \{\
+.     if !d mx:mac-noclose \{\
+.       rm mx:arx\n[mx:ard]
+.       nr mx:ard -1
+.     \}
+.     return
+.   \}
+. \}
+.
+. \" .Xr and .Sx are special: they can't create anchors, only references
+. ie 'Xr'\*[mx:arn\n[mx:ard]]' \{\
+.   \" Argument resplit necessary
+.   mx:mac-leave-xr \*[mx:ara\n[mx:ard]]
+. \}
+. el .ie 'Sx'\*[mx:arn\n[mx:ard]]' \{\
+.   ds mx:mac-leave-sx
+.   mx:mac-key-find Sh "\*[mx:ara\n[mx:ard]]"
+.   if d mx:mac-leave-sx \
+.     mx:mac-key-find Ss "\*[mx:ara\n[mx:ard]]"
+.   rm mx:mac-leave-sx
+. \}
+. el .ie d mx:mac-needs-argsplit-\*[mx:arn\n[mx:ard]] \{\
+.   mx:mac-key-find-argsplit \*[mx:arn\n[mx:ard]] \
+      \*[mx:ara\n[mx:ard]]
+. \}
+. el \{\
+.   mx:mac-key-find \*[mx:arn\n[mx:ard]] \
+      "\*[mx:ara\n[mx:ard]]"
+. \}
+.
+. rm mx:ara\n[mx:ard]
+. if !d mx:mac-noclose \{\
+.   rm mx:arn\n[mx:ard]
+.   nr mx:ard -1
+. \}
+..
+.\" }}} Hook call-ins for mdoc(7) macros
+.
+.\" Hidden stuff {{{
+.
+.de mx:perr
+. tm1 mdocmx(7) error: \$* (#\n[.c])
+..
+.
+.de mx:check-macname-extended-mapped
+. mx:check-macname "\$1"
+. ie !d mx#s1 \{\
+.   ie     'Sx'\$1' .ds mx#s1 Sx
+.   el .if 'Xr'\$1' .ds mx#s1 Xr
+. \}
+. el .if '\*[mx#s1]'Fo' .ds mx#s1 Fn
+..
+.de mx:check-macname-mapped
+. mx:check-macname "\$1"
+. if '\*[mx#s1]'Fo' .ds mx#s1 Fn
+..
+.de mx:check-macname
+. rm mx#s1
+. rm mx#s2
+. ie     'Ar'\$1' .ds mx#s1 Ar
+. el .ie 'Cm'\$1' .ds mx#s1 Cm
+. el .ie 'Dv'\$1' .ds mx#s1 Dv
+. el .ie 'Er'\$1' .ds mx#s1 Er
+. el .ie 'Ev'\$1' .ds mx#s1 Ev
+. el .ie 'Fl'\$1' .ds mx#s1 Fl
+. el .ie 'Fn'\$1' .ds mx#s1 Fn
+. el .ie 'Fo'\$1' .ds mx#s1 Fo
+. el .ie 'Ic'\$1' .ds mx#s1 Ic
+. el .ie 'In'\$1' .ds mx#s1 In
+. el .ie 'Pa'\$1' .ds mx#s1 Pa
+. el .ie 'Va'\$1' .ds mx#s1 Va
+. el .if 'Vt'\$1' .ds mx#s1 Vt
+. if d mx#s1  .return
+.
+. \" ..with [REL]
+. ie     'Sh'\$1' .ds mx#s1 Sh
+. el .ie 'Ss'\$1' .ds mx#s1 Ss
+. el .return
+. ds mx#s2 \*[mx#s1]
+..
+.
+.\" We shall generate a TOC; shallow unless given a (-tree) argument
+.de mx:toc-dump
+. Sh "\*[mx-toc-name]"
+. ie d mx-toc-emerged .Bl -inset
+. el                      .Bl -inset -compact
+.
+. nr mx#t-d#n1 0
+. while (\n[mx#t-d#n1] < \n[mx:Sh-no]) \{\
+.   nr mx#t-d#n1 +1
+.   ie d mx-toc-numbered \
+.     It \n[mx#t-d#n1]. Sx "\*[mx:Sh-\n[mx#t-d#n1]-arg]"
+.   el \
+.     It Sx "\*[mx:Sh-\n[mx#t-d#n1]-arg]"
+.
+.   if (\n[.$] > 0) \{\
+.     nr mx#t-d#n2 \*[mx:Sh-\n[mx#t-d#n1]-rel]
+.     nr mx#t-d#n3 0
+.     rm mx#t-d#s
+.     while (\n[mx#t-d#n3] < \n[mx:Ss-no]) \{\
+.       nr mx#t-d#n3 +1
+.       if (\*[mx:Ss-\n[mx#t-d#n3]-rel] < \n[mx#t-d#n2]) .continue
+.       if (\*[mx:Ss-\n[mx#t-d#n3]-rel] > \n[mx#t-d#n2]) .break
+.       if !d mx#t-d#s \{\
+.         ds mx#t-d#s
+.         Bl -tag -offset indent -compact
+.       \}
+.       It Sx "\*[mx:Ss-\n[mx#t-d#n3]-arg]"
+.     \}
+.     if d mx#t-d#s .El
+.     rm mx#t-d#s
+.     rm mx#t-d#n3
+.     rm mx#t-d#n2
+.   \}
+. \}
+. rm mx#t-d#n1
+. El
+..
+.
+.\" TODO mx:cleanup-string: replace with .stringof, if d
+.\" Note: must be in sync with mdocmx(1)!
+.de mx:cleanup-string
+. ds mx:cleans \$1
+. \" Because of the quirkiness of .substring, prevent endless loops (e.g. \!)
+. \" Also don't mind mysterious .substring args, _that_ works for GNU troff!
+. nr mx#c-s#n 0
+. while (1) \{\
+.   ds mx#c-s#s \*[mx:cleans]
+.   substring mx#c-s#s 0 0
+.   ie     '\&'\*[mx#c-s#s]' .
+.   el .ie '\%'\*[mx#c-s#s]' .
+.   el .ie ' '\*[mx#c-s#s]'  .
+.   el .ie '	'\*[mx#c-s#s]' .
+.   el .break
+.   nr mx#c-s#n +1
+.   if (\n[mx#c-s#n] > 10) .break
+.   substring mx:cleans 1
+. \}
+. nr mx#c-s#n 0
+. while (1) \{\
+.   ds mx#c-s#s \*[mx:cleans]
+.   substring mx#c-s#s -1
+.   ie     '\&'\*[mx#c-s#s]' .
+.   el .ie '\%'\*[mx#c-s#s]' .
+.   el .ie '\/'\*[mx#c-s#s]' .
+.   el .ie '\c'\*[mx#c-s#s]' .
+.   el .ie ' '\*[mx#c-s#s]'  .
+.   el .ie '	'\*[mx#c-s#s]' .
+.   el .break
+.   nr mx#c-s#n +1
+.   if (\n[mx#c-s#n] > 10) .break
+.   substring mx:cleans 0 -2
+. \}
+. rm mx#c-s#s
+. rm mx#c-s#n
+..
+.
+.de mx:mac-cleanup-level
+. rm mx:mac-leave-last
+. rm mx:ara\n[mx:ard]
+. rm mx:arx\n[mx:ard]
+. rm mx:arw\n[mx:ard]
+. rm mx:arn\n[mx:ard]
+..
+.
+.\" .Xr creates external references which requires special handling.
+.\" Because $PAGER will _scroll_ to the anchor, we need a running
+.\" anchor numbers
+.de mx:mac-leave-xr
+. ds mx#mlx
+. if ''\$1' \{\
+.   mx:perr ".Xr: missing manual reference, something is wrong"
+.   rm mx#mlx
+. \}
+. if ''\$2' \{\
+.   \" Though pretty useless for a reference, the manual section
+.   \" is indeed optional, so don't complain if it is missing!
+.   \"mx:perr .Xr: missing manual section, something is wrong
+.   rm mx#mlx
+. \}
+. if !d mx#mlx .return
+. rm mx#mlx
+.
+. nr mx#n1 \n[mx:refno]
+. nr mx:refno +1
+\%\&\fR\X'tty: mdocmx xr \n[mx#n1] \$1 \$2'[\n[mx#n1]]\fP\&\c
+. rm mx#n1
+..
+.
+.\" Try to find an occurrence of key-content $1 in macro stack $1
+.de mx:mac-key-find-argsplit
+. mx:mac-key-find \$1 \$[\n[.$]]
+..
+.de mx:mac-key-find
+. \" E.g.: <^.Fn "int fun" , "int arg1"$>
+. if ''\$2' \{\
+.   if !d mx:mac-empty-key-ok-\$1 \
+.     mx:perr "empty key for macro \$1: something is wrong"
+.   return
+. \}
+.
+. \" If .Mx stack is not empty, check if we can pop it: define mx#anchor
+. ie     'Sx'\$1' .
+. el .ie 'Xr'\$1' .
+. el .ie 'Sh'\$1' .ds mx#showref
+. el .ie 'Ss'\$1' .ds mx#showref
+. el .if (\n[mx:stack-no] > 0) \{\
+.   ds mx#anchor
+.
+.   \" On the stack there are real macro names, so compare against the
+.   \" real name if we warped that to another one (index) instead
+.   ie d mx:arw\n[mx:ard] .ds mx#s1 \*[mx:arw\n[mx:ard]]
+.   el                            .ds mx#s1 \$1
+.   ie     !d mx:stack-mac-\n[mx:stack-no] .
+.   el .ie !'\*[mx#s1]'\*[mx:stack-mac-\n[mx:stack-no]]' \
+.     rm mx#anchor
+.   el .ie !d mx:stack-arg-\n[mx:stack-no] .
+.   el .if !'\$2'\*[mx:stack-arg-\n[mx:stack-no]]' \
+.     rm mx#anchor
+.   rm mx#s1
+.
+.   if d mx#anchor \{\
+.     rm mx:stack-arg-\n[mx:stack-no]
+.     rm mx:stack-mac-\n[mx:stack-no]
+.     nr mx:stack-no -1
+.
+.     if !d mx:preprocessed \{\
+.       nr mx:\$1-no +1
+.       ds mx:\$1-\n[mx:\$1-no]-arg \$2
+.       ds mx:\$1-\n[mx:\$1-no]-ref \n[mx:refno]
+.       nr mx:refno +1
+\%\&\X'tty: mdocmx \$1 \*[mx:\$1-\n[mx:\$1-no]-ref]'\&\c
+.       ds mx:\$1-\n[mx:\$1-no]-anchor
+.       rm mx#anchor
+.       return
+.     \}
+.   \}
+. \}
+.
+. nr mx#n1 \n[mx:\$1-no]
+. while (\n[mx#n1] > 0) \{\
+.   if '\$2'\*[mx:\$1-\n[mx#n1]-arg]' \{\
+.     ds mx#s1 \*[mx:\$1-\n[mx#n1]-ref]
+.     \" Special call hook (for mx-mac-leave, .Sx command)?
+.     ie d mx:mac-leave-sx \{\
+\%\&\fR[\*[mx#s1]]\fP\&\c
+.     \}
+.     \" Anchor already exists, print a reference
+.     el .ie d mx:\$1-\n[mx#n1]-anchor \{\
+\%\&\fR[\*[mx#s1]]\fP\&\c
+.     \}
+.     \" Define anchor and print the reference (section headings)
+.     el .ie d mx#showref \{\
+\%\&\fR\X'tty: mdocmx \$1 \*[mx#s1]'[\*[mx#s1]]\fP\&\c
+.     \}
+.     \" Anchor doesn't yet exist, but but not defined - print a reference
+.     el .ie !d mx#anchor \{\
+\%\&\fR[\*[mx#s1]]\fP\&\c
+.     \}
+.     \" Only define anchor
+.     el \{\
+.       ds mx:\$1-\n[mx#n1]-anchor
+.       ie !d mx-debug \{\
+\%\&\X'tty: mdocmx \$1 \*[mx#s1]'\&\c
+.       \}
+.       el \{\
+\%\&\fR\X'tty: mdocmx \$1 \*[mx#s1]'@\*[mx#s1]@\fP\&\c
+.       \}
+.     \}
+.     rm mx#s1
+.     rm mx:mac-leave-sx
+.     break
+.   \}
+.   nr mx#n1 -1
+. \}
+. rm mx#n1
+. rm mx#anchor
+. rm mx#showref
+..
+.\" }}} Hidden stuff
+.
+.ec
+.\" s-ts-mode
