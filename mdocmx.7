@@ -3,10 +3,10 @@
 .\"@ mdocmx(7) extends the mdoc(7) semantic markup language by references,
 .\"@ allowing mdoc(7) to create anchors and table of contents.
 .\"
-.\" Written 2014 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+.\" Written 2014 - 2015 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .\" Public Domain
 .
-.Dd December 29, 2014
+.Dd January 05, 2015
 .Dt MDOCMX 7
 .Os
 .Mx -enable
@@ -102,11 +102,11 @@ This can either be accomplished by using
 with the
 .Fl disable
 argument or by defining the string
-.Ql Dv mdocmx-disable ,
+.Ql Dv mx-disable ,
 as in
 .
 .Pp
-.Dl < xy.z mdocmx.sh | troff -Tutf8 -mdoc -a -dmdocmx-disable=1
+.Dl < xy.z mdocmx.sh | troff -Tutf8 -mdoc -a -dmx-disable=1
 .
 .Ss Creating referenceable anchors
 .
@@ -206,11 +206,19 @@ has no index by itself.
 .It Ic .Ic
 Internal or interactive command.
 .Mx
+.It Ic .In
+An
+.Ql include
+file for, e.g., the C programming language.
+.Mx
 .It Ic .Pa
 File system path.
 .Mx
 .It Ic .Va
 Variable name.
+.Mx
+.It Ic .Vt
+Variable type, type reference.
 .El
 .
 .Ss Creating table of contents
@@ -256,9 +264,9 @@ see a flat table of contents with only section headers.
 .
 .Ss Strings that affect mdocmx
 .
-.Bl -tag -width ".It Dv _docmx-_isable"
+.Bl -tag -width ".It Dv _docmx-_oc-_merged"
 .Mx
-.It Dv mdocmx-debug
+.It Dv mx-debug
 If defined
 .Xr mdocmx 7
 macros will offer some verbosity.
@@ -266,14 +274,32 @@ In addition not only references will produce visual output, but also
 anchors.
 .
 .Mx
-.It Dv mdocmx-disable
+.It Dv mx-disable
 Has the same effect as
 .Ql .Mx -disable .
 .
 .Mx
-.It Dv mdocmx-toc
+.It Dv mx-toc-emerged
+Normally
+.Fl compact
+display is used for the table of contents, but when this string is set
+an emerged display is used for the first level that lists the headings.
+.
+.Mx
+.It Dv mx-toc-force
+Can be used to enforce creation of a table of content even if the
+documents
+.Fl toc
+configuration wouldn't create one for the targeted output device.
+.
+.Mx
+.It Dv mx-toc-name
 If defined its content is used as the headline of the table of contents,
 which can be used for, e.g., localization purposes.
+.
+.Mx
+.It Dv mx-toc-numbered
+If defined the first level of the table of contents will be numbered.
 .El
 .
 .
@@ -283,6 +309,10 @@ The
 .Nm
 request cannot share a line with other macros, neither in the document
 prologue nor in its content.
+Whereas that is mostly owed to the necessity of ensuring compatibility
+with environments that don't support
+.Xr mdocmx 7 ,
+it also simplified the implementation of the preprocessor.
 .
 .Ss Internal extended synopsis
 .
@@ -398,8 +428,8 @@ environment appeared in 2014.
 .
 Idea and first implementation by
 .An Steffen Nurpmeso Aq Mt sdaoden@users.sf.net .
-Command design by
-.An Ingo Schwarze Aq Mt schwarze@openbsd.org .
+.An Ingo Schwarze Aq Mt schwarze@openbsd.org
+designed the command semantics.
 .
 .
 .Sh CAVEATS
