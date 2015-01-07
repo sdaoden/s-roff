@@ -45,6 +45,7 @@
 .\" ds mx:gogogo
 .\" ds mx:istty
 .\" ds mx:cleans - storage of .mx:cleanup-string
+.\" ds mx:refok - some output is suppressed in SYNOPSIS / xy
 .nr mx:refno 1
 .nr mx:stack-no 0
 .
@@ -192,10 +193,10 @@
 . \}
 .
 . \" IV. .Mx stack handling
-. if \n[in-synopsis-section] \{\
-.   mx:perr "in SYNOPSIS .Mx only supports -enable or -toc"
-.   return
-. \}
+. \"if \n[in-synopsis-section] \{\
+. \"  mx:perr "in SYNOPSIS .Mx only supports -enable or -toc"
+. \"  return
+. \"\}
 .
 . \" IV.1. No argument: any supported macro, any content
 . if (\n[.$] == 0) \{\
@@ -222,7 +223,7 @@
 .     shift
 .     mx:cleanup-string "\$1"
 .     ie d mx#s1 .ds mx#s1 \*[mx#s1] \*[mx:cleans]
-.     el             .ds mx#s1 \*[mx:cleans]
+.     el         .ds mx#s1 \*[mx:cleans]
 .   \}
 .   ds mx:stack-arg-\n[mx:stack-no] \*[mx#s1]
 .   rm mx#s1
@@ -273,7 +274,7 @@
 .
 .de mx-mac-enter
 . if !d mx:gogogo .return
-. if \n[in-synopsis-section] .return
+. \"if \n[in-synopsis-section] .return
 .
 . \" Deal with automatic macro reopens after punctuation characters.
 . \" As in ".Va arg1 , arg2": both are .Va here.  But it may also be
@@ -313,7 +314,7 @@
 .
 .de mx-mac-add-arg
 . if !d mx:gogogo .return
-. if \n[in-synopsis-section] .return
+. \"if \n[in-synopsis-section] .return
 . \" Be aware of cases where some recursive print sidesteps into us
 . if (\n[mx:ard] <= 0) .return
 .
@@ -337,7 +338,7 @@
 .\" finalize the current macro.
 .de mx-mac-sequence
 . if !d mx:gogogo .return
-. if \n[in-synopsis-section] .return
+. \"if \n[in-synopsis-section] .return
 . \" Be aware of cases where some recursive print sidesteps into us
 . if (\n[mx:ard] <= 0) .return
 .
@@ -348,7 +349,7 @@
 .
 .de mx-mac-leave
 . if !d mx:gogogo .return
-. if \n[in-synopsis-section] .return
+. \"if \n[in-synopsis-section] .return
 . \" Be aware of cases where some recursive print sidesteps into us
 . if (\n[mx:ard] <= 0) .return
 .
@@ -410,6 +411,7 @@
 . tm1 mdocmx(7) error: \$* (#\n[.c])
 ..
 .
+.\" Is it a macro that mdocmx(7) shall take care of?
 .de mx:check-macname-extended-mapped
 . mx:check-macname "\$1"
 . ie !d mx#s1 \{\
@@ -447,11 +449,21 @@
 . ds mx#s2 \*[mx#s1]
 ..
 .
+.\" ..if so, is ll it NOT generate output in SYNOPSIS?
+.de mx:check-refok
+. ds mx:refok
+. ie 'Fl'\$1' .
+. el .return
+. \" doc-in-synopsis, but doc- prefix is stripped away..
+. if !\n[in-synopsis-section] .return
+. rm mx:refok
+..
+.
 .\" We shall generate a TOC; shallow unless given a (-tree) argument
 .de mx:toc-dump
 . Sh "\*[mx-toc-name]"
 . ie d mx-toc-emerged .Bl -inset
-. el                      .Bl -inset -compact
+. el                  .Bl -inset -compact
 .
 . nr mx#t-d#n1 0
 . while (\n[mx#t-d#n1] < \n[mx:Sh-no]) \{\
@@ -615,14 +627,18 @@
 .     \}
 .     \" Anchor already exists, print a reference
 .     el .ie d mx:\$1-\n[mx#n1]-anchor \{\
+.       mx:check-refok \$1
+.       if d mx:refok \
 \%\&\fR[\*[mx#s1]]\fP\&\c
 .     \}
 .     \" Define anchor and print the reference (section headings)
 .     el .ie d mx#showref \{\
 \%\&\fR\X'tty: mdocmx \$1 \*[mx#s1]'[\*[mx#s1]]\fP\&\c
 .     \}
-.     \" Anchor doesn't yet exist, but but not defined - print a reference
+.     \" Anchor doesn't yet exist, but not defined - print a reference
 .     el .ie !d mx#anchor \{\
+.       mx:check-refok \$1
+.       if d mx:refok \
 \%\&\fR[\*[mx#s1]]\fP\&\c
 .     \}
 .     \" Only define anchor
