@@ -106,7 +106,7 @@ max=421
 [ ${V} -gt 1 ] && max=2
 i=1
 # RW by user only, avoid overwriting of existing files
-u=`umask`
+old_umask=`umask`
 umask 077
 set -C
 while [ 1 ]; do
@@ -118,6 +118,10 @@ while [ 1 ]; do
     exit ${EX_TEMPFAIL}
   fi
 done
+
+trap "rm -f ${tmpfile}; exit ${EX_TEMPFAIL}" HUP INT QUIT PIPE TERM
+trap "rm -f ${tmpfile}" EXIT
+umask ${old_umask}
 
 # Let's go awk {{{
 APOSTROPHE=\'
@@ -689,10 +693,6 @@ function line_nlcont_done() {
   }
 }' "${F}"
 # }}}
-
-# Delete our temporary storage
-ES=${?}
-rm -f "${tmpfile}"
-exit ${ES}
+exit
 
 # s-it2-mode
