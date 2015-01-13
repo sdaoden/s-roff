@@ -3,7 +3,7 @@
 .\"@ mdocmx(7) extends the mdoc(7) semantic markup language by references,
 .\"@ allowing mdoc(7) to create anchors and table of contents.
 .\"
-.\" Written 2014 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+.\" Written 2014 - 2015 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .\" Public Domain
 .
 .Dd December 22, 2014
@@ -11,18 +11,23 @@
 .Os
 .Mx -enable
 .
+.
 .Sh NAME
 .Nm mdocmx
 .Nd Preprocessor for the mdoc semantic markup language reference extension
 .
+.
 .Sh SYNOPSIS
 .Nm
-.Op Fl t | Fl T Ar \&Sh | sh | \&Ss | ss
+.Op Fl t | Fl T Ar \&Sh | sh | \&Ss | ss Op Fl c
 .Op Fl v
+.
 .
 .Mx -toc html xhtml pdf ps
 .
+.
 .Sh DESCRIPTION
+.
 .Nm
 can be used to overcome the restriction that single-pass troff
 implementations cannot create forward references.
@@ -48,11 +53,23 @@ support are used which can make use of the generated anchors.
 .
 .Bl -tag -width ".Fl _[9] Ar _"
 .Mx
+.It Fl c
+In conjunction with
+.Fl t
+or
+.Fl T
+this will request compact display for the first level of the generated
+table of contents (the level covering
+.Ic .Ss
+subsections will always be displayed in compact format).
+.
+.Mx
 .It Fl t
 Replace any
 .Sq .Mx -toc
 command line in the document with a table of content that consists of
 section headers only.
+.
 .Mx
 .It Fl T Ar \&Sh | sh | \&Ss | ss
 Replace any
@@ -62,6 +79,8 @@ consists of only section headers
 .Ns ( Sq sh Ns )
 or the full tree of headers and their subsections
 .Ns ( Sq ss Ns ) .
+.
+.Mx
 .It Fl v
 Enable warning messages.
 Use multiple times for more verbosity.
@@ -72,7 +91,9 @@ enabled
 documents.
 .El
 .
+.
 .Sh IMPLEMENTATION NOTES
+.
 .Nm
 is not ment to be able to deal with all the possibilities that the
 .Xr mdoc 7
@@ -94,7 +115,9 @@ only \(en normal
 .Xr mdoc 7
 command based anchors should always be parsed correctly in all cases.
 .
+.
 .Sh COMPATIBILITY
+.
 .Nm
 is implemented in portable
 .Xr sh 1
@@ -102,18 +125,23 @@ and
 .Xr awk 1 .
 .
 .Sh SEE ALSO
+.
 .Xr awk 1 ,
 .Xr sh 1 ,
 .Xr troff 1 ,
 .Xr mdoc 7 ,
 .Xr mdocmx 7
 .
+.
 .Sh HISTORY
+.
 The
 .Nm
 environment appeared in 2014.
 .
+.
 .Sh AUTHORS
+.
 Written by
 .An Steffen Nurpmeso Aq Mt sdaoden@users.sf.net .
 .

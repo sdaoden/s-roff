@@ -5,10 +5,11 @@
 #@ Synopsis: mdocmx[.sh] [:-v:] [-t | -T Sh|sh|Ss|ss] [FILE]
 #@ -v: increase verbosity
 #@ -t: wether -toc lines shall be expanded to a flat .Sh TOC
-#@ -T: wether -toc lines shall be expanded as specified: only .Sh / .Sh + .Ss.
+#@ -T: wether -toc lines shall be expanded as specified: only .Sh / .Sh + .Ss
+#@ -c: only with -t or -T: wether compact TOC display shall be generated
 #@ Set $AWK environment to force a special awk(1) interpreter.
 #
-# Written 2014 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+# Written 2014 - 2015 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 # Public Domain
 
 : ${TMPDIR:=/tmp}
@@ -21,7 +22,7 @@ EX_USAGE=64
 EX_DATAERR=65
 EX_TEMPFAIL=75
 
-V=0 T= F=
+V=0 T= TT= F=
 
 find_awk() {
   [ -n "${AWK}" ] && return 0
@@ -43,7 +44,7 @@ find_awk() {
 synopsis() {
   ex=${1} msg=${2}
   [ -n "${msg}" ] && echo >&2 ${msg}
-  echo >&2 "Synopsis: ${0} [:-v:] [-t | -T Sh|sh|Ss|ss] [FILE]"
+  echo >&2 "Synopsis: ${0} [:-v:] [-t | -T Sh|sh|Ss|ss  [-c]] [FILE]"
   exit ${ex}
 }
 
@@ -51,7 +52,7 @@ synopsis() {
 
 find_awk || synopsis 1 "Cannot find a usable awk(1) implementation"
 
-while getopts vtT: i; do
+while getopts vtT:c i; do
   case ${i} in
   v)
     V=`expr ${V} + 1`;;
@@ -65,10 +66,13 @@ while getopts vtT: i; do
     [Ss]s)  T=Ss;;
     *)      synopsis ${EX_USAGE} "Invalid -T argument: -- ${OPTARG}";;
     esac;;
+  c)
+    TT=-compact;;
   ?)
     synopsis ${EX_USAGE} "";;
   esac
 done
+[ -n "${TT}" ] && [ -z "${T}" ] && synopsis ${EX_USAGE} "-c requires -t or -T"
 OPTIND=`expr ${OPTIND} - 1`
 shift ${OPTIND}
 
@@ -117,13 +121,13 @@ done
 
 # Let's go awk {{{
 APOSTROPHE=\'
-${AWK} -v VERBOSE=${V} -v TOC="${T}" -v MX_FO="${tmpfile}" \
+${AWK} -v VERBOSE=${V} -v TOC="${T}" -v TOCTYPE="${TT}" -v MX_FO="${tmpfile}" \
   -v EX_USAGE="${EX_USAGE}" -v EX_DATAERR="${EX_DATAERR}" \
 'BEGIN {
   # The mdoc macros that support referencable anchors.
   # .Sh and .Ss also create anchors, but since they do not require .Mx they are
   # treated special and handled directly -- update manual on change!
-  UMACS = "Ar Cm Dv Er Ev Fl Fn Fo Ic Pa Va"
+  UMACS = "Ar Cm Dv Er Ev Fl Fn Fo Ic In Pa Va Vt"
 
   # Some of those impose special rules for their arguments; mdocmx(1) solves
   # this by outsourcing such desires in argument parse preparation hooks
@@ -144,7 +148,7 @@ ${AWK} -v VERBOSE=${V} -v TOC="${T}" -v MX_FO="${tmpfile}" \
       "Qc Ql Qo Qq Re Rs Rv " \
       "Sc Sh Sm So Sq Ss St Sx Sy Ta Tn " \
       "Ud Ux Va Vt Xc Xo Xr " \
-      "br ll sp "
+      "br ll sp"
 
   # Punctuation to be ignored (without changing current mode)
   UPUNCTS = ". , : ; ( ) [ ] ? !"
@@ -226,11 +230,11 @@ END {
     } else {
       while (getline < mx_fo) {
         if ($0 ~ /^[[:space:]]*\.[[:space:]]*Mx[[:space:]]+-toc[[:space:]]*/) {
-          print ".Sh \"\\*[mdocmx-toc]\""
+          print ".Sh \"\\*[mx-toc-name]\""
           if (mx_sh_cnt > 0) {
-            print ".Bl -inset"
+            print ".Bl -inset", TOCTYPE
             for (i = 1; i <= mx_sh_cnt; ++i) {
-              printf ".It %d. Sx \"%s\"\n", i, arg_quote(mx_sh[i])
+              printf ".It Sx \"%s\"\n", arg_quote(mx_sh[i])
               if (TOC == "Ss")
                 toc_print_ss(i)
             }
@@ -422,7 +426,7 @@ function mx_comm() {
   if ($2 == "-toc") {
     # With TOC creation we surely want the TOC to have an anchor, too!
     if (!mx_sh_toc++)
-      mx_sh[++mx_sh_cnt] = "\\*[mdocmx-toc]"
+      mx_sh[++mx_sh_cnt] = "\\*[mx-toc-name]"
     else
       warn("\".Mx -toc\": multiple TOCs?  Duplicate anchor avoided")
     return
