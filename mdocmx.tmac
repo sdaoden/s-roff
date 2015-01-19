@@ -87,7 +87,7 @@
 .   if d mx-disable .return
 .   \" Since the TTY device will disable production of mdocmx(7)
 .   \" sequences when $GROFF_NO_MDOCMX is set, honour that, too
-.   if !'\V[GROFF_NO_MDOCMX]''. return
+.   if '\V[MDOCMX_ENABLE]'' .return
 .   ds mx:gogogo
 .
 .   ie     'utf8'\*[.T]'   .ds mx:istty

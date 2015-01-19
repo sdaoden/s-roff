@@ -6,7 +6,7 @@
 .\" Written 2014 - 2015 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .\" Public Domain
 .
-.Dd January 05, 2015
+.Dd January 19, 2015
 .Dt MDOCMX 7
 .Os
 .Mx -enable
@@ -46,27 +46,38 @@
 .
 .Sh DESCRIPTION
 .
-.Nm
+.Xr mdocmx 7
 introduces referenceable index anchors to the
 .Xr mdoc 7
 semantic markup language that is used for
 .Ux
-manual pages.
-To enable this extension the standard
+manual pages by defining a single new multiplexer command:
+.Nm .
+A precondition for enabling this extension is to set the environment
+variable
+.Ev MDOCMX_ENABLE
+to a non-empty value (the value is necessary to make the variable
+perceivable on the macro level, i.e., to overcome a deficiency of the
+.Xr troff 1
+command set).
+.
+.Pp
+The
+.Xr mdocmx 7
+reference extension augments the standard
 .Xr mdoc 7
 document prologue \(en
 .Ic \&Dd ,
 .Ic \&Dt
 and
 .Ic \&Os
-\(en is augmented with the new command
+\(en with the new command
 .Nm
 .Fl enable .
-To restrict usage of the reference extension to special output formats,
-add the names of those
+It can be restricted to specific output formats by adding those
 .Xr troff 1
 output devices for which expansion is desired as further arguments to
-.Fl toc ;
+.Fl enable ;
 for convenience all typewriter-like devices can be addressed via
 .Ar tty .
 It is not an error to specify a device for which no special
@@ -93,11 +104,10 @@ resulting document \(en refer to the
 section for more on that.
 .
 .Pp
-Sometimes it may be desirable to actively suppress that any processing
-is performed by the
+Sometimes it may be desirable to actively suppress any processing
+of the
 .Xr mdocmx 7
-reference extension.
-This can either be accomplished by using
+reference extension: this can either be accomplished by using
 .Nm
 with the
 .Fl disable
@@ -106,6 +116,7 @@ argument or by defining the string
 as in
 .
 .Pp
+.Dl MDOCMX_ENABLE=anyval; export MDOCMX_ENABLE
 .Dl < xy.z mdocmx.sh | troff -Tutf8 -mdoc -a -dmx-disable=1
 .
 .Ss Creating referenceable anchors
@@ -159,21 +170,25 @@ Using the
 .Xr mdocmx 1
 preprocessor will also create referenceable anchors for the
 .Xr mdoc 7
-section header macros
+section header commands
 .Ic .Sh
 and
-.Ic .Ss ,
-so that a
+.Ic .Ss
+automatically, so that a
 .Xr mdoc 7
 macro package which supports the
 .Xr mdocmx 7
 extension will be enabled to actually create references with the
 .Ic .Sx
-macro.
+command, and, dependent on the output device, cross-references defined
+via the command
+.Ic .Xr
+will also be backed with functionality.
 The following macros gain support for referenceable anchors via
 .Nm :
 .
-.Bl -tag -width ".It Ic ._B"
+.Pp
+.Bl -tag -compact -width ".It Ic ._B"
 .Mx
 .It Ic .Ar
 Command argument.
@@ -240,8 +255,7 @@ for convenience all typewriter-like devices can be addressed via
 .Pp
 By default only
 .Ic .Sh
-section headers are a vivid part of the TOC;
-in order to include
+section headers are a vivid part of the TOC; in order to include
 .Ic .Ss
 subsections also add a
 .Fl tree
@@ -263,6 +277,15 @@ see a flat table of contents with only section headers.
 .Dl .Mx -toc tty -tree html pdf
 .
 .Ss Strings that affect mdocmx
+.
+.Sy Note
+that due to deficiencies in some implementations of
+.Xr troff 1
+strings given on the command line (via option
+.Fl d Ns )
+have to be given an argument in order to be perceived on the macro
+level; see the example given above in the section
+.Sx DESCRIPTION .
 .
 .Bl -tag -width ".It Dv _docmx-_oc-_merged"
 .Mx
@@ -296,6 +319,8 @@ configuration wouldn't create one for the targeted output device.
 .It Dv mx-toc-name
 If defined its content is used as the headline of the table of contents,
 which can be used for, e.g., localization purposes.
+The default is
+.Dq TABLE OF CONTENTS .
 .
 .Mx
 .It Dv mx-toc-numbered
@@ -309,10 +334,10 @@ The
 .Nm
 request cannot share a line with other macros, neither in the document
 prologue nor in its content.
-Whereas that is mostly owed to the necessity of ensuring compatibility
-with environments that don't support
+Whereas that is mostly owed to the necessity of ensuring (backward)
+compatibility with environments that don't support
 .Xr mdocmx 7 ,
-it also simplified the implementation of the preprocessor.
+it also simplified implementation of the preprocessor.
 .
 .Ss Internal extended synopsis
 .
@@ -345,6 +370,20 @@ commands it instead specifies the index of the section header they
 belong to, therefore creating the possibility to generate TOCs.
 .
 .
+.Sh ENVIRONMENT
+.
+Only if the environment variable
+.Mx
+.Ev MDOCMX_ENABLE
+is set to a non-empty value will the
+.Xr mdocmx 7
+macros generate the necessary information that the chosen output
+device of
+.Xr troff 1
+can, sufficient support provided, use to generate table of contents,
+internal and external references.
+.
+.
 .Sh EXAMPLES
 .
 A complete, but completely fanciful
@@ -352,8 +391,9 @@ A complete, but completely fanciful
 document that uses the
 .Xr mdocmx 7
 extension would for example be:
+.
 .Bd -literal -offset indent
-\&.Dd November 8, 2014
+\&.Dd January 19, 2015
 \&.Dt MDOCMX-EXAMPLE 7
 \&.Os
 \&.Mx -enable tty
@@ -362,8 +402,10 @@ extension would for example be:
 \&.Nm mdocmx-example
 \&.Nd An example for the mdocmx mdoc reference extension
 \&.Mx -toc
+\&.
 \&.Sh DESCRIPTION
 Sors salutis et virtutis michi nunc contraria.
+\&.
 \&.Bl -tag -width ".It Fn _a_e_i_"
 \&.Mx
 \&.It Ic .Ar
@@ -453,6 +495,7 @@ When developing a manual it may be helpful to increase verbosity of the
 preprocessor on its standard error I/O channel by using the
 .Fl v
 command line flag in order to get a notion on what is going on:
+.
 .Bd -literal -offset indent
 $ mdocmx -vv -T Sh < mdocmx.7 2> stderr.txt | \e
   groff -Tutf8 -mdoc | less
