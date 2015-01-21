@@ -33,7 +33,7 @@ find_awk() {
   # for i; do -- new in POSIX Issue 7 + TC1
   for i
   do
-    for j in m '' g; do
+    for j in n m '' g; do
       AWK="${i}/${j}awk"
       [ -x "${AWK}" ] && return 0
     done
@@ -50,17 +50,17 @@ synopsis() {
 
 ##
 
-find_awk || synopsis 1 "Cannot find a usable awk(1) implementation"
+find_awk || synopsis 1 'Cannot find a usable awk(1) implementation'
 
 while getopts vtT:c i; do
   case ${i} in
   v)
     V=`expr ${V} + 1`;;
   t)
-    [ x != x"${T}" ] && synopsis ${EX_USAGE} "-toc line expansion yet defined"
+    [ x != x"${T}" ] && synopsis ${EX_USAGE} '-toc line expansion yet defined'
     T=Sh;;
   T)
-    [ x != x"${T}" ] && synopsis ${EX_USAGE} "-toc line expansion yet defined"
+    [ x != x"${T}" ] && synopsis ${EX_USAGE} '-toc line expansion yet defined'
     case "${OPTARG}" in
     [Ss]h)  T=Sh;;
     [Ss]s)  T=Ss;;
@@ -69,15 +69,15 @@ while getopts vtT:c i; do
   c)
     TT=-compact;;
   ?)
-    synopsis ${EX_USAGE} "";;
+    synopsis ${EX_USAGE} '';;
   esac
 done
-[ -n "${TT}" ] && [ -z "${T}" ] && synopsis ${EX_USAGE} "-c requires -t or -T"
+[ -n "${TT}" ] && [ -z "${T}" ] && synopsis ${EX_USAGE} '-c requires -t or -T'
 OPTIND=`expr ${OPTIND} - 1`
 shift ${OPTIND}
 
-[ ${#} -gt 1 ] && synopsis ${EX_USAGE} "Excess arguments given"
-[ ${#} -eq 0 ] && F=- || F="${1}"
+[ ${#} -gt 1 ] && synopsis ${EX_USAGE} 'Excess arguments given'
+[ ${#} -eq 0 ] && F=- || F=${1}
 
 ##
 
