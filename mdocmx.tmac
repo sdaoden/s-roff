@@ -53,11 +53,12 @@
 .de Mx
 . if d mx:enabled .if !d mx:gogogo .return
 .
-. \" Mx is an extension and may not be used by noone else
-. if \n[doc-arg-limit] \{\
-.   if !'Mx'\*[doc-macro-name]' \{\
-.     mx:perr ".Mx not callable by other macros"
-.     doc-reset-args
+. \" Mx is a mdoc(7) extension and may not be used by noone else
+. \" mdoc(7) doc-arg-limit, doc-macro-name and doc-reset-args are stripped
+. if \n[arg-limit] \{\
+.   if !'Mx'\*[macro-name]' \{\
+.     mx:perr ".Mx not callable by other macros (like \*[macro-name])"
+.     reset-args
 .     rm mx:gogogo
 .     return
 . \}\}
