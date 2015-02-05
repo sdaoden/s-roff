@@ -1,34 +1,43 @@
 .\"@ mdocmx.tmac - mdocmx(7) macros.
 .\"@ mdocmx(7) extends the mdoc(7) semantic markup language by references,
 .\"@ allowing mdoc(7) to create anchors and table of contents.
+.\"@ Note this file will create warnings for using .\" inside .eo ..  .ec.
 .\"
 .\" Written 2014 - 2015 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .\" Public Domain
 .eo
 .
-.\"@ For mdoc(7) copy & paste -- comments can be found below: {{{
-.\" .\" NS mdocmx(7) extension
-.\" .\" NS Only loaded upon request, yet we need stub dummies otherwise:
-.\" .\" NS - .Mx is the user interface
-.\" .\" NS - .mx-mac-(enter|add-arg|sequence|leave) are the call-in
-.\" .\" NS   hooks for mdoc(7) macros (as long as mdoc(7) itself isn't
-.\" .\" NS   rewritten to use a yet non-existing
-.\" .\" NS     .doc-output-node TYPE [DATA]"
-.\" .\" NS   to produce output etc. instead of directly doing so.
-.\" .\" NS Note: mdocmx(7) tests \n[doc-in-synopsis-section] (less doc-)
-.\" .de Mx
-.\" .  mso mdocmx.tmac
-.\" .  Mx \$@
-.\" ..
-.\" .de mx-mac-enter
-.\" ..
-.\" .de mx-mac-add-arg
-.\" ..
-.\" .de mx-mac-sequence
-.\" ..
-.\" .de mx-mac-leave
-.\" ..
-.\" @}}}
+.\"@ For mdoc(7) copy & paste -- comments can be found below:
+.ig eo
+.\" NS mdocmx(7) extension
+.\" NS Only loaded upon request, yet we need stub dummies otherwise:
+.\" NS - .Mx is the user interface
+.\" NS - .mx-mac-(enter|add-arg|sequence|leave) are the call-in
+.\" NS   hooks for mdoc(7) macros (as long as mdoc(7) itself isn't
+.\" NS   rewritten to use a yet non-existing
+.\" NS     .doc-output-node TYPE [DATA]"
+.\" NS   to produce output etc. instead of directly doing so.
+.\" NS Notes:
+.\" NS - mdocmx(7) tests \n[doc-in-synopsis-section] (less doc-).
+.\" NS - It tests \n[doc-arg-limit] and uses doc-macro-name and
+.\" NS   doc-reset-args if not 0 (namess less doc-, of course).
+.de Mx
+.  ie !'\V[MDOCMX_ENABLE]'' \{\
+.    mso mdocmx.tmac
+.    Mx \$@
+.  \}
+.  el .als Mx mx-mac-enter
+..
+.\" NS Note these may not .als each other or over-defining will fail!
+.de mx-mac-enter
+..
+.de mx-mac-add-arg
+..
+.de mx-mac-sequence
+..
+.de mx-mac-leave
+..
+.eo
 .
 .\"@ User strings:
 .\" mx-debug
@@ -188,6 +197,13 @@
 .   nr mx:refno +1
 .   \" Anchor is placed when we actually see it
 .   \"rm mx:\*[mx#s1]-\n[mx:\*[mx#s1]-no]-anchor
+.   \" We have a need for fast lookup but lack a hashtable/xy
+.   \" So "subdivide" the list for mx#s1
+.   mx:subdivide mx#n1 "\$3"
+.   nr mx:\*[mx#s1]-\n[mx#n1]-no +1
+.   ds mx:\*[mx#s1]-\n[mx#n1]-\n[mx:\*[mx#s1]-\n[mx#n1]-no]-rel \
+      \n[mx:\*[mx#s1]-no]
+.   rr mx#n1
 .   rm mx#s2
 .   rm mx#s1
 .   return
@@ -325,7 +341,7 @@
 . if d mx:arx\n[mx:ard] .return
 .
 . mx:cleanup-string "\$*"
-. ie d mx:ara\n[mx:ard]   \
+. ie d mx:ara\n[mx:ard] \
 .     ds mx:ara\n[mx:ard] \*[mx:ara\n[mx:ard]] \*[mx:cleans]
 . el .ds mx:ara\n[mx:ard] \*[mx:cleans]
 ..
@@ -378,6 +394,8 @@
 . \}
 .
 . \" .Xr and .Sx are special: they can't create anchors, only references
+. if !d mx:ara\n[mx:ard] \
+.   ds mx:ara\n[mx:ard]
 . ie 'Xr'\*[mx:arn\n[mx:ard]]' \{\
 .   \" Argument resplit necessary
 .   mx:mac-leave-xr \*[mx:ara\n[mx:ard]]
@@ -463,8 +481,10 @@
 .\" We shall generate a TOC; shallow unless given a (-tree) argument
 .de mx:toc-dump
 . Sh "\*[mx-toc-name]"
-. ie d mx-toc-emerged .Bl -inset
-. el                  .Bl -inset -compact
+. ie d mx-toc-emerged \
+.   Bl -inset
+. el \
+.   Bl -inset -compact
 .
 . nr mx#t-d#n1 0
 . while (\n[mx#t-d#n1] < \n[mx:Sh-no]) \{\
@@ -490,17 +510,26 @@
 .     \}
 .     if d mx#t-d#s .El
 .     rm mx#t-d#s
-.     rm mx#t-d#n3
-.     rm mx#t-d#n2
+.     rr mx#t-d#n3
+.     rr mx#t-d#n2
 .   \}
 . \}
-. rm mx#t-d#n1
+. rr mx#t-d#n1
 . El
 ..
 .
-.\" TODO mx:cleanup-string: replace with .stringof, if d
+.\" "Clean up", i.e., vaporise a string down to what we'll use as
+.\" identifiers for anchors and references.
 .\" Note: must be in sync with mdocmx(1)!
 .de mx:cleanup-string
+. \" Use the .stringdata request to get at that if available!
+. \" We must however retain compatibility with mdocmx(1), so
+. \" we only go the fast path if we are alone
+. if !d mx:preprocessed .if d stringdata \{\
+.   stringdata mx:cleans \$1
+.   return
+. \}
+.
 . ds mx:cleans \$1
 . \" Because of the quirkiness of .substring, prevent endless loops (e.g. \!)
 . \" Also don't mind mysterious .substring args, _that_ works for GNU troff!
@@ -514,7 +543,7 @@
 .   el .ie '	'\*[mx#c-s#s]' .
 .   el .break
 .   nr mx#c-s#n +1
-.   if (\n[mx#c-s#n] > 10) .break
+.   if (\n[mx#c-s#n] > 16) .break
 .   substring mx:cleans 1
 . \}
 . nr mx#c-s#n 0
@@ -529,11 +558,22 @@
 .   el .ie '	'\*[mx#c-s#s]' .
 .   el .break
 .   nr mx#c-s#n +1
-.   if (\n[mx#c-s#n] > 10) .break
+.   if (\n[mx#c-s#n] > 36) .break
 .   substring mx:cleans 0 -2
 . \}
 . rm mx#c-s#s
-. rm mx#c-s#n
+. rr mx#c-s#n
+..
+.
+.\" Create a "hash" of the argument string \$2 and store it in number
+.\" register \$1 (in order to subdivide the per-command lists).
+.\" \$2 must have been undergone mx:cleanup-string massage.
+.de mx:subdivide
+. \" Use the .hash request to get at that if available!
+. ie d hash \
+.   hash \$1 \$2
+. el \
+.   length \$1 \$2
 ..
 .
 .de mx:mac-cleanup-level
@@ -565,7 +605,7 @@
 . nr mx#n1 \n[mx:refno]
 . nr mx:refno +1
 \%\&\fR\X'tty: mdocmx xr \n[mx#n1] \$1 \$2'[\n[mx#n1]]\fP\&\c
-. rm mx#n1
+. rr mx#n1
 ..
 .
 .\" Try to find an occurrence of key-content $1 in macro stack $1
@@ -579,6 +619,8 @@
 .     mx:perr "empty key for macro \$1: something is wrong"
 .   return
 . \}
+. \" In SYNOPSIS we have to act quite differently
+. mx:check-refok \$1
 .
 . \" If .Mx stack is not empty, check if we can pop it: define mx#anchor
 . ie     'Sx'\$1' .
@@ -590,17 +632,23 @@
 .
 .   \" On the stack there are real macro names, so compare against the
 .   \" real name if we warped that to another one (index) instead
-.   ie d mx:arw\n[mx:ard] .ds mx#s1 \*[mx:arw\n[mx:ard]]
-.   el                            .ds mx#s1 \$1
-.   ie     !d mx:stack-mac-\n[mx:stack-no] .
+.   ie d mx:arw\n[mx:ard] \
+.     ds mx#s1 \*[mx:arw\n[mx:ard]]
+.   el \
+.     ds mx#s1 \$1
+.   ie !d mx:stack-mac-\n[mx:stack-no] \
+.     \"
 .   el .ie !'\*[mx#s1]'\*[mx:stack-mac-\n[mx:stack-no]]' \
 .     rm mx#anchor
-.   el .ie !d mx:stack-arg-\n[mx:stack-no] .
+.   el .ie !d mx:stack-arg-\n[mx:stack-no] \
+.     \"
 .   el .if !'\$2'\*[mx:stack-arg-\n[mx:stack-no]]' \
 .     rm mx#anchor
 .   rm mx#s1
 .
 .   if d mx#anchor \{\
+.     if !d mx:refok \
+.       mx:perr "cannot (Synopsis section?) .Mx the macro \$1 here"
 .     rm mx:stack-arg-\n[mx:stack-no]
 .     rm mx:stack-mac-\n[mx:stack-no]
 .     nr mx:stack-no -1
@@ -613,52 +661,67 @@
 \%\&\X'tty: mdocmx \$1 \*[mx:\$1-\n[mx:\$1-no]-ref]'\&\c
 .       ds mx:\$1-\n[mx:\$1-no]-anchor
 .       rm mx#anchor
+.       \" We have a need for fast lookup but lack a hashtable/xy
+.       \" So "subdivide" the list for \$1
+.       mx:subdivide mx#n1 "\$2"
+.       nr mx:\$1-\n[mx#n1]-no +1
+.       ds mx:\$1-\n[mx#n1]-\n[mx:\$1-\n[mx#n1]-no]-rel \n[mx:\$1-no]
+.       rr mx#n1
 .       return
 .     \}
 .   \}
 . \}
 .
+. \" Iterate over the subdivision list
 . nr mx#n1 \n[mx:\$1-no]
-. while (\n[mx#n1] > 0) \{\
-.   if '\$2'\*[mx:\$1-\n[mx#n1]-arg]' \{\
-.     ds mx#s1 \*[mx:\$1-\n[mx#n1]-ref]
-.     \" Special call hook (for mx-mac-leave, .Sx command)?
-.     ie d mx:mac-leave-sx \{\
+. mx:subdivide mx#n2 "\$2"
+. if r mx:\$1-\n[mx#n2]-no \{\
+.   nr mx#n3 \n[mx:\$1-\n[mx#n2]-no]
+.
+.   while (\n[mx#n3] > 0) \{\
+.     nr mx#n1 \*[mx:\$1-\n[mx#n2]-\n[mx#n3]-rel]
+.     ds mx#s1 \*[mx:\$1-\n[mx#n1]-arg]
+.
+.     if '\$2'\*[mx#s1]' \{\
+.       ds mx#s1 \*[mx:\$1-\n[mx#n1]-ref]
+.       \" Special call hook (for mx-mac-leave, .Sx command)?
+.       ie d mx:mac-leave-sx \{\
 \%\&\fR[\*[mx#s1]]\fP\&\c
-.     \}
-.     \" Anchor already exists, print a reference
-.     el .ie d mx:\$1-\n[mx#n1]-anchor \{\
-.       mx:check-refok \$1
-.       if d mx:refok \
+.       \}
+.       \" Anchor already exists, print a reference
+.       el .ie d mx:\$1-\n[mx#n1]-anchor \{\
+.         if d mx:refok \
 \%\&\fR[\*[mx#s1]]\fP\&\c
-.     \}
-.     \" Define anchor and print the reference (section headings)
-.     el .ie d mx#showref \{\
+.       \}
+.       \" Define anchor and print the reference (section headings)
+.       el .ie d mx#showref \{\
 \%\&\fR\X'tty: mdocmx \$1 \*[mx#s1]'[\*[mx#s1]]\fP\&\c
-.     \}
-.     \" Anchor doesn't yet exist, but not defined - print a reference
-.     el .ie !d mx#anchor \{\
-.       mx:check-refok \$1
-.       if d mx:refok \
+.       \}
+.       \" Anchor doesn't yet exist, but not defined - print a reference
+.       el .ie !d mx#anchor \{\
+.         if d mx:refok \
 \%\&\fR[\*[mx#s1]]\fP\&\c
-.     \}
-.     \" Only define anchor
-.     el \{\
-.       ds mx:\$1-\n[mx#n1]-anchor
-.       ie !d mx-debug \{\
-\%\&\X'tty: mdocmx \$1 \*[mx#s1]'\&\c
 .       \}
+.       \" Only define anchor
 .       el \{\
+.         ds mx:\$1-\n[mx#n1]-anchor
+.         ie !d mx-debug \{\
+\%\&\X'tty: mdocmx \$1 \*[mx#s1]'\&\c
+.         \}
+.         el \{\
 \%\&\fR\X'tty: mdocmx \$1 \*[mx#s1]'@\*[mx#s1]@\fP\&\c
+.         \}
 .       \}
+.       rm mx:mac-leave-sx
+.       break
 .     \}
-.     rm mx#s1
-.     rm mx:mac-leave-sx
-.     break
+.     nr mx#n3 -1
 .   \}
-.   nr mx#n1 -1
 . \}
-. rm mx#n1
+. rm mx#s1
+. rr mx#n3
+. rr mx#n2
+. rr mx#n1
 . rm mx#anchor
 . rm mx#showref
 ..
