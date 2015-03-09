@@ -6,7 +6,7 @@
 .\" Written 2014 - 2015 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .\" Public Domain
 .
-.Dd January 19, 2015
+.Dd March 09, 2015
 .Dt MDOCMX 7
 .Os
 .Mx -enable
@@ -53,8 +53,10 @@ semantic markup language that is used for
 .Ux
 manual pages by defining a single new multiplexer command:
 .Nm .
-A precondition for enabling this extension is to set the environment
-variable
+A precondition for enabling this extension in all involved parts of
+the manual page formatting system, including the
+.Ev PAGER
+used to view the formatted output, is to set the environment variable
 .Ev MDOCMX_ENABLE
 to a non-empty value (the value is necessary to make the variable
 perceivable on the macro level, i.e., to overcome a deficiency of the
@@ -67,19 +69,18 @@ The
 reference extension augments the standard
 .Xr mdoc 7
 document prologue \(en
-.Ic \&Dd ,
-.Ic \&Dt
+.Ic \&.Dd ,
+.Ic \&.Dt
 and
-.Ic \&Os
+.Ic \&.Os
 \(en with the new command
-.Nm
-.Fl enable .
+.Ql Nm Fl enable .
 It can be restricted to specific output formats by adding those
 .Xr troff 1
 output devices for which expansion is desired as further arguments to
-.Fl enable ;
+.Ql Fl enable ;
 for convenience all typewriter-like devices can be addressed via
-.Ar tty .
+.Ql Ar tty .
 It is not an error to specify a device for which no special
 .Xr mdocmx 7
 support is available, but such requests are simply ignored.
@@ -110,19 +111,20 @@ of the
 reference extension: this can either be accomplished by using
 .Nm
 with the
-.Fl disable
+.Ql Fl disable
 argument or by defining the string
 .Ql Dv mx-disable ,
 as in
 .
-.Pp
-.Dl MDOCMX_ENABLE=anyval; export MDOCMX_ENABLE
-.Dl < xy.z mdocmx.sh | troff -Tutf8 -mdoc -a -dmx-disable=1
+.Bd -literal -offset indent
+$ MDOCMX_ENABLE=anyval; export MDOCMX_ENABLE
+$ < xy.z mdocmx.sh | troff -Tutf8 -mdoc -a -dmx-disable=1
+.Ed
 .
 .Ss Creating referenceable anchors
 .
 After the extension was
-.Fl enable Ns
+.Ql Fl enable Ns
 d in the document prologue the third group of
 .Nm
 usage forms can be used to enqueue index anchor requests.
@@ -148,15 +150,13 @@ the name of the
 as well as the
 .Ar key
 will be taken from the document content.
-.Nm
-.Ar macro
+.Ql Nm Ar macro
 will create a stack entry that will be consumed by the next occurrence of
 .Ar macro
 only, then taking the
 .Ar key
 off the document content, whereas
-.Nm
-.Ar macro Ar key
+.Ql Nm Ar macro Ar key
 creates a stack entry that also has its
 .Ar key
 defined, and which will be consumed once an exactly matching macro / key
@@ -248,9 +248,9 @@ To restrict the creation of the table of contents to special output
 formats, add the names of those
 .Xr troff 1
 output devices for which expansion is desired as further arguments to
-.Fl toc ;
+.Ql Fl toc ;
 for convenience all typewriter-like devices can be addressed via
-.Ar tty .
+.Ql Ar tty .
 .
 .Pp
 By default only
@@ -258,10 +258,10 @@ By default only
 section headers are a vivid part of the TOC; in order to include
 .Ic .Ss
 subsections also add a
-.Fl tree
+.Ql Fl tree
 argument.
 Note that if
-.Fl tree
+.Ql Fl tree
 is used in conjunction with output-device restrictions it will only
 affect those devices that appear later on the line.
 .
@@ -272,9 +272,10 @@ In the second example a tree of contents will instead be generated for
 the output formats PDF and HTML, whereas typewriter-like devices will
 see a flat table of contents with only section headers.
 .
-.Pp
-.Dl .Mx -toc pdf tty
-.Dl .Mx -toc tty -tree html pdf
+.Bd -literal -offset indent
+\&.Mx -toc pdf tty
+\&.Mx -toc tty -tree html pdf
+.Ed
 .
 .Ss Strings that affect mdocmx
 .
@@ -282,7 +283,7 @@ see a flat table of contents with only section headers.
 that due to deficiencies in some implementations of
 .Xr troff 1
 strings given on the command line (via option
-.Fl d Ns )
+.Ql Fl d Ns )
 have to be given an argument in order to be perceived on the macro
 level; see the example given above in the section
 .Sx DESCRIPTION .
@@ -299,20 +300,19 @@ anchors.
 .Mx
 .It Dv mx-disable
 Has the same effect as
-.Ql .Mx -disable .
+.Ql Nm Fl disable .
 .
 .Mx
 .It Dv mx-toc-emerged
-Normally
-.Fl compact
-display is used for the table of contents, but when this string is set
-an emerged display is used for the first level that lists the headings.
+Normally compact display is used for the table of contents, but when
+this string is set an emerged display is used for the first level that
+lists the headings.
 .
 .Mx
 .It Dv mx-toc-force
 Can be used to enforce creation of a table of content even if the
 documents
-.Fl toc
+.Ql Fl toc
 configuration wouldn't create one for the targeted output device.
 .
 .Mx
@@ -352,12 +352,12 @@ of the document to the actual consumers.
 .
 .Pp
 For one a
-.Fl preprocessed
+.Ql Fl preprocessed
 flag is appended to the single
-.Fl enable
+.Ql Fl enable
 command in the document prologue.
 And then an additional
-.Fl anchor-spass
+.Ql Fl anchor-spass
 form is introduced, which takes two or three arguments \(en
 the macro (name of the command) for which this defines an anchor as well
 as its key, possibly followed by a numeric argument that describes the
@@ -374,7 +374,7 @@ belong to, therefore creating the possibility to generate TOCs.
 .
 Only if the environment variable
 .Mx
-.Ev MDOCMX_ENABLE
+.Ql Ev MDOCMX_ENABLE
 is set to a non-empty value will the
 .Xr mdocmx 7
 macros generate the necessary information that the chosen output
@@ -468,7 +468,7 @@ environment appeared in 2014.
 .
 .Sh AUTHORS
 .
-Idea and first implementation by
+Idea and implementation by
 .An Steffen Nurpmeso Aq Mt sdaoden@users.sf.net .
 .An Ingo Schwarze Aq Mt schwarze@openbsd.org
 designed the command semantics.
@@ -477,7 +477,7 @@ designed the command semantics.
 .Sh CAVEATS
 .
 Be aware that the content of the
-.Fl width
+.Ql Fl width
 argument to
 .Xr mdoc 7
 lists etc. is evaluated as if it were normal document content; e.g., in
@@ -493,12 +493,13 @@ will be evaluated and may thus get used by
 When developing a manual it may be helpful to increase verbosity of the
 .Xr mdocmx 1
 preprocessor on its standard error I/O channel by using the
-.Fl v
+.Ql Fl v
 command line flag in order to get a notion on what is going on:
 .
 .Bd -literal -offset indent
-$ mdocmx -vv -T Sh < mdocmx.7 2> stderr.txt | \e
-  groff -Tutf8 -mdoc | less
+$ MDOCMX_ENABLE=1; export MDOCMX_ENABLE
+$ mdocmx.sh -vv < mdocmx.7 2> stderr.txt | \e
+  groff -Tutf8 -mdoc -dmx-toc-force=1 | less
 $ cat stderr.txt
 .Ed
 .
