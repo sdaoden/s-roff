@@ -142,16 +142,16 @@
 .   return
 . \}
 .
-. \" III. "-disable" to actively suppress mdocmx(7)
+. \" II. "-disable" to actively suppress mdocmx(7)
 . if '-disable'\$1' \{\
 .   rm mx:gogogo
 .   return
 . \}
 .
-. \" II. "-toc [devices] [-tree] [devices]" for creating a table of contents
+. \" III. "-toc [devices] [-tree] [devices]" for creating a table of contents
 . if '-toc'\$1' \{\
 .   ie d mx:istty .ds mx#s1 tty
-.   el                .ds mx#s1 \*[.T]
+.   el            .ds mx#s1 \*[.T]
 .   rm mx#s2
 .   rm mx#s3
 .   while (\n[.$] > 1) \{\
@@ -179,7 +179,7 @@
 .   return
 . \}
 .
-. \" III. "-anchor-spass MAC KEY [REL]" single-pass info gen. by mdocmx(1)
+. \" IV. "-anchor-spass MAC KEY [REL]" single-pass info gen. by mdocmx(1)
 . if '-anchor-spass'\$1' \{\
 .   mx:check-macname-mapped "\$2"
 .   if !d mx#s1 \{\
@@ -214,19 +214,19 @@
 .   return
 . \}
 .
-. \" IV. .Mx stack handling
+. \" V. .Mx stack handling
 . \"if \n[in-synopsis-section] \{\
 . \"  mx:perr "in SYNOPSIS .Mx only supports -enable or -toc"
 . \"  return
 . \"\}
 .
-. \" IV.1. No argument: any supported macro, any content
+. \" V.1. No argument: any supported macro, any content
 . if (\n[.$] == 0) \{\
 .   nr mx:stack-no +1
 .   return
 . \}
 .
-. \" IV.2. MACRO: exactly MACRO, any content
+. \" V.2. MACRO: exactly MACRO, any content
 . nr mx:stack-no +1
 . mx:check-macname "\$1"
 . if d mx#s2 .rm mx#s1
@@ -239,7 +239,7 @@
 . ds mx:stack-mac-\n[mx:stack-no] \*[mx#s1]
 . rm mx#s1
 .
-. \" IV.3. MACRO/KEY: exactly MACRO with exactly content KEY.
+. \" V.3. MACRO/KEY: exactly MACRO with exactly content KEY.
 . if (\n[.$] > 1) \{\
 .   while (\n[.$] > 1) \{\
 .     shift
