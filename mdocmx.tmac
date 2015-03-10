@@ -20,7 +20,7 @@
 .\" NS Notes:
 .\" NS - mdocmx(7) tests \n[doc-in-synopsis-section] (less doc-).
 .\" NS - It tests \n[doc-arg-limit] and uses doc-macro-name and
-.\" NS   doc-reset-args if not 0 (namess less doc-, of course).
+.\" NS   doc-reset-args if not 0 (names less doc-, of course).
 .de Mx
 .  ie !'\V[MDOCMX_ENABLE]'' \{\
 .    mso mdocmx.tmac
@@ -166,7 +166,12 @@
 .     \}
 .     ds mx#s3
 .   \}
-.   if d mx-toc-force .rm mx#s3
+.   \" If we wouldn't produce a TOC check mx-toc-force
+.   if d mx#s3 .if d mx-toc-force \{\
+.     rm mx#s3
+.     ie '\*[mx-toc-force]'tree'  .ds mx#s2 -tree
+.     el                          .rm mx#s2
+.   \}
 .   if !d mx#s3 .mx:toc-dump \*[mx#s2]
 .   rm mx#s3
 .   rm mx#s2

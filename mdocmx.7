@@ -310,10 +310,12 @@ lists the headings.
 .
 .Mx
 .It Dv mx-toc-force
-Can be used to enforce creation of a table of content even if the
-documents
+Defining this string can be used to enforce creation of a table of
+content even if the documents
 .Ql Fl toc
 configuration wouldn't create one for the targeted output device.
+A flat table of content will be generated unless the string value is
+.Ql tree .
 .
 .Mx
 .It Dv mx-toc-name
