@@ -18,6 +18,7 @@
 #  --  >8  --  8<  --  #
 
 #AWK=
+EX_OK=0
 EX_USAGE=64
 EX_DATAERR=65
 EX_TEMPFAIL=75
@@ -44,7 +45,10 @@ find_awk() {
 synopsis() {
   ex=${1} msg=${2}
   [ -n "${msg}" ] && echo >&2 ${msg}
-  echo >&2 "Synopsis: ${0} [:-v:] [-t | -T Sh|sh|Ss|ss  [-c]] [FILE]"
+  [ ${ex} -eq 0 ] && f=1 || f=2
+  ( echo "${0##*/}" ) >/dev/null 2>&1 && eval 'p="${0##*/}"' || p="${0}"
+  echo >&${f} "Synopsis: ${p} [-h]"
+  echo >&${f} "          ${p} [:-v:] [-t | -T Sh|sh|Ss|ss  [-c]] [FILE]"
   exit ${ex}
 }
 
@@ -52,8 +56,10 @@ synopsis() {
 
 find_awk || synopsis 1 'Cannot find a usable awk(1) implementation'
 
-while getopts vtT:c i; do
+while getopts hvtT:c i; do
   case ${i} in
+  h)
+    synopsis ${EX_OK};;
   v)
     V=`expr ${V} + 1`;;
   t)
