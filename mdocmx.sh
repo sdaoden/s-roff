@@ -117,7 +117,7 @@ umask 077
 set -C
 while [ 1 ]; do
   tmpfile="${tmpdir}/mdocmx-${i}.mx"
-  { : > "${tmpfile}"; } && break
+  { : > "${tmpfile}"; } >/dev/null 2>/dev/null && break
   i=`expr ${i} + 1`
   if [ ${i} -gt ${max} ]; then
     echo >&2 'Cannot create a temporary file within '"${tmpdir}"
