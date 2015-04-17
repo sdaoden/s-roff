@@ -13,7 +13,7 @@
 # Public Domain
 
 : ${TMPDIR:=/tmp}
-: ${ENV_TMP="${TMPDIR} ${TMP} ${TEMP}"}
+: ${ENV_TMP="${TMPDIR}:${TMP}:${TEMP}"}
 
 #  --  >8  --  8<  --  #
 
@@ -95,18 +95,22 @@ shift ${OPTIND}
 # wether we need it or not, not to exec(1) awk(1) but keep on running the shell
 # in order to remove the temporary after awk(1) has finished, whichever way.
 
-tmpdir() {
-  for tmpdir in ${ENV_TMP}; do
+find_tmpdir() {
+  i=${IFS}
+  IFS=:
+  set -- ${ENV_TMP}
+  IFS=${i}
+  # for i; do -- new in POSIX Issue 7 + TC1
+  for tmpdir
+  do
     [ -d "${tmpdir}" ] && return 0
   done
   tmpdir=${TMPDIR}
-  if [ ! -d "${tmpdir}" ]; then
-    echo >&2 'Cannot find a usable temporary directory, please set $TMPDIR'
-    exit ${EX_TEMPFAIL}
-  fi
-  return 0
+  [ -d "${tmpdir}" ] && return 0
+  echo >&2 'Cannot find a usable temporary directory, please set $TMPDIR'
+  exit ${EX_TEMPFAIL}
 }
-tmpdir
+find_tmpdir
 
 max=421
 [ ${V} -gt 1 ] && max=2
