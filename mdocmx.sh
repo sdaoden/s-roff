@@ -199,7 +199,7 @@ ${AWK} -v VERBOSE=${V} -v TOC="${T}" -v TOCTYPE="${TT}" -v MX_FO="${tmpfile}" \
 
   #mx_sh[]        # Arrays which store headlines, and their sizes
   #mx_sh_cnt
-  #mx_sh_toc      # Special avoidance of multiple TOC anchors needed
+  #mx_sh_toc      # Special avoidance of multiple TOC anchors needed, ++
   #mx_ss[]
   #mx_ss_cnt
   #mx_sh_ss[]     # With TOC we need relation of .Ss with its .Sh
@@ -411,6 +411,14 @@ function mx_enable() {
       return
     }
   }
+
+  # If we generate the TOC ourselfs better ensure the string mx-toc-name!
+  # mdocml.bsd.lv (mandoc(1)) does not offer any ".if !d NAME" way, so..
+  # But even otherwise we need it, since mandoc(1) complains about unknown
+  # \*[] strings in quoted strings, and we *may* have a ".Mx -toc" anyway!
+  if (!TOC)
+    printf ".\\\" Uncomment for mandoc(1) compat.:\n.\\\""
+  print ".ds mx-toc-name TABLE OF CONTENTS"
   mx_fo = MX_FO
   $1 = $2 = ""
   $0 = substr($0, 2)
