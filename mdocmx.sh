@@ -133,12 +133,12 @@ trap "rm -f ${tmpfile}; exit ${EX_TEMPFAIL}" HUP INT QUIT PIPE TERM
 trap "rm -f ${tmpfile}" EXIT
 umask ${old_umask}
 
-# Let's go awk {{{
+# Let's go awk(1) {{{
 APOSTROPHE=\'
 ${AWK} -v VERBOSE=${V} -v TOC="${T}" -v TOCTYPE="${TT}" -v MX_FO="${tmpfile}" \
   -v EX_USAGE="${EX_USAGE}" -v EX_DATAERR="${EX_DATAERR}" \
 'BEGIN {
-  # The mdoc macros that support referencable anchors.
+  # The mdoc macros that support referenceable anchors.
   # .Sh and .Ss also create anchors, but since they do not require .Mx they are
   # treated special and handled directly -- update manual on change!
   UMACS = "Ar Cm Dv Er Ev Fl Fn Fo Ic In Pa Va Vt"
@@ -228,10 +228,9 @@ END {
 
     for (i = 1; i <= mx_sh_cnt; ++i)
       printf ".Mx -anchor-spass Sh \"%s\" %d\n", arg_quote(mx_sh[i]), i
-    for (i = 1; i <= mx_ss_cnt; ++i) {
+    for (i = 1; i <= mx_ss_cnt; ++i)
       printf ".Mx -anchor-spass Ss \"%s\" %d\n",
         arg_quote(mx_ss[i]), mx_sh_ss[i]
-    }
     for (i = 1; i <= mx_anchors_cnt; ++i)
       printf ".Mx -anchor-spass %s \"%s\"\n",
         mx_macros[i], arg_quote(mx_keys[i])
@@ -359,7 +358,7 @@ function arg_parse(no) {
         # - "" inside it resolves to a single "
         # - " need not mark EOS, but any " that is not followed by "
         #   ends quotation mode and marks the beginning of the next arg
-        # - awk(1) has not goto;
+        # - awk(1) has no goto;
         if (ap_k == length(ap_j)) {
           ARG = ARG substr(ap_j, 1, ap_k - 1)
           ap_no = no
@@ -386,7 +385,7 @@ function arg_parse(no) {
 
 function arg_cleanup(arg) {
   # Deal with common special glyphs etc.
-  # Note: must be in sync with mdoc(7) macros!
+  # Note: must be in sync with mdocmx(7) macros (mx:cleanup-string)!
   ac_i = match(arg, /([ \t]|\\&|\\%|\\\/|\\c)+$/)
   if (ac_i)
     arg = substr(arg, 1, ac_i - 1)
@@ -491,7 +490,7 @@ function mx_check_line() {
   mcl_cont = 0
   mcl_firstmac = 1
   for (arg_parse(-1); arg_parse(0);) {
-    # Solely ignore punctuation (are we too stupid here?)
+    # Solely ignore punctuation (xxx are we too stupid here?)
     if (PUNCTS[ARG])
       continue
 
@@ -503,7 +502,8 @@ function mx_check_line() {
 
     mcl_j = mx_stack[mx_stack_cnt]
 
-    # Is this something we consider a macro?
+    # Is this something we consider a macro?  For convenience and documentation
+    # of roff stuff do auto-ignore a leading dot of the name in question
     mcl_cont = 0
     if (mcl_firstmac && ARG ~ /^\./)
       ARG = substr(ARG, 2)
@@ -711,6 +711,6 @@ function line_nlcont_done() {
   }
 }' "${F}"
 # }}}
-exit
 
+exit
 # s-it2-mode
