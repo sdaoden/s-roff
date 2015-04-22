@@ -1,4 +1,4 @@
-'\" m -- preprocess: mdocmx(1)
+'\" -- preprocess: mdocmx(1)
 .\"@ mdocmx.1 - mdocmx(7) preprocessor for single-pass troff.
 .\"@ mdocmx(7) extends the mdoc(7) semantic markup language by references,
 .\"@ allowing mdoc(7) to create anchors and table of contents.
@@ -6,7 +6,7 @@
 .\" Written 2014 - 2015 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .\" Public Domain
 .
-.Dd December 22, 2014
+.Dd April 22, 2015
 .Dt MDOCMX 1
 .Os
 .Mx -enable
@@ -37,7 +37,7 @@ document, i.e.,
 .Ic .Sh
 and
 .Ic .Ss
-section headers as well as the anchors of the
+section headers as well as any explicitly set anchor of the
 .Xr mdocmx 7
 reference extension.
 The resulting
@@ -66,24 +66,24 @@ subsections will always be displayed in compact format).
 .Mx
 .It Fl t
 Replace any
-.Sq .Mx -toc
+.Ql .Mx -toc
 command line in the document with a table of content that consists of
 section headers only.
 .
 .Mx
 .It Fl T Ar \&Sh | sh | \&Ss | ss
 Replace any
-.Sq .Mx -toc
+.Ql .Mx -toc
 command line in the document with a table of contents that either
 consists of only section headers
-.Ns ( Sq sh Ns )
+.Pf ( Sq \&Sh Ns )
 or the full tree of headers and their subsections
-.Ns ( Sq ss Ns ) .
+.Pf ( Sq \&Ss Ns ) .
 .
 .Mx
 .It Fl v
 Enable warning messages.
-Use multiple times for more verbosity.
+Use multiple times to gain processing verbosity, too.
 Verbosity is highly recommendet when developing
 .Xr mdocmx 7
 enabled
@@ -95,17 +95,18 @@ documents.
 .Sh IMPLEMENTATION NOTES
 .
 .Nm
-is not ment to be able to deal with all the possibilities that the
+works without any ado for any tested real-life
 .Xr mdoc 7
-semantic markup language has to offer.
-I.e., it is not capable to deal with heavily interlocked macro usage.
+document, but its capabilities can be exceeded by making heavy use of
+all the possibilities that
+.Xr troff 1
+and the
+.Xr mdoc 7
+semantic markup language have to offer.
 A future multi-pass
 .Xr troff 1
 will not require any preprocessor at all, nor do specialized formatters
 already today.
-It works good enough for most real-life
-.Xr mdoc 7
-documents in existence, though.
 Note that these restrictions should apply to
 .Xr mdocmx 7
 enabled documents that make use of anchors created by the extension
@@ -114,6 +115,8 @@ command
 only \(en normal
 .Xr mdoc 7
 command based anchors should always be parsed correctly in all cases.
+Use verbosity on the preprocessor and enable debug on the macro side
+when developing manuals.
 .
 .
 .Sh COMPATIBILITY
