@@ -207,11 +207,11 @@
 .   \"rm \*[mx#s3]-anchor
 .   \" We have a need for fast lookup but lack a hashtable/xy
 .   \" So "subdivide" the list for mx#s1
-.   mx:subdivide mx#n1 "\$3"
-.   ds mx#s3 mx:\*[mx#s1]-\n[mx#n1]
-.   nr \*[mx#s3]-no +1
-.   ds \*[mx#s3]-\n[\*[mx#s3]-no]-rel \n[mx:\*[mx#s1]-no]
-.   rr mx#n1
+.   mx:subdivide mx#s3 "\$3"
+.   ds mx#s4 mx:\*[mx#s1]-\*[mx#s3]
+.   nr \*[mx#s4]-no +1
+.   ds \*[mx#s4]-\n[\*[mx#s4]-no]-rel \n[mx:\*[mx#s1]-no]
+.   rm mx#s4
 .   rm mx#s3
 .   rm mx#s2
 .   rm mx#s1
@@ -579,10 +579,29 @@
 .\" \$2 must have been undergone mx:cleanup-string massage.
 .de mx:subdivide
 . \" Use the .hash request to get at that if available!
-. ie d hash \
-.   hash \$1 \$2
-. el \
-.   length \$1 \$2
+. ie d hash \{\
+.   hash mx#sd#n \$2
+.   ds \$1 \n[mx#sd#n]
+. \}
+. el \{\
+.   \" Otherwise we need to find a different way.  Use the length,
+.   length mx#sd#n \$2
+.   \" and furtherly subdivide (necessary, think mdoc(7) manual..)
+.   \" by using the first two letters (not one, ditto).
+.   \" Circumvent the ".substring returns anything" problem via \A'',
+.   \" be aware that groff(1) expands x in \A'x' during parse, so that,
+.   \" e.g, \[, from ".substring 0 1" results in parse errors!!
+.   ds mx#sd#s1 \$2
+.   ds mx#sd#s2 \$2
+.   substring mx#sd#s1 0 0
+.   substring mx#sd#s2 1 1
+.   ie \A'\*[mx#sd#s1]=\*[mx#sd#s2]' \
+.     ds \$1 "\*[mx#sd#s1]\n[mx#sd#n]\*[mx#sd#s2]
+.   el \
+.     ds \$1 "zzz\n[mx#sd#n]
+.   rm mx#sd#s
+. \}
+. rr mx#sd#n
 ..
 .
 .de mx:mac-cleanup-level
@@ -672,10 +691,10 @@
 .       rm mx#anchor
 .       \" We have a need for fast lookup but lack a hashtable/xy
 .       \" So "subdivide" the list for \$1
-.       mx:subdivide mx#n1 "\$2"
-.       nr mx:\$1-\n[mx#n1]-no +1
-.       ds mx:\$1-\n[mx#n1]-\n[mx:\$1-\n[mx#n1]-no]-rel \n[mx:\$1-no]
-.       rr mx#n1
+.       mx:subdivide mx#s1 "\$2"
+.       nr mx:\$1-\*[mx#s1]-no +1
+.       ds mx:\$1-\*[mx#s1]-\n[mx:\$1-\*[mx#s1]-no]-rel \n[mx:\$1-no]
+.       rm mx#s1
 .       return
 .     \}
 .   \}
@@ -683,52 +702,52 @@
 .
 . \" Iterate over the subdivision list
 . nr mx#n1 \n[mx:\$1-no]
-. mx:subdivide mx#n2 "\$2"
-. if r mx:\$1-\n[mx#n2]-no \{\
-.   nr mx#n3 \n[mx:\$1-\n[mx#n2]-no]
+. mx:subdivide mx#s1 "\$2"
+. if r mx:\$1-\*[mx#s1]-no \{\
+.   nr mx#n2 \n[mx:\$1-\*[mx#s1]-no]
 .
-.   while (\n[mx#n3] > 0) \{\
-.     nr mx#n1 \*[mx:\$1-\n[mx#n2]-\n[mx#n3]-rel]
-.     ds mx#s1 \*[mx:\$1-\n[mx#n1]-arg]
+.   while (\n[mx#n2] > 0) \{\
+.     nr mx#n1 \*[mx:\$1-\*[mx#s1]-\n[mx#n2]-rel]
+.     ds mx#s2 \*[mx:\$1-\n[mx#n1]-arg]
 .
-.     if '\$2'\*[mx#s1]' \{\
-.       ds mx#s1 \*[mx:\$1-\n[mx#n1]-ref]
+.     if '\$2'\*[mx#s2]' \{\
+.       ds mx#s2 \*[mx:\$1-\n[mx#n1]-ref]
 .       \" Special call hook (for mx-mac-leave, .Sx command)?
 .       ie d mx:mac-leave-sx \{\
-\%\&\fR[\*[mx#s1]]\fP\&\c
+\%\&\fR[\*[mx#s2]]\fP\&\c
 .       \}
 .       \" Anchor already exists, print a reference
 .       el .ie d mx:\$1-\n[mx#n1]-anchor \{\
 .         if d mx:refok \
-\%\&\fR[\*[mx#s1]]\fP\&\c
+\%\&\fR[\*[mx#s2]]\fP\&\c
 .       \}
 .       \" Define anchor and print the reference (section headings)
 .       el .ie d mx#showref \{\
-\%\&\fR\X'tty: mdocmx \$1 \*[mx#s1]'[\*[mx#s1]]\fP\&\c
+\%\&\fR\X'tty: mdocmx \$1 \*[mx#s2]'[\*[mx#s2]]\fP\&\c
 .       \}
 .       \" Anchor doesn't yet exist, but not defined - print a reference
 .       el .ie !d mx#anchor \{\
 .         if d mx:refok \
-\%\&\fR[\*[mx#s1]]\fP\&\c
+\%\&\fR[\*[mx#s2]]\fP\&\c
 .       \}
 .       \" Only define anchor
 .       el \{\
 .         ds mx:\$1-\n[mx#n1]-anchor
 .         ie !d mx-debug \{\
-\%\&\X'tty: mdocmx \$1 \*[mx#s1]'\&\c
+\%\&\X'tty: mdocmx \$1 \*[mx#s2]'\&\c
 .         \}
 .         el \{\
-\%\&\fR\X'tty: mdocmx \$1 \*[mx#s1]'@\*[mx#s1]@\fP\&\c
+\%\&\fR\X'tty: mdocmx \$1 \*[mx#s2]'@\*[mx#s2]@\fP\&\c
 .         \}
 .       \}
 .       rm mx:mac-leave-sx
 .       break
 .     \}
-.     nr mx#n3 -1
+.     nr mx#n2 -1
 .   \}
 . \}
+. rm mx#s2
 . rm mx#s1
-. rr mx#n3
 . rr mx#n2
 . rr mx#n1
 . rm mx#anchor
