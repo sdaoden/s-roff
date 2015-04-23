@@ -197,20 +197,22 @@
 .     \}
 .   \}
 .   nr mx:\*[mx#s1]-no +1
-.   ds mx:\*[mx#s1]-\n[mx:\*[mx#s1]-no]-arg \$3
+.   ds mx#s3 mx:\*[mx#s1]-\n[mx:\*[mx#s1]-no]
+.   ds \*[mx#s3]-arg \$3
 .   if d mx#s2 \
-.     ds mx:\*[mx#s1]-\n[mx:\*[mx#s1]-no]-rel \$4
-.   ds mx:\*[mx#s1]-\n[mx:\*[mx#s1]-no]-ref \n[mx:refno]
+.     ds \*[mx#s3]-rel \$4
+.   ds \*[mx#s3]-ref \n[mx:refno]
 .   nr mx:refno +1
 .   \" Anchor is placed when we actually see it
-.   \"rm mx:\*[mx#s1]-\n[mx:\*[mx#s1]-no]-anchor
+.   \"rm \*[mx#s3]-anchor
 .   \" We have a need for fast lookup but lack a hashtable/xy
 .   \" So "subdivide" the list for mx#s1
 .   mx:subdivide mx#n1 "\$3"
-.   nr mx:\*[mx#s1]-\n[mx#n1]-no +1
-.   ds mx:\*[mx#s1]-\n[mx#n1]-\n[mx:\*[mx#s1]-\n[mx#n1]-no]-rel \
-      \n[mx:\*[mx#s1]-no]
+.   ds mx#s3 mx:\*[mx#s1]-\n[mx#n1]
+.   nr \*[mx#s3]-no +1
+.   ds \*[mx#s3]-\n[\*[mx#s3]-no]-rel \n[mx:\*[mx#s1]-no]
 .   rr mx#n1
+.   rm mx#s3
 .   rm mx#s2
 .   rm mx#s1
 .   return
@@ -347,9 +349,11 @@
 . if d mx:arx\n[mx:ard] .return
 .
 . mx:cleanup-string "\$*"
-. ie d mx:ara\n[mx:ard] \
-.     ds mx:ara\n[mx:ard] \*[mx:ara\n[mx:ard]] \*[mx:cleans]
-. el .ds mx:ara\n[mx:ard] \*[mx:cleans]
+. ds mx#s1 mx:ara\n[mx:ard]
+. ie d \*[mx#s1] \
+.     ds \*[mx#s1] \*[\*[mx#s1]] \*[mx:cleans]
+. el .ds \*[mx#s1] \*[mx:cleans]
+. rm mx#s1
 ..
 .
 .\" Deal with doc-print-recursive sequencing:
@@ -398,23 +402,27 @@
 . \}
 .
 . \" .Xr and .Sx are special: they can't create anchors, only references
-. if !d mx:ara\n[mx:ard] \
-.   ds mx:ara\n[mx:ard]
-. ie 'Xr'\*[mx:arn\n[mx:ard]]' \{\
+. ds mx#s1 mx:ara\n[mx:ard]
+. if !d \*[mx#s1] \
+.   ds \*[mx#s1]
+. ds mx#s2 mx:arn\n[mx:ard]
+. ie 'Xr'\*[\*[mx#s2]]' \{\
 .   \" Argument resplit necessary
-.   mx:mac-leave-xr \*[mx:ara\n[mx:ard]]
+.   mx:mac-leave-xr \*[\*[mx#s1]]
 . \}
-. el .ie 'Sx'\*[mx:arn\n[mx:ard]]' \{\
+. el .ie 'Sx'\*[\*[mx#s2]]' \{\
 .   ds mx:mac-leave-sx
-.   mx:mac-key-find Sh "\*[mx:ara\n[mx:ard]]"
+.   mx:mac-key-find Sh "\*[\*[mx#s1]]"
 .   if d mx:mac-leave-sx \
 .     mx:mac-key-find Ss "\*[mx:ara\n[mx:ard]]"
 .   rm mx:mac-leave-sx
 . \}
-. el .ie d mx:mac-needs-argsplit-\*[mx:arn\n[mx:ard]] \
-.   mx:mac-key-find-argsplit \*[mx:arn\n[mx:ard]] \*[mx:ara\n[mx:ard]]
+. el .ie d mx:mac-needs-argsplit-\*[\*[mx#s2]] \
+.   mx:mac-key-find-argsplit \*[\*[mx#s2]] \*[\*[mx#s1]]
 . el \
-.   mx:mac-key-find \*[mx:arn\n[mx:ard]] "\*[mx:ara\n[mx:ard]]"
+.   mx:mac-key-find \*[\*[mx#s2]] "\*[\*[mx#s1]]"
+. rm mx#s2
+. rm mx#s1
 .
 . rm mx:ara\n[mx:ard]
 . if !d mx:mac-noclose \{\
@@ -489,10 +497,11 @@
 . nr mx#t-d#n1 0
 . while (\n[mx#t-d#n1] < \n[mx:Sh-no]) \{\
 .   nr mx#t-d#n1 +1
+.   ds mx#t-d#s \*[mx:Sh-\n[mx#t-d#n1]-arg]
 .   ie d mx-toc-numbered \
-.     It \n[mx#t-d#n1]. Sx "\*[mx:Sh-\n[mx#t-d#n1]-arg]"
+.     It \n[mx#t-d#n1]. Sx "\*[mx#t-d#s]"
 .   el \
-.     It Sx "\*[mx:Sh-\n[mx#t-d#n1]-arg]"
+.     It Sx "\*[mx#t-d#s]"
 .
 .   if (\n[.$] > 0) \{\
 .     nr mx#t-d#n2 \*[mx:Sh-\n[mx#t-d#n1]-rel]
@@ -509,11 +518,11 @@
 .       It Sx "\*[mx:Ss-\n[mx#t-d#n3]-arg]"
 .     \}
 .     if d mx#t-d#s .El
-.     rm mx#t-d#s
 .     rr mx#t-d#n3
 .     rr mx#t-d#n2
 .   \}
 . \}
+. rm mx#t-d#s
 . rr mx#t-d#n1
 . El
 ..
