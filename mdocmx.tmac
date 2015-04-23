@@ -17,6 +17,7 @@
 .\" NS   rewritten to use a yet non-existing
 .\" NS     .doc-output-node TYPE [DATA]"
 .\" NS   to produce output etc. instead of directly doing so.
+.\" NS   (Of course this only if native macros use _those_ directly..)
 .\" NS Notes:
 .\" NS - mdocmx(7) tests \n[doc-in-synopsis-section] (less doc-).
 .\" NS - It tests \n[doc-arg-limit] and uses doc-macro-name and
@@ -43,7 +44,7 @@
 .\" mx-debug
 .\" mx-disable
 .\" mx-toc-emerged
-.\" mx-toc-force
+.\" mx-toc-force - special value: "tree"
 .if !d mx-toc-name .ds mx-toc-name TABLE OF CONTENTS
 .\" mx-toc-numbered
 .
@@ -95,8 +96,9 @@
 .
 .   \" If the string "mx-disable" is defined, suppress mdocmx(7)
 .   if d mx-disable .return
-.   \" Since the TTY device will disable production of mdocmx(7)
-.   \" sequences when $GROFF_NO_MDOCMX is set, honour that, too
+.   \" It's not nice, but for security reasons all parts of mdocmx(7)
+.   \" (mdoc(7), grotty(1), less(1)) won't enable mdocmx(7) unless the
+.   \" environment variable MDOCMX_ENABLE is set with a value.  We, too
 .   if '\V[MDOCMX_ENABLE]'' .return
 .   ds mx:gogogo
 .
@@ -116,7 +118,7 @@
 .   el                     .rm mx:gogogo
 .
 .   ie d mx:istty .ds mx#s1 tty
-.   el                .ds mx#s1 \*[.T]
+.   el            .ds mx#s1 \*[.T]
 .   rm mx#s2
 .   while (\n[.$] > 0) \{\
 .     ds mx#s2
@@ -142,7 +144,7 @@
 .   return
 . \}
 .
-. \" II. "-disable" to actively suppress mdocmx(7)
+. \" II. "-disable" to (henceforth) actively suppress mdocmx(7)
 . if '-disable'\$1' \{\
 .   rm mx:gogogo
 .   return
@@ -167,7 +169,7 @@
 .     ds mx#s3
 .   \}
 .   \" If we wouldn't produce a TOC check mx-toc-force
-.   if d mx#s3 .if d mx-toc-force \{\
+.   if d mx#s3  .if d mx-toc-force \{\
 .     rm mx#s3
 .     ie '\*[mx-toc-force]'tree'  .ds mx#s2 -tree
 .     el                          .rm mx#s2
@@ -238,6 +240,7 @@
 . \}
 . ds mx:stack-mac-\n[mx:stack-no] \*[mx#s1]
 . rm mx#s1
+. \" FALLTHRU
 .
 . \" V.3. MACRO/KEY: exactly MACRO with exactly content KEY.
 . if (\n[.$] > 1) \{\
@@ -275,13 +278,13 @@
 .\" Of course the above is a naive view on the recursive mdoc(7)
 .\" approach, with some commands which only change formatting styles
 .\" or similar (.Dq, .Do/.Dc..), and with others which switch some
-.\" global status to bypass the NS recursion (.Bk/.Ek, .Fo/.Fc..).
+.\" global status to bypass the recursion (.Bk/.Ek, .Fo/.Fc..).
 .\"
-.\" The real approach that should be graceful:
+.\" The real targeted approach that should be graceful:
 .\" Prepare output via a new "node-put TYPE [DATA]" macro just like it
 .\" is currently done for input so that, once the uppermost recursion
 .\" level is about to be left we can traverse the entire recursion as
-.\" a flat tree!  With a .textof / .stringof we should be able?
+.\" a flat tree.
 .
 .\" Recursion depth
 .nr mx:ard 0
@@ -290,17 +293,16 @@
 .ds mx:mac-needs-argsplit-Fn
 .\" A "hashmap" of all macros for which no error should be reported if
 .\" no KEY is seen: e.g., .Fl can be used without arguments, which causes
-.\" "-" to be printed, but i won't be parsed by us.  (Obviously neither
+.\" "-" to be printed, but it won't be parsed by us.  (Obviously neither
 .\" anchors nor references to these default values can be generated.)
 .ds mx:mac-empty-key-ok-Fl
 .
 .de mx-mac-enter
 . if !d mx:gogogo .return
-. \"if \n[in-synopsis-section] .return
 .
 . \" Deal with automatic macro reopens after punctuation characters.
 . \" As in ".Va arg1 , arg2": both are .Va here.  But it may also be
-. \" (silly example) ".Va arg1, Fl flag1", in which case the .Fl has
+. \" (silly example) ".Va arg1 , Fl flag1", in which case the .Fl has
 . \" to terminate the former .Va, which is what we do here.  See below.
 . if d mx:mac-leave-last \{\
 .   mx:mac-cleanup-level
@@ -312,7 +314,7 @@
 .
 . mx:check-macname-extended-mapped "\$1"
 . rm mx#s2
-. \" Bypass this level!
+. \" Unless our business, bypass this level
 . if !d mx#s1 \{\
 .   ds mx:arx\n[mx:ard]
 .   return
@@ -323,7 +325,7 @@
 . if !'\$1'\*[mx#s1]' .ds mx:arw\n[mx:ard] \$1
 . rm mx#s1
 .
-. \" Deal with clean arguments?
+. \" Got clean arguments to be used instead of further -add-arg calls?
 . shift
 . if (\n[.$] == 0) .return
 . while (\n[.$] > 0) \{\
@@ -336,7 +338,6 @@
 .
 .de mx-mac-add-arg
 . if !d mx:gogogo .return
-. \"if \n[in-synopsis-section] .return
 . \" Be aware of cases where some recursive print sidesteps into us
 . if (\n[mx:ard] <= 0) .return
 .
@@ -360,7 +361,6 @@
 .\" finalize the current macro.
 .de mx-mac-sequence
 . if !d mx:gogogo .return
-. \"if \n[in-synopsis-section] .return
 . \" Be aware of cases where some recursive print sidesteps into us
 . if (\n[mx:ard] <= 0) .return
 .
@@ -371,7 +371,6 @@
 .
 .de mx-mac-leave
 . if !d mx:gogogo .return
-. \"if \n[in-synopsis-section] .return
 . \" Be aware of cases where some recursive print sidesteps into us
 . if (\n[mx:ard] <= 0) .return
 .
@@ -412,14 +411,10 @@
 .     mx:mac-key-find Ss "\*[mx:ara\n[mx:ard]]"
 .   rm mx:mac-leave-sx
 . \}
-. el .ie d mx:mac-needs-argsplit-\*[mx:arn\n[mx:ard]] \{\
-.   mx:mac-key-find-argsplit \*[mx:arn\n[mx:ard]] \
-      \*[mx:ara\n[mx:ard]]
-. \}
-. el \{\
-.   mx:mac-key-find \*[mx:arn\n[mx:ard]] \
-      "\*[mx:ara\n[mx:ard]]"
-. \}
+. el .ie d mx:mac-needs-argsplit-\*[mx:arn\n[mx:ard]] \
+.   mx:mac-key-find-argsplit \*[mx:arn\n[mx:ard]] \*[mx:ara\n[mx:ard]]
+. el \
+.   mx:mac-key-find \*[mx:arn\n[mx:ard]] "\*[mx:ara\n[mx:ard]]"
 .
 . rm mx:ara\n[mx:ard]
 . if !d mx:mac-noclose \{\
@@ -464,7 +459,7 @@
 . el .ie 'Pa'\$1' .ds mx#s1 Pa
 . el .ie 'Va'\$1' .ds mx#s1 Va
 . el .if 'Vt'\$1' .ds mx#s1 Vt
-. if d mx#s1  .return
+. if d mx#s1 .return
 .
 . \" ..with [REL]
 . ie     'Sh'\$1' .ds mx#s1 Sh
@@ -473,7 +468,7 @@
 . ds mx#s2 \*[mx#s1]
 ..
 .
-.\" ..if so, is ll it NOT generate output in SYNOPSIS?
+.\" ..if so, shall it NOT generate output in SYNOPSIS?
 .de mx:check-refok
 . ds mx:refok
 . ie 'Fl'\$1' .
@@ -613,7 +608,7 @@
 . rr mx#n1
 ..
 .
-.\" Try to find an occurrence of key-content $1 in macro stack $1
+.\" Try to find an occurrence of key-content $2 in macro stack $1
 .de mx:mac-key-find-argsplit
 . mx:mac-key-find \$1 \$[\n[.$]]
 ..
