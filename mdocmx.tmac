@@ -198,7 +198,10 @@
 .   \}
 .   nr mx:\*[mx#s1]-no +1
 .   ds mx#s3 mx:\*[mx#s1]-\n[mx:\*[mx#s1]-no]
-.   ds \*[mx#s3]-arg \$3
+.   \" Even though mdocmx(1) has cleaned that up, it cannot expand
+.   \" \*[STRING]s, so we have to cleanup the expansion
+.   mx:cleanup-string "\$3"
+.   ds \*[mx#s3]-arg \*[mx:cleans]
 .   if d mx#s2 \
 .     ds \*[mx#s3]-rel \$4
 .   ds \*[mx#s3]-ref \n[mx:refno]
@@ -207,7 +210,7 @@
 .   \"rm \*[mx#s3]-anchor
 .   \" We have a need for fast lookup but lack a hashtable/xy
 .   \" So "subdivide" the list for mx#s1
-.   mx:subdivide mx#s3 "\$3"
+.   mx:subdivide mx#s3 "\*[mx:cleans]"
 .   ds mx#s4 mx:\*[mx#s1]-\*[mx#s3]
 .   nr \*[mx#s4]-no +1
 .   ds \*[mx#s4]-\n[\*[mx#s4]-no]-rel \n[mx:\*[mx#s1]-no]
