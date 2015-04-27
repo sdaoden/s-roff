@@ -6,7 +6,7 @@
 .\" Written 2014 - 2015 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .\" Public Domain
 .
-.Dd April 22, 2015
+.Dd April 27, 2015
 .Dt MDOCMX 7
 .Os
 .Mx -enable
@@ -235,6 +235,23 @@ Variable name.
 .It Ic .Vt
 Variable type, type reference.
 .El
+.
+.Ss String cleanup and reference prevention
+.
+Before strings get used for anchor creation or reference look up any
+surrounding whitespace will be removed, as well as any preceding
+.Ql \e& ,
+.Ql \e%
+and postposed
+.Ql \e& ,
+.Ql \e% ,
+.Ql \e/ ,
+and
+.Ql \ec
+escape characters.
+However, reference look up can be actively prevented by prefixing two
+zero-width glyphs (after possible whitespace), i.e.,
+.Ql \e&\e& .
 .
 .Ss Creating table of contents
 .

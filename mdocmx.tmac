@@ -55,6 +55,7 @@
 .\" ds mx:gogogo
 .\" ds mx:istty
 .\" ds mx:cleans - storage of .mx:cleanup-string
+.\" ds mx:cleanstop - reference actively prevented via \&\& prefix
 .\" ds mx:refok - some output is suppressed in SYNOPSIS / xy
 .nr mx:refno 1
 .nr mx:stack-no 0
@@ -201,6 +202,7 @@
 .   \" Even though mdocmx(1) has cleaned that up, it cannot expand
 .   \" \*[STRING]s, so we have to cleanup the expansion
 .   mx:cleanup-string "\$3"
+.   \" xxx don't check mx:cleanstop, it's an anchor, not a reference
 .   ds \*[mx#s3]-arg \*[mx:cleans]
 .   if d mx#s2 \
 .     ds \*[mx#s3]-rel \$4
@@ -252,6 +254,7 @@
 .   while (\n[.$] > 1) \{\
 .     shift
 .     mx:cleanup-string "\$1"
+.     \" xxx don't check mx:cleanstop, it's an anchor, not a reference
 .     ie d mx#s1 .ds mx#s1 \*[mx#s1] \*[mx:cleans]
 .     el         .ds mx#s1 \*[mx:cleans]
 .   \}
@@ -321,6 +324,7 @@
 . rm mx#s2
 . \" Unless our business, bypass this level
 . if !d mx#s1 \{\
+.   ds mx:arz\n[mx:ard]
 .   ds mx:arx\n[mx:ard]
 .   return
 . \}
@@ -354,8 +358,14 @@
 . mx:cleanup-string "\$*"
 . ds mx#s1 mx:ara\n[mx:ard]
 . ie d \*[mx#s1] \
-.     ds \*[mx#s1] \*[\*[mx#s1]] \*[mx:cleans]
-. el .ds \*[mx#s1] \*[mx:cleans]
+.   ds \*[mx#s1] \*[\*[mx#s1]] \*[mx:cleans]
+. \" Request to explicitly ignore this?  And turn further args into noops
+. el .ie d mx:cleanstop \{\
+.   ds mx:arz\n[mx:ard]
+.   ds mx:arx\n[mx:ard]
+. \}
+. el \
+.   ds \*[mx#s1] \*[mx:cleans]
 . rm mx#s1
 ..
 .
@@ -392,12 +402,17 @@
 . ds mx:mac-leave-last
 .
 . \" Level ignored?
+. if d mx:arz\n[mx:ard] \{\
+.   mx:mac-cleanup-level
+.   nr mx:ard -1
+.   return
+. \}
 . if d mx:arx\n[mx:ard] \{\
 .   \" TODO It may however also be one of the -mac-enter argument hacks.
 .   \" TODO In this case simply return.
 .   if !d mx:arn\n[mx:ard] \{\
 .     if !d mx:mac-noclose \{\
-.       rm mx:arx\n[mx:ard]
+.       mx:mac-cleanup-level
 .       nr mx:ard -1
 .     \}
 .     return
@@ -534,30 +549,11 @@
 .\" identifiers for anchors and references.
 .\" Note: must be in sync with mdocmx(1)!
 .de mx:cleanup-string
-. \" Use the .stringdata request to get at that if available!
-. \" We must however retain compatibility with mdocmx(1), so
-. \" we only go the fast path if we are alone
-. if !d mx:preprocessed .if d stringdata \{\
-.   stringdata mx:cleans \$1
-.   return
-. \}
-.
 . ds mx:cleans \$1
+. rm mx:cleanstop
+.
 . \" Because of the quirkiness of .substring, prevent endless loops (e.g. \!)
 . \" Also don't mind mysterious .substring args, _that_ works for GNU troff!
-. nr mx#c-s#n 0
-. while (1) \{\
-.   ds mx#c-s#s \*[mx:cleans]
-.   substring mx#c-s#s 0 0
-.   ie     '\&'\*[mx#c-s#s]' .
-.   el .ie '\%'\*[mx#c-s#s]' .
-.   el .ie ' '\*[mx#c-s#s]'  .
-.   el .ie '	'\*[mx#c-s#s]' .
-.   el .break
-.   nr mx#c-s#n +1
-.   if (\n[mx#c-s#n] > 16) .break
-.   substring mx:cleans 1
-. \}
 . nr mx#c-s#n 0
 . while (1) \{\
 .   ds mx#c-s#s \*[mx:cleans]
@@ -570,8 +566,32 @@
 .   el .ie '	'\*[mx#c-s#s]' .
 .   el .break
 .   nr mx#c-s#n +1
-.   if (\n[mx#c-s#n] > 36) .break
+.   if (\n[mx#c-s#n] > 10) .break
 .   substring mx:cleans 0 -2
+. \}
+.
+. nr mx#c-s#n 0
+. while (1) \{\
+.   ds mx#c-s#s \*[mx:cleans]
+.   substring mx#c-s#s 0 0
+.   ie '\&'\*[mx#c-s#s]' \{\
+.     \" \&\& prefix actively prevents reference lookup
+.     \" Please see mx:subdivide for why we test two characters
+.     \" individually instead of simply testing \&\&
+.     ds mx#c-s#s \*[mx:cleans]
+.     substring mx#c-s#s 1 1
+.     if '\&'\*[mx#c-s#s]' \{\
+.       ds mx:cleanstop
+.       break
+.     \}
+.   \}
+.   el .ie '\%'\*[mx#c-s#s]' .
+.   el .ie ' '\*[mx#c-s#s]'  .
+.   el .ie '	'\*[mx#c-s#s]' .
+.   el .break
+.   nr mx#c-s#n +1
+.   if (\n[mx#c-s#n] > 8) .break
+.   substring mx:cleans 1
 . \}
 . rm mx#c-s#s
 . rr mx#c-s#n
@@ -610,6 +630,7 @@
 .de mx:mac-cleanup-level
 . rm mx:mac-leave-last
 . rm mx:ara\n[mx:ard]
+. rm mx:arz\n[mx:ard]
 . rm mx:arx\n[mx:ard]
 . rm mx:arw\n[mx:ard]
 . rm mx:arn\n[mx:ard]

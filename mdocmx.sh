@@ -391,7 +391,7 @@ function arg_cleanup(arg) {
     arg = substr(arg, 1, ac_i - 1)
   while (arg ~ /^[ \t]/)
     arg = substr(arg, 1)
-  while (arg ~ /^(\\&|\\%)/)
+  while (arg ~ /^(\\&|\\%)/ && arg !~ /^\\&\\&/)
     arg = substr(arg, 3)
   return arg
 }
@@ -539,6 +539,8 @@ function mx_check_line() {
     if (!mcl_cont && !arg_parse(0))
       fatal(EX_DATAERR, "\".Mx\": expected KEY after \"" mcl_mac "\"")
     ARG = arg_cleanup(ARG)
+    if (ARG ~ /^\\&\\&/)
+      warn("\".Mx\": KEY starting with \"\\&\\&\" will never match: " ARG)
     if (MACS_KEYHOOKS[mcl_mac])
       _mx_check_line_keyhook()
 
