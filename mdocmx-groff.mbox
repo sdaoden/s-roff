@@ -1,0 +1,1180 @@
+From 12568b14c423c683bfed91bce67a02b41eb94d73 Mon Sep 17 00:00:00 2001
+Message-Id: <12568b14c423c683bfed91bce67a02b41eb94d73.1430489373.git.sdaoden@users.sf.net>
+From: Steffen Nurpmeso <sdaoden@users.sf.net>
+Date: Wed, 7 Jan 2015 14:04:55 +0100
+Subject: [PATCH 1/6] mdocmx(7): extend grotty(1) to understand the protocol
+
+---
+ src/devices/grotty/grotty.man |  30 +++++++++-
+ src/devices/grotty/tty.cpp    | 130 +++++++++++++++++++++++++++++++++++-------
+ 2 files changed, 137 insertions(+), 23 deletions(-)
+
+diff --git a/src/devices/grotty/grotty.man b/src/devices/grotty/grotty.man
+index 07ab62a..a53ab4f 100644
+--- a/src/devices/grotty/grotty.man
++++ b/src/devices/grotty/grotty.man
+@@ -372,7 +372,7 @@ Print the version number.
+ .\" --------------------------------------------------------------------
+ .
+ .B grotty
+-understands a single X command produced using the
++understands two X commands produced using the
+ .B \[rs]X
+ escape sequence.
+ .
+@@ -384,6 +384,21 @@ If
+ is non-zero or missing, enable SGR output (this is the default),
+ otherwise use the old drawing scheme for bold and underline.
+ .
++.TP
++.BI \[rs]X'tty:\ mdocmx\ ...'
++.
++This request is used by the
++.BR mdocmx (@MAN7EXT@)
++reference extension of the
++.BR mdoc (@MAN7EXT@)
++semantic markup language and generates
++.SM BACKSPACE
++character sequences that allow supporting pager programs to perform
++reference navigation, but are ignored otherwise.
++This request should not be used directly;
++its interpretation can be suppressed by setting the
++.B GROFF_NO_MDOCMX
++environment variable.
+ .
+ .\" --------------------------------------------------------------------
+ .SH ENVIRONMENT
+@@ -400,6 +415,19 @@ Colors are disabled.
+ .
+ .TP
+ .SM
++.B GROFF_NO_MDOCMX
++Can be set to suppress any generation of
++.BR mdocmx (@MAN7EXT@)
++character sequences.
++Set to a non-empty value to also force the macros to not generate
++any anchor and reference text, i.e., doing so has the same effect
++as if the string
++.BI mdocmx-disable
++would have been defined.
++.
++.
++.TP
++.SM
+ .B GROFF_FONT_PATH
+ A list of directories in which to search for the
+ .BI dev name
+diff --git a/src/devices/grotty/tty.cpp b/src/devices/grotty/tty.cpp
+index 60d46e8..a4d982d 100644
+--- a/src/devices/grotty/tty.cpp
++++ b/src/devices/grotty/tty.cpp
+@@ -30,6 +30,10 @@ extern "C" const char *Version_string;
+ 
+ #define putstring(s) fputs(s, stdout)
+ 
++#ifndef PTR2SIZE
++# define PTR2SIZE(X)	((size_t)(X))
++#endif
++
+ #ifndef SHRT_MIN
+ #define SHRT_MIN (-32768)
+ #endif
+@@ -56,6 +60,7 @@ static int italic_flag;
+ static int reverse_flag_option = 0;
+ static int reverse_flag;
+ static int old_drawing_scheme = 0;
++static int _mdocmx_disable = 0;
+ 
+ static void update_options();
+ static void usage(FILE *stream);
+@@ -216,6 +221,7 @@ class tty_printer : public printer {
+   void line(int, int, int, int, color *, color *);
+   void draw_line(int *, int, const environment *);
+   void draw_polygon(int *, int, const environment *);
++  void _special_mdocmx(char const *, environment const *);
+ public:
+   tty_printer();
+   ~tty_printer();
+@@ -434,42 +440,120 @@ void tty_printer::add_char(output_character c, int w,
+ void tty_printer::special(char *arg, const environment *env, char type)
+ {
+   if (type == 'u') {
+-    add_char(*arg - '0', 0, env->hpos, env->vpos, env->col, env->fill,
+-	     CU_MODE);
+-    return;
++    add_char(*arg - '0', 0, env->hpos, env->vpos, env->col, env->fill, CU_MODE);
++    goto jleave;
+   }
+   if (type != 'p')
+-    return;
+-  char *p;
+-  for (p = arg; *p == ' ' || *p == '\n'; p++)
++    goto jleave;
++
++  char *p, *tag_cmd;
++
++  for (p = arg; *p == ' ' || *p == '\n'; ++p)
+     ;
+-  char *tag = p;
+-  for (; *p != '\0' && *p != ':' && *p != ' ' && *p != '\n'; p++)
++  tag_cmd = p;
++  for (; *p != '\0' && *p != ':' && *p != ' ' && *p != '\n'; ++p)
+     ;
+-  if (*p == '\0' || strncmp(tag, "tty", p - tag) != 0) {
++  if (*p == '\0' || strncmp(tag_cmd, "tty", PTR2SIZE(p - tag_cmd)) != 0) {
+     error("X command without `tty:' tag ignored");
+-    return;
++    goto jleave;
+   }
+-  p++;
+-  for (; *p == ' ' || *p == '\n'; p++)
++
++  for (++p; *p == ' ' || *p == '\n'; ++p)
+     ;
+-  char *command = p;
+-  for (; *p != '\0' && *p != ' ' && *p != '\n'; p++)
++  tag_cmd = p;
++  for (; *p != '\0' && *p != ' ' && *p != '\n'; ++p)
+     ;
+-  if (*command == '\0') {
++  if (*tag_cmd == '\0') {
+     error("empty X command ignored");
+-    return;
++    goto jleave;
+   }
+-  if (strncmp(command, "sgr", p - command) == 0) {
+-    for (; *p == ' ' || *p == '\n'; p++)
++
++  if (!strncmp(tag_cmd, "sgr", PTR2SIZE(p - tag_cmd))) {
++    for (; *p == ' ' || *p == '\n'; ++p)
+       ;
+     int n;
+-    if (*p != '\0' && sscanf(p, "%d", &n) == 1 && n == 0)
+-      old_drawing_scheme = 1;
+-    else
+-      old_drawing_scheme = 0;
++    old_drawing_scheme = (*p != '\0' && sscanf(p, "%d", &n) == 1 && n == 0);
+     update_options();
++  } else if (!strncmp(tag_cmd, "mdocmx", PTR2SIZE(p - tag_cmd)) &&
++      !_mdocmx_disable)
++    _special_mdocmx(p, env);
++
++jleave:
++  ;
++}
++
++void
++tty_printer::_special_mdocmx(char const *ap, environment const *env)
++{
++  // Handle the special \X'' injections of the mdocmx(7) reference extension
++  // for the mdoc semantic markup language.
++  // See mdocmx(7) for the used protocol
++#undef __C
++#define __C(C) add_char(C, 0, env->hpos, env->vpos, env->col, env->fill, 0)
++
++  char const *cmd, *cmd_top, *cp;
++
++  for (; *ap == ' ' || *ap == '\n'; ++ap)
++    ;
++  cmd = ap;
++  for (; *ap != '\0' && *ap != ' ' && *ap != '\n'; ++ap)
++    ;
++  cmd_top = ap;
++  if (cmd == cmd_top) {
++    error("empty mdocmx X command ignored");
++    goto jleave;
+   }
++
++  // Any mdocmx(7) command places an anchor
++  for (; *ap == ' ' || *ap == '\n'; ++ap)
++    ;
++  cp = ap;
++  for (; *ap != '\0' && *ap != ' ' && *ap != '\n'; ++ap)
++    ;
++  if (cp == ap) {
++    error("empty mdocmx X anchor ignored");
++    goto jleave;
++  }
++
++  __C('{'); __C('\b');
++  for (; cp < ap; ++cp) {
++    __C(*cp); __C('\b');
++  }
++  __C('}'); __C('\b');
++
++  // The external reference .Xr injects some more
++  if (!strncmp(cmd, "xr", PTR2SIZE(cmd_top - cmd))) {
++    __C('{'); __C('\b');
++    __C('!'); __C('\b');
++
++    // Manual section
++    for (; *ap == ' ' || *ap == '\n'; ++ap)
++      ;
++    cp = ap;
++    for (; *ap != '\0' && *ap != ' ' && *ap != '\n'; ++ap)
++      ;
++    for (; cp < ap; ++cp) {
++      __C(*cp); __C('\b');
++    }
++
++    __C(';'); __C('\b');
++
++    // Manual page
++    for (; *ap == ' ' || *ap == '\n'; ++ap)
++      ;
++    cp = ap;
++    for (; *ap != '\0' && *ap != ' ' && *ap != '\n'; ++ap)
++      ;
++    for (; cp < ap; ++cp) {
++      __C(*cp); __C('\b');
++    }
++
++    __C('}'); __C('\b');
++  }
++
++jleave:
++  ;
++#undef __C
+ }
+ 
+ void tty_printer::change_color(const environment * const env)
+@@ -863,6 +947,8 @@ int main(int argc, char **argv)
+   static char stderr_buf[BUFSIZ];
+   if (getenv("GROFF_NO_SGR"))
+     old_drawing_scheme = 1;
++  if (getenv("GROFF_NO_MDOCMX"))
++    _mdocmx_disable = 1;
+   setbuf(stderr, stderr_buf);
+   setlocale(LC_CTYPE, "");
+   int c;
+-- 
+2.2.1
+
+
+From 2f1815fcefba1c4ce4a2b3fe3340c6043c36441e Mon Sep 17 00:00:00 2001
+Message-Id: <2f1815fcefba1c4ce4a2b3fe3340c6043c36441e.1430489373.git.sdaoden@users.sf.net>
+In-Reply-To: <12568b14c423c683bfed91bce67a02b41eb94d73.1430489373.git.sdaoden@users.sf.net>
+References: <12568b14c423c683bfed91bce67a02b41eb94d73.1430489373.git.sdaoden@users.sf.net>
+From: Steffen Nurpmeso <sdaoden@users.sf.net>
+Date: Wed, 7 Jan 2015 14:43:18 +0100
+Subject: [PATCH 2/6] mdocmx(7): extend mdoc(7) to support it
+
+---
+ tmac/doc-common |  10 ++--
+ tmac/doc-syms   |  22 ++++----
+ tmac/doc.tmac   | 164 ++++++++++++++++++++++++++++++++++++++++++++------------
+ 3 files changed, 148 insertions(+), 48 deletions(-)
+
+diff --git a/tmac/doc-common b/tmac/doc-common
+index e63fdb4..6271c75 100644
+--- a/tmac/doc-common
++++ b/tmac/doc-common
+@@ -1062,7 +1062,7 @@
+ .        nr doc-curr-font \n[.f]
+ .        nr doc-curr-size \n[.ps]
+ .        nop \*[doc-Sh-font]\c
+-.        doc-print-recursive
++.        doc-print-recursive Sh
+ .      \}
+ .      el \{\
+ .        tm Usage: .Sh section_name ... (#\n[.c])
+@@ -1080,6 +1080,7 @@
+ .
+ .    ds doc-macro-name Sh
+ .    doc-parse-args \$@
++.    ds doc-mx-dpr-preloader "\$*
+ .
+ .    if t \
+ .      ad
+@@ -1147,7 +1148,7 @@
+ .    nr doc-curr-font \n[.f]
+ .    nr doc-curr-size \n[.ps]
+ .    nop \*[doc-Sh-font]\c
+-.    doc-print-recursive
++.    doc-print-recursive Sh
+ .
+ .    if t \
+ .      ss \n[doc-reg-Sh] \n[doc-reg-Sh1]
+@@ -1179,7 +1180,7 @@
+ .        nr doc-curr-font \n[.f]
+ .        nr doc-curr-size \n[.ps]
+ .        nop \*[doc-Sh-font]\c
+-.        doc-print-recursive
++.        doc-print-recursive Ss
+ .      \}
+ .      el \{\
+ .        tm Usage: .Ss subsection_name ... (#\n[.c])
+@@ -1197,6 +1198,7 @@
+ .
+ .    ds doc-macro-name Ss
+ .    doc-parse-args \$@
++.    ds doc-mx-dpr-preloader "\$*
+ .
+ .    sp
+ .    if !\n[cR] \
+@@ -1211,7 +1213,7 @@
+ .    nr doc-curr-font \n[.f]
+ .    nr doc-curr-size \n[.ps]
+ .    nop \*[doc-Sh-font]\c
+-.    doc-print-recursive
++.    doc-print-recursive Ss
+ .
+ .    ss \n[doc-reg-Ss] \n[doc-reg-Ss1]
+ .
+diff --git a/tmac/doc-syms b/tmac/doc-syms
+index 084dd82..1a3a129 100644
+--- a/tmac/doc-syms
++++ b/tmac/doc-syms
+@@ -72,7 +72,8 @@
+ .  if \n[doc-num-args] \
+ .    doc-parse-space-vector
+ .
+-.  doc-print-recursive
++.  ds doc-mx-dpr-preloader UNIX
++.  doc-print-recursive Ux
+ ..
+ .
+ .
+@@ -158,7 +159,7 @@
+ .  if \n[doc-num-args] \
+ .    doc-parse-space-vector
+ .
+-.  doc-print-recursive
++.  doc-print-recursive Bx
+ ..
+ .
+ .
+@@ -260,7 +261,7 @@
+ .  if \n[doc-num-args] \
+ .    doc-parse-space-vector
+ .
+-.  doc-print-recursive
++.  doc-print-recursive At
+ ..
+ .
+ .
+@@ -324,7 +325,7 @@
+ .  if \n[doc-num-args] \
+ .    doc-parse-space-vector
+ .
+-.  doc-print-recursive
++.  doc-print-recursive Dx
+ ..
+ .
+ .
+@@ -388,7 +389,7 @@
+ .  if \n[doc-num-args] \
+ .    doc-parse-space-vector
+ .
+-.  doc-print-recursive
++.  doc-print-recursive Fx
+ ..
+ .
+ .
+@@ -453,7 +454,7 @@
+ .  if \n[doc-num-args] \
+ .    doc-parse-space-vector
+ .
+-.  doc-print-recursive
++.  doc-print-recursive Nx
+ ..
+ .
+ .
+@@ -505,7 +506,7 @@
+ .  if \n[doc-num-args] \
+ .    doc-parse-space-vector
+ .
+-.  doc-print-recursive
++.  doc-print-recursive Ox
+ ..
+ .
+ .
+@@ -557,7 +558,7 @@
+ .  if \n[doc-num-args] \
+ .    doc-parse-space-vector
+ .
+-.  doc-print-recursive
++.  doc-print-recursive Bsx
+ ..
+ .
+ .
+@@ -726,7 +727,7 @@
+ .    \" replacing argument with result
+ .    ds doc-arg\n[doc-arg-ptr] "\*[doc-str-St1]
+ .
+-.    doc-print-recursive
++.    doc-print-recursive St
+ .  \}
+ .  el \{\
+ .    doc-St-usage
+@@ -856,6 +857,7 @@
+ .    el \{\
+ .      tmc "mdoc warning: .Lb: no description for library
+ .      tm1 " `\*[doc-arg\n[doc-arg-ptr]]' available (#\n[.c])
++.      ds doc-mx-dpr-preloader \*[doc-arg\n[doc-arg-ptr]]
+ .      ds doc-str-Lb1 library \*[Lq]\*[doc-arg\n[doc-arg-ptr]]\*[Rq]
+ .    \}
+ .
+@@ -864,7 +866,7 @@
+ .
+ .    if \n[doc-in-library-section] \
+ .      br
+-.    doc-print-recursive
++.    doc-print-recursive Lb
+ .    if \n[doc-in-library-section] \
+ .      br
+ .  \}
+diff --git a/tmac/doc.tmac b/tmac/doc.tmac
+index 80c6b88..50407a4 100644
+--- a/tmac/doc.tmac
++++ b/tmac/doc.tmac
+@@ -74,6 +74,29 @@
+ .eo
+ .
+ .
++.\" NS mdocmx(7) extension
++.\" NS Only loaded upon request, yet we need stub dummies otherwise:
++.\" NS - .Mx is the user interface
++.\" NS - .mx-mac-(enter|add-arg|sequence|leave) are the call-in
++.\" NS   hooks for mdoc(7) macros (as long as mdoc(7) itself isn't
++.\" NS   rewritten to use a yet non-existing
++.\" NS     .doc-output-node TYPE [DATA]"
++.\" NS   to produce output etc. instead of directly doing so.
++.\" NS Note: mdocmx(7) tests \n[doc-in-synopsis-section] (less doc-)
++.de Mx
++.  mso mdocmx.tmac
++.  Mx \$@
++..
++.de mx-mac-enter
++..
++.de mx-mac-add-arg
++..
++.de mx-mac-sequence
++..
++.de mx-mac-leave
++..
++.
++.
+ .\" NS doc-macro-name global string
+ .\" NS   name of calling request (set in each user-requestable macro)
+ .
+@@ -382,6 +405,7 @@
+ .        nop \|\-\|\c
+ .
+ .      nr doc-reg-Fl 1
++.      mx-mac-enter Fl
+ .      doc-flag-recursion
+ .  \}\}
+ ..
+@@ -403,6 +427,8 @@
+ .  ds doc-str-dfr "\*[doc-arg\n[doc-arg-ptr]]
+ .
+ .  ie (\n[doc-reg-dfr1] == 1) \{\
++.    rm doc-mx#dfr
++.    mx-mac-leave
+ .    nop \f[]\s[0]\c
+ .    \*[doc-str-dfr]
+ .  \}
+@@ -416,22 +442,28 @@
+ .      ie "\*[doc-str-dfr]"\*[Ba]" \{\
+ .        if \n[doc-reg-Fl] \
+ .          nop \|\-\*[doc-space]\c
++.        ds doc-mx#dfr "| 
+ .        nop \)\*[Ba]\c
+ .      \}
+ .      el \{\
+ .        ie "\*[doc-str-dfr]"\f[R]|\f[]" \{\
+ .          if \n[doc-reg-Fl] \
+ .            nop \|\-\*[doc-space]\c
++.          ds doc-mx#dfr "| 
+ .          nop \f[R]|\f[]\c
+ .        \}
+ .        el \{\
+ .          \" two consecutive hyphen characters?
+ .          ie "\*[doc-str-dfr]"-" \
+ .            nop \|\-\^\-\|\c
+-.          el \
++.          el \{\
++.            mx-mac-add-arg "\*[doc-mx#dfr]\*[doc-str-dfr]
++.            rm doc-mx#dfr
+ .            nop \|\%\-\*[doc-str-dfr]\&\c
++.          \}
+ .    \}\}\}
+ .    el \{\
++.      mx-mac-sequence
+ .      nop \f[\n[doc-curr-font]]\s[\n[doc-curr-size]u]\c
+ .      nop \)\*[doc-str-dfr]\f[]\s[0]\c
+ .    \}
+@@ -441,10 +473,26 @@
+ .      if (\n[doc-reg-dfr1] == 4) \
+ .        nop \|\-\c
+ .      nop \f[\n[doc-curr-font]]\s[\n[doc-curr-size]u]\c
++.      rm doc-mx#dfr
++.      mx-mac-leave
+ .      doc-print-and-reset
+ .    \}
+ .    el \{\
+ .      nr doc-arg-ptr +1
++.
++.      ie (\n[doc-arg-limit] == \n[doc-arg-ptr]) \
++.        \" Next iteration will leave
++.      el .ie !(\n[doc-type\n[doc-arg-ptr]] == 2) \{\
++.        rm doc-mx#dfr
++.        mx-mac-sequence
++.      \}
++.      el .if !'\*[Ba]'\*[doc-arg\n[doc-arg-ptr]]' \{\
++.        if !'\*[Ba]'\*[doc-str-dfr]' \{\
++.          rm doc-mx#dfr
++.          mx-mac-sequence
++.        \}
++.      \}
++.
+ .      ie (\n[doc-type\n[doc-arg-ptr]] == 3) \{\
+ .        ie (\n[doc-type\n[doc-reg-dfr]] == 4) \
+ .          nop \|\-\c
+@@ -473,10 +521,24 @@
+ .\" NS   doc-str-dpr
+ .
+ .de doc-print-recursive
++.  if (\n[.$] > 0) \{\
++.    if d doc-mx-dpr-open .mx-mac-leave
++.    ie d doc-mx-dpr-preloader \{\
++.      mx-mac-enter "\$1" "\*[doc-mx-dpr-preloader]
++.      rm doc-mx-dpr-preloader
++.    \}
++.    el .mx-mac-enter "\$1"
++.    ds doc-mx-dpr-open
++.  \}
++.
+ .  nr doc-reg-dpr1 \n[doc-type\n[doc-arg-ptr]]
+ .  ds doc-str-dpr "\*[doc-arg\n[doc-arg-ptr]]
+ .
+ .  ie (\n[doc-reg-dpr1] == 1) \{\
++.    if d doc-mx-dpr-open \{\
++.      rm doc-mx-dpr-open
++.      mx-mac-leave
++.    \}
+ .    nop \f[\n[doc-curr-font]]\s[\n[doc-curr-size]u]\c
+ .    \*[doc-str-dpr]
+ .  \}
+@@ -484,10 +546,13 @@
+ .    nr doc-reg-dpr \n[doc-arg-ptr]
+ .
+ .    \" the `\%' prevents hyphenation on a dash (`-')
+-.    ie (\n[doc-reg-dpr1] == 2) \
++.    ie (\n[doc-reg-dpr1] == 2) \{\
++.      mx-mac-add-arg "\*[doc-str-dpr]
+ .      nop \%\*[doc-str-dpr]\&\c
++.    \}
+ .    el \{\
+ .      \" punctuation character
++.      mx-mac-sequence
+ .      nop \f[\n[doc-curr-font]]\s[\n[doc-curr-size]u]\c
+ .      nop \)\*[doc-str-dpr]\f[]\s[0]\c
+ .    \}
+@@ -495,10 +560,18 @@
+ .    nr doc-arg-ptr +1
+ .    ie (\n[doc-arg-limit] < \n[doc-arg-ptr]) \{\
+ .      \" last argument
++.      rm doc-mx-dpr-open
++.      mx-mac-leave
+ .      nop \f[\n[doc-curr-font]]\s[\n[doc-curr-size]u]\c
+ .      doc-print-and-reset
+ .    \}
+ .    el \{\
++.      \" If a macro follows we want to place visual references
++.      \" _before_ the following whitespace
++.      if (\n[doc-type\n[doc-arg-ptr]] == 1) \{\
++.        rm doc-mx-dpr-open
++.        mx-mac-leave
++.      \}
+ .      nop \)\*[doc-space\n[doc-reg-dpr]]\c
+ .      doc-print-recursive
+ .  \}\}
+@@ -562,7 +635,7 @@
+ .      nr doc-curr-font \n[.f]
+ .      nr doc-curr-size \n[.ps]
+ .      nop \*[doc-\$0-font]\c
+-.      doc-print-recursive
++.      doc-print-recursive "\$0"
+ .\"  \}
+ .  \}
+ .  el \{\
+@@ -624,7 +697,7 @@
+ .      nr doc-arg-limit \n[doc-arg-ptr]
+ .      doc-parse-space-vector
+ .    \}
+-.    doc-print-recursive
++.    doc-print-recursive Ar
+ .  \}
+ ..
+ .
+@@ -691,17 +764,17 @@
+ .          in +\n[doc-indent-synopsis]u
+ .        ti -\n[doc-indent-synopsis]u
+ .        nop \*[doc-Nm-font]\c
+-.        doc-print-recursive
++.        doc-print-recursive Cd
+ .        if !\n[doc-indent-synopsis-active] \
+ .          in -\n[doc-indent-synopsis]u
+ .      \}
+ .      el \{\
+ .        nop \*[doc-Nm-font]\c
+-.        doc-print-recursive
++.        doc-print-recursive Cd
+ .    \}\}
+ .    el \{\
+ .      nop \*[doc-Nm-font]\c
+-.      doc-print-recursive
++.      doc-print-recursive Cd
+ .  \}\}
+ .  el \{\
+ .    tm Usage: .Cd configuration_file_declaration ... (#\n[.c])
+@@ -857,6 +930,7 @@
+ .    nr doc-curr-font \n[.f]
+ .    nr doc-curr-size \n[.ps]
+ .
++.    ds doc-mx-dpr-preloader "\*[doc-arg\n[doc-arg-ptr]]
+ .    ie \n[doc-in-synopsis-section] \{\
+ .      ie "\*[doc-macro-name]"In" \{\
+ .        doc-do-func-decl
+@@ -866,19 +940,19 @@
+ .        br
+ .        nr doc-arg-ptr +1
+ .        ie (\n[doc-arg-limit] >= \n[doc-arg-ptr]) \
+-.          doc-print-recursive
++.          doc-print-recursive In
+ .        el \
+ .          doc-reset-args
+ .      \}
+ .      el \{\
+ .        ds doc-arg\n[doc-arg-ptr] "<\*[doc-Pa-font]\*[doc-arg\n[doc-arg-ptr]]
+ .        as doc-arg\n[doc-arg-ptr] \f[\n[doc-curr-font]]\s[\n[doc-curr-size]u]>
+-.        doc-print-recursive
++.        doc-print-recursive In
+ .    \}\}
+ .    el \{\
+ .      ds doc-arg\n[doc-arg-ptr] "<\*[doc-Pa-font]\*[doc-arg\n[doc-arg-ptr]]
+ .      as doc-arg\n[doc-arg-ptr] \f[\n[doc-curr-font]]\s[\n[doc-curr-size]u]>
+-.      doc-print-recursive
++.      doc-print-recursive In
+ .  \}\}
+ .  el \{\
+ .    tm Usage: .In include_file ... (#\n[.c])
+@@ -980,6 +1054,7 @@
+ .    nr doc-curr-font \n[.f]
+ .    nr doc-curr-size \n[.ps]
+ .
++.    ds doc-mx-dpr-preloader "\*[doc-command-name]
+ .    ie !(\n[doc-type\n[doc-arg-ptr]] == 2) \{\
+ .      ie "\*[doc-command-name]"" \
+ .        tm Usage: .Nm name ... (#\n[.c])
+@@ -1010,12 +1085,14 @@
+ .          \}
+ .          ti -\n[doc-indent-synopsis]u
+ .      \}\}
+-.      if "\*[doc-command-name]"" \
++.      if "\*[doc-command-name]"" \{\
+ .        ds doc-command-name "\*[doc-arg\n[doc-arg-ptr]]
++.        ds doc-mx-dpr-preloader "\*[doc-command-name]
++.      \}
+ .
+ .      nop \*[doc-Nm-font]\c
+ .    \}
+-.    doc-print-recursive
++.    doc-print-recursive Nm
+ .  \}
+ ..
+ .
+@@ -1033,7 +1110,8 @@
+ .
+ .de Pa
+ .  if !\n[doc-arg-limit] \{\
+-.    ds doc-macro-name Pa
++.    ie d doc-mx-pa-is-mt .ds doc-macro-name Mt
++.    el                   .ds doc-macro-name Pa
+ .    doc-parse-args \$@
+ .
+ .    \" default value
+@@ -1041,8 +1119,10 @@
+ .      nop \*[doc-Pa-font]~\f[]\s[0]
+ .  \}
+ .
+-.  if !\n[doc-arg-limit] \
++.  if !\n[doc-arg-limit] \{\
++.    rm doc-mx-pa-is-mt
+ .    return
++.  \}
+ .
+ .  nr doc-arg-ptr +1
+ .  doc-print-prefixes
+@@ -1062,9 +1142,14 @@
+ .      nr doc-arg-limit \n[doc-arg-ptr]
+ .      doc-parse-space-vector
+ .    \}
+-.    doc-print-recursive
++.    ie d doc-mx-pa-is-mt \{\
++.      rm doc-mx-pa-is-mt
++.      doc-print-recursive Mt
++.    \}
++.    el .doc-print-recursive Pa
+ .  \}
+ .  el \{\
++.    rm doc-mx-pa-is-mt
+ .    nop \*[doc-Pa-font]~\f[]\s[0]\c
+ .    doc-print-and-reset
+ .  \}
+@@ -1120,7 +1205,7 @@
+ .    nop \)\*[doc-Tn-font-size]\c
+ .    ie !\n[doc-is-reference] \{\
+ .      nop \)\*[doc-Tn-font-shape]\c
+-.      doc-print-recursive
++.      doc-print-recursive Tn
+ .    \}
+ .    el \
+ .      doc-do-references
+@@ -2070,7 +2155,7 @@
+ .  if \n[doc-arg-limit] \{\
+ .    nr doc-arg-ptr +1
+ .    ie (\n[doc-arg-limit] >= \n[doc-arg-ptr]) \
+-.      doc-print-recursive
++.      doc-print-recursive Ns
+ .    el \
+ .      doc-reset-args
+ .  \}
+@@ -2089,7 +2174,7 @@
+ .    nop \)'\)\c
+ .    nr doc-arg-ptr +1
+ .    ie (\n[doc-arg-limit] >= \n[doc-arg-ptr]) \
+-.      doc-print-recursive
++.      doc-print-recursive Ap
+ .    el \
+ .      doc-reset-args
+ .  \}
+@@ -2268,7 +2353,7 @@
+ .  ie (\n[doc-arg-limit] > \n[doc-arg-ptr]) \{\
+ .    \" skip `Sm' argument
+ .    nr doc-arg-ptr +1
+-.    doc-print-recursive
++.    doc-print-recursive Sm
+ .  \}
+ .  el \
+ .    doc-reset-args
+@@ -3773,7 +3858,7 @@
+ .          \*[doc-arg1]
+ .        el \{\
+ .          nr doc-arg-ptr 1
+-.          doc-print-recursive
++.          doc-print-recursive It
+ .    \}\}\}
+ .    el \{\
+ .      tm1 "mdoc warning: .It macros in lists of type `\*[doc-str-It]'
+@@ -4269,18 +4354,21 @@
+ .    ie (\n[doc-type\n[doc-arg-ptr]] == 2) \{\
+ .      nr doc-curr-font \n[.f]
+ .      nr doc-curr-size \n[.ps]
+-.      ds doc-arg\n[doc-arg-ptr] \*[doc-Xr-font]\*[doc-arg\n[doc-arg-ptr]]\f[]\s[0]
+ .
+ .      if (\n[doc-arg-limit] > \n[doc-arg-ptr]) \{\
+ .        nr doc-reg-Xr (\n[doc-arg-ptr] + 1)
+ .        \" modify second argument if it is a string and
+ .        \" remove space in between
+ .        if (\n[doc-type\n[doc-reg-Xr]] == 2) \{\
++.          ds doc-mx-dpr-preloader \
++             "\*[doc-arg\n[doc-reg-Xr]] \*[doc-arg\n[doc-arg-ptr]]
+ .          ds doc-arg\n[doc-reg-Xr] \*[lp]\*[doc-arg\n[doc-reg-Xr]]\*[rp]
+ .          ds doc-space\n[doc-arg-ptr]
+ .        \}
+ .      \}
+-.      doc-print-recursive
++.
++.      ds doc-arg\n[doc-arg-ptr] \*[doc-Xr-font]\*[doc-arg\n[doc-arg-ptr]]\f[]\s[0]
++.      doc-print-recursive Xr
+ .    \}
+ .    el \
+ .      doc-Xr-usage
+@@ -4458,7 +4546,7 @@
+ .      nr doc-curr-font \n[.f]
+ .      nr doc-curr-size \n[.ps]
+ .      nop \*[doc-Li-font]\c
+-.      doc-print-recursive
++.      doc-print-recursive Dl
+ .    \}
+ .    el \
+ .      tm Usage: .Dl argument ... (#\n[.c])
+@@ -4490,7 +4578,7 @@
+ .      ds doc-macro-name D1
+ .      doc-parse-args \$@
+ .      nr doc-arg-ptr 1
+-.      doc-print-recursive
++.      doc-print-recursive D1
+ .    \}
+ .    el \
+ .      tm Usage: .D1 argument ... (#\n[.c])
+@@ -4556,7 +4644,7 @@
+ .  nr doc-curr-font \n[.f]
+ .  nr doc-curr-size \n[.ps]
+ .  nop \*[doc-Ft-font]\c
+-.  doc-print-recursive
++.  doc-print-recursive Vt
+ .
+ .  if \n[doc-in-synopsis-section] \{\
+ .    ie \n[doc-have-old-func] \
+@@ -4624,7 +4712,7 @@
+ .  nr doc-curr-font \n[.f]
+ .  nr doc-curr-size \n[.ps]
+ .  nop \*[doc-Ft-font]\c
+-.  doc-print-recursive
++.  doc-print-recursive Ft
+ ..
+ .
+ .
+@@ -4698,7 +4786,7 @@
+ .      nr doc-curr-font \n[.f]
+ .      nr doc-curr-size \n[.ps]
+ .      nop \*[doc-Fa-font]\c
+-.      doc-print-recursive
++.      doc-print-recursive Fa
+ .
+ .      if \n[doc-in-synopsis-section] \
+ .        if \n[doc-have-func] \
+@@ -4855,6 +4943,8 @@
+ .    return
+ .  \}
+ .
++.  mx-mac-enter Fn "\*[doc-arg\n[doc-arg-ptr]]
++.
+ .  nr doc-curr-font \n[.f]
+ .  nr doc-curr-size \n[.ps]
+ .  nop \*[doc-Fn-font]\*[doc-arg\n[doc-arg-ptr]]\c
+@@ -4869,6 +4959,7 @@
+ .  \}\}
+ .
+ .  nop \)\*[rp]\)\c
++.  mx-mac-leave
+ .  if \n[doc-in-synopsis-section] \
+ .    nop \);\)\c
+ .
+@@ -4878,7 +4969,7 @@
+ .    nop \)\*[doc-space\n[doc-arg-ptr]]\c
+ .    nr doc-arg-ptr +1
+ .
+-.    doc-print-recursive
++.    doc-print-recursive NoMxPlease
+ .  \}
+ .  el \
+ .    doc-print-and-reset
+@@ -5018,11 +5109,13 @@
+ .
+ .  nr doc-arg-ptr +1
+ .  doc-print-prefixes
++.  mx-mac-enter Fo
+ .  if (\n[doc-arg-limit] >= \n[doc-arg-ptr]) \{\
+ .    nr doc-func-arg-count 1
+ .    nr doc-curr-font \n[.f]
+ .    nr doc-curr-size \n[.ps]
+ .
++.    mx-mac-add-arg "\*[doc-arg\n[doc-arg-ptr]]
+ .    nop \*[doc-Fn-font]\*[doc-arg\n[doc-arg-ptr]]\c
+ .    nop \f[]\s[0]\*[lp]\)\c
+ .    doc-reset-args
+@@ -5061,9 +5154,11 @@
+ .  nr doc-in-func-enclosure 0
+ .
+ .  ie \n[doc-in-synopsis-section] \
+-.    nop \|\*[rp];\)
++.    nop \|\*[rp];\c
+ .  el \
+-.    nop \|\*[rp]\)
++.    nop \|\*[rp]\c
++.  mx-mac-leave
++.  nop \)
+ .
+ .  \" finish function box
+ .  br
+@@ -5085,7 +5180,7 @@
+ .  ie (\n[doc-arg-limit] >= \n[doc-arg-ptr]) \{\
+ .    nr doc-curr-font \n[.f]
+ .    nr doc-curr-size \n[.ps]
+-.    doc-print-recursive
++.    doc-print-recursive Fc
+ .  \}
+ .  el \
+ .    doc-print-and-reset
+@@ -5540,7 +5635,7 @@
+ .  \}
+ .  el \{\
+ .    nop \*[doc-Em-font]\c
+-.    doc-print-recursive
++.    doc-print-recursive %B
+ .  \}
+ ..
+ .
+@@ -6112,7 +6207,7 @@
+ .  \}
+ .  el \{\
+ .    nop \*[doc-Em-font]\c
+-.    doc-print-recursive
++.    doc-print-recursive %T
+ .  \}
+ ..
+ .
+@@ -6338,7 +6433,7 @@
+ .    ie (\n[doc-arg-limit] >= \n[doc-arg-ptr]) \{\
+ .      nr doc-curr-font \n[.f]
+ .      nr doc-curr-size \n[.ps]
+-.      doc-print-recursive
++.      doc-print-recursive An
+ .    \}
+ .    el \{\
+ .      tm Usage: .An author_name ... (#\n[.c])
+@@ -6490,6 +6585,7 @@
+ .
+ .de Mt
+ .  \" XXX: error handling missing
++.  ds doc-mx-pa-is-mt
+ .  Pa \$@
+ ..
+ .
+-- 
+2.2.1
+
+
+From f8ca9488160308643570d66a7dcea30afd58eff8 Mon Sep 17 00:00:00 2001
+Message-Id: <f8ca9488160308643570d66a7dcea30afd58eff8.1430489373.git.sdaoden@users.sf.net>
+In-Reply-To: <12568b14c423c683bfed91bce67a02b41eb94d73.1430489373.git.sdaoden@users.sf.net>
+References: <12568b14c423c683bfed91bce67a02b41eb94d73.1430489373.git.sdaoden@users.sf.net>
+From: Steffen Nurpmeso <sdaoden@users.sf.net>
+Date: Wed, 7 Jan 2015 16:02:44 +0100
+Subject: [PATCH 3/6] mdocmx(7): mdoc(7): fix .In in SYNOPSIS
+
+---
+ tmac/doc.tmac | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/tmac/doc.tmac b/tmac/doc.tmac
+index 50407a4..3dd6356 100644
+--- a/tmac/doc.tmac
++++ b/tmac/doc.tmac
+@@ -930,29 +930,33 @@
+ .    nr doc-curr-font \n[.f]
+ .    nr doc-curr-size \n[.ps]
+ .
+-.    ds doc-mx-dpr-preloader "\*[doc-arg\n[doc-arg-ptr]]
++.
+ .    ie \n[doc-in-synopsis-section] \{\
++.      mx-mac-enter "\*[doc-macro-name]" "\*[doc-arg\n[doc-arg-ptr]]"
+ .      ie "\*[doc-macro-name]"In" \{\
+ .        doc-do-func-decl
+ .        nop \*[doc-Fd-font]#include <\*[doc-arg\n[doc-arg-ptr]]>
+ .        ft \n[doc-curr-font]
+ .        ps \n[doc-curr-size]u
++.        mx-mac-leave
+ .        br
+ .        nr doc-arg-ptr +1
+ .        ie (\n[doc-arg-limit] >= \n[doc-arg-ptr]) \
+-.          doc-print-recursive In
++.          doc-print-recursive NoMxPlease
+ .        el \
+ .          doc-reset-args
+ .      \}
+ .      el \{\
+ .        ds doc-arg\n[doc-arg-ptr] "<\*[doc-Pa-font]\*[doc-arg\n[doc-arg-ptr]]
+ .        as doc-arg\n[doc-arg-ptr] \f[\n[doc-curr-font]]\s[\n[doc-curr-size]u]>
+-.        doc-print-recursive In
++.        mx-mac-leave
++.        doc-print-recursive NoMxPlease
+ .    \}\}
+ .    el \{\
++.      ds doc-mx-dpr-preloader "\*[doc-arg\n[doc-arg-ptr]]
+ .      ds doc-arg\n[doc-arg-ptr] "<\*[doc-Pa-font]\*[doc-arg\n[doc-arg-ptr]]
+ .      as doc-arg\n[doc-arg-ptr] \f[\n[doc-curr-font]]\s[\n[doc-curr-size]u]>
+-.      doc-print-recursive In
++.      doc-print-recursive "\*[doc-macro-name]"
+ .  \}\}
+ .  el \{\
+ .    tm Usage: .In include_file ... (#\n[.c])
+-- 
+2.2.1
+
+
+From 40923b0dbf9ccfffd621ac2cf6d28d2d83eb3393 Mon Sep 17 00:00:00 2001
+Message-Id: <40923b0dbf9ccfffd621ac2cf6d28d2d83eb3393.1430489373.git.sdaoden@users.sf.net>
+In-Reply-To: <12568b14c423c683bfed91bce67a02b41eb94d73.1430489373.git.sdaoden@users.sf.net>
+References: <12568b14c423c683bfed91bce67a02b41eb94d73.1430489373.git.sdaoden@users.sf.net>
+From: Steffen Nurpmeso <sdaoden@users.sf.net>
+Date: Mon, 19 Jan 2015 15:11:26 +0100
+Subject: [PATCH 4/6] mdocmx(7): grotty(1): due to $GROFF_NO_MDOCMX ->
+ $MDOCMX_ENABLE
+
+---
+ src/devices/grotty/grotty.man | 22 +++++++++++-----------
+ src/devices/grotty/tty.cpp    | 14 +++++++++-----
+ tmac/doc.tmac                 |  6 ++++--
+ 3 files changed, 24 insertions(+), 18 deletions(-)
+
+diff --git a/src/devices/grotty/grotty.man b/src/devices/grotty/grotty.man
+index a53ab4f..f9f4153 100644
+--- a/src/devices/grotty/grotty.man
++++ b/src/devices/grotty/grotty.man
+@@ -396,9 +396,9 @@ semantic markup language and generates
+ character sequences that allow supporting pager programs to perform
+ reference navigation, but are ignored otherwise.
+ This request should not be used directly;
+-its interpretation can be suppressed by setting the
+-.B GROFF_NO_MDOCMX
+-environment variable.
++its interpretation will be suppressed unless the environment variable
++.B MDOCMX_ENABLE
++is set to a non-empty value.
+ .
+ .\" --------------------------------------------------------------------
+ .SH ENVIRONMENT
+@@ -415,15 +415,15 @@ Colors are disabled.
+ .
+ .TP
+ .SM
+-.B GROFF_NO_MDOCMX
+-Can be set to suppress any generation of
++.B MDOCMX_ENABLE
++Can be set to enable generation and interpretation of markup of the
+ .BR mdocmx (@MAN7EXT@)
+-character sequences.
+-Set to a non-empty value to also force the macros to not generate
+-any anchor and reference text, i.e., doing so has the same effect
+-as if the string
+-.BI mdocmx-disable
+-would have been defined.
++reference extension of the
++.BR mdoc (@MAN7EXT@)
++semantic markup language.
++Note that it must be set to a non-empty value because of
++.BR @g@troff (@MAN1EXT@)
++language shortcomings (the macros won't see it otherwise).
+ .
+ .
+ .TP
+diff --git a/src/devices/grotty/tty.cpp b/src/devices/grotty/tty.cpp
+index a4d982d..7b41974 100644
+--- a/src/devices/grotty/tty.cpp
++++ b/src/devices/grotty/tty.cpp
+@@ -60,7 +60,7 @@ static int italic_flag;
+ static int reverse_flag_option = 0;
+ static int reverse_flag;
+ static int old_drawing_scheme = 0;
+-static int _mdocmx_disable = 0;
++static int _mdocmx_enable = 0;
+ 
+ static void update_options();
+ static void usage(FILE *stream);
+@@ -474,8 +474,8 @@ void tty_printer::special(char *arg, const environment *env, char type)
+     int n;
+     old_drawing_scheme = (*p != '\0' && sscanf(p, "%d", &n) == 1 && n == 0);
+     update_options();
+-  } else if (!strncmp(tag_cmd, "mdocmx", PTR2SIZE(p - tag_cmd)) &&
+-      !_mdocmx_disable)
++  } else if (_mdocmx_enable &&
++      !strncmp(tag_cmd, "mdocmx", PTR2SIZE(p - tag_cmd)))
+     _special_mdocmx(p, env);
+ 
+ jleave:
+@@ -947,8 +947,12 @@ int main(int argc, char **argv)
+   static char stderr_buf[BUFSIZ];
+   if (getenv("GROFF_NO_SGR"))
+     old_drawing_scheme = 1;
+-  if (getenv("GROFF_NO_MDOCMX"))
+-    _mdocmx_disable = 1;
++  do {
++    char const *cp = getenv("MDOCMX_ENABLE");
++    /* Require non-empty value since only then macros see it.. */
++    if (cp != NULL && *cp != NULL)
++      _mdocmx_enable = 1;
++  } while (0);
+   setbuf(stderr, stderr_buf);
+   setlocale(LC_CTYPE, "");
+   int c;
+diff --git a/tmac/doc.tmac b/tmac/doc.tmac
+index 3dd6356..56a4bc7 100644
+--- a/tmac/doc.tmac
++++ b/tmac/doc.tmac
+@@ -84,8 +84,10 @@
+ .\" NS   to produce output etc. instead of directly doing so.
+ .\" NS Note: mdocmx(7) tests \n[doc-in-synopsis-section] (less doc-)
+ .de Mx
+-.  mso mdocmx.tmac
+-.  Mx \$@
++.  if !'\V[MDOCMX_ENABLE]'' \{\
++.    mso mdocmx.tmac
++.    Mx \$@
++.  \}
+ ..
+ .de mx-mac-enter
+ ..
+-- 
+2.2.1
+
+
+From 45434fc0dd801b093330cd9abfb175b073639a55 Mon Sep 17 00:00:00 2001
+Message-Id: <45434fc0dd801b093330cd9abfb175b073639a55.1430489373.git.sdaoden@users.sf.net>
+In-Reply-To: <12568b14c423c683bfed91bce67a02b41eb94d73.1430489373.git.sdaoden@users.sf.net>
+References: <12568b14c423c683bfed91bce67a02b41eb94d73.1430489373.git.sdaoden@users.sf.net>
+From: Steffen Nurpmeso <sdaoden@users.sf.net>
+Date: Thu, 5 Feb 2015 15:56:36 +0100
+Subject: [PATCH 5/6] mdocmx(7): mdoc(7): avoid warning on using an undefined
+ string
+
+---
+ tmac/doc.tmac | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/tmac/doc.tmac b/tmac/doc.tmac
+index 56a4bc7..c5fc022 100644
+--- a/tmac/doc.tmac
++++ b/tmac/doc.tmac
+@@ -459,6 +459,7 @@
+ .          ie "\*[doc-str-dfr]"-" \
+ .            nop \|\-\^\-\|\c
+ .          el \{\
++.            if !d doc-mx#dfr .ds doc-mx#dfr
+ .            mx-mac-add-arg "\*[doc-mx#dfr]\*[doc-str-dfr]
+ .            rm doc-mx#dfr
+ .            nop \|\%\-\*[doc-str-dfr]\&\c
+-- 
+2.2.1
+
+
+From 3a036516166afdf4addb152ef77f91ebd43b924e Mon Sep 17 00:00:00 2001
+Message-Id: <3a036516166afdf4addb152ef77f91ebd43b924e.1430489373.git.sdaoden@users.sf.net>
+In-Reply-To: <12568b14c423c683bfed91bce67a02b41eb94d73.1430489373.git.sdaoden@users.sf.net>
+References: <12568b14c423c683bfed91bce67a02b41eb94d73.1430489373.git.sdaoden@users.sf.net>
+From: Steffen Nurpmeso <sdaoden@users.sf.net>
+Date: Fri, 1 May 2015 16:08:53 +0200
+Subject: [PATCH 6/6] mdoc(7): .Fc: tweak mdocmx(7) integration
+
+---
+ tmac/doc.tmac | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/tmac/doc.tmac b/tmac/doc.tmac
+index c5fc022..e50c7ca 100644
+--- a/tmac/doc.tmac
++++ b/tmac/doc.tmac
+@@ -5160,12 +5160,10 @@
+ .  nr doc-func-arg-count 0
+ .  nr doc-in-func-enclosure 0
+ .
+-.  ie \n[doc-in-synopsis-section] \
+-.    nop \|\*[rp];\c
+-.  el \
+-.    nop \|\*[rp]\c
++.  nop \|\*[rp]\c
+ .  mx-mac-leave
+-.  nop \)
++.  ie \n[doc-in-synopsis-section] .nop ;\)
++.  el .nop \)
+ .
+ .  \" finish function box
+ .  br
+-- 
+2.2.1
+
