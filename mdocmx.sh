@@ -2,7 +2,7 @@
 #@ mdocmx.sh - mdocmx(7) preprocessor for single-pass troff.
 #@ mdocmx(7) extends the mdoc(7) semantic markup language by references,
 #@ allowing mdoc(7) to create anchors and table of contents.
-#@ Synopsis: mdocmx[.sh] [:-v:] [-t | -T Sh|sh|Ss|ss] [FILE]
+#@ Synopsis: mdocmx[.sh] [:-v:] [-t | -T Sh|sh|Ss|ss  [-c]] [FILE]
 #@ -v: increase verbosity
 #@ -t: wether -toc lines shall be expanded to a flat .Sh TOC
 #@ -T: wether -toc lines shall be expanded as specified: only .Sh / .Sh + .Ss
@@ -121,7 +121,7 @@ umask 077
 set -C
 while [ 1 ]; do
   tmpfile="${tmpdir}/mdocmx-${i}.mx"
-  { : > "${tmpfile}"; } >/dev/null 2>/dev/null && break
+  { : > "${tmpfile}"; } >/dev/null 2>&1 && break
   i=`expr ${i} + 1`
   if [ ${i} -gt ${max} ]; then
     echo >&2 'Cannot create a temporary file within '"${tmpdir}"
@@ -193,10 +193,10 @@ ${AWK} -v VERBOSE=${V} -v TOC="${T}" -v TOCTYPE="${TT}" -v MX_FO="${tmpfile}" \
     PUNCTS[k] = k
   }
 
-  mx_bypass = 0   # Avoid preprocessing if parsing preprocessed file!
+  mx_bypass = 0   # No work if parsing already preprocessed file!
 
   mx_nlcont = ""  # Line continuation in progress?  (Then: data so far)
-  mx_nlcontfun = 0 # Which function to call after line complete
+  mx_nlcontfun = 0 # Which function to call once line complete
   NLCONT_SH_SS_COMM = 1
   NLCONT_MX_COMM = 2
   NLCONT_MX_CHECK_LINE = 3
@@ -253,7 +253,7 @@ END {
             }
             print ".El"
           }
-          # Rather illegal, but it maybe we have .Ss yet no .Sh
+          # Rather illegal, but maybe we have seen .Ss yet no .Sh: go!
           else if (TOC == "Ss" && mx_ss_cnt > 0) {
             print ".Bl -tag -compact"
             for (i = 1; i <= mx_ss_cnt; ++i)
