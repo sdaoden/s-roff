@@ -470,7 +470,7 @@ function mx_comm() {
   if (NF == 2)
     return
   mx_keystack[mx_stack_cnt] = arg_parse(3)
-  dbg("  ... USER KEY given: <" ARG ">");
+  dbg("  ... USER KEY given: <" ARG ">")
   if (arg_parse(-1))
     fatal(EX_DATAERR, "\".Mx\": data after USER KEY is faulty syntax")
 }

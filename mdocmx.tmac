@@ -9,19 +9,19 @@
 .
 .\"@ For mdoc(7) copy & paste -- comments can be found below:
 .ig eo
-.\" NS mdocmx(7) extension
-.\" NS Only loaded upon request, yet we need stub dummies otherwise:
-.\" NS - .Mx is the user interface
-.\" NS - .mx-mac-(enter|add-arg|sequence|leave) are the call-in
-.\" NS   hooks for mdoc(7) macros (as long as mdoc(7) itself isn't
-.\" NS   rewritten to use a yet non-existing
-.\" NS     .doc-output-node TYPE [DATA]"
-.\" NS   to produce output etc. instead of directly doing so.
-.\" NS   (Of course this only if native macros use _those_ directly..)
-.\" NS Notes:
-.\" NS - mdocmx(7) tests \n[doc-in-synopsis-section] (less doc-).
-.\" NS - It tests \n[doc-arg-limit] and uses doc-macro-name and
-.\" NS   doc-reset-args if not 0 (names less doc-, of course).
+.\" mdocmx(7) extension
+.\" Only loaded upon request, yet we need stub dummies otherwise:
+.\" - .Mx is the user interface
+.\" - .mx-mac-(enter|add-arg|sequence|leave) are the call-in
+.\"   hooks for mdoc(7) macros (as long as mdoc(7) itself isn't
+.\"   rewritten to use a yet non-existing
+.\"     .doc-output-node TYPE [DATA]"
+.\"   to produce output etc. instead of directly doing so.
+.\"   (Of course this only if native macros use _those_ directly..)
+.\" Notes:
+.\" - mdocmx(7) tests \n[doc-in-synopsis-section] (less doc-).
+.\" - It tests \n[doc-arg-limit] and uses doc-macro-name and
+.\"   doc-reset-args if not 0 (names less doc-, of course).
 .de Mx
 .  ie !'\V[MDOCMX_ENABLE]'' \{\
 .    mso mdocmx.tmac
@@ -29,7 +29,7 @@
 .  \}
 .  el .als Mx mx-mac-enter
 ..
-.\" NS Note these may not .als each other or over-defining will fail!
+.\" Note these may not .als each other or over-defining will fail!
 .de mx-mac-enter
 ..
 .de mx-mac-add-arg
@@ -60,7 +60,7 @@
 .nr mx:refno 1
 .nr mx:stack-no 0
 .
-.\" NS Mx user macro {{{
+.\" Mx user macro {{{
 .de Mx
 . if d mx:enabled .if !d mx:gogogo .return
 .
@@ -100,12 +100,16 @@
 .   \" It's not nice, but for security reasons all parts of mdocmx(7)
 .   \" (mdoc(7), grotty(1), less(1)) won't enable mdocmx(7) unless the
 .   \" environment variable MDOCMX_ENABLE is set with a value.  We, too
-.   if '\V[MDOCMX_ENABLE]'' .return
+.   if '\V[MDOCMX_ENABLE]'' \
+.     return
 .   ds mx:gogogo
 .
-.   ie     'utf8'\*[.T]'    .ds mx:istty
-.   el .ie 'latin1'\*[.T]'  .ds mx:istty
-.   el .ie 'ascii'\*[.T]'   .ds mx:istty
+.   ie 'utf8'\*[.T]' \
+.     ds mx:istty
+.   el .ie 'latin1'\*[.T]' \
+.     ds mx:istty
+.   el .ie 'ascii'\*[.T]' \
+.     ds mx:istty
 .   \" TODO For HTML and PDF devices include their respective support
 .   \" TODO packages and inject anchors and references as appropriate
 .   \" TODO Requires mdoc(7) output reword via a .doc-out-put TYPE [DATA]
@@ -113,21 +117,22 @@
 .   \" TODO prepared recursion tree can be inspected as a whole.
 .   el .ie 'pdf'\*[.T]' \{\
 .     mso pdfmark.tmac
-.     als mx-dump-xr        mx-dump-xr-pdf
-.     als mx-dump-anchor    mx-dump-anchor-pdf
-.     als mx-dump-ref       mx-dump-ref-pdf
+.     als mx-dump-xr      mx-dump-xr-pdf
+.     als mx-dump-anchor  mx-dump-anchor-pdf
+.     als mx-dump-ref     mx-dump-ref-pdf
 .   \}
 .   el .ie 'html'\*[.T]' \{\
 .     \" grohtml is real shit..
 .     mso html.tmac
-.     als mx-dump-xr        mx-dump-xr-html
-.     als mx-dump-anchor    mx-dump-anchor-html
-.     als mx-dump-ref       mx-dump-ref-html
+.     als mx-dump-xr      mx-dump-xr-html
+.     als mx-dump-anchor  mx-dump-anchor-html
+.     als mx-dump-ref     mx-dump-ref-html
 .   \}
-.   el                      .rm mx:gogogo
+.   el \
+.     rm mx:gogogo
 .
 .   ie d mx:istty \{\
-.     ds mx#s1 tty
+.     ds mx#s1            tty
 .     als mx-dump-xr      mx-dump-xr-tty
 .     als mx-dump-anchor  mx-dump-anchor-tty
 .     als mx-dump-ref     mx-dump-ref-tty
@@ -167,8 +172,10 @@
 .
 . \" III. "-toc [devices] [-tree] [devices]" for creating a table of contents
 . if '-toc'\$1' \{\
-.   ie d mx:istty .ds mx#s1 tty
-.   el            .ds mx#s1 \*[.T]
+.   ie d mx:istty \
+.     ds mx#s1 tty
+.   el \
+.     ds mx#s1 \*[.T]
 .   rm mx#s2
 .   rm mx#s3
 .   while (\n[.$] > 1) \{\
@@ -184,10 +191,12 @@
 .     ds mx#s3
 .   \}
 .   \" If we wouldn't produce a TOC check mx-toc-force
-.   if d mx#s3  .if d mx-toc-force \{\
+.   if d mx#s3 .if d mx-toc-force \{\
 .     rm mx#s3
-.     ie '\*[mx-toc-force]'tree'  .ds mx#s2 -tree
-.     el                          .rm mx#s2
+.     ie '\*[mx-toc-force]'tree' \
+.       ds mx#s2 -tree
+.     el \
+.       rm mx#s2
 .   \}
 .   if !d mx#s3 .mx:toc-dump \*[mx#s2]
 .   rm mx#s3
@@ -213,8 +222,7 @@
 .   \}
 .   nr mx:\*[mx#s1]-no +1
 .   ds mx#s3 mx:\*[mx#s1]-\n[mx:\*[mx#s1]-no]
-.   \" Even though mdocmx(1) has cleaned that up, it cannot expand
-.   \" \*[STRING]s, so we have to cleanup the expansion
+.   \" mdocmx(1) cannot expand \*[STRING]s, so cleanup the expansion
 .   mx:cleanup-string "\$3"
 .   \" xxx don't check mx:cleanstop, it's an anchor, not a reference
 .   ds \*[mx#s3]-arg \*[mx:cleans]
@@ -252,7 +260,8 @@
 . \" V.2. MACRO: exactly MACRO, any content
 . nr mx:stack-no +1
 . mx:check-macname "\$1"
-. if d mx#s2 .rm mx#s1
+. if d mx#s2 \
+.   rm mx#s1
 . rm mx#s2
 . if !d mx#s1 \{\
 .   mx:perr ".Mx: cannot enqueue an anchor for macro \$1"
@@ -269,8 +278,10 @@
 .     shift
 .     mx:cleanup-string "\$1"
 .     \" xxx don't check mx:cleanstop, it's an anchor, not a reference
-.     ie d mx#s1 .ds mx#s1 \*[mx#s1] \*[mx:cleans]
-.     el         .ds mx#s1 \*[mx:cleans]
+.     ie d mx#s1 \
+.       ds mx#s1 \*[mx#s1] \*[mx:cleans]
+.     el \
+.       ds mx#s1 \*[mx:cleans]
 .   \}
 .   ds mx:stack-arg-\n[mx:stack-no] \*[mx#s1]
 .   rm mx#s1
@@ -330,8 +341,10 @@
 .   mx:mac-cleanup-level
 .   nr mx:ard -1
 . \}
-. ie (\n[mx:ard] <= 0) .nr mx:ard 1
-. el .nr mx:ard +1
+. ie (\n[mx:ard] <= 0) \
+.   nr mx:ard 1
+. el \
+.   nr mx:ard +1
 . mx:mac-cleanup-level
 .
 . mx:check-macname-extended-mapped "\$1"
@@ -345,12 +358,14 @@
 . ds mx:arn\n[mx:ard] \*[mx#s1]
 . \" Some macros don't have their own index but are warped to another
 . \" macro's index - our .Mx stack however uses the real name!
-. if !'\$1'\*[mx#s1]' .ds mx:arw\n[mx:ard] \$1
+. if !'\$1'\*[mx#s1]' \
+.   ds mx:arw\n[mx:ard] \$1
 . rm mx#s1
 .
 . \" Got clean arguments to be used instead of further -add-arg calls?
 . shift
-. if (\n[.$] == 0) .return
+. if (\n[.$] == 0) \
+.   return
 . while (\n[.$] > 0) \{\
 .   mx-mac-add-arg "\$1"
 .   shift
@@ -362,12 +377,14 @@
 .de mx-mac-add-arg
 . if !d mx:gogogo .return
 . \" Be aware of cases where some recursive print sidesteps into us
-. if (\n[mx:ard] <= 0) .return
+. if (\n[mx:ard] <= 0) \
+.   return
 .
 . rm mx:mac-leave-last
 .
 . \" Level ignored?
-. if d mx:arx\n[mx:ard] .return
+. if d mx:arx\n[mx:ard] \
+.   return
 .
 . mx:cleanup-string "\$*"
 . ds mx#s1 mx:ara\n[mx:ard]
@@ -391,9 +408,11 @@
 .\" invoked it'll start a new mx-mac-enter cycle, which will truly
 .\" finalize the current macro.
 .de mx-mac-sequence
-. if !d mx:gogogo .return
+. if !d mx:gogogo \
+.   return
 . \" Be aware of cases where some recursive print sidesteps into us
-. if (\n[mx:ard] <= 0) .return
+. if (\n[mx:ard] <= 0) \
+.   return
 .
 . ds mx:mac-noclose
 . mx-mac-leave
@@ -401,9 +420,11 @@
 ..
 .
 .de mx-mac-leave
-. if !d mx:gogogo .return
+. if !d mx:gogogo \
+.   return
 . \" Be aware of cases where some recursive print sidesteps into us
-. if (\n[mx:ard] <= 0) .return
+. if (\n[mx:ard] <= 0) \
+.   return
 .
 . \" After mx-mac-sequence we may get called again immediately
 . if d mx:mac-leave-last \{\
@@ -474,14 +495,18 @@
 .de mx:check-macname-extended-mapped
 . mx:check-macname "\$1"
 . ie !d mx#s1 \{\
-.   ie     'Sx'\$1' .ds mx#s1 Sx
-.   el .if 'Xr'\$1' .ds mx#s1 Xr
+.   ie 'Sx'\$1' \
+.     ds mx#s1 Sx
+.   el .if 'Xr'\$1' \
+.     ds mx#s1 Xr
 . \}
-. el .if '\*[mx#s1]'Fo' .ds mx#s1 Fn
+. el .if '\*[mx#s1]'Fo' \
+.   ds mx#s1 Fn
 ..
 .de mx:check-macname-mapped
 . mx:check-macname "\$1"
-. if '\*[mx#s1]'Fo' .ds mx#s1 Fn
+. if '\*[mx#s1]'Fo' \
+.   ds mx#s1 Fn
 ..
 .de mx:check-macname
 . rm mx#s1
@@ -511,10 +536,13 @@
 .\" ..if so, shall it NOT generate output in SYNOPSIS?
 .de mx:check-refok
 . ds mx:refok
-. ie 'Fl'\$1' .
-. el .return
+. ie 'Fl'\$1' \
+.   \"
+. el \
+.   return
 . \" doc-in-synopsis, but doc- prefix is stripped away..
-. if !\n[in-synopsis-section] .return
+. if !\n[in-synopsis-section] \
+.   return
 . rm mx:refok
 ..
 .
@@ -541,15 +569,18 @@
 .     rm mx#t-d#s
 .     while (\n[mx#t-d#n3] < \n[mx:Ss-no]) \{\
 .       nr mx#t-d#n3 +1
-.       if (\*[mx:Ss-\n[mx#t-d#n3]-rel] < \n[mx#t-d#n2]) .continue
-.       if (\*[mx:Ss-\n[mx#t-d#n3]-rel] > \n[mx#t-d#n2]) .break
+.       if (\*[mx:Ss-\n[mx#t-d#n3]-rel] < \n[mx#t-d#n2]) \
+.         continue
+.       if (\*[mx:Ss-\n[mx#t-d#n3]-rel] > \n[mx#t-d#n2]) \
+.         break
 .       if !d mx#t-d#s \{\
 .         ds mx#t-d#s
 .         Bl -tag -offset indent -compact
 .       \}
 .       It Sx "\*[mx:Ss-\n[mx#t-d#n3]-arg]"
 .     \}
-.     if d mx#t-d#s .El
+.     if d mx#t-d#s \
+.       El
 .     rr mx#t-d#n3
 .     rr mx#t-d#n2
 .   \}
@@ -580,7 +611,8 @@
 .   el .ie '	'\*[mx#c-s#s]' .
 .   el .break
 .   nr mx#c-s#n +1
-.   if (\n[mx#c-s#n] > 10) .break
+.   if (\n[mx#c-s#n] > 10) \
+.     break
 .   substring mx:cleans 0 -2
 . \}
 .
@@ -604,7 +636,8 @@
 .   el .ie '	'\*[mx#c-s#s]' .
 .   el .break
 .   nr mx#c-s#n +1
-.   if (\n[mx#c-s#n] > 8) .break
+.   if (\n[mx#c-s#n] > 8) \
+.     break
 .   substring mx:cleans 1
 . \}
 . rm mx#c-s#s
@@ -665,7 +698,8 @@
 .   \"mx:perr .Xr: missing manual section, something is wrong
 .   rm mx#mlx
 . \}
-. if !d mx#mlx .return
+. if !d mx#mlx \
+.   return
 . rm mx#mlx
 .
 . nr mx#n1 \n[mx:refno]
