@@ -6,7 +6,7 @@
 .\" Written 2014 - 2015 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .\" Public Domain
 .
-.Dd April 27, 2015
+.Dd May 05, 2015
 .Dt MDOCMX 7
 .Os
 .Mx -enable
@@ -23,15 +23,31 @@
 .Nm
 .Fl enable
 .Op Ar output-formats
+.
 .Pp
 .Nm
 .Fl disable
+.
 .Pp
 .Nm
 .Nm
 .Ar macro
 .Nm
 .Ar macro Ar key
+.
+.Pp
+.Bk
+.Nm
+.Fl ix
+.Op Ar category
+.Ar key
+.Ek
+.Bk
+.Nm
+.Fl sx
+.Op Ar category
+.Ek
+.
 .Pp
 .Bk
 .Nm
@@ -252,6 +268,59 @@ escape characters.
 However, reference look up can be actively prevented by prefixing two
 zero-width glyphs (after possible whitespace), i.e.,
 .Ql \e&\e& .
+.
+.Ss Freely definable anchors and references
+.
+Via the
+.Ql Nm Fl ix Ar category Ar key
+and
+.Ql Nm Fl ix Ar key
+usage forms anchors can be defined almost anywhere, e.g.,
+.Ql Nm Fl ix Ns \0subsubsection """An interesting topic"""
+defines the anchor
+.Ql "An interesting topic"
+for the
+.Dq key
+.Ql subsubsection .
+The form without a specified
+.Ar category
+will use the builtin name
+.Mx -ix ixsx
+.Ql ixsx
+instead.
+.
+.Pp
+References to anchors that have been created via
+.Fl ix
+can be made by activating the
+.Ic .Sx
+search extension via
+.Ql Nm Fl sx Ar category
+(or
+.Ql Nm Fl sx
+for the builtin
+.Mx -sx
+.Ql Sx ixsx
+.Ar category )
+followed by a normal local reference lookup:
+.
+.Bd -literal -offset indent
+\&.Mx -sx subsubsection
+\&.Sx "An interesting topic"
+.Ed
+.
+.Pp
+It should be noted that these usage forms are mostly ment for automated
+conversion tools rather than for human manual creators:
+their use is non-trivial (which is owed to the implementation of
+.Xr mdoc 7 )
+and the resulting visual output should always be verified!
+As a rule of thumb anchors should
+.Em always
+be created inside some
+.Dq normal
+text so that they can be attached to something
+.Dq physical .
 .
 .Ss Creating table of contents
 .

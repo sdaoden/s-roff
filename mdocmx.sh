@@ -443,6 +443,25 @@ function mx_comm() {
     return
   }
 
+  # ".Mx -ix" / ".Mx -sx" freely definable anchors
+  if ($2 == "-sx")
+    # Nothing to do here (xxx check argument content validity?)
+    return
+  else if ($2 == "-ix") {
+    mxc_macro = arg_parse(3)
+    if (!mxc_macro)
+      fatal(EX_USAGE, "\".Mx -ix\": synopsis: \".Mx -ix [category] key\"")
+    if (!(mxc_key = arg_parse(0))) {
+      mxc_key = mxc_macro
+      mxc_macro = "ixsx"
+    } else if (arg_parse(-1))
+      fatal(EX_DATAERR, "\".Mx -ix\": data after USER KEY is faulty syntax")
+    mxc_key = arg_cleanup(mxc_key)
+    dbg(".Mx -ix mac<" mxc_macro "> key <" mxc_key ">")
+    anchor_add(mxc_macro, mxc_key)
+    return
+  }
+
   # ".Mx -toc"
   if ($2 == "-toc") {
     # With TOC creation we surely want the TOC to have an anchor, too!
@@ -559,16 +578,7 @@ function mx_check_line() {
     dbg("POP mac<" mcl_mac "> " mcl_i " key <" ARG \
       "> stack size=" mx_stack_cnt)
 
-    # Warn about and ignore duplicate anchors
-    for (mcl_i = 1; mcl_i <= mx_anchors_cnt; ++mcl_i)
-      if (mx_macros[mcl_i] == mcl_mac && mx_keys[mcl_i] == ARG)
-        break
-    if (mcl_i > mx_anchors_cnt) {
-      ++mx_anchors_cnt
-      mx_macros[mx_anchors_cnt] = mcl_mac
-      mx_keys[mx_anchors_cnt] = ARG
-    } else
-      warn("\".Mx\": duplicate anchor avoided: " ARG)
+    anchor_add(mcl_mac, ARG)
   }
 }
 
@@ -608,6 +618,18 @@ function _mx_check_line_keyhook() {
       ARG = arg_cleanup(substr(ARG, mclpkh_i))
     }
   }
+}
+
+# Add one -anchor-spass macro/key pair
+function anchor_add(macro, key) {
+  for (aa_i = 1; aa_i <= mx_anchors_cnt; ++aa_i)
+    if (mx_macros[aa_i] == macro && mx_keys[aa_i] == key) {
+      warn("\".Mx\": mac<" macro ">: duplicate anchor avoided: " key)
+      return
+    }
+  ++mx_anchors_cnt
+  mx_macros[mx_anchors_cnt] = macro
+  mx_keys[mx_anchors_cnt] = key
 }
 
 # Handle a .Sh or .Ss

@@ -57,6 +57,7 @@
 .\" ds mx:cleans - storage of .mx:cleanup-string
 .\" ds mx:cleanstop - reference actively prevented via \&\& prefix
 .\" ds mx:refok - some output is suppressed in SYNOPSIS / xy
+.\" ds mx:ixsx - ".Mx -sx CAT": just set that
 .nr mx:refno 1
 .nr mx:stack-no 0
 .
@@ -73,6 +74,8 @@
 .     rm mx:gogogo
 .     return
 . \}\}
+.
+. rm mx:ixsx
 .
 . \" I. "-enable [-preprocessed] [devices]" extension in document prologue
 . if '-enable'\$1' \{\
@@ -170,7 +173,39 @@
 .   return
 . \}
 .
-. \" III. "-toc [devices] [-tree] [devices]" for creating a table of contents
+. \" III. / IV. "-ix [CAT] KEY" and "-sx [CAT]": free anchor support
+. if '-ix'\$1' \{\
+.   if ((\n[.$] > 3) : (\n[.$] == 1)) \{\
+.     mx:perr "synopsis: .Mx -ix [CATEGORY] KEY"
+.     return
+.   \}
+.   ie (\n[.$] == 2) \{\
+.     ds mx#s1 ixsx
+.     ds mx#s2 \$2
+.   \}
+.   el \{\
+.     ds mx#s1 \$2
+.     ds mx#s2 \$3
+.   \}
+.   mx:cleanup-string "\*[mx#s2]"
+.   ds mx#s2 \*[mx:cleans]
+.   mx:setup-anchor "\*[mx#s1]" "\*[mx#s2]"
+.   rm mx#s2
+.   rm mx#s1
+.   return
+. \}
+.
+. if '-sx'\$1' \{\
+.   ie (\n[.$] > 2) \
+.     mx:perr "synopsis: .Mx -sx [CATEGORY]"
+.   el .ie (\n[.$] == 2) \
+.     ds mx:ixsx \$2
+.   el \
+.     ds mx:ixsx ixsx
+.   return
+. \}
+.
+. \" V. "-toc [devices] [-tree] [devices]" for creating a table of contents
 . if '-toc'\$1' \{\
 .   ie d mx:istty \
 .     ds mx#s1 tty
@@ -205,21 +240,12 @@
 .   return
 . \}
 .
-. \" IV. "-anchor-spass MAC KEY [REL]" single-pass info gen. by mdocmx(1)
+. \" VI. "-anchor-spass MAC KEY [REL]" single-pass info gen. by mdocmx(1)
 . if '-anchor-spass'\$1' \{\
 .   mx:check-macname-mapped "\$2"
-.   if !d mx#s1 \{\
-.     mx:perr ".Mx -anchor-spass: invalid argument: \$2"
-.     rm mx:gogogo
-.     return
-.   \}
-.   if d mx#s2 \{\
-.     if !(\n[.$] == 4) \{\
-.       mx:perr ".Mx -anchor-spass: missing .Sh / .Ss relation"
-.       rm mx:gogogo
-.       return
-.     \}
-.   \}
+.   \" xxx Checking removed once -sx/-ix forms were introduced..
+.   if !d mx#s1 \
+.     ds mx#s1 \$2
 .   nr mx:\*[mx#s1]-no +1
 .   ds mx#s3 mx:\*[mx#s1]-\n[mx:\*[mx#s1]-no]
 .   \" mdocmx(1) cannot expand \*[STRING]s, so cleanup the expansion
@@ -245,7 +271,7 @@
 .   return
 . \}
 .
-. \" V. .Mx stack handling
+. \" VII. .Mx stack handling
 . \"if \n[in-synopsis-section] \{\
 . \"  mx:perr "in SYNOPSIS .Mx only supports -enable or -toc"
 . \"  return
@@ -257,7 +283,7 @@
 .   return
 . \}
 .
-. \" V.2. MACRO: exactly MACRO, any content
+. \" VII.2. MACRO: exactly MACRO, any content
 . nr mx:stack-no +1
 . mx:check-macname "\$1"
 . if d mx#s2 \
@@ -272,7 +298,7 @@
 . rm mx#s1
 . \" FALLTHRU
 .
-. \" V.3. MACRO/KEY: exactly MACRO with exactly content KEY.
+. \" VII.3. MACRO/KEY: exactly MACRO with exactly content KEY.
 . if (\n[.$] > 1) \{\
 .   while (\n[.$] > 1) \{\
 .     shift
@@ -464,11 +490,17 @@
 .   mx:mac-leave-xr \*[\*[mx#s1]]
 . \}
 . el .ie 'Sx'\*[\*[mx#s2]]' \{\
-.   ds mx:mac-leave-sx
-.   mx:mac-key-find Sh "\*[\*[mx#s1]]"
-.   if d mx:mac-leave-sx \
-.     mx:mac-key-find Ss "\*[mx:ara\n[mx:ard]]"
-.   rm mx:mac-leave-sx
+.   \" .Sx extended anchor / reference?
+.   ie d mx:ixsx \{\
+.     mx:mac-key-find "\*[mx:ixsx]" "\*[\*[mx#s1]]"
+.   \}
+.   el \{\
+.     ds mx:mac-leave-sx
+.     mx:mac-key-find Sh "\*[\*[mx#s1]]"
+.     if d mx:mac-leave-sx \
+.       mx:mac-key-find Ss "\*[mx:ara\n[mx:ard]]"
+.     rm mx:mac-leave-sx
+.   \}
 . \}
 . el .ie d mx:mac-needs-argsplit-\*[\*[mx#s2]] \
 .   mx:mac-key-find-argsplit \*[\*[mx#s2]] \*[\*[mx#s1]]
@@ -729,7 +761,6 @@
 . el .ie 'Ss'\$1' .ds mx#showref
 . el .if (\n[mx:stack-no] > 0) \{\
 .   ds mx#anchor
-.
 .   \" On the stack there are real macro names, so compare against the
 .   \" real name if we warped that to another one (index) instead
 .   ie d mx:arw\n[mx:ard] \
@@ -754,19 +785,8 @@
 .     nr mx:stack-no -1
 .
 .     if !d mx:preprocessed \{\
-.       nr mx:\$1-no +1
-.       ds mx:\$1-\n[mx:\$1-no]-arg \$2
-.       ds mx:\$1-\n[mx:\$1-no]-ref \n[mx:refno]
-.       nr mx:refno +1
-.       mx-dump-anchor "\$1" "\*[mx:\$1-\n[mx:\$1-no]-ref]"
-.       ds mx:\$1-\n[mx:\$1-no]-anchor
+.       mx:setup-anchor "\$1" "\$2"
 .       rm mx#anchor
-.       \" We have a need for fast lookup but lack a hashtable/xy
-.       \" So "subdivide" the list for \$1
-.       mx:subdivide mx#s1 "\$2"
-.       nr mx:\$1-\*[mx#s1]-no +1
-.       ds mx:\$1-\*[mx#s1]-\n[mx:\$1-\*[mx#s1]-no]-rel \n[mx:\$1-no]
-.       rm mx#s1
 .       return
 .     \}
 .   \}
@@ -819,6 +839,23 @@
 . rr mx#n1
 . rm mx#anchor
 . rm mx#showref
+..
+.\" Actually setup anything necessary to place anchor \$2 for macro \$1
+.de mx:setup-anchor
+. nr mx:\$1-no +1
+. ds mx#s1 mx:\$1-\n[mx:\$1-no]
+. ds \*[mx#s1]-arg \$2
+. ds \*[mx#s1]-ref \n[mx:refno]
+. nr mx:refno +1
+. ds \*[mx#s1]-anchor
+. mx-dump-anchor "\$1" "\*[\*[mx#s1]-ref]"
+.
+. \" We have a need for fast lookup but lack a hashtable/xy
+. \" So "subdivide" the list for \$1
+. mx:subdivide mx#s1 "\$2"
+. nr mx:\$1-\*[mx#s1]-no +1
+. ds mx:\$1-\*[mx#s1]-\n[mx:\$1-\*[mx#s1]-no]-rel \n[mx:\$1-no]
+. rm mx#s1
 ..
 .\" }}} Hidden stuff
 .
