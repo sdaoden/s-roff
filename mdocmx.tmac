@@ -22,6 +22,9 @@
 .\" - mdocmx(7) tests \n[doc-in-synopsis-section] (less doc-).
 .\" - It tests \n[doc-arg-limit] and uses doc-macro-name and
 .\"   doc-reset-args if not 0 (names less doc-, of course).
+.\" - It may use \*[doc-document-title] and \*[doc-section]
+.\"   (all less doc-).
+.\" - It may temporarily replace .Nd request.
 .de Mx
 .  ie !'\V[MDOCMX_ENABLE]'' \{\
 .    mso mdocmx.tmac
@@ -109,6 +112,7 @@
 .     return
 .   ds mx:gogogo
 .
+.   \" Link output interface: see "Output formats" code block near EOF
 .   ie 'utf8'\*[.T]' \
 .     ds mx:istty
 .   el .ie 'latin1'\*[.T]' \
@@ -120,27 +124,16 @@
 .   \" TODO Requires mdoc(7) output reword via a .doc-out-put TYPE [DATA]
 .   \" TODO that is doc-out-flush'ed at the end, so that a completely
 .   \" TODO prepared recursion tree can be inspected as a whole.
-.   el .ie 'pdf'\*[.T]' \{\
-.     mso pdfmark.tmac
-.     als mx-dump-xr      mx-dump-xr-pdf
-.     als mx-dump-anchor  mx-dump-anchor-pdf
-.     als mx-dump-ref     mx-dump-ref-pdf
-.   \}
-.   el .ie 'html'\*[.T]' \{\
-.     \" grohtml is real shit..
-.     mso html.tmac
-.     als mx-dump-xr      mx-dump-xr-html
-.     als mx-dump-anchor  mx-dump-anchor-html
-.     als mx-dump-ref     mx-dump-ref-html
-.   \}
+.   el .ie 'pdf'\*[.T]' \
+.     mx:dump-init-pdf
+.   el .ie 'html'\*[.T]' \
+.     mx:dump-init-html
 .   el \
 .     rm mx:gogogo
 .
 .   ie d mx:istty \{\
-.     ds mx#s1            tty
-.     als mx-dump-xr      mx-dump-xr-tty
-.     als mx-dump-anchor  mx-dump-anchor-tty
-.     als mx-dump-ref     mx-dump-ref-tty
+.     ds mx#s1 tty
+.     mx:dump-init-tty
 .   \}
 .   el \
 .     ds mx#s1 \*[.T]
@@ -740,7 +733,7 @@
 .
 . nr mx#n1 \n[mx:refno]
 . nr mx:refno +1
-. mx-dump-xr \n[mx#n1] "\$1" "\$2"
+. mx:dump-xr \n[mx#n1] "\$1" "\$2"
 . rr mx#n1
 ..
 .
@@ -810,26 +803,26 @@
 .       ds mx#s2 \*[mx:\$1-\n[mx#n1]-ref]
 .       \" Special call hook (for mx-mac-leave, .Sx command)?
 .       ie d mx:mac-leave-sx \
-.         mx-dump-ref "\*[mx#s2]"
+.         mx:dump-ref "\*[mx#s2]"
 .       \" Anchor already exists, print a reference
 .       el .ie d mx:\$1-\n[mx#n1]-anchor \{\
 .         if d mx:refok \
-.           mx-dump-ref "\*[mx#s2]"
+.           mx:dump-ref "\*[mx#s2]"
 .       \}
 .       \" Define anchor and print the reference (section headings)
 .       el .ie d mx#showref \{\
-.         mx-dump-anchor "\$1" "\*[mx#s2]"
-.         mx-dump-ref "\*[mx#s2]"
+.         mx:dump-anchor "\$1" "\*[mx#s2]" "\$2"
+.         mx:dump-ref "\*[mx#s2]"
 .       \}
 .       \" Anchor doesn't yet exist, but not defined - print a reference
 .       el .ie !d mx#anchor \{\
 .         if d mx:refok \
-.           mx-dump-ref "\*[mx#s2]"
+.           mx:dump-ref "\*[mx#s2]"
 .       \}
 .       \" Only define anchor
 .       el \{\
 .         ds mx:\$1-\n[mx#n1]-anchor
-.         mx-dump-anchor "\$1" "\*[mx#s2]"
+.         mx:dump-anchor "\$1" "\*[mx#s2]" "\$2"
 .       \}
 .       rm mx:mac-leave-sx
 .       break
@@ -852,7 +845,7 @@
 . ds \*[mx#s1]-ref \n[mx:refno]
 . nr mx:refno +1
 . ds \*[mx#s1]-anchor
-. mx-dump-anchor "\$1" "\*[\*[mx#s1]-ref]"
+. mx:dump-anchor "\$1" "\*[\*[mx#s1]-ref]" "\$2"
 .
 . \" We have a need for fast lookup but lack a hashtable/xy
 . \" So "subdivide" the list for \$1
@@ -865,11 +858,35 @@
 .
 .\" Output formats {{{
 .
+.\" mx:dump-init-DEVICE
+.\"   Called once upon startup to set anything up.
+.\" mx:dump-xr
+.\"   Dump a .Xr if possible.
+.\"   \$1: unique sequence number (of "anchor position")
+.\"   \$2: manual reference
+.\"   \$3: manual section
+.\" mx:dump-anchor
+.\"   Create a document-internal anchor.
+.\"   \$1: unique sequence number (of anchor)
+.\"   \$2: index (macro) name (Sh, Ss, Ic..)
+.\"   \$3: index key (full text)
+.\" mx:dump-ref
+.\"   Show the reference-number of an anchor:
+.\"   \$1: unique sequence number (of anchor)
+.
 .\" TTY
-.de mx-dump-xr-tty
+.
+.de mx:dump-init-tty
+. als mx:dump-xr      mx:dump-xr-tty
+. als mx:dump-anchor  mx:dump-anchor-tty
+. als mx:dump-ref     mx:dump-ref-tty
+..
+.
+.de mx:dump-xr-tty
 \%\&\fR\X'tty: mdocmx xr \$1 \$2 \$3'[\$1]\fP\&\c
 ..
-.de mx-dump-anchor-tty
+.
+.de mx:dump-anchor-tty
 . ie !d mx-debug \{\
 \%\&\X'tty: mdocmx \$1 \$2'\&\c
 . \}
@@ -877,32 +894,77 @@
 \%\&\fR\X'tty: mdocmx \$1 \$2'@\$2@\fP\&\c
 . \}
 ..
-.de mx-dump-ref-tty
+.
+.de mx:dump-ref-tty
 \%\&\fR[\$1]\fP\&\c
 ..
+.
 .\" HTML
-.de mx-dump-xr-html
+.
+.de mx:dump-init-html
+. \" grohtml is real shit..
+. mso html.tmac
+. als mx:dump-xr      mx:dump-xr-html
+. als mx:dump-anchor  mx:dump-anchor-html
+. als mx:dump-ref     mx:dump-ref-html
+..
+.
+.de mx:dump-xr-html
 . \" Cannot help it
 ..
-.de mx-dump-anchor-html
+.
+.de mx:dump-anchor-html
 . TAG "\$2"
 . if d mx-debug \
 .   HTML <small>@\$2@</small>
 ..
-.de mx-dump-ref-html
+.
+.de mx:dump-ref-html
 . URL "#\$1" "[\$1]"
 ..
+.
 .\" PDF
-.de mx-dump-xr-pdf
+.
+.de mx:dump-init-pdf
+. mso pdfmark.tmac
+. \" Try to fill in some stuff from mdoc(7) macros
+. ds mx#s1 \*[document-title]
+. if !"\*[section]"Null" \
+.   as mx#s1 (\*[section])
+. if !'\*[mx#s1]'' \
+.   pdfinfo /Title "\*[mx#s1]"
+. rm mx#s1
+. als mx:pdf:Nd-orig Nd
+. als Nd mx:pdf:Nd
+. \" TODO more .pdfinfo stuff
+. nr PDFOUTLINE.FOLDLEVEL 2
+. als mx:dump-xr      mx:dump-xr-pdf
+. als mx:dump-anchor  mx:dump-anchor-pdf
+. als mx:dump-ref     mx:dump-ref-pdf
+..
+.
+.de mx:pdf:Nd
+. pdfinfo /Subject "\$*"
+. als Nd mx:pdf:Nd-orig
+. Nd \$@
+..
+.
+.de mx:dump-xr-pdf
 . \" Cannot help it
 ..
-.de mx-dump-anchor-pdf
+.
+.de mx:dump-anchor-pdf
+. \" Outline support
+. ie '\$1'Sh'     .pdfbookmark 1 "\$3"
+. el .if '\$1'Ss' .pdfbookmark 2 "\$3"
+.
 . ie d mx-debug \
 .   pdfhref M -N "\$2" -E "@\$2@"
 . el \
 .   pdfhref M -N "\$2"
 ..
-.de mx-dump-ref-pdf
+.
+.de mx:dump-ref-pdf
 . pdfhref L -D "\$1" -P "\%" -A "\c" "[\$1]"
 ..
 .\" }}} Output formats
