@@ -6,7 +6,7 @@
 .\" Written 2014 - 2015 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .\" Public Domain
 .
-.Dd May 05, 2015
+.Dd May 12, 2015
 .Dt MDOCMX 7
 .Os
 .Mx -enable
@@ -326,7 +326,7 @@ text so that they can be attached to something
 .
 The final usage form of the
 .Xr mdocmx 7
-reference extension allows the creation of a document table of content,
+reference extension allows the creation of a document table of contents,
 which is of special interest when converting a
 .Xr mdoc 7
 document into formats such as HTML, XHTML or PDF.
@@ -352,7 +352,7 @@ is used in conjunction with output-device restrictions it will only
 affect those devices that appear later on the line.
 .
 .Pp
-In the first of the following examples a table of content will be
+In the first of the following examples a table of contents will be
 generated for PDF and typewriter-like devices.
 In the second example a tree of contents will instead be generated for
 the output formats PDF and HTML, whereas typewriter-like devices will
@@ -388,6 +388,10 @@ Has the same effect as
 .Ql Nm Fl disable .
 .
 .Mx
+.It Dv mx-toc-disable
+Forcefully turn off any table of contents creation.
+.
+.Mx
 .It Dv mx-toc-emerged
 Normally compact display is used for the table of contents, but when
 this string is set an emerged display is used for the first level that
@@ -396,10 +400,10 @@ lists the headings.
 .Mx
 .It Dv mx-toc-force
 Defining this string can be used to enforce the creation of a table of
-content as specified, even if the documents
+contents as specified, even if the documents
 .Ql Fl toc
 configuration wouldn't create one for the targeted output device.
-A flat table of content will be generated unless the string value is
+A flat table of contents will be generated unless the string value is
 .Ql tree .
 .
 .Mx

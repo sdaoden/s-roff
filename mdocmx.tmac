@@ -43,6 +43,7 @@
 .\"@ User strings:
 .\" mx-debug
 .\" mx-disable
+.\" mx-toc-disable
 .\" mx-toc-emerged
 .\" mx-toc-force - special value: "tree"
 .if !d mx-toc-name .ds mx-toc-name TABLE OF CONTENTS
@@ -99,7 +100,8 @@
 .   \}
 .
 .   \" If the string "mx-disable" is defined, suppress mdocmx(7)
-.   if d mx-disable .return
+.   if d mx-disable \
+.     return
 .   \" It's not nice, but for security reasons all parts of mdocmx(7)
 .   \" (mdoc(7), grotty(1), less(1)) won't enable mdocmx(7) unless the
 .   \" environment variable MDOCMX_ENABLE is set with a value.  We, too
@@ -207,6 +209,8 @@
 .
 . \" V. "-toc [devices] [-tree] [devices]" for creating a table of contents
 . if '-toc'\$1' \{\
+.   if d mx-toc-disable \
+.     return
 .   ie d mx:istty \
 .     ds mx#s1 tty
 .   el \
