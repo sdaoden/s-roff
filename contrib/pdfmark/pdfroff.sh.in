@@ -520,7 +520,7 @@
   test "$PDF_OUTPUT" = "$NULLDEV" && exit 0
 #
 # We are now ready to start preparing the intermediate PostScript files,
-# from which the PDF output will be compiled -- but before proceding further ...
+# from which the PDF output will be compiled -- but before proceeding further ...
 # let's make sure we have a GhostScript interpreter to convert them!
 #
   if test -n "$@U_ROFF@_GHOSTSCRIPT_INTERPRETER"
@@ -555,6 +555,13 @@
 # to create a full 'pdfmark' reference map for the document ...
 #
   $AWK '/^@L_D_HTML@-info/ {print ".pdfhref Z", $2, $3, $4}' $WRKFILE >> $REFCOPY
+#
+# ... appending a dummy map reference, to ensure that at least
+# one such is always present; (this is required, to suppress any
+# further intermediate output to stderr during the "press-ready"
+# runs of groff, for PDF output file production).
+#
+  echo ".pdfhref Z 0 0 0" >> $REFCOPY
 #
 # Re-enable progress reporting, if necessary ...
 # (Missing 'awk' or 'diff' may have disabled it, to avoid display
@@ -598,7 +605,7 @@
   $SAY >&2 $n "Writing PDF output ..$c"
   if test -z "$@U_PDFROFF@_POSTPROCESSOR_COMMAND"
   then
-    @U_PDFROFF@_POSTPROCESSOR_COMMAND="$GS -dQUIET -dBATCH -dNOPAUSE
+    @U_PDFROFF@_POSTPROCESSOR_COMMAND="$GS -dQUIET -dBATCH -dNOPAUSE -dSAFER
       -sDEVICE=pdfwrite -sOutputFile="${PDF_OUTPUT-"-"}
 
   elif test -n "$PDF_OUTPUT"
