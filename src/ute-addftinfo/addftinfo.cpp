@@ -1,36 +1,38 @@
-// -*- C++ -*-
-/* Copyright (C) 1989-1992, 2000, 2001 Free Software Foundation, Inc.
-     Written by James Clark (jjc@jclark.com)
+/*@
+ * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ *
+ * Copyright (C) 1989 - 1992, 2000, 2001 Free Software Foundation, Inc.
+ *      Written by James Clark (jjc@jclark.com)
+ *
+ * groff is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * groff is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with groff; see the file COPYING.  If not, write to the Free Software
+ * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
-This file is part of groff.
+#include "config.h"
+#include "addftinfo-config.h"
 
-groff is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
-
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License along
-with groff; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
-
-#include "lib.h"
-
-#include <ctype.h>
 #include <assert.h>
-#include <stdlib.h>
+#include <ctype.h>
 #include <errno.h>
+#include <stdlib.h>
+
+#include "cset.h"
 #include "errarg.h"
 #include "error.h"
-#include "stringclass.h"
-#include "cset.h"
 #include "guess.h"
-
-extern "C" const char *Version_string;
+#include "lib.h"
+#include "stringclass.h"
 
 static void usage(FILE *stream);
 static void usage();
@@ -42,7 +44,7 @@ typedef int font_params::*param_t;
 static struct {
   const char *name;
   param_t par;
-} param_table[] = {
+} param_table[] = { // FIXME const
   { "x-height", &font_params::x_height },
   { "fig-height", &font_params::fig_height },
   { "asc-height", &font_params::asc_height },
@@ -52,18 +54,6 @@ static struct {
   { "desc-depth", &font_params::desc_depth },
   { "body-depth", &font_params::body_depth },
 };
-
-// These are all in thousandths of an em.
-// These values are correct for PostScript Times Roman.
-
-#define DEFAULT_X_HEIGHT 448
-#define DEFAULT_FIG_HEIGHT 676
-#define DEFAULT_ASC_HEIGHT 682
-#define DEFAULT_BODY_HEIGHT 676
-#define DEFAULT_CAP_HEIGHT 662
-#define DEFAULT_COMMA_DEPTH 143
-#define DEFAULT_DESC_DEPTH 217
-#define DEFAULT_BODY_DEPTH 177
 
 int main(int argc, char **argv)
 {
@@ -110,7 +100,7 @@ int main(int argc, char **argv)
       usage();
     size_t j;
     for (j = 0;; j++) {
-      if (j >= sizeof(param_table)/sizeof(param_table[0]))
+      if (j >= NELEM(param_table))
 	fatal("parameter `%1' not recognized", argv[i] + 1);
       if (strcmp(param_table[j].name, argv[i] + 1) == 0)
 	break;
@@ -118,7 +108,7 @@ int main(int argc, char **argv)
     if (sscanf(argv[i+1], "%d", &(param.*(param_table[j].par))) != 1)
       fatal("invalid argument `%1'", argv[i+1]);
     i++;
-  }    
+  }
   if (argc - i != 3)
     usage();
   errno = 0;
@@ -131,7 +121,7 @@ int main(int argc, char **argv)
 
 static void usage(FILE *stream)
 {
-  fprintf(stream, "usage: %s [-v] [-param value] ... "
+  fprintf(stream, "Synopsis: %s [-v] [-param value] ... "
 		  "resolution unitwidth font\n",
 	  program_name);
 }
@@ -143,7 +133,7 @@ static void usage()
 
 static void version()
 {
-  printf("GNU addftinfo (groff) version %s\n", Version_string);
+  printf(L_ADDFTINFO " (" T_ROFF ") v" VERSION);
   exit(0);
 }
 
@@ -158,7 +148,7 @@ static int get_line(FILE *fp, string *p)
   }
   return p->length() > 0;
 }
-  
+
 static void convert_font(const font_params &param, FILE *infp, FILE *outfp)
 {
   string s;
@@ -216,3 +206,4 @@ static void convert_font(const font_params &param, FILE *infp, FILE *outfp)
   }
 }
 
+// s-it2-mode
