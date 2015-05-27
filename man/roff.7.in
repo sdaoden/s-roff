@@ -1,10 +1,10 @@
-'\" t
+'\" t -- preprocess: tbl(1)
 .ig
-roff.man
+@ roff.7
 
-This file is part of groff, the GNU roff type-setting system.
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
-Copyright (C) 2000, 2001, 2002, 2003, 2004, 2006, 2007, 2008
+Copyright (C) 2000 - 2004, 2006 - 2008
 Free Software Foundation, Inc.
 written by Bernd Warken <bwarken@mayn.de>
 maintained by Werner Lemberg <wl@gnu.org>
@@ -15,12 +15,12 @@ any later version published by the Free Software Foundation; with the
 Invariant Sections being this .ig-section and AUTHORS, with no
 Front-Cover Texts, and with no Back-Cover Texts.
 
-A copy of the Free Documentation License is included as a file called
-FDL in the main directory of the groff source package.
+You should have received a copy of the Free Documentation License
+as part of the file COPYING; also located in the main directory of the
+source package of this program.
 ..
 .
-.
-.\" --------------------------------------------------------------------
+.\"
 .\" Local macros
 .
 .de Esc
@@ -39,26 +39,25 @@ FDL in the main directory of the groff source package.
 ..
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .\" Title
-.\" --------------------------------------------------------------------
+.\"
 .
-.TH ROFF @MAN7EXT@ "@MDATE@" "Groff Version @VERSION@"
+.TH ROFF @MAN7EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .SH NAME
 roff \- concepts and history of roff typesetting
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH DESCRIPTION
-.\" --------------------------------------------------------------------
+.\"
 .
 .I roff
 is the general name for a set of text formatting programs, known under
 names like
 .BR troff ,
 .BR nroff ,
-.BR ditroff ,
-.BR groff ,
+.BR ditroff
 etc.
 .
 A
@@ -74,12 +73,10 @@ system as a core package.
 The most common
 .I roff
 system today is the free software implementation \f[CR]GNU\f[]
-.IR roff ,
-.BR groff (@MAN1EXT@).
-.
-.I groff
-implements the look-and-feel and functionality of its ancestors, with many
-extensions.
+.IR roff.
+@T_ROFF@ is an deriviative.
+Both implement the look-and-feel and functionality of its ancestors, with
+many extensions.
 .
 .P
 The ancestry of
@@ -123,15 +120,15 @@ some usage aspects common to all
 versions, details on the
 .I roff
 pipeline, which is usually hidden behind front-ends like
-.BR groff (@MAN1EXT@);
+.BR @L_ROFF@ (@MAN1EXT@);
 a general overview of the formatting language; some tips for editing
 .I roff
 files; and many pointers to further readings.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH "HISTORY"
-.\" --------------------------------------------------------------------
+.\"
 .
 Document formatting by computer dates back to the 1960s.
 .
@@ -141,9 +138,9 @@ system itself is intimately connected to the Unix operating system, but its
 roots go back to the earlier operating systems CTSS and Multics.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "The Predecessor RUNOFF"
-.\" --------------------------------------------------------------------
+.\"
 .
 .BR roff 's
 ancestor
@@ -192,9 +189,9 @@ were ported to the GCOS system at Bell Labs when BTL left the development of
 Multics.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "The Classical nroff/troff System"
-.\" --------------------------------------------------------------------
+.\"
 .
 At BTL, there was a need to drive the
 .I Graphic Systems CAT
@@ -300,7 +297,7 @@ In 1979, these novelties were described in the paper
 This new
 .I troff
 version is the basis for all existing newer troff systems, including
-.IR groff .
+.IR @L_ROFF@ .
 .
 On some systems, this
 .I device independent troff
@@ -314,9 +311,9 @@ programs already provide the full
 capabilities automatically.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Availability"
-.\" --------------------------------------------------------------------
+.\"
 .
 The source code of both the ancient Unix and classical
 .I troff
@@ -327,9 +324,9 @@ cf.\& section
 .BR "SEE ALSO" .
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Free roff"
-.\" --------------------------------------------------------------------
+.\"
 .
 The most important free
 .I roff
@@ -347,14 +344,10 @@ It was called
 (\f[CR]GNU\f[]
 .IR roff ).
 .
+Further forks exists.
 See
-.BR groff (@MAN1EXT@)
+.BR @L_ROFF@ (@MAN1EXT@)
 for an overview.
-.
-.P
-The
-.I groff
-system is still actively developed.
 .
 It is compatible to the classical
 .IR troff ,
@@ -365,26 +358,10 @@ It is the first
 system that is available on almost all operating systems \[en] and it is
 free.
 .
-This makes
-.I groff
-the de-facto
-.I roff
-standard today.
 .
-.P
-An alternative is
-.IR "Gunnar Ritter" 's
-.UR http://\:heirloom.sf.net
-Heirloom Documentation Tools
-.UE
-project, started in 2005, which provides enhanced versions of the various
-roff tools found in the OpenSolaris and Plan\~9 operating systems, now
-available under free licenses.
-.
-.
-.\" --------------------------------------------------------------------
+.\"
 .SH "USING ROFF"
-.\" --------------------------------------------------------------------
+.\"
 .
 Most people won't even notice that they are actually using
 .IR roff .
@@ -392,16 +369,6 @@ Most people won't even notice that they are actually using
 When you read a system manual page (man page)
 .I roff
 is working in the background.
-.
-.I roff
-documents can be viewed with a native viewer called
-.BR \%xditview (1x),
-a standard program of the X window distribution, see
-.BR X (7x).
-.
-But using
-.I roff
-explicitly isn't difficult either.
 .
 .P
 Some
@@ -416,22 +383,12 @@ implementation
 .BR groff (@MAN1EXT@)
 provides command line options to avoid the long command pipes of
 classical
-.IR troff ;
-a program
-.BR grog (@MAN1EXT@)
-tries to guess from the document which arguments should be used for a
-run of
-.BR groff ;
-people who do not like specifying command line options should try the
-.BR groffer (@MAN1EXT@)
-program for graphically displaying
-.I groff
-files and man pages.
+.IR troff .
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "The roff Pipe"
-.\" --------------------------------------------------------------------
+.\"
 .
 Each
 .I roff
@@ -491,9 +448,9 @@ macro packages need to know about the gory details.
 .
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Preprocessors"
-.\" --------------------------------------------------------------------
+.\"
 .
 A
 .I roff
@@ -560,9 +517,9 @@ grn@for including \fBgremlin\fR(1) pictures.
 .TE
 .RE
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Formatter Programs"
-.\" --------------------------------------------------------------------
+.\"
 .
 A
 .I roff formatter
@@ -590,8 +547,8 @@ or
 .
 This language was first specified in
 .IR "[CSTR\~#97]" ;
-its \f[CR]GNU\f[] extension is documented in
-.BR groff_out (@MAN5EXT@).
+its @T_ROFF@ extension is documented in
+.BR @L_ROFF@_out (@MAN5EXT@).
 .
 The intermediate output language is a kind of assembly language
 compared to the high-level
@@ -622,9 +579,9 @@ Often, the name
 is used as a general term to refer to both formatters.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Devices and Postprocessors"
-.\" --------------------------------------------------------------------
+.\"
 .
 Devices are hardware interfaces like printers, text or graphical
 terminals, etc., or software interfaces such as a conversion into a
@@ -667,7 +624,7 @@ For example, the Postscript device
 in classical
 .I troff
 had a resolution of 720 units per inch, while
-.IR groff 's
+.IR @T_ROFF@ 's
 .I ps
 device has 72000, a refinement of factor 100.
 .
@@ -677,9 +634,9 @@ printer-like hardware, so it isn't necessary to write a special
 hardware postprocessor for each printer.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH "ROFF PROGRAMMING"
-.\" --------------------------------------------------------------------
+.\"
 .
 Documents using
 .I roff
@@ -704,9 +661,9 @@ internals of the
 language.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Macro Packages"
-.\" --------------------------------------------------------------------
+.\"
 .
 Macro packages are collections of macros that are suitable to format a
 special kind of documents in a convenient way.
@@ -725,19 +682,19 @@ positions.
 .
 Details on the naming of macro packages and their placement is found
 in
-.BR groff_tmac (@MAN5EXT@).
+.BR @L_ROFF@_tmac (@MAN5EXT@).
 .
 .P
 A macro package that is to be used in a document can be announced to
 the formatter by the command line option
 .BR \-m ,
 see
-.BR troff (@MAN1EXT@),
+.BR @L_TROFF@ (@MAN1EXT@),
 or it can be specified within a document using the file inclusion
 requests of the
 .I roff
 language, see
-.BR groff (@MAN7EXT@).
+.BR @L_ROFF@ (@MAN7EXT@).
 .
 .P
 Famous classical macro packages are
@@ -759,9 +716,9 @@ and
 .IR "Memorandum Macros\/" ).
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "The roff Formatting Language"
-.\" --------------------------------------------------------------------
+.\"
 .
 The classical
 .I roff
@@ -832,9 +789,9 @@ and its value can be retrieved by the escape sequence
 .BR "\[rs]n" .
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH "FILE NAME EXTENSIONS"
-.\" --------------------------------------------------------------------
+.\"
 .
 Manual pages (man pages) take the section number as a file name
 extension, e.g., the filename for this document is
@@ -897,9 +854,9 @@ where
 is either a system supplied command or a shell script of your own.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH "EDITING ROFF"
-.\" --------------------------------------------------------------------
+.\"
 .
 The best program for editing a
 .I roff
@@ -1042,9 +999,9 @@ an extension of the
 program.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH "SEE ALSO"
-.\" --------------------------------------------------------------------
+.\"
 .
 There is a lot of documentation on
 .IR roff .
@@ -1052,13 +1009,13 @@ There is a lot of documentation on
 The original papers on classical
 .I troff
 are still available, and all aspects of
-.I groff
+.I @T_ROFF@
 are documented in great detail.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Internet sites"
-.\" --------------------------------------------------------------------
+.\"
 .
 .TP
 troff.org
@@ -1133,19 +1090,17 @@ documents on programming.
 .TP
 \f[CR]GNU\f[] \f[I]roff\f[]
 .UR http://\:www.gnu.org/\:software/\:groff
-The groff web site
+The GNU troff web site
 .UE
 provides the free
 .I roff
 implementation
-.IR groff ,
-the actual standard
-.IR roff .
+.IR groff .
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Historical roff Documentation"
-.\" --------------------------------------------------------------------
+.\"
 .
 Many classical
 .B troff
@@ -1207,9 +1162,9 @@ J. L. Bentley, L. W. Jelinski, and B. W. Kernighan,
 Bell Labs, April 1986.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Manual Pages"
-.\" --------------------------------------------------------------------
+.\"
 .
 Due to its complex structure, a full
 .I roff
@@ -1223,23 +1178,25 @@ implementations.
 .
 .P
 In
-.IR groff ,
+.IR @T_ROFF@ ,
 the man page
-.BR groff (@MAN1EXT@)
+.BR @L_ROFF@ (@MAN1EXT@)
 contains a survey of all documentation available in
-.IR groff .
+.IR @T_ROFF@ .
 .
 .P
 On other systems, you are on your own, but
-.BR troff (1)
+.BR troff (@MAN1EXT@)
 might be a good starting point.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH AUTHORS
-.\" --------------------------------------------------------------------
+.\"
 .
-Copyright (C) 2000, 2001, 2002, 2003, 2004, 2006, 2007, 2008
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
+Copyright (C) 2000 - 2004, 2006 - 2008
 Free Software Foundation, Inc.
 .
 .P
@@ -1253,25 +1210,9 @@ GNU copyleft site
 .UE .
 .
 .P
-This document is part of
-.IR groff ,
-the \f[CR]GNU\f[]
-.I roff
-distribution.
-.
-It was written by
+This document was written by
 .MT bwarken@mayn.de
 Bernd Warken
-.ME ;
-it is maintained by
-.MT wl@gnu.org
-Werner Lemberg
 .ME .
 .
-.\" --------------------------------------------------------------------
-.\" Emacs setup
-.\" --------------------------------------------------------------------
-.
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
+.\" s-ts-mode

@@ -1,5 +1,9 @@
 .ig
-Copyright (C) 1989-1995, 2001, 2002, 2003, 2004, 2006, 2007, 2008
+@ @L_ROFF@_font.5
+
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
+Copyright (C) 1989 - 1995, 2001 - 2004, 2006 - 2008
   Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
@@ -18,7 +22,7 @@ translations approved by the Free Software Foundation instead of in
 the original English.
 ..
 .
-.do nr groff_font_C \n[.C]
+.do nr roff_font_C \n[.C]
 .cp 0
 .
 .
@@ -30,16 +34,15 @@ the original English.
 ..
 .
 .
-.TH GROFF_FONT @MAN5EXT@ "@MDATE@" "Groff Version @VERSION@"
+.TH @U_ROFF@_FONT @MAN5EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
 .
 .SH NAME
-groff_font \- format of groff device and font description files
+@L_ROFF@_font \- format of @T_ROFF@ device and font description files
 .
 .
 .SH DESCRIPTION
-The groff font format is roughly a superset of the ditroff
-font format.
+The font format is roughly a superset of the ditroff font format.
 .
 The font files for device
 .I name
@@ -105,7 +108,7 @@ machine units.
 .TP
 .BI image_generator\  string
 Needed for
-.B \%grohtml
+.B \%@L_D_HTML@
 only.
 .
 It specifies the program to generate PNG images from
@@ -146,8 +149,7 @@ if it holds predefined paper types.
 Alternatively,
 .I string
 can be a file name (e.g.\& `/etc/papersize'); if the file can be opened,
-.B groff
-reads the first line and tests for the above paper sizes.
+the first line is read and tested for the above paper sizes.
 .
 Finally,
 .I string
@@ -172,9 +174,8 @@ format.
 sets both the vertical and horizontal dimension of the output medium.
 .
 .IP
-More than one argument can be specified;
-.B groff
-scans from left to right and uses the first valid paper specification.
+More than one argument can be specified, in which case they will be
+scanned from left to right and the first valid paper specification is used.
 .
 .TP
 .BI paperwidth\  n
@@ -221,7 +222,7 @@ If omitted, the
 and
 .B \-L
 options of
-.B groff
+.B @L_ROFF@
 are ignored.
 .
 .TP
@@ -297,7 +298,7 @@ is present, no
 .B charset
 section is required in the font description files since the Unicode
 handling built into
-.B groff
+.B @L_ROFF@
 is used.
 .
 However, if there are entries in a
@@ -325,7 +326,7 @@ scaled points.
 Make the font handling module always return unscaled glyph widths.
 .
 Needed for the
-.B \%grohtml
+.B \%@L_D_HTML@
 device.
 .
 .TP
@@ -355,7 +356,7 @@ postprocessors to store arbitrary information about the device.
 .
 .LP
 Here a list of obsolete keywords which are recognized by
-.B groff
+.B @L_ROFF@
 but completely ignored:
 .BR spare1 ,
 .BR spare2 ,
@@ -472,14 +473,14 @@ if
 .I name
 is a single glyph
 .I c
-then it corresponds to the groff input character
+then it corresponds to the input character
 .IR c ;
 if it is of the form
 .BI \[rs] c
 where c is a single character, then it
 corresponds to the special character
 .BI \[rs][ c ]\fR;
-otherwise it corresponds to the groff input character
+otherwise it corresponds to the input character
 .BI \[rs][ name ]\fR.
 .
 If it is exactly two characters
@@ -522,7 +523,7 @@ The
 .I code
 field gives the code which the postprocessor uses to print the glyph.
 .
-The glyph can also be input to groff using this code by means of the
+The glyph can also be input using this code by means of the
 .B \[rs]N
 escape sequence.
 .
@@ -548,14 +549,14 @@ field gives an ASCII string identifying the glyph which the postprocessor
 uses to print that glyph.
 .
 This field is optional and is currently used by
-.B grops
+.B @L_D_PS@
 to build sub-encoding arrays for PS fonts containing more than 256 glyphs.
 .
 (It has also been used for
-.BR \%grohtml 's
+.BR \%@L_D_HTML@ 's
 entity names but for efficiency reasons this data is now compiled directly
 into
-.BR \%grohtml .)
+.BR \%@L_D_HTML@ .)
 .
 .LP
 Anything on the line after the encoding field or `\-\-' are ignored.
@@ -676,11 +677,9 @@ of device
 .
 .SH "SEE ALSO"
 .
-.BR groff_out (@MAN5EXT@),
-.BR @g@troff (@MAN1EXT@).
+.BR @L_ROFF@_out (@MAN5EXT@),
+.BR @L_TROFF@ (@MAN1EXT@).
 .
-.cp \n[groff_font_C]
+.cp \n[roff_font_C]
 .
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
+.\" s-ts-mode

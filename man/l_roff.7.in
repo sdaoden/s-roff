@@ -1,13 +1,11 @@
-'\" t
 .ig
-groff.man
+@ @L_ROFF@.7
 
-This file is part of groff, the GNU roff type-setting system.
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
-Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+Copyright (C) 2000 - 2008
   Free Software Foundation, Inc.
 written by Bernd Warken <bwarken@mayn.de>
-maintained by Werner Lemberg <wl@gnu.org>
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -15,24 +13,25 @@ any later version published by the Free Software Foundation; with the
 Invariant Sections being this .ig-section and AUTHORS, with no
 Front-Cover Texts, and with no Back-Cover Texts.
 
-A copy of the Free Documentation License is included as a file called
-FDL in the main directory of the groff source package.
+You should have received a copy of the Free Documentation License
+as part of the file COPYING; also located in the main directory of the
+source package of this program.
 ..
 .
-.\" --------------------------------------------------------------------
+.\"
 .\" Setup
-.\" --------------------------------------------------------------------
+.\"
 .
-.do nr groff_C \n[.C]
+.do nr roff_C \n[.C]
 .cp 0
 .
-.\" --------------------------------------------------------------------
+.\"
 .\" start of macro definitions
 .
 .de TPx
 .  TP 10n
 ..
-.\" ---------------------------------------------------------------------
+.\"
 .\" .Text anything ...
 .\"
 .\" All arguments are printed as text.
@@ -95,7 +94,7 @@ FDL in the main directory of the groff source package.
 .
 .\" --------- escape sequences ---------
 .
-.\" ---------------------------------------------------------------------
+.\"
 .\" .ESC name [arg]
 .\"
 .\" Synopsis of an escape sequence, optionally with argument
@@ -107,7 +106,7 @@ FDL in the main directory of the groff source package.
 .de ESC
 .  Text "\f[CB]\[rs]\\$1\,\f[I]\\$2\/\fR"
 ..
-.\" ---------------------------------------------------------------------
+.\"
 .\" .ESC[] name arg
 .\"
 .\" Synopsis for escape sequence with a bracketed long argument
@@ -119,7 +118,7 @@ FDL in the main directory of the groff source package.
 .de ESC[]
 .  Text "\f[CB]\[rs]\\$1\[lB]\f[]\f[I]\\$2\f[]\f[CB]\[rB]\f[]"
 ..
-.\" ---------------------------------------------------------------------
+.\"
 .\" .ESCq name arg
 .\"
 .\" Synopsis for escape sequence with a bracketed long argument
@@ -131,7 +130,7 @@ FDL in the main directory of the groff source package.
 .de ESCq
 .  Text "\f[CB]\[rs]\\$1\[cq]\f[]\f[I]\\$2\f[]\f[CB]\[cq]\f[]"
 ..
-.\" ---------------------------------------------------------------------
+.\"
 .\" .ESC? arg
 .\"
 .\" Synopsis for escape sequence with a bracketed long argument
@@ -142,7 +141,7 @@ FDL in the main directory of the groff source package.
 .de ESC?
 .  Text "\f[CB]\[rs]?\f[I]\\$1\f[CB]?\f[R]"
 ..
-.\" ---------------------------------------------------------------------
+.\"
 .\" .esc name [punct]
 .\"
 .\" Reference of an escape sequence (no args), possibly punctuation
@@ -154,7 +153,7 @@ FDL in the main directory of the groff source package.
 .de esc
 .  BR "\[rs]\\$1" \\$2
 ..
-.\" ---------------------------------------------------------------------
+.\"
 .\" .escarg name arg [punct]
 .\"
 .\" Reference of an escape sequence (no args)
@@ -167,7 +166,7 @@ FDL in the main directory of the groff source package.
 .de escarg
 .  Text \f[B]\[rs]\\$1\f[]\f[I]\\$2\f[]\\$3
 ..
-.\" ---------------------------------------------------------------------
+.\"
 .\" .esc[] name arg [punct]
 .\"
 .\" Reference for escape sequence with a bracketed long argument
@@ -180,7 +179,7 @@ FDL in the main directory of the groff source package.
 .  Text \f[B]\[rs]\\$1\[lB]\f[]\f[I]\\$2\f[]\f[B]\[rB]\f[]\\$3
 ..
 .
-.\" ---------------------------------------------------------------------
+.\"
 .\" .escq name arg
 .\"
 .\" Reference for escape sequence with a bracketed long argument
@@ -221,68 +220,58 @@ FDL in the main directory of the groff source package.
 .\" end of macro definitions
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .\" Title
-.\" --------------------------------------------------------------------
+.\"
 .
-.TH GROFF @MAN7EXT@ "@MDATE@" "Groff Version @VERSION@"
+.TH @U_ROFF@ @MAN7EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .SH NAME
-groff \- a short reference for the GNU roff language
+@L_ROFF@ \- a short reference for the roff language
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH DESCRIPTION
-.\" --------------------------------------------------------------------
+.\"
 .
-The name
-.I groff
-stands for
-.I GNU roff
-and is the free implementation of the roff type-setting system.
+.I @T_ROFF@
+is a free implementation of the roff type-setting system.
 .
 See
 .BR roff (@MAN7EXT@)
-for a survey and the background of the groff system.
+for a survey and the background of the @T_ROFF@ system.
 .
 .P
 This document gives only short descriptions of the predefined roff
-language elements as used in groff.
+language elements as used in @L_ROFF@.
 .
-Both the classical features and the groff extensions are provided.
+Classical features, GNU troff and @T_ROFF@ extensions are provided.
 .
 .P
 Historically, the
 .I roff language
 was called
 .IR troff .
-.I groff
+.I @L_ROFF@
 is compatible with the classical system and provides proper
 extensions.
 .
-So in GNU, the terms
+The terms
 .IR roff ,
 .IR troff ,
 and
-.I groff language
-could be used as synonyms.
+.I @T_ROFF@
+language could be used as synonyms.
 .
 However
 .I troff
 slightly tends to refer more to the classical aspects, whereas
-.I groff
-emphasizes the GNU extensions, and
+.I @T_ROFF@
+emphasizes the extensions, and
 .I roff
 is the general term for the language.
 .
 .P
-This file is only a short version of the complete documentation that
-is found in the
-.I groff
-.BR info (1)
-file, which contains more detailed, actual, and concise information.
-.
-.P
-The general syntax for writing groff documents is relatively easy, but
+The general syntax for writing roff documents is relatively easy, but
 writing extensions to the roff language can be a bit harder.
 .
 .P
@@ -367,17 +356,17 @@ Begin all text lines with the special non-spacing character
 This does not produce the most efficient code, but it should work as a
 first measure.
 .
-For better strategies, see the groff info file and
-.BR groff_tmac (@MAN5EXT@).
+Predefined macro packages may give a better user experience: see
+.BR @L_ROFF@_tmac (@MAN5EXT@).
 .
 .P
 Reading roff source files is easier, just reduce all double backslashes
 to a single one in all macro definitions.
 .
 .
-.\" --------------------------------------------------------------------
-.SH "GROFF ELEMENTS"
-.\" --------------------------------------------------------------------
+.\"
+.SH "ROFF ELEMENTS"
+.\"
 .
 The roff language elements add formatting information to a text file.
 .
@@ -406,14 +395,14 @@ These commands are called
 .BR macros ,
 but they are used exactly like requests.
 .
-Macro packages are pre-defined sets of macros written in the groff
+Macro packages are pre-defined sets of macros written in the roff
 language.
 .
 A user's possibilities to create escape sequences herself is very
 limited, only special characters can be mapped.
 .
 .P
-The groff language provides several kinds of variables with
+The roff language provides several kinds of variables with
 different interfaces.
 .
 There are pre-defined variables, but the user can define her own
@@ -489,7 +478,7 @@ On text devices, all glyphs have a constant width anyway.
 .B Glyphs
 are visual representation forms of
 .BR characters .
-In groff, the distinction between those two elements is not always
+In roff, the distinction between those two elements is not always
 obvious (and a full discussion is beyond the scope of this man page).
 .
 A first approximation is that glyphs have a specific size and
@@ -517,14 +506,9 @@ or in a diversion or in the input.
 Some action can be prescribed to be run automatically when the
 condition is met.
 .
-.P
-More detailed information and examples can be found in the groff info
-file.
-.
-.
-.\" --------------------------------------------------------------------
+.\"
 .SH "CONTROL CHARACTERS"
-.\" --------------------------------------------------------------------
+.\"
 .
 There is a small set of characters that have a special controlling
 task in certain conditions.
@@ -544,7 +528,7 @@ The special behavior can be delayed by using the
 .esc .
 escape.
 .
-By using the 
+By using the
 .request cc
 request, the control character can be set to a different character,
 making the dot
@@ -566,7 +550,7 @@ non-breaking control character.
 That means that it introduces a request like the dot, but with the
 additional property that this request doesn't cause a linebreak.
 .
-By using the 
+By using the
 .request c2
 request, the non-break control character can be set to a different
 character.
@@ -579,7 +563,7 @@ of the argument do work).
 In all other positions, it denotes the single quote or apostrophe
 character.
 .
-Groff provides a printable representation with the
+Roff provides a printable representation with the
 .esc (cq
 escape sequence.
 .
@@ -602,7 +586,7 @@ introduces a comment.
 .
 Otherwise, it is not special.
 .
-Groff provides a printable representation with the
+Roff provides a printable representation with the
 .esc (dq
 escape sequence.
 .
@@ -623,16 +607,16 @@ The open parenthesis is only special in escape sequences when
 introducing an escape name or argument consisting of exactly two
 characters.
 .
-In groff, this behavior can be replaced by the \f[CB][]\f[] construct.
+In @T_ROFF@, this behavior can be replaced by the \f[CB][]\f[] construct.
 .TP
 \&\f[CB][\f[]
-The opening bracket is only special in groff escape sequences; there
+The opening bracket is only special in roff escape sequences; there
 it is used to introduce a long escape name or long escape argument.
 .
 Otherwise, it is non-special, e.g.\& in macro calls.
 .TP
 \&\f[CB]]\f[]
-The closing bracket is only special in groff escape sequences; there
+The closing bracket is only special in roff escape sequences; there
 it terminates a long escape name or long escape argument.
 .
 Otherwise, it is non-special.
@@ -643,7 +627,7 @@ Space characters are only functional characters.
 They separate the arguments in requests, macros, and strings, and the words
 in text lines.
 .
-They are subject to groff's horizontal spacing calculations.
+They are subject to roff's horizontal spacing calculations.
 .
 To get a defined space width, escape sequences like
 .squoted_char "\[rs]\ "
@@ -668,9 +652,9 @@ horizontal jump to the next pre-defined tab position.
 There is a sophisticated interface for handling tab positions.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH "NUMERICAL EXPRESSIONS"
-.\" --------------------------------------------------------------------
+.\"
 .
 A
 .B numerical value
@@ -819,8 +803,8 @@ Close current grouping
 .
 .P
 Moreover,
-.I groff
-added the following operators for numerical expressions:
+.I @T_ROFF@
+adds the following operators for numerical expressions:
 .
 .P
 .PD 0
@@ -851,13 +835,9 @@ as the default scaling indicator.
 .RE
 .PD
 .
-.P
-For details see the groff info file.
-.
-.
-.\" --------------------------------------------------------------------
+.\"
 .SH CONDITIONS
-.\" --------------------------------------------------------------------
+.\"
 .
 .B Conditions
 occur in tests raised by the
@@ -953,13 +933,13 @@ has been registered.
 .PD
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH REQUESTS
-.\" --------------------------------------------------------------------
+.\"
 .
 This section provides a short reference for the predefined requests.
 .
-In groff, request, macro, and string names can be arbitrarily long.
+In @T_ROFF@, request, macro, and string names can be arbitrarily long.
 .
 No bracketing or marking of long names is needed.
 .
@@ -974,8 +954,8 @@ Some requests have optional arguments with a different behaviour.
 .
 Not all of these details are outlined here.
 .
-Refer to the groff info file and
-.BR groff_diff (@MAN7EXT@)
+Refer to
+.BR @L_ROFF@_diff (@MAN7EXT@)
 for all details.
 .
 .P
@@ -1040,9 +1020,9 @@ To assign a negative number either prepend\~0 or enclose the negative
 number in parentheses.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Request Short Reference"
-.\" --------------------------------------------------------------------
+.\"
 .
 .PD 0
 .
@@ -2519,7 +2499,7 @@ to the stream named
 .PD
 .
 .P
-Besides these standard groff requests, there might be further macro
+Besides these standard roff requests, there might be further macro
 calls.
 They can originate from a macro package (see
 .BR roff (@MAN7EXT@)
@@ -2548,9 +2528,9 @@ tbl@.TS@.TE
 .P
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH "ESCAPE SEQUENCES"
-.\" --------------------------------------------------------------------
+.\"
 .
 Escape sequences are in-line language elements usually introduced by a
 backslash
@@ -2566,7 +2546,7 @@ end of the argument.
 .P
 This is done by enclosing names (escape name and arguments consisting
 of a variable name) by a pair of brackets
-.BI \[lB] name \[rB] 
+.BI \[lB] name \[rB]
 and constant arguments (number expressions and characters) by
 apostrophes (ASCII 0x27) like
 .BI \[cq] constant \[cq] \f[R].
@@ -2606,9 +2586,9 @@ Escapes sequences of the form
 denote glyphs too.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Single-Character Escapes"
-.\" --------------------------------------------------------------------
+.\"
 .
 .PD 0
 .
@@ -2899,8 +2879,7 @@ Forward (down) 1/2 em (1/2 line in nroff).
 .TP
 .ESCq D charseq
 Draw a graphical element defined by the characters in
-.IR charseq ;
-see the groff info file for details.
+.IR charseq .
 .
 .TP
 .ESC e
@@ -3273,9 +3252,9 @@ defined escape sequence, the backslash is silently ignored and the
 character maps to itself.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Special Characters"
-.\" --------------------------------------------------------------------
+.\"
 .
 [Note: `Special Characters' is a misnomer; those entities are (output)
 glyphs, not (input) characters.]
@@ -3294,7 +3273,7 @@ available in the special font.
 .
 Below you can find a selection of the most important glyphs; a complete
 list can be found in
-.BR groff_char (@MAN7EXT@).
+.BR @L_ROFF@_char (@MAN7EXT@).
 .RS
 .P
 .PD 0
@@ -3363,9 +3342,9 @@ Plus-minus sign
 .RE
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Strings"
-.\" --------------------------------------------------------------------
+.\"
 .
 Strings are defined by the
 .request ds
@@ -3380,7 +3359,7 @@ So strings and macros without arguments are roughly equivalent; it is
 possible to call a string like a macro and vice-versa, but this often
 leads to unpredictable results.
 .
-The following string is the only one predefined in groff.
+The following string is the only one predefined in @T_ROFF@.
 .
 .TPx
 .STRING .T
@@ -3389,12 +3368,12 @@ The name of the current output device as specified by the
 command line option.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH REGISTERS
-.\" --------------------------------------------------------------------
+.\"
 .
 Registers are variables that store a value.
-In groff, most registers store numerical values (see section
+In @T_ROFF@, most registers store numerical values (see section
 .B NUMERICAL EXPRESSIONS
 above), but some can also hold a string value.
 .
@@ -3423,9 +3402,9 @@ Please keep in mind that the
 decoration is not part of the register name.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Read-only Registers"
-.\" --------------------------------------------------------------------
+.\"
 .
 The following registers have predefined values that should not be
 modified by the user (usually, registers starting with a dot a
@@ -3524,9 +3503,9 @@ The number of the next free font position.
 .
 .TPx
 .REG .g
-Always 1 in GNU troff.
+Always 1 in GNU troff and @T_ROFF@.
 .
-Macros should use it to test if running under groff.
+Macros should use it to test if running under @T_ROFF@.
 .
 .TPx
 .REG .h
@@ -3777,7 +3756,7 @@ The minor version number.
 .
 .TPx
 .REG .Y
-The revision number of groff.
+The revision number of @T_ROFF@.
 .
 .TPx
 .REG .z
@@ -3790,9 +3769,9 @@ magnification).
 .PD
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Writable Registers"
-.\" --------------------------------------------------------------------
+.\"
 .
 The following registers can be read and written by the user.
 They have predefined default values, but these can be modified for
@@ -3952,39 +3931,39 @@ instead.
 .PD
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH COMPATIBILITY
-.\" --------------------------------------------------------------------
+.\"
 .
-The differences of the groff language in comparison to classical troff
-as defined by
+The differences of the @T_ROFF@ language in comparison to classical
+troff as defined by
 .I [CSTR\~#54]
 are documented in
-.BR groff_diff (@MAN7EXT@).
+.BR @L_ROFF@_diff (@MAN7EXT@).
 .
 .P
-The groff system provides a compatibility mode, see
-.BR groff (@MAN1EXT@)
+The @T_ROFF@ system provides a compatibility mode, see
+.BR @L_ROFF@ (@MAN1EXT@)
 on how to invoke this.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH BUGS
-.\" --------------------------------------------------------------------
+.\"
 .
-Report bugs to the
-.MT bug-groff@gnu.org
-groff bug mailing list
+Report bugs to
+.MT @BUGMAIL@
 .ME .
 Include a complete, self-contained example that will allow the bug to
 be reproduced, and say which version of groff you are using.
 .
-.
-.\" --------------------------------------------------------------------
+.\"
 .SH AUTHORS
-.\" --------------------------------------------------------------------
+.\"
 .
-Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
+Copyright (C) 2000 - 2008
 Free Software Foundation, Inc.
 .
 .P
@@ -3998,50 +3977,33 @@ GNU copyleft site
 .UE .
 .
 .P
-This document is part of
-.IR groff ,
-the GNU roff distribution.
-.
-It was written by
+This document was written by
 .MT bwarken@mayn.de
 Bernd Warken
-.ME ;
-it is maintained by
-.MT wl@gnu.org
-Werner Lemberg
 .ME .
 .
-.
-.\" --------------------------------------------------------------------
+.\"
 .SH "SEE ALSO"
-.\" --------------------------------------------------------------------
-.
-.P
-The main source of information for the groff language is the
-.B groff
-.BR info (1)
-file.
-.
-Besides the gory details, it contains many examples.
+.\"
 .
 .TP
-.BR groff (@MAN1EXT@)
-the usage of the groff program and pointers to the documentation and
-availability of the groff system.
+.BR @L_ROFF@ (@MAN1EXT@)
+the usage of the @L_ROFF@ program and pointers to the documentation
+and availability of the @T_ROFF@ system.
 .
 .TP
-.BR groff_diff (@MAN7EXT@)
-the differences of the groff language as compared to classical roff.
+.BR @L_ROFF@_diff (@MAN7EXT@)
+the differences of the @T_ROFF@ language as compared to classical roff.
 .
 This is the authoritative document for the predefined language
-elements that are specific to groff.
+elements that are specific to @T_ROFF@.
 .
 .TP
-.BR groff_char (@MAN7EXT@)
-the predefined groff special characters (glyphs).
+.BR @L_ROFF@_char (@MAN7EXT@)
+the predefined @T_ROFF@ special characters (glyphs).
 .
 .TP
-.BR groff_font (@MAN5EXT@)
+.BR @L_ROFF@_font (@MAN5EXT@)
 the specification of fonts and the DESC file.
 .
 .TP
@@ -4056,12 +4018,5 @@ Nroff/\:Troff User's Manual by Ossanna & Kernighan
 .UE
 \[em] the bible for classical troff.
 .
-.cp \n[groff_C]
-.
-.\" --------------------------------------------------------------------
-.\" Emacs Setup
-.\" --------------------------------------------------------------------
-.
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
+.cp \n[roff_C]
+.\" s-ts-mode

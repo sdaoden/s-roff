@@ -1,24 +1,9 @@
-.TH GROFF_CHAR @MAN7EXT@ "@MDATE@" "Groff Version @VERSION@"
-.SH NAME
-groff_char \- groff glyph names
-.SH DESCRIPTION
-.\" The lines above were designed to satisfy `apropos'.
-.
-.\" For best results, format this document with `groff' (GNU roff).
-.
-.
-.\" --------------------------------------------------------------------
-.\" Legal terms
-.\" --------------------------------------------------------------------
-.
 .ig
-groff_char(7)
+@ @L_ROFF@_char.7
 
-This file is part of groff (GNU roff).
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
-File position: <groff_src_top>/man/groff_char.man
-
-Copyright (C) 1989-2000, 2001, 2002, 2003, 2004, 2006, 2007, 2008
+Copyright (C) 1989 - 2004, 2006, 2007, 2008
   Free Software Foundation, Inc.
 written by Werner Lemberg <wl@gnu.org>
 with additions by Bernd Warken <bwarken@mayn.de>
@@ -29,15 +14,21 @@ any later version published by the Free Software Foundation; with the
 Invariant Sections being this .ig-section and AUTHOR, with no
 Front-Cover Texts, and with no Back-Cover Texts.
 
-A copy of the Free Documentation License is included as a file called
-FDL in the main directory of the groff source package.
+You should have received a copy of the Free Documentation License
+as part of the file COPYING; also located in the main directory of the
+source package of this program.
 ..
 .
-.\" --------------------------------------------------------------------
-.\" Setup Part 1
-.\" --------------------------------------------------------------------
+.TH @U_ROFF@_CHAR @MAN7EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
+.SH NAME
+@L_ROFF@_char \- @T_ROFF@ glyph names
+.SH DESCRIPTION
 .
-.do nr groff_char_C \n[.C]
+.\"
+.\" Setup Part 1
+.\"
+.
+.do nr roff_char_C \n[.C]
 .cp 0
 .
 .\" groff only
@@ -73,7 +64,7 @@ FDL in the main directory of the groff source package.
 .  ig
 ..
 .
-.\" --------------------------------------------------------------------
+.\"
 .\" .Ac accented-char accent char (groff)
 .
 .if !\n(.g .ig
@@ -95,13 +86,13 @@ FDL in the main directory of the groff source package.
 .  \}
 ..
 .
-.\" --------------------------------------------------------------------
+.\"
 .\" Setup Part 2
-.\" --------------------------------------------------------------------
+.\"
 .
 .nr Sp 2n
 .
-.\" --------------------------------------------------------------------
+.\"
 .\" .C2/.CN (groff)
 .
 .if !\n(.g .ig
@@ -132,7 +123,7 @@ FDL in the main directory of the groff source package.
 .  als 2e Ne
 .\}
 .
-.\" --------------------------------------------------------------------
+.\"
 .\" .C2 (non-groff)
 .
 .if \n(.g .ig
@@ -157,7 +148,7 @@ FDL in the main directory of the groff source package.
 .  C2 "\\$1" "\\$2" "\\$3" "\\$4"
 ..
 .
-.\" --------------------------------------------------------------------
+.\"
 .\" .CD (groff)
 .
 .if !\n(.g .ig
@@ -182,7 +173,7 @@ FDL in the main directory of the groff source package.
 .  CD "\\$1" "\\$2" "\\$3" "\\$4"
 ..
 .
-.\" --------------------------------------------------------------------
+.\"
 .
 .do if !r ECFONTS .do fspecial CR R
 .
@@ -218,7 +209,7 @@ FDL in the main directory of the groff source package.
 .  br
 ..
 .
-.\" --------------------------------------------------------------------
+.\"
 .\" input-name decimal-code output-name ps-name unicode description is-char
 .\" .C (groff)
 .
@@ -283,7 +274,7 @@ FDL in the main directory of the groff source package.
 .      sp |\\n[C2]u
 ..
 .
-.\" --------------------------------------------------------------------
+.\"
 .\" .C (non-groff)
 .
 .if \n(.g .ig
@@ -336,7 +327,7 @@ FDL in the main directory of the groff source package.
 .      sp |\\n(C2u
 ..
 .
-.\" --------------------------------------------------------------------
+.\"
 .
 .de Fo
 '  bp
@@ -349,13 +340,12 @@ FDL in the main directory of the groff source package.
 ..
 .
 .
-.
-.\" --------------------------------------------------------------------
+.\"
 .\" .SH DESCRIPTION
-.\" --------------------------------------------------------------------
+.\"
 .
 This manual page lists the standard
-.B groff
+.B @T_ROFF@
 glyph names and the default input mapping, \%latin1.
 .
 The glyphs in this document look different depending
@@ -372,8 +362,8 @@ is being used to print or view this manual page are marked with
 .
 .
 .P
-In the actual version, 
-.B groff
+In the actual version,
+.B @T_ROFF@
 provides only \%8-bit characters for direct input and named entities
 for further glyphs.
 .
@@ -388,7 +378,7 @@ This mapping is contained in the file \f(CWlatin1.tmac\fP
 and can be changed by loading a different input encoding.
 .
 Note that some of the input characters are reserved by
-.BR groff ,
+.BR @T_ROFF@ ,
 either for internal use or for special input purposes.
 .
 On EBCDIC platforms, only code page
@@ -403,33 +393,32 @@ Again, some input characters are reserved for internal and special purposes.
 All roff systems provide the concept of named glyphs.
 .
 In traditional roff systems, only names of length\ 2 were used, while
-groff also provides support for longer names.
+@T_ROFF@ also provides support for longer names.
 .
 It is strongly suggested that only named glyphs are used for all
 character representations outside of the printable \%7-bit ASCII range.
 .
 .
 .P
-Some of the predefined groff escape sequences (with names of length\ 1)
+Some of the predefined @T_ROFF@ escape sequences (with names of length\ 1)
 also produce single glyphs; these exist for historical reasons or
 are printable versions of syntactical characters.
 .
 They include `\f(CW\e\e\fP', `\f(CW\e\'\fP', `\f(CW\e`\fP', `\f(CW\e-\fP',
 `\f(CW\e.\fP', and `\f(CW\ee\fP'; see
-.BR groff (@MAN7EXT@).
+.BR @L_ROFF@ (@MAN7EXT@).
 .
 .
 .P
-In groff, all of these different types of characters and glyphs can be
+In @T_ROFF@, all of these different types of characters and glyphs can be
 tested positively with the `\f(CW.if\ c\fP' conditional.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH REFERENCE
-.\" --------------------------------------------------------------------
+.\"
 .
-In this section, the glyphs in groff are specified in tabular
-form.
+In this section, the glyphs are specified in tabular form.
 .
 The meaning of the columns is as follows.
 .
@@ -444,7 +433,7 @@ represents the same glyph.
 .TP
 .I "Input name"
 specifies how the glyph is input either directly by a key on the
-keyboard, or by a groff escape sequence.
+keyboard, or by a roff escape sequence.
 .
 .
 .TP
@@ -467,9 +456,9 @@ is the glyph name used in composite glyph names.
 .
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "7-bit Character Codes 32-126"
-.\" --------------------------------------------------------------------
+.\"
 .
 These are the basic glyphs having 7-bit ASCII code values assigned.
 .
@@ -486,7 +475,7 @@ Note that input characters in the range \%0\-31 and character 127 are
 printable characters.
 .
 Most of them are invalid input characters for
-.B groff
+.B @T_ROFF@
 anyway, and the valid ones have special meaning.
 .
 For EBCDIC, the printable characters are in the range \%66\-255.
@@ -588,9 +577,9 @@ usable as a diacritic; a larger glyph can be obtained with `\f(CW\e(ha\fP'.
 .De 126 tilde u007E "tilde accent"
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "8-bit Character Codes 160 to 255"
-.\" --------------------------------------------------------------------
+.\"
 .
 They are interpreted as printable characters according to the
 .I latin1
@@ -617,7 +606,7 @@ is mapped to `\f(CW\e~\fP', the stretchable space character.
 .
 the soft hyphen control character.
 .
-.B groff
+.B @T_ROFF@
 never uses this character for output (thus it is omitted in the
 table below); the input character\ 173 is mapped onto `\f(CW\e%\fP'.
 .
@@ -729,14 +718,14 @@ see next section.
 .De 255 ydieresis u0079_0308
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Named Glyphs"
-.\" --------------------------------------------------------------------
+.\"
 .
 Glyph names can be embedded into the document text by using escape
 sequences.
 .
-.BR groff (@MAN7EXT@)
+.BR @L_ROFF@ (@MAN7EXT@)
 describes how these escape sequences look.
 .
 Glyph names can consist of quite arbitrary characters from the
@@ -759,7 +748,7 @@ Note that `\fIc\fP' is not the same as
 `\f(CW\e[\fP\fIc\fP\f(CW]\fP' (\fIc\fP\ a single character):
 The latter is internally mapped to glyph name `\e\fIc\fP'.
 .
-By default, groff defines a single glyph name starting with a backslash,
+By default, @T_ROFF@ defines a single glyph name starting with a backslash,
 namely \%`\e-', which can be either accessed as `\f(CW\e\-\fP' or
 `\f(CW\e[-]\fP'.
 .
@@ -769,7 +758,7 @@ A composite glyph; see below for a more detailed description.
 .
 .
 .P
-In groff, each \%8-bit input character can also referred to by the construct
+In @T_ROFF@, each \%8-bit input character can also referred to by the construct
 `\f(CW\e[char\fP\fIn\fP\f(CW]\fP' where
 .I n
 is the decimal code of the character, a number between 0 and\ 255
@@ -783,7 +772,7 @@ Another special convention is the handling of glyphs with names directly
 derived from a Unicode code point; this is discussed below.
 .
 Moreover, new glyph names can be created by the \f(CW.char\fP request; see
-.BR groff (@MAN7EXT@).
+.BR @L_ROFF@ (@MAN7EXT@).
 .
 .P
 In the following, a plus sign in the `Notes' column indicates that this
@@ -1018,7 +1007,7 @@ For this reason, the four glyphs `lf', `rf', `lc', and `rc' are not
 unified with similarly looking bracket pieces.
 .
 In
-.BR groff ,
+.BR @T_ROFF@ ,
 only glyphs with long names are guaranteed to pile up correctly for all
 devices (provided those glyphs exist).
 .
@@ -1133,7 +1122,7 @@ square root sign.
 .2s co copyright u00A9 "+"
 .C2 rg registered u00AE "+"
 .C2 tm trademark u2122
-.2e bs --- --- "AT&T Bell Labs logo (not used in groff) +"
+.2e bs --- --- "AT&T Bell Labs logo (not used in @T_ROFF@) +"
 .
 .Pa
 .I Currency symbols
@@ -1280,10 +1269,10 @@ this (incompatible) change in Unicode.
 At the time of this writing (January 2006), it is not clear yet whether
 the Adobe Glyph Names `phi' and `phi1' also change its meaning if used for
 mathematics, thus compatibility problems are likely to happen \(en being
-conservative, groff currently assumes that `phi' in a PostScript symbol
+conservative, @T_ROFF@ currently assumes that `phi' in a PostScript symbol
 font is the stroked version.
 .P
-In groff, symbol `\f(CW\e[*f]\fP' always denotes the stroked version of
+In @T_ROFF@, symbol `\f(CW\e[*f]\fP' always denotes the stroked version of
 phi, and `\f(CW\e[+f]\fP' the curly variant.
 .P
 .2s *A Alpha u0391 "+"
@@ -1351,12 +1340,14 @@ phi, and `\f(CW\e[+f]\fP' the curly variant.
 .2e u2661 uni2661 u2661 "white diamond suit"
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH "AUTHOR"
-.\" --------------------------------------------------------------------
+.\"
 .
-Copyright \(co 1989-2000, 2001, 2002, 2003,
-2004, 2006, 2008 Free Software Foundation, Inc.
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
+Copyright \(co 1989 - 2000, 2001 - 2004, 2006, 2008
+   Free Software Foundation, Inc.
 .
 .P
 This document is distributed under the terms of the FDL (GNU Free
@@ -1369,15 +1360,11 @@ GNU copyleft site
 .UE .
 .
 .P
-This document is part of
-.IR groff ,
-the GNU roff distribution.
-.
 It was written by
 .MT jjc@jclark.com
 James Clark
 .ME
-with additions by 
+with additions by
 .MT wl@gnu.org
 Werner Lemberg
 .ME
@@ -1387,17 +1374,17 @@ Bernd Warken
 .ME .
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH "SEE ALSO"
-.\" --------------------------------------------------------------------
+.\"
 .
 .TP
-.BR groff (@MAN1EXT@)
-the GNU roff formatter
+.BR @L_ROFF@ (@MAN1EXT@)
+the @T_ROFF@ formatter
 .
 .TP
-.BR groff (@MAN7EXT@)
-a short reference of the groff formatting language
+.BR @L_ROFF@ (@MAN7EXT@)
+a short reference of the @T_ROFF@ formatting language
 .
 .
 .P
@@ -1411,11 +1398,5 @@ No. 2, Summer 1989
 The Unicode Standard
 .UE
 .
-.cp \n[groff_char_C]
-.
-.\" --------------------------------------------------------------------
-.\" Emacs settings
-.\" --------------------------------------------------------------------
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
+.cp \n[roff_char_C]
+.\" s-ts-mode

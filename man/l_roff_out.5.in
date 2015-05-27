@@ -1,11 +1,10 @@
-'\" e
-.\" The above line should force the use of eqn as a preprocessor
+'\" e -- preprocess: eqn(1)
 .ig
-groff_out.5
+@ @L_ROFF@_out.5
 
-This file is part of groff, the GNU roff type-setting system.
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
-Copyright (C) 1989, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+Copyright (C) 1989, 2001 - 2008
 Free Software Foundation, Inc.
 rewritten from scrach 2001 by Bernd Warken <bwarken@mayn.de>
 
@@ -15,13 +14,10 @@ any later version published by the Free Software Foundation; with the
 Invariant Sections being this .ig-section and AUTHORS, with no
 Front-Cover Texts, and with no Back-Cover Texts.
 
-A copy of the Free Documentation License is included as a file called
-FDL in the main directory of the groff source package.
+You should have received a copy of the Free Documentation License
+as part of the file COPYING; also located in the main directory of the
+source package of this program.
 ..
-.
-.\" --------------------------------------------------------------------
-.\" Setup
-.\" --------------------------------------------------------------------
 .
 .\" ----------------- Document configuration
 .
@@ -60,10 +56,10 @@ after these commands, otherwise the position is not changed.
 \fBD\\$1\fP\ \fI\,\\$2\/\fP\|\*[@linebreak]
 ..
 .
-.\" We set these as troff micromotions rather than eqn because \d and \u 
+.\" We set these as troff micromotions rather than eqn because \d and \u
 .\" can be lifted to XML subscript/superscript tags.  Don't change
 .\" these to a parameterized string, man2html won't handle that.
-.ds hv1 \fIh\d\s-3\&1\s+3\u\~v\d\s-3\&1\s+3\u\fP 
+.ds hv1 \fIh\d\s-3\&1\s+3\u\~v\d\s-3\&1\s+3\u\fP
 .ds hv2 \fIh\d\s-3\&2\s+3\u\~v\d\s-3\&2\s+3\u\fP
 .ds hvn \fIh\d\s-3\&n\s+3\u\~v\d\s-3\&n\s+3\u\fP
 .
@@ -83,71 +79,54 @@ after these commands, otherwise the position is not changed.
 .RI "(" "\\$1" " control command)"
 .br
 ..
-.\" End of macro definitions 
+.\" End of macro definitions
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .\" Title
-.\" --------------------------------------------------------------------
+.\"
 .
-.TH GROFF_OUT @MAN5EXT@ "@MDATE@" "Groff Version @VERSION@"
+.TH @U_ROFF@_OUT @MAN5EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
 .SH NAME
-groff_out \- groff intermediate output format
+@L_ROFF@_out \- @T_ROFF@ intermediate output format
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH DESCRIPTION
-.\" --------------------------------------------------------------------
+.\"
 .
 This manual page describes the
 .I intermediate output
-format of the GNU
-.BR roff (@MAN7EXT@)
+format of the
+.BR @L_ROFF@ (@MAN7EXT@)
 text processing system
-.BR groff (@MAN1EXT@).
-.
-This output is produced by a run of the GNU
-.BR @g@troff (@MAN1EXT@)
+.BR @L_ROFF@ (@MAN1EXT@),
+as produced by a run of the
+.BR @L_TROFF@ (@MAN1EXT@)
 program.
 .
 It contains already all device-specific information, but it is not yet
 fed into a device postprocessor program.
-.
-.
-.P
-As the GNU
-.I roff
-processor
-.BR groff (@MAN1EXT@)
-is a wrapper program around
-.B @g@troff
-that automatically calls a
-postprocessor, this output does not show up normally.
-.
-This is why it is called
-.I intermediate
-within the
-.I groff
-.IR system .
+Because of this it is called intermediate.
 .
 The
-.B groff
+.B @L_ROFF@
 program provides the option
 .B -Z
 to inhibit postprocessing, such that the produced
 .I intermediate output
 is sent to standard output just like calling
-.B @g@troff
+.B @L_TROFF@
 manually.
 .
 .
 .P
 In this document, the term
-.I @g@troff output
-describes what is output by the GNU
-.B @g@troff
-program, while
+.I @L_TROFF@ output
+describes what is output by the
+.B @L_TROFF@
+program, whereas
 .I intermediate output
 refers to the language that is accepted by the parser that prepares
 this output for the postprocessors.
@@ -163,11 +142,11 @@ concept is to facilitate the development of postprocessors by
 providing a common programming interface for all devices.
 .
 It has a language of its own that is completely different from the
-.BR groff (@MAN7EXT@)
+.BR @L_ROFF@ (@MAN7EXT@)
 language.
 .
 While the
-.I groff
+.I @T_ROFF@
 language is a high-level programming language for text processing, the
 .I intermediate output
 language is a kind of low-level assembler language by specifying all
@@ -184,21 +163,16 @@ versions are denoted as
 The
 .I intermediate output
 produced by
-.B groff
-is fairly readable, while
 .I classical troff
-output was hard to understand because of strange habits that are
-still supported, but not used any longer by
-.I GNU
-.IR @g@troff .
+output was hard to understand because of strange habits.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH "LANGUAGE CONCEPTS"
-.\" --------------------------------------------------------------------
+.\"
 .
 During the run of
-.BR @g@troff , 
+.BR @L_TROFF@ ,
 the
 .I roff
 input is cracked down to the information on what has to be printed at
@@ -220,15 +194,15 @@ There are commands for positioning and text writing, for drawing, and
 for device controlling.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Separation"
-.\" --------------------------------------------------------------------
+.\"
 .
 .I Classical troff output
 had strange requirements on whitespace.
 .
 The
-.B groff
+.B @T_ROFF@
 output parser, however, is smart about whitespace by making it
 maximally optional.
 .
@@ -284,7 +258,7 @@ single letter taking a fixed number of arguments.
 .
 For historical reasons, the parser allows to stack such commands on
 the same line, but fortunately, in
-.I groff intermediate
+.I @T_ROFF@ intermediate
 .IR output ,
 every command with at least one argument is followed by a line break,
 thus providing excellent readability.
@@ -315,23 +289,21 @@ occur everywhere.
 They are just ignored.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Argument Units"
-.\" --------------------------------------------------------------------
+.\"
 .
 Some commands take integer arguments that are assumed to represent
 values in a measurement unit, but the letter for the corresponding
 .I scale indicator
 is not written with the output command arguments; see
-.BR groff (@MAN7EXT@)
-and the
-.I groff info file
+.BR @L_ROFF@ (@MAN7EXT@)
 for more on this topic.
 .
 Most commands assume the scale indicator\~\c
 .BR u ,
 the basic unit of the device, some use\~\c
-.BR z , 
+.BR z ,
 the
 .I scaled point unit
 of the device, while others, such as the color commands expect plain
@@ -342,7 +314,7 @@ Note that these scale indicators are relative to the chosen device.
 They are defined by the parameters specified in the device's
 .I DESC
 file; see
-.BR groff_font (@MAN5EXT@).
+.BR @L_ROFF@_font (@MAN5EXT@).
 .
 .
 .P
@@ -366,9 +338,9 @@ character, which then is regarded as the first character of the next
 argument or command.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Document Parts"
-.\" --------------------------------------------------------------------
+.\"
 A correct
 .I intermediate output
 document consists of two parts, the
@@ -383,7 +355,7 @@ is to set the general device parameters using three exactly specified
 commands.
 .
 The
-.I groff prologue
+.I @T_ROFF@ prologue
 is guaranteed to consist of the following three lines (in that order):
 .RS
 .P
@@ -416,7 +388,7 @@ ones used in the
 Processing is terminated as soon as the first
 .B x\ stop
 command is encountered; the last line of any
-.I groff intermediate output
+.I @T_ROFF@ intermediate output
 always contains such a command.
 .
 .
@@ -440,20 +412,20 @@ is done relative to the current page, all other positioning
 is done relative to the current location within this page.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH "COMMAND REFERENCE"
-.\" --------------------------------------------------------------------
+.\"
 .
 This section describes all
 .I intermediate output
 commands, the classical commands as well as the
-.I groff
+.I @T_ROFF@
 extensions.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Comment Command"
-.\" --------------------------------------------------------------------
+.\"
 .
 .TP
 .BI # anything \[la]end-of-line\[ra]
@@ -474,9 +446,9 @@ Each comment can be preceded by arbitrary
 every command can be terminated by a comment.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Simple Commands"
-.\" --------------------------------------------------------------------
+.\"
 .
 The commands in this subsection have a command code consisting of a
 single character, taking a fixed number of arguments.
@@ -575,7 +547,7 @@ horizontally to the right.
 allows negative values for
 .I n
 also, but
-.I groff
+.I @T_ROFF@
 doesn't use this.
 .
 .
@@ -592,15 +564,13 @@ The color components are specified as integer arguments between 0 and
 The number of color components and their meaning vary for the
 different color schemes.
 .
-These commands are generated by the
-.I groff
-escape sequence
+These commands are generated by the escape sequence
 .BR \*[@backslash]m .
 .
 No position changing.
 .
 These commands are a
-.I groff
+.I @T_ROFF@
 extension.
 .
 .
@@ -659,7 +629,7 @@ For example,
 represents an unbreakable space which has a width of 193\|u.
 .
 This command is a
-.I groff
+.I @T_ROFF@
 extension.
 .
 .
@@ -681,7 +651,7 @@ make the
 more human readable without performing any action.
 .
 In
-.IR groff ,
+.IR @T_ROFF@
 they are just ignored, but they must be provided for compatibility
 reasons.
 .
@@ -711,8 +681,8 @@ Set point size to
 scaled points
 (this is unit\~\c
 .B z
-in GNU
-.BR @g@troff ).
+in
+.BR @L_TROFF@ ).
 .
 .I Classical troff
 used the unit
@@ -749,13 +719,13 @@ cannot be printed using this command; use the
 command for those glyphs.
 .
 This command is a
-.I groff
+.I @T_ROFF@
 extension; it is only used for devices whose
 .I DESC
 file contains the
 .B tcommand
 keyword; see
-.BR groff_font (@MAN5EXT@).
+.BR @L_ROFF@_font (@MAN5EXT@).
 .
 .
 .TP
@@ -772,13 +742,13 @@ glyph and\~\c
 basic units\~\c
 .BR u ).
 This command is a
-.I groff
+.I @T_ROFF@
 extension; it is only used for devices whose
 .I DESC
 file contains the
 .B tcommand
 keyword; see
-.BR groff_font (@MAN5EXT@).
+.BR @L_ROFF@_font (@MAN5EXT@).
 .
 .
 .TP
@@ -804,7 +774,7 @@ is a non-negative integer).
 allows negative values for
 .I n
 also, but
-.I groff
+.I @T_ROFF@
 doesn't use this.
 .
 .
@@ -815,9 +785,9 @@ Informs about a paddable whitespace to increase readability.
 The spacing itself must be performed explicitly by a move command.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Graphics Commands"
-.\" --------------------------------------------------------------------
+.\"
 .
 Each graphics or drawing command in the
 .I intermediate output
@@ -840,7 +810,7 @@ is terminated by a
 .
 .
 .P
-.B @g@troff
+.B @L_TROFF@
 output follows the classical spacing rules (no space between command
 and subcommand, all arguments are preceded by a single space
 character), but the parser allows optional space between the command
@@ -856,13 +826,13 @@ In this case, they are integers representing a size measured in basic
 units\~\c
 .BR u .
 .
-The 
+The
 .I h
 arguments
 stand for horizontal distances where positive means right, negative
 left.
 .
-The 
+The
 .I v
 arguments
 stand for vertical distances where positive means down, negative up.
@@ -873,10 +843,9 @@ All these distances are offsets relative to the current location.
 .P
 Unless indicated otherwise, each graphics command directly corresponds
 to a similar
-.I groff
 .B \*[@backslash]D
 escape sequence; see
-.BR groff (@MAN7EXT@).
+.BR @L_ROFF@ (@MAN7EXT@).
 .
 .
 .P
@@ -934,7 +903,7 @@ An optional second integer argument is ignored (this allows to the
 formatter to generate an even number of arguments).
 .
 This command is a
-.I groff
+.I @T_ROFF@
 extension.
 .
 .
@@ -961,7 +930,7 @@ with the leftmost point at the current position; then move to the
 rightmost point of the ellipse.
 .
 This command is a
-.I groff
+.I @T_ROFF@
 extension.
 .
 .
@@ -991,7 +960,6 @@ The number of color components and their meaning vary for the
 different color schemes.
 .
 These commands are generated by the
-.I groff
 escape sequences
 .BR \*[@backslash]D'F\  .\|.\|. '
 and
@@ -1001,7 +969,7 @@ and
 No position changing.
 .
 This command is a
-.I groff
+.I @T_ROFF@
 extension.
 .
 .
@@ -1077,7 +1045,7 @@ sets all colors to blue.
 No position changing.
 .
 This command is a
-.I groff
+.I @T_ROFF@
 extension.
 .
 .RE
@@ -1116,7 +1084,7 @@ the position doesn't change.
 .\}
 .
 This command is a
-.I groff
+.I @T_ROFF@
 extension.
 .
 .
@@ -1135,7 +1103,7 @@ The position is changed in the same way as with
 No position changing.
 .
 This command is a
-.I groff
+.I @T_ROFF@
 extension.
 .
 .
@@ -1168,18 +1136,18 @@ Although this doesn't make sense it is kept for compatibility.
 No position changing.
 .
 This command is a
-.I groff
+.I @T_ROFF@
 extension.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Device Control Commands"
-.\" --------------------------------------------------------------------
+.\"
 .
 Each device control command starts with the letter
 .B x
 followed by a space character (optional or arbitrary space/\:tab in
-.IR groff )
+.IR @T_ROFF@ )
 and a subcommand letter or word; each argument (if any) must be
 preceded by a
 .I syntactical
@@ -1200,7 +1168,7 @@ of characters terminated by the next tab, space, or newline character.
 All characters of the subcommand word but the first are simply ignored.
 .
 For example,
-.B @g@troff
+.B @L_TROFF@
 outputs the initialization command
 .B x\ i
 as
@@ -1211,9 +1179,7 @@ as
 .BR "x\ res" .
 .
 But writings like
-.B x\ i_like_groff
-and
-.B x\ roff_is_groff
+.B x\ i_like_roff
 are accepted as well to mean the same commands.
 .
 .P
@@ -1232,13 +1198,11 @@ Use
 as the intended name for the current file in error reports.
 .
 This is useful for remembering the original file name when
-.B groff
-uses an internal piping mechanism.
-.
+an internal piping mechanism is used.
 The input file is not changed by this command.
 .
 This command is a
-.I groff
+.I @T_ROFF@
 extension.
 .
 .
@@ -1251,7 +1215,7 @@ Mount font position\~\c
 .I s
 (a text word),
 cf.
-.BR groff_font (@MAN5EXT@).
+.BR @L_ROFF@_font (@MAN5EXT@).
 .
 .
 .TP
@@ -1320,7 +1284,7 @@ degrees (an integer in basic units\~\c
 .xsub stop
 Terminates the processing of the current file; issued as the last
 command of any
-.I intermediate @g@troff
+.I intermediate @L_TROFF@
 .IR output .
 .
 .
@@ -1330,7 +1294,7 @@ command of any
 Generate trailer information, if any.
 .
 In
-.BR groff ,
+.BR @T_ROFF@ ,
 this is actually just ignored.
 .
 .
@@ -1341,7 +1305,7 @@ Set name of device to word
 .IR xxx ,
 a sequence of characters ended by the next whitespace character.
 .
-The possible device names coincide with those from the groff
+The possible device names coincide with those from the @L_ROFF@
 .B \-T
 option.
 .
@@ -1364,11 +1328,11 @@ is\~0, stop underlining of spaces.
 This is needed for the
 .B cu
 request in
-.B @g@nroff
+.B @L_NROFF@
 mode and is ignored otherwise.
 .
 This command is a
-.I groff
+.I @T_ROFF@
 extension.
 .
 .
@@ -1394,19 +1358,17 @@ line is not a
 .B +
 character.
 .
-This command is generated by the
-.I groff
-escape sequence
+This command is generated by the escape sequence
 .BR \*[@backslash]X .
 .
 The line-continuing feature is a
-.I groff
+.I @T_ROFF@
 extension.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SS "Obsolete Command"
-.\" --------------------------------------------------------------------
+.\"
 .
 In
 .I classical troff
@@ -1430,7 +1392,7 @@ then print glyph with single-letter name\~\c
 .RS
 .P
 In
-.IR groff ,
+.IR @T_ROFF@ ,
 arbitrary
 .I syntactical space
 around and within this command is allowed to be added.
@@ -1458,9 +1420,9 @@ and\~\c
 provide a better functionality.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH "POSTPROCESSING"
-.\" --------------------------------------------------------------------
+.\"
 .
 The
 .I roff
@@ -1472,7 +1434,7 @@ A device can be some piece of hardware such as a printer, or a software
 file format suitable for graphical or text processing.
 .
 The
-.I groff
+.I @T_ROFF@
 system provides powerful means that make the programming of such
 postprocessors an easy task.
 .P
@@ -1481,17 +1443,15 @@ There is a library function that parses the
 and sends the information obtained to the device via methods of a
 class with a common interface for each device.
 .
-So a
-.I groff
-postprocessor must only redefine the methods of this class.
+So a postprocessor must only redefine the methods of this class.
 .
 For details, see the reference in section
 .BR FILES .
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH "EXAMPLES"
-.\" --------------------------------------------------------------------
+.\"
 .
 This section presents the
 .I intermediate output
@@ -1500,11 +1460,11 @@ generated from the same input for three different devices.
 The input is the sentence
 .I hell world
 fed into
-.B groff
+.B @L_ROFF@
 on the command line.
 .
 .
-.IP \[bu] 2m 
+.IP \[bu] 2m
 High-resolution device
 .I ps
 .
@@ -1512,7 +1472,7 @@ High-resolution device
 .RS
 .P
 .EX
-\fBshell>\fP echo "hell world" | groff -Z -T ps
+\fBshell>\fP echo "hell world" | @L_ROFF@ -Z -T ps
 .EE
 .
 .
@@ -1544,11 +1504,11 @@ x stop
 .
 .P
 This output can be fed into the postprocessor
-.BR grops (@MAN1EXT@)
+.BR @L_D_PS@ (@MAN1EXT@)
 to get its representation as a PostScript file.
 .
 .
-.IP \[bu] 2m 
+.IP \[bu] 2m
 Low-resolution device
 .I latin1
 .
@@ -1566,7 +1526,7 @@ formatter.
 .
 .P
 .EX
-\fBshell>\fP "hell world" | groff -Z -T latin1
+\fBshell>\fP "hell world" | @L_ROFF@ -Z -T latin1
 .EE
 .
 .
@@ -1613,7 +1573,7 @@ x stop
 .
 .P
 This output can be fed into the postprocessor
-.BR grotty (@MAN1EXT@)
+.BR @L_D_TTY@ (@MAN1EXT@)
 to get a formatted text document.
 .
 .RS
@@ -1623,32 +1583,32 @@ Due to the obsolete jump-and-write command, the text clusters in the
 classical output are almost unreadable.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH "COMPATIBILITY"
-.\" --------------------------------------------------------------------
+.\"
 .
 The
 .I intermediate output
-language of the 
+language of the
 .I classical troff
 was first documented in
 .IR [CSTR\~#97] .
 .
 The
-.I groff intermediate output
+.I @T_ROFF@ intermediate output
 format is compatible with this specification except for the following
 features.
 .
 .
-.IP \[bu] 2m 
+.IP \[bu] 2m
 The classical quasi device independence is not yet implemented.
 .
 .
-.IP \[bu] 2m 
+.IP \[bu] 2m
 The old hardware was very different from what we use today.
 .
 So the
-.I groff
+.I @T_ROFF@
 devices are also fundamentally different from the ones in
 .I classical
 .IR troff .
@@ -1656,18 +1616,18 @@ devices are also fundamentally different from the ones in
 For example, the classical PostScript device was called
 .I post
 and had a resolution of 720 units per inch,
-while
-.IR groff 's
+whereas
+.IR @T_ROFF@ 's
 .I ps
 device has a resolution of 72000 units per inch.
 .
 Maybe, by implementing some rescaling mechanism similar to the
 classical quasi device independence, these could be integrated into
 modern
-.IR groff .
+.IR @T_ROFF@ .
 .
 .
-.IP \[bu] 2m 
+.IP \[bu] 2m
 The B-spline command
 .B D~
 is correctly handled by the
@@ -1676,7 +1636,7 @@ parser, but the drawing routines aren't implemented in some of the
 postprocessor programs.
 .
 .
-.IP \[bu] 2m 
+.IP \[bu] 2m
 The argument of the commands
 .B s
 and
@@ -1684,7 +1644,7 @@ and
 has the implicit unit scaled point\~\c
 .B z
 in
-.IR groff ,
+.IR @T_ROFF@ ,
 while
 .I classical troff
 had point (\c
@@ -1694,11 +1654,11 @@ This isn't an incompatibility, but a compatible extension, for both
 units coincide for all devices without a
 .I sizescale
 parameter, including all classical and the
-.I groff
+.I @T_ROFF@
 text devices.
 .
 The few
-.I groff
+.I @T_ROFF@
 devices with a sizescale parameter either did not exist, had a
 different name, or seem to have had a different resolution.
 .
@@ -1706,13 +1666,13 @@ So conflicts with classical devices are very unlikely.
 .
 .
 .ie \n[@STUPID_DRAWING_POSITIONING]=1 \{\
-.IP \[bu] 2m 
+.IP \[bu] 2m
 The position changing after the commands
 .BR Dp ,
 .BR DP ,
 and
 .B Dt
-is illogical, but as old versions of groff used this feature it is
+is illogical, but as old versions of GNU troff used this feature it is
 kept for compatibility reasons.
 .\}             \" @STUPID_DRAWING_POSITIONING
 .el \{\
@@ -1720,11 +1680,11 @@ kept for compatibility reasons.
 Temporarily, there existed some confusion on the positioning after the
 .B D
 commands that are
-.I groff
+.I @T_ROFF@
 extensions.
 .
 This has been clarified by establishing the classical rule for all
-groff drawing commands:
+@T_ROFF@ drawing commands:
 .
 .
 .RS
@@ -1743,16 +1703,16 @@ follow quite naturally.
 .
 .P
 The differences between
-.I groff
+.I @T_ROFF@
 and
 .I classical troff
 are documented in
-.BR groff_diff (@MAN7EXT@).
+.BR @L_ROFF@_diff (@MAN7EXT@).
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH "FILES"
-.\" --------------------------------------------------------------------
+.\"
 .
 .TP
 .BI @FONTDIR@/dev name /DESC
@@ -1760,28 +1720,28 @@ Device description file for device
 .IR name .
 .
 .TP
-.IB \[la]groff-source-dir\[ra] /src/libs/libdriver/input.cpp
+.IB \[la]@T_ROFF@-source-dir\[ra] /src/libs/driver/input.cpp
 Defines the parser and postprocessor for the
 .I intermediate
 .IR output .
 .
 It is located relative to the top directory of the
-.I groff
+.I @T_ROFF@
 source tree.
 .
 This parser is the definitive specification of the
-.I groff intermediate output
+.I @T_ROFF@ intermediate output
 format.
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH "SEE ALSO"
-.\" --------------------------------------------------------------------
+.\"
 .
 A reference like
-.BR groff (@MAN7EXT@)
+.BR @L_ROFF@ (@MAN7EXT@)
 refers to a manual page; here
-.B groff
+.B @L_ROFF@
 in section\~\c
 .I @MAN7EXT@
 of the man-page documentation system.
@@ -1789,11 +1749,10 @@ of the man-page documentation system.
 To read the example, look up section\~@MAN7EXT@ in your desktop help
 system or call from the shell prompt
 .
-.
 .RS
 .P
 .EX
-\fBshell>\fP man @MAN7EXT@ groff
+\fBshell>\fP man @MAN7EXT@ @L_ROFF@
 .EE
 .RE
 .
@@ -1804,28 +1763,26 @@ For more details, see
 .
 .
 .TP
-.BR groff (@MAN1EXT@)
+.BR @L_ROFF@ (@MAN1EXT@)
 option
 .B -Z
-and further readings on groff.
+and further readings.
 .
 .
 .TP
-.BR groff (@MAN7EXT@)
-for details of the
-.I groff
-language such as numerical units and escape sequences.
+.BR @L_ROFF@ (@MAN7EXT@)
+for details of the language such as numerical units and escape sequences.
 .
 .
 .TP
-.BR groff_font (@MAN5EXT@)
+.BR @L_ROFF@_font (@MAN5EXT@)
 for details on the device scaling parameters of the
 .B DESC
 file.
 .
 .
 .TP
-.BR @g@troff (@MAN1EXT@)
+.BR @L_TROFF@ (@MAN1EXT@)
 generates the device-independent intermediate output.
 .
 .
@@ -1835,36 +1792,18 @@ for historical aspects and the general structure of roff systems.
 .
 .
 .TP
-.BR groff_diff (@MAN7EXT@)
+.BR @L_ROFF@_diff (@MAN7EXT@)
 The differences between the intermediate output in groff and classical
 troff.
 .
-.
 .P
-.BR \%grodvi (@MAN1EXT@),
-.BR \%grohtml (@MAN1EXT@),
-.BR \%grops (@MAN1EXT@),
-.BR \%grotty (@MAN1EXT@)
+.BR \%@L_D_DVI@ (@MAN1EXT@),
+.BR \%@L_D_HTML@ (@MAN1EXT@),
+.BR \%@L_D_PS@ (@MAN1EXT@),
+.BR \%@L_D_TTY@ (@MAN1EXT@)
 .br
 .RS
-the groff postprocessor programs.
-.RE
-.
-.
-.P
-For a treatment of all aspects of the groff system within a single
-document, see the
-.I groff info
-.IR file .
-.
-It can be read within the integrated help systems, within
-.BR emacs (1)
-or from the shell prompt by
-.
-.RS
-.EX
-\fBshell>\fP info groff
-.EE
+the @T_ROFF@ postprocessor programs.
 .RE
 .
 .
@@ -1905,13 +1844,14 @@ CSTR\~#54
 .UE .
 .
 .
-.\" --------------------------------------------------------------------
+.\"
 .SH "AUTHORS"
-.\" --------------------------------------------------------------------
+.\"
 .
-Copyright (C) 1989, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
+Copyright (C) 1989, 2001 - 2008
 Free Software Foundation, Inc.
-.
 .
 .P
 This document is distributed under the terms of the FDL (GNU Free
@@ -1925,27 +1865,6 @@ GNU copyleft site
 .
 .
 .P
-This document is part of
-.IR groff ,
-the GNU
-.I roff
-distribution.
+This document was rewritten in 2002 by Bernd Warken.
 .
-It is based on a former version \- published under the GPL \- that
-described only parts of the
-.I groff
-extensions of the output language.
-.
-It was rewritten in 2002 by Bernd Warken and is
-maintained by
-.MT wl@gnu.org
-Werner Lemberg
-.ME .
-.
-.\" --------------------------------------------------------------------
-.\" Emacs settings
-.\" --------------------------------------------------------------------
-.\"
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
+.\" s-ts-mode
