@@ -1,5 +1,5 @@
-# Map for EC fonts with T1 encoding.
-# Originally contributed by Andreas Schwab <schwab@suse.de>
+#@ Map for EC fonts with T1 encoding.
+#@ Originally contributed by Andreas Schwab <schwab@suse.de>
 0 ga
 1 aa
 2 a^
