@@ -1,9 +1,7 @@
-.\"	-*-	mode: roff	-*-
 .ig
+@ font_x.in
 
-font_x.roff
-
-This file is part of groff, the GNU roff type-setting system.
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
 Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 written by Joachim Walsdorff <Joachim.Walsdorff@urz.uni-heidelberg.de>.
@@ -22,7 +20,6 @@ You should have received a copy of the GNU General Public License
 along with groff; see the file COPYING.  If not, write to the Free
 Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 02110-1301, USA.
-
 ..
 .
 .
@@ -39,7 +36,7 @@ Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 .time start
 .
 .if !d fontpath \
-.  ds fontpath @fontdir@
+.  ds fontpath @FONTDIR@
 .
 .de fontdump
 .  ie \\n[.$] \
@@ -97,7 +94,7 @@ Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 .    tm listing font `\\*[*$1]'...
 .
 .    TBL border=.1n bc=red cpd=0 csp=.1n bgc=
-.      CPTN groff font \\*[*$1] \
+.      CPTN @L_ROFF@ font \\*[*$1] \
             .br \
             val=b ".pso grep -e internalname \\*[fontpath]/dev\*[.T]/\\*[*$1]"
 .      TR
@@ -151,8 +148,8 @@ Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 .
 .time
 .date
-.
 .\"	466MHz Celeron CPU, 384MB RAM
 .\"	WindowsXP/cygwin groff18.1:	107s
 .\"	WindowsXP/cygwin groff19.2:	390s
 .\"	Suse Linux 9.3 groff19.2:	 66s
+.\" s-tr-mode

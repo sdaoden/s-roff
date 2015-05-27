@@ -1,10 +1,12 @@
 .ig
+@ hdtbl.7.in
+
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
 Copyright (C) 2005, 2006, 2008, 2009
   Free Software Foundation, Inc.
 
 Written by Joachim Walsdorff <Joachim.Walsdorff@urz.uni-heidelberg.de>
-
-This file is part of groff, the groff.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -12,17 +14,16 @@ any later version published by the Free Software Foundation; with the
 Invariant Sections being this .ig-section and AUTHORS, with no
 Front-Cover Texts, and with no Back-Cover Texts.
 
-A copy of the Free Documentation License is included as a file called
-FDL in the main directory of the groff source package.
+You should have received a copy of the Free Documentation License
+as part of the file COPYING; also located in the main directory of the
+source package of this program.
 ..
 .
-.
-.
-.TH GROFF_HDTBL @MAN7EXT@ "@MDATE@" "Groff Version @VERSION@"
+.TH @U_ROFF@_HDTBL @MAN7EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
 .
 .SH NAME
-groff_hdtbl \- groff `hdtbl' macros for generation of tables
+@L_ROFF@_hdtbl \- @L_ROFF@ `hdtbl' macros for generation of tables
 .
 .
 .ig
@@ -186,7 +187,7 @@ An advantage of
 .B hdtbl
 is that the tables are constructed without calling a preprocessor; this
 means that
-.BR groff 's
+.BR @L_ROFF@ 's
 full macro capabilities are available.
 .
 On the other hand, table processing with
@@ -378,7 +379,7 @@ line and not already enclosed in double quotes.
 Argument values specified below as\~\c
 .CI c
 are colors predefined by
-.B groff
+.B @L_ROFF@
 or colors defined by the user with the
 .CR .defcolor
 request.
@@ -394,7 +395,7 @@ are natural numbers.
 Argument values\~\c
 .CI n
 are numerical values with the usual
-.B groff
+.B @L_ROFF@
 scaling indicators.
 .
 Some of the arguments are specific to one or two macros, but most of them
@@ -742,7 +743,7 @@ The foreground color of the cell contents.
 The font family for the table.
 .
 .CI name
-is one of the groff font families, for example
+is one of the @L_ROFF@ font families, for example
 .CR A
 for the AvantGarde fonts or
 .CR HN
@@ -769,7 +770,7 @@ for roman,
 .IR italic ,
 or \f[BI]bold italic\f[], respectively.
 .
-As with 
+As with
 .BR roff 's
 .CR .ft
 request the
@@ -942,9 +943,9 @@ Joachim Walsdorff
 .SH BUGS AND SUGGESTIONS
 .
 Please send your commments to the
-.MT groff@gnu.org
-groff mailing list
+.MT @BUGMAIL@
+mailing list
 .ME
 or directly to the author.
 .
-.\" EOF
+.\" s-tr-mode
