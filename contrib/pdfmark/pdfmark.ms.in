@@ -1,12 +1,9 @@
-.\" vim: ft=groff
 .ig
-pdfmark.ms
+@ pdfmark.ms.in
 
-File position: <groff-source>/contrib/pdfmark/pdfmark.ms
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
-This file is part of groff, the GNU roff type-setting system.
-
-Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+Copyright (C) 2004 - 2006 Free Software Foundation, Inc.
 written by Keith Marshall <keith.d.marshall@ntlworld.com>
 
 Permission is granted to copy, distribute and/or modify this document
@@ -20,25 +17,22 @@ Sections:--
 
     b)  The two lines below starting with `.AU' and `.AI'.
 
-A copy of the Free Documentation License is included as a file called
-FDL in the main directory of the groff source package.
+You should have received a copy of the Free Documentation License
+as part of the file COPYING; also located in the main directory of the
+source package of this program.
 ..
 .
 .CS
 Portable Document Format
-Publishing with GNU Troff
+Publishing with @T_ROFF@
 .AU Keith Marshall
 .AI <keith.d.marshall@ntlworld.com>
 .CE
 .\"
-.\" Specify the Internet address for the groff web site.
+.\" Specify the Internet address for our web site.
 .\" Currently, there are two available addresses; a copy is maintained at ...
 .\"
-.ds GROFF-WEBSITE http://www.gnu.org/software/groff
-.\"
-.\" ... but the official home site is at ...
-.\"
-.ds GROFF-WEBSITE http://groff.ffii.org
+.ds ROFF-WEBSITE @ROFF_WEBURL@
 .\"
 .\" Set the PDF default document view attribute, to ensure that the document
 .\" outline is visible, each time the document is opened in Acrobat Reader.
@@ -52,10 +46,10 @@ Publishing with GNU Troff
 .\"
 .\" Add document identification meta-data
 .\"
-.pdfinfo /Title     Portable Document Format Publishing with GNU Troff
+.pdfinfo /Title     Portable Document Format Publishing with @T_ROFF@
 .pdfinfo /Author    Keith Marshall
-.pdfinfo /Subject   Tips and Techniques for Exploiting PDF Features with GNU Troff
-.pdfinfo /Keywords  groff troff PDF pdfmark
+.pdfinfo /Subject   Tips and Techniques for Exploiting PDF Features with @T_ROFF@
+.pdfinfo /Keywords  @T_ROFF@ @T_TROFF@ troff PDF pdfmark
 .\"
 .\" Set the default cross reference format to indicate section numbers,
 .\" rather than page numbers, when we insert a reference pointer.
@@ -136,16 +130,16 @@ Publishing with GNU Troff
 It might appear that it is a fairly simple matter to
 produce documents in Adobe\*(rg\~\(lqPortable\~Document\~Format\(rq,
 commonly known as PDF, using
-.CW groff ) GNU\~Troff\~(
+.CW @T_ROFF@
 as the document formatter.
 Indeed,
-.CW groff 's
+.CW @L_ROFF@ 's
 default output format is the native Adobe\*(rg\~PostScript\*(rg format,
 which PDF producers such as Adobe\*(rg Acrobat\*(rg Distiller\*(rg,
 or GhostScript, expect as their input format.
 Thus, the PDF production process would seem to entail simply
 formatting the document source with
-.CW groff ,
+.CW @L_ROFF@ ,
 to produce a PostScript\*(rg version of the document,
 which can subsequently be processed by Acrobat\*(rg Distiller\*(rg
 or GhostScript, to generate the final PDF document.
@@ -155,7 +149,7 @@ the production cycle described above may be sufficient.
 However, this is a limited PDF production method,
 in which the resultant PDF document represents no more than
 an on screen image of the printed form of the document, if
-.CW groff 's
+.CW @L_ROFF@ 's
 PostScript\*(rg output were printed directly.
 .LP
 The Portable Document Format provides a number of features,
@@ -181,21 +175,21 @@ possible to exploit these PDF features, which are described in the Adobe\*(rg
 .pdfmark-manual ,
 with some refinement of the simple PDF production method, provided
 appropriate \(lqfeature implementing\(rq instructions can be embedded into
-.CW groff 's
+.CW @L_ROFF@ 's
 PostScript\*(rg rendering of the document.
 This, of course, implies that the original document source, which
-.CW groff
+.CW @L_ROFF@
 will process to generate the PostScript\*(rg description of the document,
 must include appropriate markup to exploit the desired PDF features.
 It is this preparation of the
-.CW groff
+.CW @L_ROFF@
 document source to exploit a number of these features,
 which provides the principal focus of this document.
 .LP
 The markup techniques to be described have been utilised in the production of
 the PDF version of this document itself.
 This has been formatted using
-.CW groff 's
+.CW @L_ROFF@ 's
 .CW ms
 macro package;
 thus, usage examples may be found in the document source file,
@@ -239,7 +233,7 @@ GNU/Linux, and on Microsoft\*(rg Windows\(tm2000 operating platforms, using
 .pdfhref M footnote1
 Later versions should, and some earlier versions may, be equally suitable.
 See
-.pdfhref W \*[GROFF-WEBSITE]
+.pdfhref W \*[ROFF-WEBSITE]
 for information and availability of the latest version.
 .FE
 in association with
@@ -265,7 +259,7 @@ or GNU/Linux system, are
 and
 .CW make ,
 together with an appropriate text editor, for creating and marking up the
-.CW groff
+.CW @L_ROFF@
 input files.
 These additional utilities are not provided, as standard,
 on the Microsoft\*(rg Windows\(tm platform,
@@ -301,7 +295,7 @@ UNIX\(tm
 tools for 32\(hybit Microsoft\*(rg Windows\(tm, available for download from
 .pdfhref W -A ; http://www.mingw.org
 it
-.EM does 
+.EM does
 include those tools listed above,
 and is the package which was actually used when performing the Windows\(tm2000
 platform tests referred to in the text.
@@ -312,7 +306,7 @@ which may be available, are in any way inferior to them.
 .bp
 .NH 1
 .\" We may wish a section heading to represent a named destination,
-.\" so that we can create a linked reference to it, from some other 
+.\" so that we can create a linked reference to it, from some other
 .\" part of the PDF document, (or even from another PDF document).
 .\"
 .\" Here we use the "-N" option of the "XN" macro, to create a named
@@ -325,19 +319,19 @@ which may be available, are in any way inferior to them.
 .XN -N pdf-features -- Exploiting PDF Document Features
 .LP
 To establish a consistent framework for adding PDF features, a
-.CW groff
+.CW @L_ROFF@
 macro package, named
 .CW pdfmark.tmac ,
 has been provided.
 Thus, to incorporate PDF features in a document,
 the appropriate macro calls, as described below, may be placed in the
-.CW groff
+.CW @L_ROFF@
 document source, which should then be processed with a
-.CW groff
+.CW @L_ROFF@
 command of the form
 .QP
 .fam C
-groff -Tps [-m
+@L_ROFF@ -Tps [-m
 .I name "] -m"
 .B pdfmark
 .I options \& [-
@@ -347,7 +341,7 @@ It may be noted that the
 .CW pdfmark
 macros have no dependencies on, and no known conflicts with,
 any other
-.CW groff
+.CW @L_ROFF@
 macro package;  thus, users are free to use any other macro package,
 of their choice, to format their documents, while also using the
 .CW pdfmark
@@ -360,7 +354,7 @@ All PDF features are implemented by embedding instances of the
 operator, as described in the Adobe\*(rg
 .pdfmark-manual ,
 into
-.CW groff 's
+.CW @L_ROFF@ 's
 PostScript\*(rg output stream.
 To facilitate the use of this operator, the
 .CW pdfmark
@@ -475,7 +469,7 @@ It should be noted that the view controlling meta\(hydata, defined by the
 macro, is not written immediately to the PostScript\*(rg output stream,
 but is stored in an internal meta\(hydata \(lqcache\(rq,
 (simply implemented as a
-.CW groff
+.CW @L_ROFF@
 diversion).
 This \(lqcached\(lq meta\(hydata must be written out later, by invoking the
 .CW pdfsync
@@ -512,7 +506,7 @@ was specified using a macro sequence similar to:\(en
 \&.pdfinfo /Title     PDF Document Publishing with GNU Troff
 \&.pdfinfo /Author    Keith Marshall
 \&.pdfinfo /Subject   How to Exploit PDF Features with GNU Troff
-\&.pdfinfo /Keywords  groff troff PDF pdfmark
+\&.pdfinfo /Keywords  @T_ROFF@ @T_TROFF@ PDF pdfmark
 .DE
 Notice that the
 .CW pdfinfo
@@ -690,7 +684,7 @@ the data required by the
 .CW pdfmark
 operator to create the outline entry may not be fully defined,
 when the outline reference is defined in the
-.CW groff
+.CW @L_ROFF@
 document source.
 Specifically, when the outline entry is created, its
 .CW /Count
@@ -722,7 +716,7 @@ top level entry is defined.
 .LP
 One potential problem, which arises from the use of the \(lqoutline cache\(rq,
 is that, at the end of any document formatting run, the last top level outline entry,
-and any subordinates defined after it, will remain in the cache, and will 
+and any subordinates defined after it, will remain in the cache, and will
 .EM not
 be automatically written to the output stream.
 To avoid this problem, the user should follow the guidelines given in
@@ -740,7 +734,7 @@ To avoid this problem, the user should follow the guidelines given in
 to synchronise the output state with the cache state,
 .XR pdfsync ), (
 at the end of the
-.CW groff
+.CW @L_ROFF@
 formatting run.
 .NH 3
 .XN -N outline-view -- Associating a Document View with an Outline Reference
@@ -828,14 +822,14 @@ This register is computed by
 when creating an outline entry;
 it specifies the vertical position of the \(lqbookmark\(rq,
 in basic
-.CW groff
+.CW @L_ROFF@
 units, relative to the
 .EM bottom
 edge of the document page on which it is defined,
 and is followed, in the
 .CW PDFBOOKMARK.VIEW
 definition, by the
-.CW grops
+.CW @L_D_PS@
 .CW u \(rq \(lq
 operator, to convert it to PostScript\*(rg units on output.
 It may be used in any redefined specification for
@@ -863,8 +857,8 @@ This is most effectively ensured,
 by providing
 .EM identical
 page size specifications to
-.CW groff ,
-.CW grops
+.CW @L_ROFF@ ,
+.CW @L_D_PS@
 and to the PostScript\*(rg to PDF converter employed,
 and avoiding any page length changes within the document source.
 .LP
@@ -1376,7 +1370,7 @@ This option is
 .EM required ,
 to distinguish between the series of \(lqbookmark\(rq names generated in
 individual passes of the
-.CW groff
+.CW @L_ROFF@
 formatter, when the final PDF document is to be assembled
 from a number of separately formatted components;
 .XR multipart-outline ). (
@@ -1423,14 +1417,14 @@ It is also useful when the argument list to
 .CW pdfhref
 contains special characters \(em any special character,
 which is not valid in a
-.CW groff
+.CW @L_ROFF@
 macro name, will cause a parsing error, if
 .CW pdfhref
 attempts to match it as a possible option flag;
 using the
 .CW -- \(rq \(lq
 flag prevents this, so suppressing the
-.CW groff
+.CW @L_ROFF@
 warning message, which would otherwise ensue.
 .IP
 Using this flag after
@@ -1627,7 +1621,7 @@ in addition to its inclusion in the cross reference map.
 Effective cross referencing of
 .EM any
 document formatted by
-.CW groff
+.CW @L_ROFF@
 requires multiple pass formatting.
 Details of how this multiple pass formatting may be accomplished,
 when working with the
@@ -1785,7 +1779,7 @@ macro, but in this case, with the
 .CWB L \& \& \(rq \(lq
 operator.
 This operator provides support for two distinct cases,
-depending on whether the reference destination is defined in 
+depending on whether the reference destination is defined in
 the same document as the link,
 .XR link-intern ), (
 or is defined as a named destination in a different PDF document,
@@ -1833,7 +1827,7 @@ If any
 .CWI descriptive \& \& \~\c
 .CWI text
 arguments are specified, then they will be inserted into the
-.CW groff
+.CW @L_ROFF@
 output stream, to define the text appearing in the \(lqhot\(hyspot\(rq
 region of the link;
 this will be printed in the link colour specified by the string,
@@ -2154,24 +2148,24 @@ representation of the URI, which
 .EM will ,
 therefore, appear as the entire content of the \(lqhot\(hyspot\(rq.
 For example, we could introduce a reference to
-.pdfhref W -D \*[GROFF-WEBSITE] -A , the groff web site
+.pdfhref W -D \*[ROFF-WEBSITE] -A , the @T_ROFF@ web site
 in which the actual URI is concealed, by using mark up such as:\(en
 .DS I
 .CW
 For example, we could introduce a reference to
-\&.pdfhref W -D \*[GROFF-WEBSITE] -A , the groff web site
+\&.pdfhref W -D \*[ROFF-WEBSITE] -A , the @T_ROFF@ web site
 in which the actual URI is concealed,
 .DE
 Alternatively,
-to refer the reader to the groff web site,
+to refer the reader to the @T_ROFF@ web site,
 making it obvious that the appropriate URI is
-.pdfhref W -A , \*[GROFF-WEBSITE]
+.pdfhref W -A , \*[ROFF-WEBSITE]
 the requisite mark up might be:\(en
 .DS I
 .CW
-to refer the reader to the groff web site,
+to refer the reader to the @T_ROFF@ web site,
 making it obvious that the appropriate URI is
-\&.pdfhref W -A , \*[GROFF-WEBSITE]
+\&.pdfhref W -A , \*[ROFF-WEBSITE]
 the requisite mark up might be:\e(en
 .DE
 .NH 3
@@ -2309,7 +2303,7 @@ binding package,
 illustrates how this may be accomplished:\(en
 .DS I
 .CW
-\&.\e" groff "ms" provides the "pg@bottom" macro, which has already
+\&.\e" @T_ROFF@ "ms" provides the "pg@bottom" macro, which has already
 \&.\e" been installed as a page transition trap.  To ensure proper
 \&.\e" mapping of "pdfhref" links which overflow the bottom of any
 \&.\e" page, we need to install the "pdfhref" page transition hook,
@@ -2338,7 +2332,7 @@ do not immediately write their
 .CW pdfmark
 output to the PostScript\*(rg data stream;
 instead, they cache their output, in a
-.CW groff
+.CW @L_ROFF@
 diversion, in the case of the
 .CW pdfview
 and
@@ -2358,7 +2352,7 @@ cached data may be implicitly written out as the document outline is compiled,
 but there will
 .EM always
 be some remaining data, which must be explicitly flushed out, before the
-.CW groff
+.CW @L_ROFF@
 formatting process is allowed to complete.
 .LP
 To allow the user to choose when cached
@@ -2380,15 +2374,15 @@ the \(lqmeta\(hydata cache\(rq, containing
 and
 .CW pdfinfo
 data,
-.EM and 
+.EM and
 the \(lqoutline cache\(rq,
 containing any previously uncommitted document outline data,
 are flushed; ideally, this should be included in a
-.CW groff
+.CW @L_ROFF@
 \(lqend macro\(rq, to ensure that
 .EM both
 caches are flushed, before
-.CW groff
+.CW @L_ROFF@
 terminates.
 .LP
 Occasionally,
@@ -2446,13 +2440,13 @@ macros described in the preceding section,
 provide no inherent document formatting capability of their own.
 However,
 they may be used in conjunction with any other
-.CW groff
+.CW @L_ROFF@
 macro package of the user's choice,
 to add such capability.
 .LP
 In preparing this document, the standard
 .CW ms
-macro package, supplied as a component of the GNU Troff distribution,
+macro package, supplied as a component of the @T_ROFF@ distribution,
 has been employed.
 To facilitate the use of the
 .CW pdfmark
@@ -2465,7 +2459,7 @@ has been created.
 The use of this binding macro package is described in the following section,
 .XR using-spdf ); (
 it may also serve as an example to users of other standard
-.CW groff
+.CW @L_ROFF@
 macro packages,
 as to how the
 .CW pdfmark
@@ -2481,11 +2475,11 @@ macros in conjunction with the
 .CW ms
 macros,
 simply by issuing a
-.CW groff
+.CW @L_ROFF@
 command of the form
 .QP
 .fam C
-groff -Tps
+@L_ROFF@ -Tps
 .B -mspdf
 .I "-options ...\&" ] [
 file(s) ...
@@ -2493,7 +2487,7 @@ file(s) ...
 When using the
 .CW spdf.tmac
 package, the
-.CW groff
+.CW @L_ROFF@
 input files may be marked up using any of the standard
 .CW ms
 macros to specify document formatting,
@@ -2554,3 +2548,4 @@ macro.
 .NH 3
 .XN -N import-map -- Deploying a Document Reference Map
 .TC
+.\" s-ts-mode
