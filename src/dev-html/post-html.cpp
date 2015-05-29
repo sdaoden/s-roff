@@ -3613,7 +3613,6 @@ void html_printer::lookahead_for_tables (void)
   colType     type_of_col    = none;
   int         left           = 0;
   int         found_col      = false;
-  int         seen_text      = false;
   int         ncol           = 0;
   int         colmin         = 0;		// pacify compiler
   int         colmax         = 0;		// pacify compiler
@@ -3643,7 +3642,6 @@ void html_printer::lookahead_for_tables (void)
       }
 
       start_of_line = g;
-      seen_text = false;
       ncol = 0;
       left = next_horiz_pos(g, nf);
       if (found_col)
@@ -3710,14 +3708,10 @@ void html_printer::lookahead_for_tables (void)
       } else if (! g->is_a_tag())
 	update_min_max(type_of_col, &colmin, &colmax, g);
 
-      if ((! g->is_a_tag()) || g->is_tab())
-	seen_text = true;
-
       if ((g->is_col() || g->is_tab() || g->is_tab0())
 	  && (start_of_line != NULL) && (start_of_table == NULL)) {
 	start_of_table = insert_tab_ts(start_of_line);
 	start_of_line = NULL;
-	seen_text = false;
       } else if (g->is_ce() && (start_of_table != NULL)) {
 	add_table_end("*** CE ***");
 	start_of_table->remember_table(tbl);
@@ -3779,7 +3773,6 @@ void html_printer::lookahead_for_tables (void)
 	  nf = calc_nf(g, nf);
 	} while ((g != NULL) && (g->is_br() || (nf && g->is_eol())));
 	start_of_line = g;
-	seen_text = false;
 	ncol = 0;
 	left = next_horiz_pos(g, nf);
 	if (found_col)
@@ -4658,6 +4651,8 @@ static const char *get_html_entity (unsigned int code)
       case 0x2663: return "&clubs;";
       case 0x2665: return "&hearts;";
       case 0x2666: return "&diams;";
+      case 0x27E8: return "&lang;";
+      case 0x27E9: return "&rang;";
       default: return to_unicode(code);
     }
   }
