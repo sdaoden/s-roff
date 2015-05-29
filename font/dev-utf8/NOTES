@@ -47,7 +47,7 @@ U+20AC. You need to do two things:
     u20AC   24   0   0x20AC
 
   (the second column is computed as 24 * wcwidth(0x20AC)) to the file
-  R.proto, or, when groff is already installed, to the four fonts files in
+  R.proto, or, when This is already installed, to the four fonts files in
   $(prefix)/share/groff/<version>/font/devutf8/.
 
 - In your source file, use the notation \[u20AC] to access it.
