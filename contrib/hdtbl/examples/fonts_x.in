@@ -23,15 +23,13 @@ Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 ..
 .
 .
-.\"	******************************************************************
-.\"	**		groff glyphs vs. character codes:		**
-.\"	**	.fontdump [font1 font2 ...]				**
-.\"	**		Print glyphs of font1, font2, ..., versus	**
-.\"	**		character code.					**
-.\"	**		`all' as fontname prints all fonts in the	**
-.\"	**		specified string `fontpath'.			**
-.\"	**		without arg: glyphs and codes of active font.	**
-.\"	******************************************************************
+.\"   **    roff glyphs vs. character codes:
+.\"   ** .fontdump [font1 font2 ...]
+.\"   **    Print glyphs of font1, font2, ..., versus
+.\"   **    character code.
+.\"   **    `all' as fontname prints all fonts in the
+.\"   **    specified string `fontpath'.
+.\"   **    without arg: glyphs and codes of active font.
 .
 .time start
 .
@@ -44,11 +42,11 @@ Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 .  el \
 .    ds *args \\n[.fn]
 .
-.  pso bash -c \
+.  pso sh -c \
        "echo -n .ds *f\ ; \
         ls \\*[fontpath]/dev\*[.T] \
         | tr '[:cntrl:]' ' '"
-.  \"	This dummy line is necessary; the preceding line eats it.
+.  \" This dummy line is necessary; the preceding line eats it.
 .
 .  while !"\\*[*args]"" \{\
 .    pops *$1 *args
@@ -66,7 +64,7 @@ Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 .        continue
 .    \}
 .
-.    index "\\*[*f]" \\*[*$1]
+.    t*index "\\*[*f]" \\*[*$1]
 .
 .    ie (\\n[.y] > 18) \
 .      if !F \\*[*$1] \{\
@@ -74,7 +72,7 @@ Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 .        continue
 .      \}
 .    el \{\
-.      if !\\n[index] \{\
+.      if !\\n[t*index] \{\
 .        tm \\n[.F]:\\n[.c]: Font \\*[*$1] not found.
 .        continue
 .      \}
@@ -96,7 +94,7 @@ Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 .    TBL border=.1n bc=red cpd=0 csp=.1n bgc=
 .      CPTN @L_ROFF@ font \\*[*$1] \
             .br \
-            val=b ".pso grep -e internalname \\*[fontpath]/dev\*[.T]/\\*[*$1]"
+            val=b ".pso grep internalname \\*[fontpath]/dev\*[.T]/\\*[*$1]"
 .      TR
 .        TD
 .          TBL cols=18 border=.1n bc=red csp=.1n cpd=.2n fgc=red4 bgc=beige \
@@ -148,8 +146,8 @@ Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 .
 .time
 .date
-.\"	466MHz Celeron CPU, 384MB RAM
-.\"	WindowsXP/cygwin groff18.1:	107s
-.\"	WindowsXP/cygwin groff19.2:	390s
-.\"	Suse Linux 9.3 groff19.2:	 66s
+.\"   466MHz Celeron CPU, 384MB RAM
+.\"   WindowsXP/cygwin groff18.1:   107s
+.\"   WindowsXP/cygwin groff19.2:   390s
+.\"   Suse Linux 9.3 groff19.2:   66s
 .\" s-tr-mode
