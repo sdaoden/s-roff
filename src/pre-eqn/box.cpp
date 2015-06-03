@@ -274,7 +274,7 @@ void set_script_size()
   if (script_size_reduction >= 0)
     printf(".ps \\n[.s]-%d>?%d\n", script_size_reduction, minimum_size);
   else
-    printf(".ps (u;\\n[.ps]*7+5/10>?%d)\n", minimum_size);
+    printf(".ps (u;\\n[.ps]*7+5/10>?%dz)\n", minimum_size);
 }
 
 int box::next_uid = 0;
