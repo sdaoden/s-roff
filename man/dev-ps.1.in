@@ -22,6 +22,9 @@ translations approved by the Free Software Foundation instead of in
 the original English.
 ..
 .
+.do nr __compat \n[.C]
+.cp 0
+.
 .\" Like TP, but if specified indent is more than half
 .\" the current line-length - indent, use the default indent.
 .de Tp
@@ -30,7 +33,8 @@ the original English.
 ..
 .
 .de FT
-.  if '\\*(.T'ps' .ft \\$1
+.  ie '\\*(.T'ps' .ft \\$1
+.  el .if '\\*(.T'pdf' .ft \\$1
 ..
 .
 .TH @U_D_PS@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
@@ -1349,5 +1353,8 @@ PostScript printers (e.g., `eth' or `thorn').
 .UR http://\:partners.adobe.com/\:public/\:developer/\:en/\:ps/\:5001.DSC_Spec.pdf
 PostScript Language Document Structuring Conventions Specification
 .UE
+.
+.cp \n[__compat]
+.rr __compat
 .
 .\" s-ts-mode

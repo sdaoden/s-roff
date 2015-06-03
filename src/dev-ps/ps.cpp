@@ -563,13 +563,13 @@ class ps_printer
   int set_encoding_index(ps_font *);
   subencoding *set_subencoding(font *, glyph *, unsigned char *);
   char *get_subfont(subencoding *, const char *);
-  void do_exec(char *, const environment *);
-  void do_import(char *, const environment *);
-  void do_def(char *, const environment *);
-  void do_mdef(char *, const environment *);
-  void do_file(char *, const environment *);
-  void do_invis(char *, const environment *);
-  void do_endinvis(char *, const environment *);
+  void _do_exec(char *, const environment *);
+  void _do_import(char *, const environment *);
+  void _do_def(char *, const environment *);
+  void _do_mdef(char *, const environment *);
+  void _do_file(char *, const environment *);
+  void _do_invis(char *, const environment *);
+  void _do_endinvis(char *, const environment *);
   void set_line_thickness_and_color(const environment *);
   void fill_path(const environment *);
   void encode_fonts();
@@ -1521,26 +1521,29 @@ void ps_printer::special(char *arg, const environment *env, char type)
 {
   if (type != 'p')
     return;
+
   typedef void (ps_printer::*SPECIAL_PROCP)(char *, const environment *);
   static struct {
-    const char *name;
+    char const    name[15];
+    uint8_t       needs_flush;
     SPECIAL_PROCP proc;
-  } proc_table[] = {
-    { "exec", &ps_printer::do_exec },
-    { "def", &ps_printer::do_def },
-    { "mdef", &ps_printer::do_mdef },
-    { "import", &ps_printer::do_import },
-    { "file", &ps_printer::do_file },
-    { "invis", &ps_printer::do_invis },
-    { "endinvis", &ps_printer::do_endinvis },
+  } const proc_table[] = {
+    { "exec", true, &ps_printer::_do_exec },
+    { "def", true, &ps_printer::_do_def },
+    { "mdef", true, &ps_printer::_do_mdef },
+    { "import", true, &ps_printer::_do_import },
+    { "file", true, &ps_printer::_do_file },
+    { "invis", false, &ps_printer::_do_invis },
+    { "endinvis", false, &ps_printer::_do_endinvis },
   };
+
   char *p;
   for (p = arg; *p == ' ' || *p == '\n'; p++)
     ;
   char *tag = p;
   for (; *p != '\0' && *p != ':' && *p != ' ' && *p != '\n'; p++)
     ;
-  if (*p == '\0' || strncmp(tag, "ps", p - tag) != 0) {
+  if (*p == '\0' || strncmp(tag, "ps", PTR2SIZE(p - tag))) {
     error("X command without `ps:' tag ignored");
     return;
   }
@@ -1554,16 +1557,19 @@ void ps_printer::special(char *arg, const environment *env, char type)
     error("empty X command ignored");
     return;
   }
-  for (unsigned int i = 0; i < sizeof(proc_table)/sizeof(proc_table[0]); i++)
-    if (strncmp(command, proc_table[i].name, p - command) == 0) {
+  for (size_t i = 0; i < NELEM(proc_table); ++i)
+    if (!strncmp(command, proc_table[i].name, PTR2SIZE(p - command))) {
+      if (proc_table[i].needs_flush)
+        flush_sbuf();
       (this->*(proc_table[i].proc))(p, env);
       return;
     }
   error("X command `%1' not recognised", command);
 }
 
-// A conforming PostScript document must not have lines longer
-// than 255 characters (excluding line termination characters).
+// TODO A conforming PostScript document must not have lines longer
+// TODO than 255 characters (excluding line termination characters).
+// TODO That belongs in libroff or something
 
 static int check_line_lengths(const char *p)
 {
@@ -1580,9 +1586,8 @@ static int check_line_lengths(const char *p)
   return 1;
 }
 
-void ps_printer::do_exec(char *arg, const environment *env)
+void ps_printer::_do_exec(char *arg, const environment *env)
 {
-  flush_sbuf();
   while (csspace(*arg))
     arg++;
   if (*arg == '\0') {
@@ -1606,9 +1611,8 @@ void ps_printer::do_exec(char *arg, const environment *env)
     ndefs = 1;
 }
 
-void ps_printer::do_file(char *arg, const environment *env)
+void ps_printer::_do_file(char *arg, const environment *env)
 {
-  flush_sbuf();
   while (csspace(*arg))
     arg++;
   if (*arg == '\0') {
@@ -1633,9 +1637,8 @@ void ps_printer::do_file(char *arg, const environment *env)
     ndefs = 1;
 }
 
-void ps_printer::do_def(char *arg, const environment *)
+void ps_printer::_do_def(char *arg, const environment *)
 {
-  flush_sbuf();
   while (csspace(*arg))
     arg++;
   if (!check_line_lengths(arg))
@@ -1649,9 +1652,8 @@ void ps_printer::do_def(char *arg, const environment *)
 
 // Like def, but the first argument says how many definitions it contains.
 
-void ps_printer::do_mdef(char *arg, const environment *)
+void ps_printer::_do_mdef(char *arg, const environment *)
 {
-  flush_sbuf();
   char *p;
   int n = (int)strtol(arg, &p, 10);
   if (n == 0 && p == arg) {
@@ -1674,9 +1676,8 @@ void ps_printer::do_mdef(char *arg, const environment *)
   ndefs += n;
 }
 
-void ps_printer::do_import(char *arg, const environment *env)
+void ps_printer::_do_import(char *arg, const environment *env)
 {
-  flush_sbuf();
   while (*arg == ' ' || *arg == '\n')
     arg++;
   char *p;
