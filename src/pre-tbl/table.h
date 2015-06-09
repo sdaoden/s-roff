@@ -147,6 +147,7 @@ public:
     DOUBLEBOX    = 0x00000010,
     NOKEEP       = 0x00000020,
     NOSPACES     = 0x00000040,
+    NOWARN       = 1<<7,     // FIXME all around here: indentation, use shifts
     EXPERIMENTAL = 0x80000000	// undocumented; use as a hook for experiments
     };
   char *expand;

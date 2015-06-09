@@ -23,6 +23,9 @@ translations approved by the Free Software Foundation instead of in
 the original English.
 ..
 .
+.do nr __compat \n[.C]
+.cp 0
+.
 .
 .TH @U_P_TBL@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
@@ -356,11 +359,14 @@ Not allowed for the first row.
 .TP
 .BR _ , -
 Replace this entry with a horizontal line.
+Note that `_' and `-' can be used for table fields only,
+not for column separator lines.
 .
 .TP
 .B =
-.
 Replace this entry with a double horizontal line.
+Note that `=' can be used for table fields only,
+not for column separator lines.
 .
 .TP
 .B |
@@ -393,8 +399,62 @@ Short form of
 .
 .TP
 .BR d , D
-Start an item vertically spanning rows at the bottom of its range rather
+Start an item that vertically spans rows,
+using the `^' column specifier or `\[rs]^' data item,
 than vertically centering it (@L_P_TBL@ only).
+Example:
+.RS
+.IP
+.EX
+\&.TS
+\&tab(;) allbox;
+\&l l
+\&l ld
+\&r ^
+\&l rd.
+\&0000;foobar
+\&T{
+\&1111
+\&.br
+\&2222
+\&T};foo
+\&r;
+\&T{
+\&3333
+\&.br
+\&4444
+\&T};bar
+\&\[rs]^;\[rs]^
+\&.TE
+.EE
+.RE
+.
+.IP
+Result:
+.
+.RS
+.IP
+.TS
+tab(;) allbox;
+l l
+l ld
+r ^
+l rd.
+0000;foobar
+T{
+1111
+.br
+2222
+T};foo
+r;
+T{
+3333
+.br
+4444
+T};bar
+\^;\^
+.TE
+.RE
 .
 .TP
 .BR e , E
@@ -800,6 +860,48 @@ this:
 .EE
 .
 .
+.LP
+A leading and/or trailing `|' in a format line, such as
+.
+.IP
+.EX
+|l r|.
+.EE
+.
+.LP
+gives output which has a 1n\~space between the resulting
+bordering vertical rule and the content of the adjacent column,
+as in
+.
+.IP
+.EX
+\&.TS
+\&tab(#);
+\&|l r|.
+\&left column#right column
+\&.TE
+.EE
+.
+.LP
+If it is desired to have zero space (so that the rule touches
+the content), this can be achieved by introducing extra \[lq]dummy\[rq]
+columns, with no content and zero separation, before and/or after,
+as in
+.
+.IP
+.EX
+\&.TS
+\&tab(#);
+\&r0|l r0|l.
+\&#left column#right column#
+\&.TE
+.EE
+.
+.LP
+The resulting \[lq]dummy\[rq] columns are invisible and have zero width;
+note that such columns usually don't work with TTY devices.
+.
+.
 .SH REFERENCE
 Lesk, M.E.: "TBL \[en] A Program to Format Tables".
 For copyright reasons it cannot be included in the groff distribution,
@@ -809,5 +911,8 @@ but copies can be found with a title search on the World Wide Web.
 .SH "SEE ALSO"
 .BR @L_ROFF@ (@MAN1EXT@),
 .BR @L_TROFF@ (@MAN1EXT@)
+.
+.cp \n[__compat]
+.rr __compat
 .
 .\" s-ts-mode

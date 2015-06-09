@@ -500,6 +500,10 @@ options *process_options(table_input &in)
       if (arg)
 	error("`nospaces' option does not take an argument");
       opt->flags |= table::NOSPACES;
+    } else if (strieq(p, "nowarn")) { // TODO if(arg)goto jerr; anywhere here
+      if (arg)
+        error("`nowarn' option does not take an argument");
+      opt->flags |= table::NOWARN;
     }
     else if (strieq(p, "decimalpoint")) {
       if (!arg)
