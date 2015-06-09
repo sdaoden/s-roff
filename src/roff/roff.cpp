@@ -41,20 +41,21 @@
 #include "stringclass.h"
 
 // The number of commands must be in sync with MAX_COMMANDS in pipeline.h
-const int PRECONV_INDEX = 0;
-const int SOELIM_INDEX = PRECONV_INDEX + 1;
-const int REFER_INDEX = SOELIM_INDEX + 1;
-const int GRAP_INDEX = REFER_INDEX + 1;
-const int PIC_INDEX = GRAP_INDEX + 1;
-const int TBL_INDEX = PIC_INDEX + 1;
-const int GRN_INDEX = TBL_INDEX + 1;
-const int EQN_INDEX = GRN_INDEX + 1;
-const int TROFF_INDEX = EQN_INDEX + 1;
-const int POST_INDEX = TROFF_INDEX + 1;
-const int SPOOL_INDEX = POST_INDEX + 1;
-
-const int NCOMMANDS = SPOOL_INDEX + 1;
-CTA(NCOMMANDS <= MAX_COMMANDS);
+enum {
+  IDX_PRECONV,
+  IDX_SOELIM,
+  IDX_REFER,
+  IDX_GRAP,
+  IDX_PIC,
+  IDX_TBL,
+  IDX_GRN,
+  IDX_EQN,
+  IDX_TROFF,
+  IDX_POST,
+  IDX_SPOOL,
+  IDX_NCOMMANDS
+};
+CTA(IDX_NCOMMANDS <= MAX_COMMANDS);
 
 class possible_command
 {
@@ -84,7 +85,7 @@ char *spooler = 0;
 char *postdriver = 0;
 char *predriver = 0;
 
-possible_command commands[NCOMMANDS];
+possible_command commands[IDX_NCOMMANDS];
 
 int run_commands(int no_pipe);
 void print_commands(FILE *);
@@ -116,7 +117,7 @@ int main(int argc, char **argv)
   const char *encoding = getenv(U_ROFF_ENCODING);
   if (!command_prefix)
     command_prefix = PROG_PREFIX;
-  commands[TROFF_INDEX].set_name(command_prefix, "troff");
+  commands[IDX_TROFF].set_name(command_prefix, "troff");
   static const struct option long_options[] = {
     { "help", no_argument, 0, 'h' },
     { "version", no_argument, 0, 'v' },
@@ -136,51 +137,51 @@ int main(int argc, char **argv)
       iflag = 1;
       break;
     case 'I':
-      commands[SOELIM_INDEX].set_name(command_prefix, "soelim");
-      commands[SOELIM_INDEX].append_arg(buf, optarg);
+      commands[IDX_SOELIM].set_name(command_prefix, "soelim");
+      commands[IDX_SOELIM].append_arg(buf, optarg);
       // .psbb may need to search for files
-      commands[TROFF_INDEX].append_arg(buf, optarg);
+      commands[IDX_TROFF].append_arg(buf, optarg);
       // \X'ps:import' may need to search for files
       Pargs += buf;
       Pargs += optarg;
       Pargs += '\0';
       break;
     case 'D':
-      commands[PRECONV_INDEX].set_name(command_prefix, "preconv");
-      commands[PRECONV_INDEX].append_arg("-D", optarg);
+      commands[IDX_PRECONV].set_name(command_prefix, "preconv");
+      commands[IDX_PRECONV].append_arg("-D", optarg);
       break;
     case 'K':
-      commands[PRECONV_INDEX].append_arg("-e", optarg);
+      commands[IDX_PRECONV].append_arg("-e", optarg);
       Kflag = 1;
       // fall through
     case 'k':
-      commands[PRECONV_INDEX].set_name(command_prefix, "preconv");
+      commands[IDX_PRECONV].set_name(command_prefix, "preconv");
       break;
     case 't':
-      commands[TBL_INDEX].set_name(command_prefix, "tbl");
+      commands[IDX_TBL].set_name(command_prefix, "tbl");
       break;
     case 'p':
-      commands[PIC_INDEX].set_name(command_prefix, "pic");
+      commands[IDX_PIC].set_name(command_prefix, "pic");
       break;
     case 'g':
-      commands[GRN_INDEX].set_name(command_prefix, "grn");
+      commands[IDX_GRN].set_name(command_prefix, "grn");
       break;
     case 'G':
-      commands[GRAP_INDEX].set_name(command_prefix, "grap");
+      commands[IDX_GRAP].set_name(command_prefix, "grap");
       break;
     case 'e':
       eflag = 1;
-      commands[EQN_INDEX].set_name(command_prefix, "eqn");
+      commands[IDX_EQN].set_name(command_prefix, "eqn");
       break;
     case 's':
-      commands[SOELIM_INDEX].set_name(command_prefix, "soelim");
+      commands[IDX_SOELIM].set_name(command_prefix, "soelim");
       break;
     case 'R':
-      commands[REFER_INDEX].set_name(command_prefix, "refer");
+      commands[IDX_REFER].set_name(command_prefix, "refer");
       break;
     case 'z':
     case 'a':
-      commands[TROFF_INDEX].append_arg(buf);
+      commands[IDX_TROFF].append_arg(buf);
       // fall through
     case 'Z':
       zflag++;
@@ -197,30 +198,30 @@ int main(int argc, char **argv)
       printf(L_ROFF_COPYRIGHT_PRINTOUT);
       printf("\ncalled subprograms:\n\n");
       fflush(stdout);
-      commands[POST_INDEX].append_arg(buf);
+      commands[IDX_POST].append_arg(buf);
       // FALLTHRU
     case 'C':
-      commands[SOELIM_INDEX].append_arg(buf);
-      commands[REFER_INDEX].append_arg(buf);
-      commands[PIC_INDEX].append_arg(buf);
-      commands[GRAP_INDEX].append_arg(buf);
-      commands[TBL_INDEX].append_arg(buf);
-      commands[GRN_INDEX].append_arg(buf);
-      commands[EQN_INDEX].append_arg(buf);
-      commands[TROFF_INDEX].append_arg(buf);
+      commands[IDX_SOELIM].append_arg(buf);
+      commands[IDX_REFER].append_arg(buf);
+      commands[IDX_PIC].append_arg(buf);
+      commands[IDX_GRAP].append_arg(buf);
+      commands[IDX_TBL].append_arg(buf);
+      commands[IDX_GRN].append_arg(buf);
+      commands[IDX_EQN].append_arg(buf);
+      commands[IDX_TROFF].append_arg(buf);
       break;
     case 'N':
-      commands[EQN_INDEX].append_arg(buf);
+      commands[IDX_EQN].append_arg(buf);
       break;
     case 'h':
       help();
       break;
     case 'E':
     case 'b':
-      commands[TROFF_INDEX].append_arg(buf);
+      commands[IDX_TROFF].append_arg(buf);
       break;
     case 'c':
-      commands[TROFF_INDEX].append_arg(buf);
+      commands[IDX_TROFF].append_arg(buf);
       break;
     case 'S':
       safer_flag = 1;
@@ -231,7 +232,7 @@ int main(int argc, char **argv)
     case 'T':
       if (strcmp(optarg, "xhtml") == 0) {
 	// force soelim to aid the html preprocessor
-	commands[SOELIM_INDEX].set_name(command_prefix, "soelim");
+	commands[IDX_SOELIM].set_name(command_prefix, "soelim");
 	Pargs += "-x";
 	Pargs += '\0';
 	Pargs += 'x';
@@ -242,7 +243,7 @@ int main(int argc, char **argv)
       }
       if (strcmp(optarg, "html") == 0)
 	// force soelim to aid the html preprocessor
-	commands[SOELIM_INDEX].set_name(command_prefix, "soelim");
+	commands[IDX_SOELIM].set_name(command_prefix, "soelim");
       device = optarg;
       break;
     case 'F':
@@ -263,13 +264,13 @@ int main(int argc, char **argv)
     case 'n':
     case 'w':
     case 'W':
-      commands[TROFF_INDEX].append_arg(buf, optarg);
+      commands[IDX_TROFF].append_arg(buf, optarg);
       break;
     case 'M':
-      commands[EQN_INDEX].append_arg(buf, optarg);
-      commands[GRAP_INDEX].append_arg(buf, optarg);
-      commands[GRN_INDEX].append_arg(buf, optarg);
-      commands[TROFF_INDEX].append_arg(buf, optarg);
+      commands[IDX_EQN].append_arg(buf, optarg);
+      commands[IDX_GRAP].append_arg(buf, optarg);
+      commands[IDX_GRN].append_arg(buf, optarg);
+      commands[IDX_TROFF].append_arg(buf, optarg);
       break;
     case 'P':
       Pargs += optarg;
@@ -288,13 +289,13 @@ int main(int argc, char **argv)
     }
   }
   if (encoding) {
-    commands[PRECONV_INDEX].set_name(command_prefix, "preconv");
+    commands[IDX_PRECONV].set_name(command_prefix, "preconv");
     if (!Kflag && *encoding)
-      commands[PRECONV_INDEX].append_arg("-e", encoding);
+      commands[IDX_PRECONV].append_arg("-e", encoding);
   }
   if (!safer_flag) {
-    commands[TROFF_INDEX].insert_arg("-U");
-    commands[PIC_INDEX].append_arg("-U");
+    commands[IDX_TROFF].insert_arg("-U");
+    commands[IDX_PIC].append_arg("-U");
   }
   font::set_unknown_desc_command_handler(handle_unknown_desc_command);
   if (!font::load_desc())
@@ -302,59 +303,59 @@ int main(int argc, char **argv)
   if (!postdriver)
     fatal("no `postpro' command in DESC file for device `%1'", device);
   if (predriver && !zflag) {
-    commands[TROFF_INDEX].insert_arg(commands[TROFF_INDEX].get_name());
-    commands[TROFF_INDEX].set_name(predriver);
+    commands[IDX_TROFF].insert_arg(commands[IDX_TROFF].get_name());
+    commands[IDX_TROFF].set_name(predriver);
     // pass the device arguments to the predrivers as well
-    commands[TROFF_INDEX].insert_args(Pargs);
+    commands[IDX_TROFF].insert_args(Pargs);
     if (eflag && is_xhtml)
-      commands[TROFF_INDEX].insert_arg("-e");
+      commands[IDX_TROFF].insert_arg("-e");
     if (vflag)
-      commands[TROFF_INDEX].insert_arg("-v");
+      commands[IDX_TROFF].insert_arg("-v");
   }
   const char *real_driver = 0;
   if (postdriver)
-    commands[POST_INDEX].set_name(postdriver);
+    commands[IDX_POST].set_name(postdriver);
   const char *p = Pargs.contents();
   const char *end = p + Pargs.length();
   while (p < end) {
-    commands[POST_INDEX].append_arg(p);
+    commands[IDX_POST].append_arg(p);
     p = strchr(p, '\0') + 1;
   }
   if (lflag && !vflag && spooler) {
-    commands[SPOOL_INDEX].set_name(BSHELL);
-    commands[SPOOL_INDEX].append_arg(BSHELL_DASH_C);
+    commands[IDX_SPOOL].set_name(BSHELL);
+    commands[IDX_SPOOL].append_arg(BSHELL_DASH_C);
     Largs += '\0';
     Largs = spooler + Largs;
-    commands[SPOOL_INDEX].append_arg(Largs.contents());
+    commands[IDX_SPOOL].append_arg(Largs.contents());
   }
   if (zflag) {
-    commands[POST_INDEX].set_name(0);
-    commands[SPOOL_INDEX].set_name(0);
+    commands[IDX_POST].set_name(0);
+    commands[IDX_SPOOL].set_name(0);
   }
-  commands[TROFF_INDEX].append_arg("-T", device);
+  commands[IDX_TROFF].append_arg("-T", device);
   if (strcmp(device, "html") == 0) {
     if (is_xhtml) {
       if (oflag)
 	fatal("`-o' option is invalid with device `xhtml'");
       if (zflag)
-	commands[EQN_INDEX].append_arg("-Tmathml:xhtml");
+	commands[IDX_EQN].append_arg("-Tmathml:xhtml");
       else if (eflag)
-	commands[EQN_INDEX].clear_name();
+	commands[IDX_EQN].clear_name();
     }
     else {
       if (oflag)
 	fatal("`-o' option is invalid with device `html'");
       // html renders equations as images via ps
-      commands[EQN_INDEX].append_arg("-Tps:html");
+      commands[IDX_EQN].append_arg("-Tps:html");
     }
   }
   else
-    commands[EQN_INDEX].append_arg("-T", device);
+    commands[IDX_EQN].append_arg("-T", device);
 
-  commands[GRN_INDEX].append_arg("-T", device);
+  commands[IDX_GRN].append_arg("-T", device);
 
   int first_index;
-  for (first_index = 0; first_index < TROFF_INDEX; first_index++)
+  for (first_index = 0; first_index < IDX_TROFF; ++first_index)
     if (commands[first_index].get_name() != 0)
       break;
   if (optind < argc) {
@@ -476,7 +477,7 @@ void handle_unknown_desc_command(const char *command, const char *arg,
 void print_commands(FILE *fp)
 {
   int last;
-  for (last = SPOOL_INDEX; last >= 0; last--)
+  for (last = IDX_SPOOL; last >= 0; last--)
     if (commands[last].get_name() != 0)
       break;
   for (int i = 0; i <= last; i++)
@@ -488,9 +489,9 @@ void print_commands(FILE *fp)
 
 int run_commands(int no_pipe)
 {
-  char **v[NCOMMANDS];
+  char **v[IDX_NCOMMANDS];
   int j = 0;
-  for (int i = 0; i < NCOMMANDS; i++)
+  for (int i = 0; i < IDX_NCOMMANDS; i++)
     if (commands[i].get_name() != 0)
       v[j++] = commands[i].get_argv();
   return run_pipeline(j, v, no_pipe);

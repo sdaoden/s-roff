@@ -18,6 +18,8 @@ as part of the file COPYING; also located in the main directory of the
 source package of this program.
 ..
 .
+.do nr __compat \n[.C]
+.cp 0
 .
 .\" Environment variable
 .de EnvVar
@@ -31,7 +33,9 @@ source package of this program.
 .  ft
 ..
 .
+.
 .TH @U_ROFF@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
+.
 .
 .\"
 .SH NAME
@@ -1207,5 +1211,8 @@ The following utilities are available:
 .BR \%@L_PDFROFF@ (@MAN1EXT@),
 .BR \%@L_PFBTOPS@ (@MAN1EXT@),
 .BR \%@L_TFMTODIT@ (@MAN1EXT@),
+.
+.cp \n[__compat]
+.rr __compat
 .
 .\" s-ts-mode

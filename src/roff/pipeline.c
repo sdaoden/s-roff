@@ -339,15 +339,15 @@ int run_pipeline(int ncommands, char ***commands, int no_pipe)
      `getenv("TEMP")' as last resort -- at least one of these had better
      be set, since Microsoft's default has a high probability of failure. */
   char *tmpdir;
-  if ((tmpdir = getenv(U_ROFF_TMPDIR)) == NULL
-      && (tmpdir = getenv("TMPDIR")) == NULL)
-    tmpdir = getenv("TEMP");
+  if ((tmpdir = getenv(U_ROFF_TMPDIR)) == NULL // TODO into a library
+      && (tmpdir = getenv("TMPDIR")) == NULL)  // TODO as generic thing
+    tmpdir = getenv("TEMP"); // TODO (also true for perl, sh, etc.
 
   /* Don't use `tmpnam' here: Microsoft's implementation yields unusable
      file names if current directory is on network share with read-only
      root. */
-  tmpfiles[0] = tempnam(tmpdir, NULL);
-  tmpfiles[1] = tempnam(tmpdir, NULL);
+  tmpfiles[0] = tempnam(tmpdir, NULL); // TODO library function to create
+  tmpfiles[1] = tempnam(tmpdir, NULL); // TODO temporary file (+perl,sh,)
 
   for (i = 0; i < ncommands; i++) {
     int exit_status;
