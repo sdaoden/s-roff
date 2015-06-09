@@ -21,6 +21,10 @@ translations approved by the Free Software Foundation instead of in
 the original English.
 ..
 .
+.do nr __compat \n[.C]
+.cp 0
+.
+.
 .TH @U_P_PRECONV@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
 .
@@ -291,4 +295,8 @@ file.
 .
 .SH "SEE ALSO"
 .BR @L_ROFF@ (@MAN1EXT@)
+.
+.cp \n[__compat]
+.rr __compat
+.
 .\" s-ts-mode
