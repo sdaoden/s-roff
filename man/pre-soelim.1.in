@@ -25,6 +25,10 @@ the original English.
 .
 .mso pic.tmac
 .
+.do nr __compat \n[.C]
+.cp 0
+.
+.
 .TH @U_P_SOELIM@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
 .
@@ -249,5 +253,8 @@ box invisible width 0.5 height 0.4 "output" "file"
 .SH "SEE ALSO"
 .
 .BR @L_ROFF@ (@MAN1EXT@)
+.
+.cp \n[__compat]
+.rr __compat
 .
 .\" s-ts-mode
