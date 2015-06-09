@@ -427,7 +427,7 @@ void troff_output::text(const position &center, text_piece *v, int n,
   if (driver_extension_flag && ang != 0.0) {
     rotate_flag = 1;
     position c = transform(center);
-    printf(".if \\n(" LDPS_REG " \\{\\\n"
+    printf(".if \\n(" L_D_PS_REG " \\{\\\n"
 	   "\\h'%.3fi'"
 	   "\\v'%.3fi'"
 	   "\\X'ps: exec gsave currentpoint 2 copy translate %.4f rotate neg exch neg exch translate'"
@@ -461,7 +461,7 @@ void troff_output::text(const position &center, text_piece *v, int n,
       fputs("\n.sp -1\n", stdout);
     }
   if (rotate_flag)
-    printf(".if '\\*(.T'ps' \\{\\\n"
+    printf(".if '\\n(" L_D_PS_REG " \\{\\\n"
 	   "\\X'ps: exec grestore'\n.sp -1\n"
 	   ".\\}\n");
 }

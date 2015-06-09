@@ -9,7 +9,7 @@
 
 // If this register > 0, then pic will generate \X'ps: ...' commands
 // if the aligned attribute is used.
-#define LDPS_REG          "0p"
+#define L_D_PS_REG        "0p"
 
 // If this register is defined, geqn won't produce `\x's.
 #define EQN_NO_EXTRA_SPACE_REG "0x"

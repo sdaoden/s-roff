@@ -21,6 +21,9 @@ translations approved by the Free Software Foundation instead of in
 the original English.
 ..
 .
+.do nr __compat \n[.C]
+.cp 0
+.
 .\" Like TP, but if specified indent is more than half
 .\" the current line-length - indent, use the default indent.
 .de Tp
@@ -1113,5 +1116,8 @@ is incompatible with the pic in 10th edition Unix,
 which interprets 0 as black and 1 as white.
 .LP
 PostScript\*R is a registered trademark of Adobe Systems Incorporation.
+.
+.cp \n[__compat]
+.rr __compat
 .
 .\" s-ts-mode
