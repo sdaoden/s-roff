@@ -143,9 +143,6 @@
 # define DEBUG_FILE(name) DEBUG_NAME(DEBUG_FILE_DIR) "/" name
 #endif
 
-#define DEFAULT_LINE_LENGTH 7	// inches wide
-#define DEFAULT_IMAGE_RES 100	// number of pixels per inch resolution
-#define IMAGE_BOARDER_PIXELS 0
 #define INLINE_LEADER_CHAR '\\'
 
 // Don't use colour names here!  Otherwise there is a dependency on
@@ -209,11 +206,6 @@ static const char *image_gen = NULL;    // the `gs' program
 const char *const FONT_ENV_VAR = U_ROFF_FONT_PATH;
 static search_path font_path(FONT_ENV_VAR, FONTPATH, 0, 0);
 static html_dialect dialect = html4;
-
-/*
- *  Images are generated via postscript, gs, and the pnm utilities.
- */
-#define IMAGE_DEVICE "-Tps"
 
 static int do_file(const char *filename);
 
@@ -1192,19 +1184,14 @@ static void alterDeviceTo(int argc, char *argv[], int toImage)
 	argv[i] = (char *)IMAGE_DEVICE;
       i++;
     }
-    argv[troff_arg] = (char*)L_ROFF; // rather than troff
-  }
-  else {
+  } else {
     while (i < argc) {
       if (strcmp(argv[i], IMAGE_DEVICE) == 0)
-	if (dialect == xhtml)
-	  argv[i] = (char *)"-Txhtml";
-	else
-	  argv[i] = (char *)"-Thtml";
+        argv[i] = UNCONST((dialect == xhtml) ? "-Txhtml" : "-Thtml");
       i++;
     }
-    argv[troff_arg] = (char*)L_ROFF; // use groff -Z
   }
+  argv[troff_arg] = UNCONST(L_ROFF); // use groff -Z
 }
 
 /*
@@ -1762,10 +1749,10 @@ int main(int argc, char **argv)
 #endif /* CAPTURE_MODE */
   device = "html";
   if (!font::load_desc())
-    fatal("cannot find html/DESC exiting");
+    fatal("cannot find dev-html/DESC exiting");
   image_gen = font::image_generator;
   if (image_gen == NULL || (strcmp(image_gen, "") == 0))
-    fatal("html/DESC must set the image_generator field, exiting");
+    fatal("dev-html/DESC must set the image_generator field, exiting");
   postscriptRes = get_resolution();
   i = scanArguments(argc, argv);
   setupAntiAlias();

@@ -56,7 +56,8 @@ pushBackBuffer::pushBackBuffer (char *filename)
   eofFound = false;
   lineNo   = 1;
   if (strcmp(filename, "") != 0) {
-    stdIn = dup(0);
+    if ((stdIn = dup(0)) == -1)
+      sys_fatal("cannot dup(2)licate standard input");
     close(0);
     if (open(filename, O_RDONLY) != 0) {
       sys_fatal("when trying to open file");
@@ -73,7 +74,8 @@ pushBackBuffer::~pushBackBuffer ()
   }
   close(0);
   /* restore stdin in file descriptor 0 */
-  dup(stdIn);
+  if (dup(stdIn) == -1) /* FIXME use dup2() if possible, not close(0)+dup(2)! */
+    sys_fatal("cannot restore dup(2)licated standard input");
   close(stdIn);
 }
 
