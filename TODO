@@ -3,6 +3,9 @@ TODO reminder.
 Generic
 =======
 
+- \V[] can only be used to test environment value content, there is no
+  way to only have a check to see if a variable is set?
+
 - Get rid of all the short options which choose preprocessors, instead
   use a multiplexer
 
@@ -64,6 +67,10 @@ Generic
 -- Get rid of preconv(1) again, this will simply be a layer of
    file_case.  Yet still allow to specify some encoding on the command
    line.
+
+- All the rc file stuff is a mess.  At least optionally support a single
+  global + per-user configuration file in a simple KEY=VALUE syntax that
+  can be used to define paths to those others.  At least.
 
 - What about extending searchpath:: (and file_case) so that an archive
   could be opened as such, think .dmg, .JAR or tar (pax) and/or even
@@ -491,8 +498,53 @@ between whether `c' is treated as digit or scaling indicator.
 
 Local variables.
 
+- Add output line traps (even compatible with Heirloom troff?).
+  (Dirk-Wilhelm Peters, groff@, 2015-04-17).
+
+- (Tadziu Hoffmann, groff@, 2018-01-27):
+      .de DATE*SHORT
+      \c
+      .XX \\*[DATE*FULL]
+      ..
+      .de XX
+      .ds BB \\$*
+      .ds AA \\$1
+      .shift
+      .if '\\*(AA'Sunday,'    .ds BB \\$*
+      .if '\\*(AA'Monday,'    .ds BB \\$*
+      .if '\\*(AA'Tuesday,'   .ds BB \\$*
+      .if '\\*(AA'Wednesday,' .ds BB \\$*
+      .if '\\*(AA'Thursday,'  .ds BB \\$*
+      .if '\\*(AA'Friday,'    .ds BB \\$*
+      .if '\\*(AA'Saturday,'  .ds BB \\$*
+      .BB
+      ..
+      .ds DATE*FULL Friday, December 31, 2038
+
+    However, there is still a caveat with these solutions: although
+    \*[DATE*SHORT] may look like a (single-line) string expansion,
+    it is actually a (multi-line) macro call in disguise.  This
+    means that the following will not work:
+
+      .ds LH Formatted on \*[DATE*SHORT]
+
+    ...thread...
+
+     |> Is this restriction documented somewhere?  If not
+     |> it is a bug to keep on the TODO list, thank you!
+     |
+     |It's not a bug, it's a reminder not to use tricks that confuse
+     |strings and macros, even if they are treated internally very
+     |similarly during expansion.
+
+    It seems to me it would be nice to have some kind of "auto-div"
+    that is active as long as a .ds creation is in progress, so that
+    this is kept together.?  What do you mean?
+
 tmac
 ====
+
+man/mdoc: support color hooks (James K. Lowden <jklowden@schemamania.org>)
 
 Support multiple line-spacing.
 
