@@ -66,10 +66,10 @@
 
 struct char_info_word {
   unsigned char width_index;
-  char height_index;
-  char depth_index;
-  char italic_index;
-  char tag;
+  unsigned char height_index;
+  unsigned char depth_index;
+  unsigned char italic_index;
+  unsigned char tag;
   unsigned char remainder;
 };
 
