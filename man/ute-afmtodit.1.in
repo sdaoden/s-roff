@@ -56,6 +56,7 @@ the original English.
 .OP \-e enc_file
 .OP \-f internal_name
 .OP \-i n
+.OP \-o output_file
 .I afm_file
 .I map_file
 .I font
@@ -143,8 +144,11 @@ Glyph indices of unencoded characters don't have a specific order; it
 is best to access them with glyph names only.
 .
 .LP
-The @L_ROFF@ font file will be output to a file called
-.IR font .
+The @L_ROFF@ font file will be written to a file named
+.IR font
+unless a name has been specified with the
+.B \-o
+option.
 .
 .LP
 If there is a downloadable font file for the font, it may be listed in
@@ -298,6 +302,15 @@ Don't output a
 command for this font.
 .
 Use this with constant-width fonts.
+.
+.TP
+.BI \-o output_file
+The output will be written to
+.I output_file
+instead of
+.IR font .
+.
+.TP
 .
 .TP
 .B \-s
