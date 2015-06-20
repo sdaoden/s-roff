@@ -17,7 +17,10 @@ as part of the file COPYING; also located in the main directory of the
 source package of this program.
 ..
 .
+.do nr __compat \n[.C]
+.cp 0
 .ds Ellipsis .\|.\|.\&\"
+.
 .
 .TH @U_ROFF@_TRACE @MAN7EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
@@ -271,5 +274,8 @@ A general description of @T_ROFF@ macro packages.
 .TP
 .BR @L_ROFF@ (@MAN7EXT@)
 A short reference for the @T_ROFF@ formatting language.
+.
+.cp \n[__compat]
+.rr __compat
 .
 .\" s-ts-mode

@@ -22,6 +22,10 @@ translations approved by the Free Software Foundation instead of in
 the original English.
 ..
 .
+.do nr __compat \n[.C]
+.cp 0
+.
+.
 .TH @U_ROFF@_MAN @MAN7EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
 .\"
@@ -88,7 +92,7 @@ Footers for even and odd pages are formatted differently.
 .BI \-rFT= dist
 Set distance of the footer relative to the bottom of the page if
 negative or relative to the top if positive.
-The default is -0.5i.
+The default is \-0.5i.
 .
 .TP
 .BI \-rHY= flags
@@ -116,10 +120,12 @@ consistent indentation.
 .BI \-rLL= line-length
 Set line length.
 If this option is not given,
-the line length is set to respect any value set by a prior `.ll' request,
+the line length is set to respect any value set by a prior `.ll' request
 (which
 .I must
-be in effect when the `.TH' macro is invoked),
+be in effect when the
+.B .TH
+macro is invoked),
 if this differs from the built\-in default for the formatter;
 otherwise it defaults to 78n in
 .I nroff
@@ -144,8 +150,10 @@ default line length,
 .B man
 default initialization to 78n prevails),
 whereas,
-the `-rLL=65n' option, or an equivalent `.nr\ LL\ 65n'
-request preceding the use of the `TH' macro,
+the `\-rLL=65n' option, or an equivalent `.nr\ LL\ 65n'
+request preceding the use of the
+.B TH
+macro,
 .I does
 set a line length of 65n.
 .
@@ -193,10 +201,200 @@ numbers: 1, 2, 2a, 2b, 2c, etc.
 This section describes the available macros for manual pages.
 For further customization, put additional macros and requests into the
 file
-.B man.local
+.BR man.local ,
 which is loaded immediately after the
 .B man
 package.
+.
+.
+.TP
+.B .EX
+.TQ
+.B .EE
+Example/End Example.
+After
+.BR .EX ,
+filling is disabled and the font is set to constant-width.
+This is useful for formatting code, command, and
+configuration-file examples.
+The
+.B .EE
+macro restores filling and the previous font.
+.
+.IP
+These macros are defined on many (but not all) legacy Unix systems
+running classic troff.
+To be certain your page will be portable to those systems, copy
+their definitions from the
+.B \%an-ext.tmac
+file of a
+.BR @T_ROFF@
+installation.
+.
+.TP
+.BI .HP " \fR[\fPnnn\fR]\fP"
+Set up a paragraph with hanging left indentation.
+The indentation is set to
+.I nnn
+if that argument is supplied (the default unit is `n' if omitted),
+otherwise it is set to the previous indentation value specified with
+.BR .TP ,
+.BR .IP ,
+or
+.B .HP
+(or to the default value if none of them have been used yet).
+Font size and face are reset to its default values.
+The following paragraph illustrates the effect of this macro with
+hanging indentation set to\~4 (enclosed by
+.B .RS
+and
+.B .RE
+to set the left margin temporarily to the current indentation):
+.
+.RS
+.HP 4
+This is a paragraph following an invocation of the
+.B .HP
+macro.
+As you can see, it produces a paragraph where all lines but the first
+are indented.
+.
+.RE
+.IP
+Use of this presentation-level macro is deprecated.
+While it is universally portable to legacy Unix systems, a hanging
+indentation cannot be expressed naturally under HTML, and many
+HTML-based manual viewers simply interpret it as a starter for a
+normal paragraph.
+Thus, any information or distinction you tried to express with the
+indentation may be lost.
+.
+.TP
+.BI .IP " \fR[\fPdesignator\fR]\fP \fR[\fPnnn\fR]\fP"
+Set up an indented paragraph, using
+.I designator
+as a tag to mark its beginning.
+The indentation is set to
+.I nnn
+if that argument is supplied (the default unit is `n' if omitted),
+otherwise it is set to the previous indentation value specified with
+.BR .TP ,
+.BR .IP ,
+or
+.B .HP
+(or to the default value if none of them have been used yet).
+Font size and face of the paragraph (but not the designator) are reset
+to its default values.
+.
+.IP
+To start an indented paragraph with a particular indentation but
+without a designator, use `""' (two doublequotes) as the second
+argument.
+.
+.IP
+For example, the following paragraphs were all set up with bullets as
+the designator, using `.IP\ \\(bu\ 4'.
+The whole block has been enclosed with
+.B .RS
+and
+.B .RE
+to set the left
+margin temporarily to the current indentation value.
+.
+.RS
+.IP \(bu 4
+.B .IP
+is one of the three macros used in the
+.B man
+package to format lists.
+.
+.IP \(bu 4
+.B .HP
+is another.
+This macro produces a paragraph with a left hanging indentation.
+.
+.IP \(bu 4
+.B .TP
+is another.
+This macro produces an unindented label followed by an indented
+paragraph.
+.RE
+.
+.TP
+.B .LP
+.TQ
+.B .PP
+.TQ
+.B .P
+These macros are mutual aliases.
+Any of them causes a line break at the current position, followed by a
+vertical space downwards by the amount specified by the
+.B .PD
+macro.
+The font size and shape are reset to the default value (normally 10pt
+Roman).
+Finally, the current left margin and the indentation is reset to default
+values.
+.
+.TP
+.BI .RE " \fR[\fPnnn\fR]\fP"
+This macro moves the left margin back to level
+.IR nnn ,
+restoring the previous left margin.
+If no argument is given, it moves one level back.
+The first level (i.e., no call to
+.B .RS
+yet) has number\~1, and each call to
+.B .RS
+increases the level by\~1.
+.
+.TP
+.BI .RS " \fR[\fPnnn\fR]\fP"
+This macro moves the left margin to the right by the value
+.I nnn
+if specified (default unit is `n'); otherwise it is set to the
+previous indentation value specified with
+.BR .TP ,
+.BR .IP ,
+or
+.B .HP
+(or to the default value if none of them have been used yet).
+The indentation value is then set to the default.
+.
+.IP
+Calls to the
+.B .RS
+macro can be nested.
+.
+.TP
+.BI .SH " \fR[\fPtext for a heading\fR]\fP"
+Set up an unnumbered section heading sticking out to the left.
+Prints out all the text following
+.B .SH
+up to the end of the line (or the text in the next input line if there
+is no argument to
+.BR .SH )
+in bold face
+(or the font specified by the string
+.BR HF ),
+one size larger than the base document size.
+Additionally, the left margin and the indentation for the following
+text is reset to the default values.
+.
+.TP
+.BI .SS " \fR[\fPtext for a heading\fR]\fP"
+Set up a secondary, unnumbered section heading.
+Prints out all the text following
+.B .SS
+up to the end of the line (or the text in the next input line if there
+is no argument to
+.BR .SS )
+in bold face
+(or the font specified by the string
+.BR HF ),
+at the same size as the base document size.
+Additionally, the left margin and the indentation for the following
+text is reset to the default values.
 .
 .TP
 .BI .TH " title section \fR[\fPextra1\fR]\fP \fR[\fPextra2\fR]\fP \fR[\fPextra3\fR]"
@@ -209,7 +407,7 @@ and the section to
 which must take on a value between 1 and\~8.
 The value
 .I section
-may also have a string appended, e.g. `.pm', to indicate a specific
+may also have a string appended, e.g.\& `.pm', to indicate a specific
 subsection of the
 .IR \%man\~pages .
 Both
@@ -234,44 +432,14 @@ For HTML output, headers and footers are completely suppressed.
 .
 .IP
 Additionally, this macro starts a new page; the new line number is\~1
-again (except if the `-rC1' option is given on the command line) --
+again (except if the `\-rC1' option is given on the command line) --
 this feature is intended only for formatting multiple
 .IR \%man\~pages ;
 a single
 .I \%man\~page
 should contain exactly one
-.B TH
+.B .TH
 macro at the beginning of the file.
-.
-.TP
-.BI .SH " \fR[\fPtext for a heading\fR]\fP"
-Set up an unnumbered section heading sticking out to the left.
-Prints out all the text following
-.B SH
-up to the end of the line (or the text in the next input line if there
-is no argument to
-.BR SH )
-in bold face
-(or the font specified by the string
-.BR HF ),
-one size larger than the base document size.
-Additionally, the left margin and the indentation for the following
-text is reset to the default values.
-.
-.TP
-.BI .SS " \fR[\fPtext for a heading\fR]\fP"
-Set up a secondary, unnumbered section heading.
-Prints out all the text following
-.B SS
-up to the end of the line (or the text in the next input line if there
-is no argument to
-.BR SS )
-in bold face
-(or the font specified by the string
-.BR HF ),
-at the same size as the base document size.
-Additionally, the left margin and the indentation for the following
-text is reset to the default values.
 .
 .TP
 .BI .TP " \fR[\fPnnn\fR]\fP"
@@ -280,10 +448,10 @@ The indentation is set to
 .I nnn
 if that argument is supplied (the default unit is `n' if omitted),
 otherwise it is set to the previous indentation value specified with
-.BR TP ,
-.BR IP ,
+.BR .TP ,
+.BR .IP ,
 or
-.B HP
+.B .HP
 (or to the default value if none of them have been used yet).
 .
 .IP
@@ -302,18 +470,25 @@ font settings.
 .
 .IP
 The
-.B TP
+.B .TP
 macro is the macro used for the explanations you are just reading.
 .
 .TP
 .B .TQ
 The
-.B TQ
-macro sets up header continuation for a .TP macro.
+.B .TQ
+macro sets up header continuation for a
+.B .TP
+macro.
 With it, you can stack up any number of labels (such as in a
 glossary, or list of commands) before beginning the indented
 paragraph.
-For an example, look just past the next paragraph.
+For an example, look up the documentation of the
+.BR .LP ,
+.BR .PP ,
+and
+.BR .P
+macros.
 .
 .IP
 This macro is not defined on legacy Unix systems running classic
@@ -325,181 +500,27 @@ file of a
 .BR @T_ROFF@
 installation.
 .
-.TP
-.B .LP
-.TQ
-.B .PP
-.TQ
-.B .P
-These macros are mutual aliases.
-Any of them causes a line break at the current position, followed by a
-vertical space downwards by the amount specified by the
-.B PD
-macro.
-The font size and shape are reset to the default value (normally 10pt
-Roman).
-Finally, the current left margin and the indentation are restored.
-.
-.TP
-.BI .IP " \fR[\fPdesignator\fR]\fP \fR[\fPnnn\fR]\fP"
-Set up an indented paragraph, using
-.I designator
-as a tag to mark its beginning.
-The indentation is set to
-.I nnn
-if that argument is supplied (the default unit is `n' if omitted),
-otherwise it is set to the previous indentation value specified with
-.BR TP ,
-.BR IP ,
-or
-.B HP
-(or to the default value if none of them have been used yet).
-Font size and face of the paragraph (but not the designator) are reset
-to its default values.
-.
-.IP
-To start an indented paragraph with a particular indentation but
-without a designator, use `""' (two doublequotes) as the second
-argument.
-.
-.IP
-For example, the following paragraphs were all set up with bullets as
-the designator, using `.IP\ \\(bu\ 4'.
-The whole block has been enclosed with `.RS' and `.RE' to set the left
-margin temporarily to the current indentation value.
-.
-.RS
-.IP \(bu 4
-.B IP
-is one of the three macros used in the
-.B man
-package to format lists.
-.
-.IP \(bu 4
-.B HP
-is another.
-This macro produces a paragraph with a left hanging indentation.
-.
-.IP \(bu 4
-.B TP
-is another.
-This macro produces an unindented label followed by an indented
-paragraph.
-.RE
-.
-.TP
-.BI .HP " \fR[\fPnnn\fR]\fP"
-Set up a paragraph with hanging left indentation.
-The indentation is set to
-.I nnn
-if that argument is supplied (the default unit is `n' if omitted),
-otherwise it is set to the previous indentation value specified with
-.BR TP ,
-.BR IP ,
-or
-.B HP
-(or to the default value if none of them have been used yet).
-Font size and face are reset to its default values.
-The following paragraph illustrates the effect of this macro with
-hanging indentation set to\~4 (enclosed by
-.B .RS
-and
-.B .RE
-to set the left margin temporarily to the current indentation):
-.
-.RS
-.HP 4
-This is a paragraph following an invocation of the
-.B HP
-macro.
-As you can see, it produces a paragraph where all lines but the first
-are indented.
-.
-.RE
-.IP
-Use of this presentation-level macro is deprecated.
-While it is universally portable to legacy Unix systems, a hanging
-indentation cannot be expressed naturally under HTML, and many
-HTML-based manual viewers simply interpret it as a starter for a
-normal paragraph.
-Thus, any information or distinction you tried to express with the
-indentation may be lost.
-.
-.TP
-.BI .RS " \fR[\fPnnn\fR]\fP"
-This macro moves the left margin to the right by the value
-.I nnn
-if specified (default unit is `n'); otherwise it is set to the
-previous indentation value specified with
-.BR TP ,
-.BR IP ,
-or
-.B HP
-(or to the default value if none of them have been used yet).
-The indentation value is then set to the default.
-.
-.IP
-Calls to the
-.B RS
-macro can be nested.
-.
-.TP
-.BI .RE " \fR[\fPnnn\fR]\fP"
-This macro moves the left margin back to level
-.IR nnn ,
-restoring the previous left margin.
-If no argument is given, it moves one level back.
-The first level (i.e., no call to
-.B RS
-yet) has number\~1, and each call to
-.B RS
-increases the level by\~1.
-.
-.TP
-.B .EX
-.TQ
-.B .EE
-Example/End Example.
-After
-.BR EX ,
-filling is disabled and the font is set to constant-width.
-This is useful for formatting code, command, and
-configuration-file examples.
-The
-.B EE
-macro restores the previous font.
-.
-.IP
-These macros are defined on many (but not all) legacy Unix systems
-running classic troff.
-To be certain your page will be portable to those systems, copy
-their definitions from the
-.B \%an-ext.tmac
-file of a
-.BR @T_ROFF@
-installation.
-.
 .PP
 To summarize, the following macros cause a line break with the
 insertion of vertical space (which amount can be changed with the
-.B PD
+.B .PD
 macro):
-.BR SH ,
-.BR SS ,
-.BR TP ,
-.BR TQ ,
-.B LP
-.RB ( PP ,
-.BR P ),
-.BR IP ,
+.BR .SH ,
+.BR .SS ,
+.BR .TP ,
+.BR .TQ ,
+.B .LP
+.RB ( .PP ,
+.BR .P ),
+.BR .IP ,
 and
-.BR HP .
+.BR .HP .
 The macros
-.BR RS ,
-.BR RE ,
-.BR EX ,
+.BR .RS ,
+.BR .RE ,
+.BR .EX ,
 and
-.B EE
+.B .EE
 also cause a break but no insertion of vertical space.
 .
 .\"
@@ -508,14 +529,12 @@ also cause a break but no insertion of vertical space.
 The standard font is Roman; the default text size is 10\~point.
 .
 .TP
-.BI .SM " \fR[\fPtext\fR]\fP"
-Causes the text on the same line or the text on the next input line to
-appear in a font that is one point size smaller than the default font.
-.
-.TP
-.BI .SB " \fR[\fPtext\fR]\fP"
-Causes the text on the same line or the text on the next input line to
-appear in boldface font, one point size smaller than the default font.
+.BI .B " \fR[\fPtext\fR]\fP"
+Causes
+.I text
+to appear in bold face.
+If no text is present on the line where the macro is called the text
+of the next input line appears in bold face.
 .
 .TP
 .BI ".BI " text
@@ -534,25 +553,27 @@ appears in italics.
 .RE
 .
 .TP
+.BI ".BR " text
+Causes text on the same line to appear alternately in bold face and
+roman.
+The text must be on the same line as the macro call.
+.
+.TP
+.BI .I " \fR[\fPtext\fR]\fP"
+Causes
+.I text
+to appear in italic.
+If no text is present on the line where the macro is called the text
+of the next input line appears in italic.
+.
+.TP
 .BI ".IB " text
 Causes text to appear alternately in italic and bold face.
 The text must be on the same line as the macro call.
 .
 .TP
-.BI ".RI " text
-Causes text on the same line to appear alternately in roman and
-italic.
-The text must be on the same line as the macro call.
-.
-.TP
 .BI ".IR " text
 Causes text on the same line to appear alternately in italic and
-roman.
-The text must be on the same line as the macro call.
-.
-.TP
-.BI ".BR " text
-Causes text on the same line to appear alternately in bold face and
 roman.
 The text must be on the same line as the macro call.
 .
@@ -563,20 +584,21 @@ face.
 The text must be on the same line as the macro call.
 .
 .TP
-.BI .B " \fR[\fPtext\fR]\fP"
-Causes
-.I text
-to appear in bold face.
-If no text is present on the line where the macro is called the text
-of the next input line appears in bold face.
+.BI ".RI " text
+Causes text on the same line to appear alternately in roman and
+italic.
+The text must be on the same line as the macro call.
 .
 .TP
-.BI .I " \fR[\fPtext\fR]\fP"
-Causes
-.I text
-to appear in italic.
-If no text is present on the line where the macro is called the text
-of the next input line appears in italic.
+.BI .SB " \fR[\fPtext\fR]\fP"
+Causes the text on the same line or the text on the next input line to
+appear in boldface font, one point size smaller than the default font.
+.
+.TP
+.BI .SM " \fR[\fPtext\fR]\fP"
+Causes the text on the same line or the text on the next input line to
+appear in a font that is one point size smaller than the default font.
+.
 .
 .\"
 .SH "MACROS TO DESCRIBE HYPERLINKS AND EMAIL ADDRESSES"
@@ -596,17 +618,53 @@ manual page is rendered in a browser or other program that is
 Web-enabled.
 .
 .TP
+.BI .MT " address"
+.TQ
+.BI .ME " \fR[\fPpunctuation\fR]\fP"
+Wrap an email address.
+The argument of
+.B .MT
+is the address; text following, until
+.BR .ME ,
+is a name to be associated with the address.
+Any argument to the
+.B .ME
+macro is pasted to the end of the link text.
+On a device that is not a browser,
+.
+.RS
+.IP
+.EX
+contact
+\&.MT fred.foonly@\e:fubar.net
+Fred Foonly
+\&.ME
+for more information
+.EE
+.RE
+.
+.IP
+usually displays like this: \[lq]contact Fred Foonly
+<fred.foonly@\:fubar.net> for more information\[rq].
+.
+.IP
+The use of
+.B \e:
+to insert hyphenless breakpoints is a @T_ROFF@ extension and can
+be omitted.
+.
+.TP
 .BI .UR " URL"
 .TQ
 .BI .UE " \fR[\fPpunctuation\fR]\fP"
 Wrap a World Wide Web hyperlink.
 The argument to
-.B UR
+.B .UR
 is the URL; thereafter, lines until
-.B UE
+.B .UE
 are collected and used as the link text.
 Any argument to the
-.B UE
+.B .UE
 macro is pasted to the end of the text.
 On a device that is not a browser,
 .
@@ -624,42 +682,6 @@ given as an example
 .IP
 usually displays like this: \[lq]this is a link to some random
 site <http://\:randomsite.org/\:fubar>, given as an example\[rq].
-.
-.IP
-The use of
-.B \e:
-to insert hyphenless breakpoints is a groff extension and can
-be omitted.
-.
-.TP
-.BI .MT " address"
-.TQ
-.BI .ME " \fR[\fPpunctuation\fR]\fP"
-Wrap an email address.
-The argument of
-.B MT
-is the address; text following, until
-.BR ME ,
-is a name to be associated with the address.
-Any argument to the
-.B ME
-macro is pasted to the end of the link text.
-On a device that is not a browser,
-.
-.RS
-.IP
-.EX
-contact
-\&.UR fred.foonly@\e:fubar.net
-Fred Foonly
-\&.UE
-for more information
-.EE
-.RE
-.
-.IP
-usually displays like this: \[lq]contact Fred Foonly
-<fred.foonly@\:fubar.net> for more information\[rq].
 .
 .IP
 The use of
@@ -686,22 +708,22 @@ recognizing command synopses and treating them differently from
 running text.
 .
 .TP
-.BI .SY " command"
-Begin synopsis.
-Takes a single argument, the name of a command.
-Text following, until closed by
-.BR YS ,
-is set with a hanging indentation with the width of
-.I command
-plus a space.
-This produces the traditional look of a Unix command synopsis.
-.
-.TP
 .BI .OP " key value"
 Describe an optional command argument.
 The arguments of this macro are set surrounded by option braces
 in the default Roman font; the first argument is printed with
 a bold face, while the second argument is typeset as italic.
+.
+.TP
+.BI .SY " command"
+Begin synopsis.
+Takes a single argument, the name of a command.
+Text following, until closed by
+.BR .YS ,
+is set with a hanging indentation with the width of
+.I command
+plus a space.
+This produces the traditional look of a Unix command synopsis.
 .
 .TP
 .B .YS
@@ -727,16 +749,16 @@ produces the following output:
 .RS
 .PP
 .SY ed
-.OP \e-p string
-.OP \e-s
+.OP \-p string
+.OP \-s
 .RI [ file
-.IR .\e|.\e|. ]
+.IR .\|.\|. ]
 .YS
 .RE
 .
 .PP
 If necessary, you might use
-.B br
+.B .br
 requests to control line breaking.
 You can insert plain text as well; this looks like the traditional
 (unornamented) syntax for a required command argument or filename.
@@ -750,10 +772,21 @@ except for
 which ignores indentation.
 .
 .TP
+.BI .AT " \fR[\fPsystem \fR[\fPrelease\fR]]\fP"
+Alter the footer for use with \f[CR]AT&T\f[]
+.IR \%man\~pages .
+This command exists only for compatibility; don't use it.
+.
+.TP
+.B .BT
+Print the footer string.
+Redefine this macro to get control of the footer.
+.
+.TP
 .B .DT
 Set tabs every 0.5\~inches.
 Since this macro is always called during a
-.B TH
+.B .TH
 request, it makes sense to call it only if the tab positions have been
 changed.
 .
@@ -762,7 +795,7 @@ Use of this presentation-level macro is deprecated.
 It translates poorly to HTML, under which exact whitespace control
 and tabbing are not readily available.
 Thus, information or distinctions that you use
-.B DT
+.B .DT
 to express are likely to be lost.
 If you feel tempted to use it, you should probably be composing a
 table using
@@ -776,37 +809,25 @@ The optional argument gives the amount of space (default unit is `v');
 without parameter, the value is reset to its default value (1\~line in
 nroff mode, 0.4v\~otherwise).
 This affects the macros
-.BR SH ,
-.BR SS ,
-.BR TP ,
-.B LP
+.BR .SH ,
+.BR .SS ,
+.BR .TP ,
+.B .LP
 (resp.\&
-.B PP
+.B .PP
 and
-.BR P ),
-.BR IP ,
+.BR .P ),
+.BR .IP ,
 and
-.BR HP .
+.BR .HP .
 .
 .IP
 Use of this presentation-level macro is deprecated.
 It translates poorly to HTML, under which exact control of
 inter-paragraph spacing is not readily available.
 Thus, information or distinctions that you use
-.B PD
+.B .PD
 to express are likely to be lost.
-.
-.TP
-.BI .AT " \fR[\fPsystem \fR[\fPrelease\fR]]\fP"
-Alter the footer for use with \f[CR]AT&T\f[]
-.IR \%man\~pages .
-This command exists only for compatibility; don't use it.
-.
-.TP
-.BI .UC " \fR[\fPversion\fR]\fP"
-Alter the footer for use with \f[CR]BSD\f[]
-.IR man\~pages .
-This command exists only for compatibility; don't use it.
 .
 .TP
 .B .PT
@@ -814,24 +835,21 @@ Print the header string.
 Redefine this macro to get control of the header.
 .
 .TP
-.B .BT
-Print the footer string.
-Redefine this macro to get control of the footer.
+.BI .UC " \fR[\fPversion\fR]\fP"
+Alter the footer for use with \f[CR]BSD\f[]
+.IR man\~pages .
+This command exists only for compatibility; don't use it.
 .
 .PP
 The following strings are defined:
-.
-.TP
-.B \e*S
-Switch back to the default font size.
 .
 .TP
 .B \e*R
 The `registered' sign.
 .
 .TP
-.B \e*(Tm
-The `trademark' sign.
+.B \e*S
+Switch back to the default font size.
 .
 .TP
 .B \e*(lq
@@ -844,6 +862,10 @@ This is equal to `\e(lq' and `\e(rq', respectively.
 .B \e*(HF
 The typeface used to print headings and subheadings.
 The default is `B'.
+.
+.TP
+.B \e*(Tm
+The `trademark' sign.
 .
 .PP
 If a preprocessor like
@@ -892,6 +914,29 @@ and page sizes that may break in an HTML environment; also, many of
 these viewers don't interpret the full troff vocabulary, a problem
 which can lead to portions of your text being silently dropped.
 .
+.PP
+Note that for the portability to modern viewers, it is best to write
+your page entirely in the requests described on this page.
+Further, it is best to completely avoid those we have described as
+\[oq]presentation-level\[cq]
+.RB ( .HP ,
+.BR .PD ,
+and
+.BR .DT ).
+.
+.PP
+The macros we have described as extensions
+.RB ( .EX / .EE ,
+.BR .SY / .OP / .YS ,
+.BR .UR / .UE ,
+and
+.BR .MT / .ME )
+should be used with caution, as they may not yet be built in to
+some viewer that is important to your audience.
+.
+If in doubt, copy the implementation onto your page.
+.
+.
 .\"
 .SH FILES
 .
@@ -924,10 +969,10 @@ The extension macro definitions for
 .BR .OP ,
 .BR .YS ,
 .BR .TQ ,
-.BR .EX/.EE ,
-.BR .UR/.UE ,
+.BR .EX / .EE ,
+.BR .UR / .UE ,
 and
-.BR .MT/.ME
+.BR .MT / .ME
 are contained in this file.
 It is written in classic troff, and released for free re-use,
 and not copylefted; manual page authors concerned about
@@ -935,11 +980,22 @@ portability to legacy Unix systems are encouraged to copy these
 definitions into their pages, and maintainers of troff
 or its workalikes are encouraged to re-use them.
 .
+.IP
+Note that the definitions for these macros are read after the call of
+.BR .TH ,
+so they will replace macros of the same names given at the beginning of
+your file.
+.
+If you must use your own definitions for these macros, they must be
+given after calling
+.BR .TH .
+.
 .TP
 .B man.local
 Local changes and customizations should be put into this file.
 .
 .\"
+.ad l
 .SH "SEE ALSO"
 .
 .BR @L_P_TBL@ (@MAN1EXT@),
@@ -955,7 +1011,7 @@ Local changes and customizations should be put into this file.
 This manual page was originally written for the Debian GNU/Linux
 system by
 .MT sgk@debian.org
-Susan G. Kleinmann
+Susan G.\& Kleinmann
 .ME .
 It was corrected and updated by
 .MT wl@gnu.org
@@ -963,7 +1019,10 @@ Werner Lemberg
 .ME .
 The extension macros were documented (and partly designed) by
 .MT esr@thyrsus.com
-Eric S. Raymond
+Eric S.\& Raymond
 .ME .
+.
+.cp \n[__compat]
+.rr __compat
 .
 .\" s-ts-mode
