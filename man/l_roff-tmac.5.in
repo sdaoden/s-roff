@@ -1,5 +1,5 @@
 .ig
-@ @L_ROFF@_tmac.5
+@ @L_ROFF@-tmac.5
 
 Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
@@ -20,9 +20,9 @@ source package of this program.
 ..
 .ds Ellipsis \&.\|.\|.\&\"
 .
-.TH @U_ROFF@_TMAC @MAN5EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
+.TH @U_ROFF@-TMAC @MAN5EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .SH NAME
-@L_ROFF@_tmac \- macro files in the roff typesetting system
+@L_ROFF@-tmac \- macro files in the roff typesetting system
 .
 .
 .\"
@@ -30,7 +30,7 @@ source package of this program.
 .\"
 .
 The
-.BR roff (@MAN7EXT@)
+.BR @L_ROFF@ (@MAN7EXT@)
 type-setting system provides a set of macro packages suitable for
 special kinds of documents.
 .
@@ -96,7 +96,7 @@ file.
 .B man
 This is the classical macro package for UNIX manual pages
 (man\~pages); it is quite handy and easy to use; see
-.BR @L_ROFF@_man (@MAN7EXT@).
+.BR @L_ROFF@-man (@MAN7EXT@).
 .
 .
 .TP
@@ -106,7 +106,7 @@ This is the classical macro package for UNIX manual pages
 An alternative macro package for man\~pages mainly used in BSD
 systems; it provides many new features, but it is not the standard for
 man\~pages; see
-.BR @L_ROFF@_mdoc (@MAN7EXT@).
+.BR @L_ROFF@-mdoc (@MAN7EXT@).
 .
 .
 .TP
@@ -137,7 +137,7 @@ to use.
 The classical
 .I me
 macro package; see
-.BR @L_ROFF@_me (@MAN7EXT@).
+.BR @L_ROFF@-me (@MAN7EXT@).
 .
 .
 .TP
@@ -145,7 +145,7 @@ macro package; see
 The semi-classical
 .I mm
 macro package; see
-.BR @L_ROFF@_mm (@MAN7EXT@).
+.BR @L_ROFF@-mm (@MAN7EXT@).
 .
 .
 .TP
@@ -153,7 +153,7 @@ macro package; see
 The classical
 .I ms
 macro package; see
-.BR @L_ROFF@_ms (@MAN7EXT@).
+.BR @L_ROFF@-ms (@MAN7EXT@).
 .
 .
 .\"
@@ -197,7 +197,7 @@ Example:
 .RS
 .IP
 .EX
-\fIsh#\fP @L_ROFF@ -ms -mfr foo.ms > foo.ps
+\fIsh#\fP @L_ROFF@ \-ms \-mfr foo.ms > foo.ps
 .EE
 .RE
 .
@@ -213,7 +213,7 @@ ligature.
 Swedish localization support, including the me, mom, and ms macro packages.
 .
 Note that Swedish for the mm macros is handled separately; see
-.BR @L_ROFF@_mmse (@MAN7EXT@).
+.BR @L_ROFF@-mmse (@MAN7EXT@).
 .
 It should be used as the last macro package on the command line.
 .
@@ -261,7 +261,7 @@ For example, saying
 .
 .P
 .EX
-@L_ROFF@ -Tlatin1 -mlatin9 ...
+@L_ROFF@ \-Tlatin1 \-mlatin9 ...
 .EE
 .
 .P
@@ -285,9 +285,9 @@ macro package or to plain @L_ROFF@.
 .
 .
 .TP
-.B 60bit
-Provide some macros for addition, multiplication, and division of 60bit
-integers (allowing safe multiplication of 30bit integers, for example).
+.B 62bit
+Provide some macros for addition, multiplication, and division of 62bit
+integers (allowing safe multiplication of 31bit integers, for example).
 .
 .
 .TP
@@ -313,7 +313,7 @@ Possible values for
 are the same as the predefined
 .B papersize
 values in the DESC file (only lowercase; see
-.BR @L_ROFF@_font (@MAN5EXT@)
+.BR @L_ROFF@-font (@MAN5EXT@)
 for more) except
 .BR a7 - d7 .
 .
@@ -388,7 +388,7 @@ Syntax:
 |\|\fB\-R\fP\|\
 |\|\fB\-C\fP\|\
 |\|\fB\-I\fP\ \fIn\fP] \
-\fI\|file\fP [\fIwidth\fP [\fIheight\fP]]
+\fI\|file\fP [\fIwidth\fP [,\fIheight\fP]]
 .RE
 .
 .IP
@@ -454,7 +454,7 @@ covers the image's width.
 \&.am PSPIC
 \&.\ \ vpt 0
 \&\[rs]h'(\[rs]\[rs]n[ps-offset]u + \[rs]\[rs]n[ps-deswid]u)'
-\&.\ \ sp -1
+\&.\ \ sp \-1
 \&.\ \ vpt 1
 \&..
 .EE
@@ -480,7 +480,7 @@ Use this for tracing macro calls.
 It is only useful for debugging.
 .
 See
-.BR @L_ROFF@_trace (@MAN7EXT@) .
+.BR @L_ROFF@-trace (@MAN7EXT@) .
 .
 .
 .TP
@@ -497,7 +497,7 @@ normal TTY formatting to allow processing with critical equipment.
 Additions of elements known from the HTML format, as used in the
 internet (World Wide Web) pages; this includes URL links and mail
 addresses; see
-.BR @L_ROFF@_www (@MAN7EXT@).
+.BR @L_ROFF@-www (@MAN7EXT@).
 .
 .
 .\"
@@ -696,8 +696,11 @@ is used or
 In both cases, the formatter should be called with option
 .B \-s
 to invoke
-.BR @L_P_SOELIM@ .
-.
+.BR @L_P_SOELIM@ :
+.IP
+.EX
+\fIsh#\fP groff \-s docu.roff
+.EE
 .
 .P
 If you want to write your own @T_ROFF@ macro file, call it
@@ -736,9 +739,7 @@ preprocessors are recognized,
 `e'
 (for
 .BR eqn ),
-.\" `G',
-.\" `g',
-`p`
+`p'
 (for
 .BR pic ),
 `R'
@@ -752,7 +753,7 @@ and
 (for
 .BR tbl ).
 (see
-.BR roff (@MAN7EXT@)).
+.BR @L_ROFF@-history (@MAN7EXT@)).
 .
 .
 .P
@@ -768,7 +769,7 @@ The
 program handles some preprocessors automatically, such that in
 man\~pages only the following characters should be used:
 `e', `p', and `t'.
-.
+..
 .
 .
 .\"
@@ -776,13 +777,13 @@ man\~pages only the following characters should be used:
 .\"
 .
 A
-.BR roff (@MAN7EXT@)
+.BR @L_ROFF@ (@MAN7EXT@)
 document is a text file that is enriched by predefined formatting
 constructs, such as requests, escape sequences, strings, numeric
 registers, and macros from a macro package.
 .
 These elements are described in
-.BR roff (@MAN7EXT@).
+.BR @L_ROFF@ (@MAN7EXT@).
 .
 .
 .P
@@ -886,28 +887,28 @@ Let's analyze each backslash in the macro definition.
 As the positional parameters and the number of arguments change
 with each call of the macro their leading backslash must be doubled,
 which results in
-.I \[rs]\[rs]$*
+.RI \[rs]\[rs] $*
 and
-.IR \[rs]\[rs][.$] .
+.RI \[rs]\[rs] [.$] .
 The same applies to the macro name because it could be called with an
 alias name, so
-.IR \[rs]\[rs]$0 .
+.RI \[rs]\[rs] $0 .
 .
 .
 .P
 On the other hand,
 .I midpart
 is a constant string, it does not change, so no doubling for
-.IR \[rs]*[midpart] .
+.RI \[rs] *[midpart] .
 The
-.I \[rs]f
+.RI \[rs] f
 escape sequences are predefined elements for setting the font
 within the text.
 .
 Of course, this behavior does not change, so no doubling with
-.I \[rs]f[I]
+.RI \[rs] f[I]
 and
-.IR \[rs]f[] .
+.RI \[rs] f[] .
 .
 .
 .\"
@@ -1183,19 +1184,19 @@ an overview of the @T_ROFF@ system.
 .
 .
 .TP
-.BR @L_ROFF@_man (@MAN7EXT@),
+.BR @L_ROFF@-man (@MAN7EXT@),
 .TQ
-.BR @L_ROFF@_mdoc (@MAN7EXT@),
+.BR @L_ROFF@-mdoc (@MAN7EXT@),
 .TQ
-.BR @L_ROFF@_me (@MAN7EXT@),
+.BR @L_ROFF@-me (@MAN7EXT@),
 .TQ
-.BR @L_ROFF@_mm (@MAN7EXT@),
+.BR @L_ROFF@-mm (@MAN7EXT@),
 .TQ
-.BR @L_ROFF@_ms (@MAN7EXT@),
+.BR @L_ROFF@-ms (@MAN7EXT@),
 .TQ
-.BR @L_ROFF@_trace (@MAN7EXT@),
+.BR @L_ROFF@-trace (@MAN7EXT@),
 .TQ
-.BR @L_ROFF@_www (@MAN7EXT@).
+.BR @L_ROFF@-www (@MAN7EXT@).
 the @T_ROFF@ tmac macro packages.
 .
 .

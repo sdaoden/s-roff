@@ -1256,7 +1256,7 @@ This is allowed by the specification, but inefficient.
 .BR @L_ROFF@ (@MAN1EXT@),
 .BR @L_TROFF@ (@MAN1EXT@),
 .BR @L_P_PIC@ (@MAN1EXT@),
-.BR @L_ROFF@_font (@MAN5EXT@),
+.BR @L_ROFF@-font (@MAN5EXT@),
 .I The\ \*(txbook
 .
 .cp \n[__compat]

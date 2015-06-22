@@ -108,7 +108,7 @@ a Times font.
 .
 .SH "SEE ALSO"
 .BR @L_ROFF@ (@MAN1EXT@),
-.BR @L_ROFF@_font (@MAN5EXT@),
-.BR @L_ROFF@_char (@MAN7EXT@)
+.BR @L_ROFF@-font (@MAN5EXT@),
+.BR @L_ROFF@-char (@MAN7EXT@)
 .
 .\" s-ts-mode

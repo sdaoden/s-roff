@@ -1,5 +1,5 @@
 .ig
-@ @L_ROFF@_font.5
+@ @L_ROFF@-font.5
 
 Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
@@ -34,11 +34,11 @@ the original English.
 ..
 .
 .
-.TH @U_ROFF@_FONT @MAN5EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
+.TH @U_ROFF@-FONT @MAN5EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
 .
 .SH NAME
-@L_ROFF@_font \- format of @T_ROFF@ device and font description files
+@L_ROFF@-font \- format of @T_ROFF@ device and font description files
 .
 .
 .SH DESCRIPTION
@@ -662,13 +662,13 @@ Most entries in kernpairs section have a negative value for\~\c
 .
 .SH FILES
 .
-.Tp \w'@FONTDIR@/devname/DESC'u+3n
-.BI @FONTDIR@/dev name /DESC
+.Tp \w'@FONTDIR@/dev-name/DESC'u+3n
+.B @FONTDIR@/dev-name/DESC
 Device description file for device
 .IR name .
 .
 .TP
-.BI @FONTDIR@/dev name / F
+.B @FONTDIR@/dev-name/F
 Font file for font\~\c
 .I F
 of device
@@ -677,7 +677,7 @@ of device
 .
 .SH "SEE ALSO"
 .
-.BR @L_ROFF@_out (@MAN5EXT@),
+.BR @L_ROFF@-out (@MAN5EXT@),
 .BR @L_TROFF@ (@MAN1EXT@).
 .
 .cp \n[roff_font_C]

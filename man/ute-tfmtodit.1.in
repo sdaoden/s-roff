@@ -196,6 +196,6 @@ Font description file for font
 .SH "SEE ALSO"
 .BR @L_ROFF@ (@MAN1EXT@),
 .BR @L_D_DVI@ (@MAN1EXT@),
-.BR @L_ROFF@_font (@MAN5EXT@)
+.BR @L_ROFF@-font (@MAN5EXT@)
 .
 .\" s-ts-mode

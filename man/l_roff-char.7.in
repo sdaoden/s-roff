@@ -1,9 +1,9 @@
 '\" t -- preprocess: tbl(1)
-.\"@ @L_ROFF@_char.7
+.\"@ @L_ROFF@-char.7
 .
-.TH @U_ROFF@_CHAR @MAN7EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
+.TH @U_ROFF@-CHAR @MAN7EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .SH NAME
-@L_ROFF@_char \- @T_ROFF@ glyph names
+@L_ROFF@-char \- @T_ROFF@ glyph names
 .
 .de co
 Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
@@ -328,8 +328,8 @@ code set, being identical to the Unicode range
 .
 .
 .P
-Input characters in range 128-159 (on non-EBCDIC hosts) are not printable
-characters.
+Input characters in range 128\-159 (on non-EBCDIC hosts) are not
+printable characters.
 .
 .
 .TP

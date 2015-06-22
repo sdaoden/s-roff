@@ -1,6 +1,6 @@
 '\" e -- preprocess: eqn(1)
 .ig
-@ @L_ROFF@_out.5
+@ @L_ROFF@-out.5
 
 Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
@@ -45,7 +45,7 @@ after these commands, otherwise the position is not changed.
 .RI ( \,\\$1\/ ,\  \,\\$2\/ )\\$3
 ..
 .de indexed_offset
-.offset \fI\\$1\fP\d\s-3\\$2\s+3\u \fI\\$3\fP\d\s-3\\$4\s+3\u \\$5
+.offset \fI\\$1\/\fP\d\s-3\\$2\s+3\u\x'\n[.v]/4' \fI\\$3\/\fP\d\s-3\\$4\s+3\u\x'\n[.v]/4' \\$5\x'\n[.v]/4'
 ..
 .\" format: .command <name> "<arguments>" <punctuation>
 .de command
@@ -59,9 +59,9 @@ after these commands, otherwise the position is not changed.
 .\" We set these as troff micromotions rather than eqn because \d and \u
 .\" can be lifted to XML subscript/superscript tags.  Don't change
 .\" these to a parameterized string, man2html won't handle that.
-.ds hv1 \fIh\d\s-3\&1\s+3\u\~v\d\s-3\&1\s+3\u\fP
-.ds hv2 \fIh\d\s-3\&2\s+3\u\~v\d\s-3\&2\s+3\u\fP
-.ds hvn \fIh\d\s-3\&n\s+3\u\~v\d\s-3\&n\s+3\u\fP
+.ds hv1 \fIh\d\s-3\&1\s+3\u\~v\d\s-3\&1\s+3\u\fP\x'\n[.v]/4'
+.ds hv2 \fIh\d\s-3\&2\s+3\u\~v\d\s-3\&2\s+3\u\fP\x'\n[.v]/4'
+.ds hvn \fIh\d\s-3\&n\s+3\u\~v\d\s-3\&n\s+3\u\fP\x'\n[.v]/4'
 .
 .de Da-command
 \fBDa\fP\ \*[hv1] \*[hv2]\|\*[@linebreak]
@@ -82,19 +82,13 @@ after these commands, otherwise the position is not changed.
 .\" End of macro definitions
 .
 .
-.\"
-.\" Title
-.\"
-.
-.TH @U_ROFF@_OUT @MAN5EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
+.TH @U_ROFF@-OUT @MAN5EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
 .SH NAME
-@L_ROFF@_out \- @T_ROFF@ intermediate output format
+@L_ROFF@-out \- @T_ROFF@ intermediate output format
 .
 .
-.\"
 .SH DESCRIPTION
-.\"
 .
 This manual page describes the
 .I intermediate output
@@ -113,7 +107,7 @@ Because of this it is called intermediate.
 The
 .B @L_ROFF@
 program provides the option
-.B -Z
+.B \-Z
 to inhibit postprocessing, such that the produced
 .I intermediate output
 is sent to standard output just like calling
@@ -167,9 +161,7 @@ produced by
 output was hard to understand because of strange habits.
 .
 .
-.\"
 .SH "LANGUAGE CONCEPTS"
-.\"
 .
 During the run of
 .BR @L_TROFF@ ,
@@ -194,9 +186,7 @@ There are commands for positioning and text writing, for drawing, and
 for device controlling.
 .
 .
-.\"
 .SS "Separation"
-.\"
 .
 .I Classical troff output
 had strange requirements on whitespace.
@@ -314,7 +304,7 @@ Note that these scale indicators are relative to the chosen device.
 They are defined by the parameters specified in the device's
 .I DESC
 file; see
-.BR @L_ROFF@_font (@MAN5EXT@).
+.BR @L_ROFF@-font (@MAN5EXT@).
 .
 .
 .P
@@ -412,9 +402,7 @@ is done relative to the current page, all other positioning
 is done relative to the current location within this page.
 .
 .
-.\"
 .SH "COMMAND REFERENCE"
-.\"
 .
 This section describes all
 .I intermediate output
@@ -423,9 +411,7 @@ commands, the classical commands as well as the
 extensions.
 .
 .
-.\"
 .SS "Comment Command"
-.\"
 .
 .TP
 .BI # anything \[la]end-of-line\[ra]
@@ -725,7 +711,7 @@ extension; it is only used for devices whose
 file contains the
 .B tcommand
 keyword; see
-.BR @L_ROFF@_font (@MAN5EXT@).
+.BR @L_ROFF@-font (@MAN5EXT@).
 .
 .
 .TP
@@ -748,7 +734,7 @@ extension; it is only used for devices whose
 file contains the
 .B tcommand
 keyword; see
-.BR @L_ROFF@_font (@MAN5EXT@).
+.BR @L_ROFF@-font (@MAN5EXT@).
 .
 .
 .TP
@@ -867,7 +853,7 @@ as defined in section
 .
 .
 .TP
-.D-multiarg ~
+.D-multiarg \[ti]
 Draw B-spline from current position to offset
 .indexed_offset h 1 v 1 ,
 then to offset
@@ -1012,7 +998,7 @@ having the 3\~color components red, green, and blue.
 .D-command f n
 The argument
 .I n
-must be an integer in the range -32767 to 32767.
+must be an integer in the range \-32767 to 32767.
 .
 .RS
 .TP
@@ -1215,7 +1201,7 @@ Mount font position\~\c
 .I s
 (a text word),
 cf.
-.BR @L_ROFF@_font (@MAN5EXT@).
+.BR @L_ROFF@-font (@MAN5EXT@).
 .
 .
 .TP
@@ -1420,9 +1406,7 @@ and\~\c
 provide a better functionality.
 .
 .
-.\"
 .SH "POSTPROCESSING"
-.\"
 .
 The
 .I roff
@@ -1449,9 +1433,7 @@ For details, see the reference in section
 .BR FILES .
 .
 .
-.\"
 .SH "EXAMPLES"
-.\"
 .
 This section presents the
 .I intermediate output
@@ -1472,7 +1454,7 @@ High-resolution device
 .RS
 .P
 .EX
-\fBshell>\fP echo "hell world" | @L_ROFF@ -Z -T ps
+\fBshell>\fP echo "hell world" | @L_ROFF@ \-Z \-T ps
 .EE
 .
 .
@@ -1526,7 +1508,7 @@ formatter.
 .
 .P
 .EX
-\fBshell>\fP "hell world" | @L_ROFF@ -Z -T latin1
+\fBshell>\fP "hell world" | @L_ROFF@ \-Z \-T latin1
 .EE
 .
 .
@@ -1583,9 +1565,7 @@ Due to the obsolete jump-and-write command, the text clusters in the
 classical output are almost unreadable.
 .
 .
-.\"
 .SH "COMPATIBILITY"
-.\"
 .
 The
 .I intermediate output
@@ -1629,7 +1609,7 @@ modern
 .
 .IP \[bu] 2m
 The B-spline command
-.B D~
+.B D\[ti]
 is correctly handled by the
 .I intermediate output
 parser, but the drawing routines aren't implemented in some of the
@@ -1707,12 +1687,10 @@ The differences between
 and
 .I classical troff
 are documented in
-.BR @L_ROFF@_diff (@MAN7EXT@).
+.BR @L_ROFF@-diff (@MAN7EXT@).
 .
 .
-.\"
 .SH "FILES"
-.\"
 .
 .TP
 .BI @FONTDIR@/dev name /DESC
@@ -1734,9 +1712,7 @@ This parser is the definitive specification of the
 format.
 .
 .
-.\"
 .SH "SEE ALSO"
-.\"
 .
 A reference like
 .BR @L_ROFF@ (@MAN7EXT@)
@@ -1765,7 +1741,7 @@ For more details, see
 .TP
 .BR @L_ROFF@ (@MAN1EXT@)
 option
-.B -Z
+.B \-Z
 and further readings.
 .
 .
@@ -1775,7 +1751,7 @@ for details of the language such as numerical units and escape sequences.
 .
 .
 .TP
-.BR @L_ROFF@_font (@MAN5EXT@)
+.BR @L_ROFF@-font (@MAN5EXT@)
 for details on the device scaling parameters of the
 .B DESC
 file.
@@ -1787,12 +1763,12 @@ generates the device-independent intermediate output.
 .
 .
 .TP
-.BR roff (@MAN7EXT@)
+.BR @L_ROFF@-history (@MAN7EXT@)
 for historical aspects and the general structure of roff systems.
 .
 .
 .TP
-.BR @L_ROFF@_diff (@MAN7EXT@)
+.BR @L_ROFF@-diff (@MAN7EXT@)
 The differences between the intermediate output in groff and classical
 troff.
 .
@@ -1844,9 +1820,7 @@ CSTR\~#54
 .UE .
 .
 .
-.\"
 .SH "AUTHORS"
-.\"
 .
 Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 

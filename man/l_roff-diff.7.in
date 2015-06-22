@@ -1,6 +1,6 @@
 '\" e -- preprocess: eqn(1)
 .ig
-@ @L_ROFF@_diff.7
+@ @L_ROFF@-diff.7
 
 Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
@@ -43,9 +43,9 @@ source package of this program.
 .\" Title
 .\"
 .
-.TH @U_ROFF@_DIFF @MAN7EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
+.TH @U_ROFF@-DIFF @MAN7EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .SH NAME
-@L_ROFF@_diff \- differences between @T_ROFF@ and classical troff
+@L_ROFF@-diff \- differences between @T_ROFF@ and classical troff
 .
 .
 .\"
@@ -110,7 +110,7 @@ Example: `\[rs][A\~ho]' is capital letter A with ogonek which finally maps
 to glyph name `u0041_0328'.
 .
 See
-.BR @L_ROFF@_char (@MAN7EXT@)
+.BR @L_ROFF@-char (@MAN7EXT@)
 for a list of glyph name components used in composite glyph names
 and details of how a glyph name for a composite glyph is constructed.
 .
@@ -365,7 +365,7 @@ This is the same as the
 request.
 .
 .B \[rs]F[]
-switches back to the previous color (note that
+switches back to the previous font (note that
 .B \[rs]FP
 won't work; it selects font family `P' instead).
 .
@@ -704,12 +704,12 @@ correct if the following glyph is a roman glyph.
 .  nop For example, if an italic\~f is immediately followed by a roman
 .  nop right parenthesis, then in many fonts the top right portion of
 .  nop the\~f overlaps the top left of the right parenthesis
-.  nop producing \f[I]f\f[R])\f[R], which is ugly.
+.  nop producing \f[I]f\f[R]), which is ugly.
 .  nop Inserting
 .  B \[rs]/
 .  nop produces
-.  ie \n(.g \f[I]f\/\f[R])\f[R]
-.  el       \f[I]f\|\f[R])\f[R]
+.  ie \n(.g \f[I]f\/\f[R])
+.  el       \f[I]f\|\f[R])
 .  nop and avoids this problem.
 .\}
 It is a good idea to use this escape sequence whenever an italic
@@ -744,7 +744,7 @@ request to be transparent for the purposes of end-of-sentence
 recognition.
 .
 .TP
-.B \[rs]~
+.B \[rs]\[ti]
 This produces an unbreakable space that stretches like a normal
 inter-word space when a line is adjusted.
 .
@@ -1594,6 +1594,9 @@ Use the
 request to map the encoding used in hyphenation patterns files to
 .BR roff 's
 input encoding.
+By default, everything maps to itself except letters `A' to `Z' which
+map to `a' to `z'.
+.
 .IP
 The set of hyphenation patterns is associated with the current language
 set by the
@@ -2761,6 +2764,11 @@ register.
 1\~if no-space mode is active, 0\~otherwise.
 .
 .TP
+.B \[rs]n[.P]
+1\~if the current page is in the output list set with
+.BR \-o .
+.
+.TP
 .B \[rs]n[.pe]
 1\~during a page ejection caused by the
 .B bp
@@ -3087,7 +3095,7 @@ In a long escape name
 .B ]
 is not recognized as a closing delimiter except when it occurs at
 the same input level as the opening\~\c
-.BR ] .
+.BR [ .
 .
 In compatibility mode, no attention is paid to the input-level.
 .
@@ -3152,7 +3160,7 @@ Font translation is applied.
 The
 .B tr
 request can now map characters onto
-.BR \[rs]~ .
+.BR \[rs]\[ti] .
 .
 .P
 The space width emitted by the
@@ -3427,7 +3435,7 @@ is not one of
 .BR l ,
 .BR a ,
 or\~\c
-.BR ~ ,
+.BR \[ti] ,
 Unix troff treats each of the $x sub i$ as a horizontal quantity,
 and each of the $y sub i$ as a vertical quantity and assumes that
 the width of the drawn object is $sum from i=1 to n x sub i$,
@@ -3818,7 +3826,7 @@ language, including a short, but complete reference of all predefined
 requests, registers and escapes.
 .
 .TP
-.BR roff (@MAN7EXT@)
+.BR @L_ROFF@-history (@MAN7EXT@)
 A survey of
 .I roff
 systems, including pointers to further historical documentation.

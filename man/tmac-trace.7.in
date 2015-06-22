@@ -224,7 +224,7 @@ macros are kept in the file
 located in the
 .IR "tmac directory" ;
 see
-.BR @L_ROFF@_tmac (@MAN5EXT@)
+.BR @L_ROFF@-tmac (@MAN5EXT@)
 for details.
 .
 .\"
@@ -234,7 +234,7 @@ for details.
 .B $@U_ROFF@_TMAC_PATH
 A colon-separated list of additional tmac directories in which to
 search for macro files; see
-.BR @L_ROFF@_tmac (@MAN5EXT@)
+.BR @L_ROFF@-tmac (@MAN5EXT@)
 for details.
 .
 .\"
@@ -268,7 +268,7 @@ For details on option
 .BR \-m .
 .
 .TP
-.BR @L_ROFF@_tmac (@MAN5EXT@)
+.BR @L_ROFF@-tmac (@MAN5EXT@)
 A general description of @T_ROFF@ macro packages.
 .
 .TP

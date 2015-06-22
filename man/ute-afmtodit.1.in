@@ -166,7 +166,7 @@ will automatically generate an italic correction,
 a left italic correction and a subscript correction
 for each character
 (the significance of these parameters is explained in
-.BR @L_ROFF@_font (@MAN5EXT@));
+.BR @L_ROFF@-font (@MAN5EXT@));
 these parameters may be specified for individual characters by
 adding to the
 .I afm_file
@@ -356,6 +356,6 @@ Standard mapping.
 .BR @L_ROFF@ (@MAN1EXT@),
 .BR @L_D_PS@ (@MAN1EXT@),
 .BR perl (1) ,
-.BR @L_ROFF@_font (@MAN5EXT@)
+.BR @L_ROFF@-font (@MAN5EXT@)
 .
 .\" s-ts-mode
