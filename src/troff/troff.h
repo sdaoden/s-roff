@@ -79,11 +79,13 @@ enum warning_type {
   WARN_SPACE = 0200000,
   WARN_FONT = 0400000,
   WARN_IG =  01000000,
-  WARN_COLOR = 02000000
-  // change WARN_TOTAL if you add more warning types
+  WARN_COLOR = 02000000,
+  WARN_FILE = 1<<20,
+  __WARN_MAX = WARN_FILE
 };
-
-const int WARN_TOTAL = 03777777;
+enum {
+  WARN_TOTAL = (__WARN_MAX << 1) - 1
+}
 
 int warning(warning_type, const char *,
 	    const errarg & = empty_errarg,

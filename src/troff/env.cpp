@@ -2219,14 +2219,14 @@ node *environment::make_tag(const char *nm, int i)
      */
     if (curdiv == topdiv && topdiv->before_first_page)
       topdiv->begin_page();
-    macro *m = new macro;
-    m->append_str("devtag:");
+    macro m;
+    m.append_str("devtag:");
     for (const char *p = nm; *p; p++)
       if (!invalid_input_char((unsigned char)*p))
-	m->append(*p);
-    m->append(' ');
-    m->append_int(i);
-    return new special_node(*m);
+        m.append(*p);
+    m.append(' ');
+    m.append_int(i);
+    return new special_node(m);
   }
   return 0;
 }
@@ -3332,8 +3332,8 @@ void environment::print_env()
 	       ? "on"
 	       : margin_character_flags == MARGIN_CHARACTER_NEXT
 		   ? "next"
-		   : margin_character_flags == MARGIN_CHARACTER_ON
-					       | MARGIN_CHARACTER_NEXT
+		   : margin_character_flags == (MARGIN_CHARACTER_ON
+					       | MARGIN_CHARACTER_NEXT)
 		       ? "on, next"
 		       : "none");
     errprint("  margin character distance: %1u\n",
