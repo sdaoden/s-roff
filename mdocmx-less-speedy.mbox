@@ -1,0 +1,1077 @@
+From f41b058471fe12bc39ed5de151f8f4a81ff75191 Mon Sep 17 00:00:00 2001
+Message-Id: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+From: Steffen Nurpmeso <sdaoden@users.sf.net>
+Date: Tue, 18 Nov 2014 13:57:23 +0100
+Subject: [PATCH 01/12] mdocmx(7): implement local anchor searches
+
+---
+ cmd.h     |  1 +
+ command.c | 69 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ decode.c  |  3 ++-
+ less.h    |  1 +
+ lesskey.c |  1 +
+ search.c  | 15 ++++++++++++++
+ 6 files changed, 89 insertions(+), 1 deletion(-)
+
+diff --git a/cmd.h b/cmd.h
+index 8a943d1..d305256 100644
+--- a/cmd.h
++++ b/cmd.h
+@@ -67,6 +67,7 @@
+ #define	A_FILTER		55
+ #define	A_F_UNTIL_HILITE	56
+ #define	A_GOEND_BUF		57
++#define A_MDOCMX		84
+ 
+ #define	A_INVALID		100
+ #define	A_NOACTION		101
+diff --git a/command.c b/command.c
+index c31fa81..b940a39 100644
+--- a/command.c
++++ b/command.c
+@@ -57,6 +57,11 @@ extern int oldbot;
+ extern int forw_prompt;
+ extern int same_pos_bell;
+ 
++/* For mdocmx */
++#if HILITE_SEARCH
++extern int hilite_search;
++#endif
++
+ #if SHELL_ESCAPE
+ static char *shellcmd = NULL;	/* For holding last shell command for "!!" */
+ #endif
+@@ -83,6 +88,7 @@ struct ungot {
+ static struct ungot* ungot = NULL;
+ 
+ static void multi_search();
++static void mdocmx_search();
+ 
+ /*
+  * Move the cursor to start of prompt line before executing a command.
+@@ -287,6 +293,9 @@ exec_mca()
+ 		error("|done", NULL_PARG);
+ 		break;
+ #endif
++	case A_MDOCMX:
++		mdocmx_search(cbuf);
++		break;
+ 	}
+ }
+ 
+@@ -955,6 +964,60 @@ multi_search(pattern, n, silent)
+ }
+ 
+ /*
++ * mdocmx(7) -- reference extension for mdoc(7) semantic markup language.
++ * Search for a specially crafted anchor in the document and scroll the
++ * respective position into view.
++ */
++	static void
++mdocmx_search(cbuf)
++	char const *cbuf;
++{
++	const int srch_flags = SRCH_NO_REGEX | SRCH_MDOCMX;
++
++	PARG parg;
++	char *q, *qc;
++	long l;
++#if HILITE_SEARCH
++	int save_hilite_search;
++#endif
++
++	parg.p_string = (char*)cbuf;
++	l = strtol(cbuf, &q, 10);
++
++	if (*cbuf == '\0')
++		error("Need a reference anchor", NULL_PARG);
++	else if (*q != '\0' || l <= 0)
++		error("Invalid reference anchor: %s", &parg);
++	/* Local references are scrolled into view */
++	else {
++		/* Local anchor: '{DIGITS}', each char doubled and ^H'd away */
++		q = ecalloc(strlen(cbuf)*4 + 4*2 +1, sizeof *q);
++
++		q[0] = '{'; q[1] = '\b'; q[2] = '{'; q[3] = '\b';
++		for (qc = q + 4; *cbuf != '\0'; qc += 4, ++cbuf)
++			qc[0] = *cbuf, qc[1] = '\b',
++			qc[2] = *cbuf, qc[3] = '\b';
++		qc[0] = '}'; qc[1] = '\b'; qc[2] = '}'; qc[3] = '\b';
++		/*qc[4] = '\0';*/
++
++#if HILITE_SEARCH
++		save_hilite_search = hilite_search;
++		repaint_hilite(0);
++		hilite_search = 0;
++#endif
++		if (search(SRCH_FORW | srch_flags, q, 1) != 0 &&
++				search(SRCH_BACK | srch_flags, q, 1) != 0)
++			error("No such anchor: %s", &parg);
++#if HILITE_SEARCH
++		hilite_search = save_hilite_search;
++		repaint_hilite(1);
++#endif
++
++		free(q);
++	}
++}
++
++/*
+  * Forward forever, or until a highlighted line appears.
+  */
+ 	static int
+@@ -1798,6 +1861,12 @@ commands()
+ 		case A_NOACTION:
+ 			break;
+ 
++		case A_MDOCMX:
++			start_mca(A_MDOCMX, "[anchor]:",
++				(void*)NULL, CF_QUIT_ON_ERASE);
++			c = getcc();
++			goto again;
++
+ 		default:
+ 			bell();
+ 			break;
+diff --git a/decode.c b/decode.c
+index 1cd1599..39c3948 100644
+--- a/decode.c
++++ b/decode.c
+@@ -164,7 +164,8 @@ static unsigned char cmdtable[] =
+ 	'Q',0,				A_QUIT,
+ 	':','q',0,			A_QUIT,
+ 	':','Q',0,			A_QUIT,
+-	'Z','Z',0,			A_QUIT
++	'Z','Z',0,			A_QUIT,
++	CONTROL('X'),CONTROL('R'),0,	A_MDOCMX
+ };
+ 
+ static unsigned char edittable[] =
+diff --git a/less.h b/less.h
+index f57fb1e..ca9057e 100644
+--- a/less.h
++++ b/less.h
+@@ -364,6 +364,7 @@ struct wchar_range_table
+ #define SRCH_NO_REGEX   (1 << 12) /* Don't use regular expressions */
+ #define SRCH_FILTER     (1 << 13) /* Search is for '&' (filter) command */
+ #define SRCH_AFTER_TARGET (1 << 14) /* Start search after the target line */
++#define SRCH_MDOCMX	(1 << 15) /* mdocmx(7) anchor search */
+ 
+ #define	SRCH_REVERSE(t)	(((t) & SRCH_FORW) ? \
+ 				(((t) & ~SRCH_FORW) | SRCH_BACK) : \
+diff --git a/lesskey.c b/lesskey.c
+index 298748b..c43f445 100644
+--- a/lesskey.c
++++ b/lesskey.c
+@@ -127,6 +127,7 @@ struct cmdname cmdnames[] =
+ 	{ "index-file",           A_INDEX_FILE },
+ 	{ "invalid",              A_UINVALID },
+ 	{ "left-scroll",          A_LSHIFT },
++	{ "mdocmx",               A_MDOCMX },
+ 	{ "next-file",            A_NEXT_FILE },
+ 	{ "next-tag",             A_NEXT_TAG },
+ 	{ "noaction",             A_NOACTION },
+diff --git a/search.c b/search.c
+index e824acb..15e80a7 100644
+--- a/search.c
++++ b/search.c
+@@ -1265,6 +1265,21 @@ search_range(pos, endpos, search_type, matches, maxlines, plinepos, pendpos)
+ 		if (is_filtered(linepos))
+ 			continue;
+ 
++		/* Special case MDOCMX searches: we actually really want to
++		 * match the plain line content, so avoid any useless
++		 * allocations and text conversions */
++		if (search_type & SRCH_MDOCMX) {
++			line_match = match_pattern(info_compiled(&search_info),
++				search_info.text, line, line_len, &sp, &ep, 0,
++				search_type);
++			if (line_match) {
++				if (plinepos != NULL)
++					*plinepos = linepos;
++				return (0);
++			}
++			continue;
++		}
++
+ 		/*
+ 		 * If it's a caseless search, convert the line to lowercase.
+ 		 * If we're doing backspace processing, delete backspaces.
+-- 
+2.4.0.dirty
+
+
+From 9b6f7625c6dc2710a308b5d5fdeee783f7fc36b2 Mon Sep 17 00:00:00 2001
+Message-Id: <9b6f7625c6dc2710a308b5d5fdeee783f7fc36b2.1435138483.git.sdaoden@users.sf.net>
+In-Reply-To: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+References: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+From: Steffen Nurpmeso <sdaoden@users.sf.net>
+Date: Wed, 19 Nov 2014 11:38:49 +0100
+Subject: [PATCH 02/12] mdocmx(7): add external manual references (for .Xr)
+
+---
+ command.c | 97 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ search.c  |  5 ++++
+ 2 files changed, 100 insertions(+), 2 deletions(-)
+
+diff --git a/command.c b/command.c
+index b940a39..6d4dc24 100644
+--- a/command.c
++++ b/command.c
+@@ -61,6 +61,7 @@ extern int same_pos_bell;
+ #if HILITE_SEARCH
+ extern int hilite_search;
+ #endif
++public char *mdocmx_line;
+ 
+ #if SHELL_ESCAPE
+ static char *shellcmd = NULL;	/* For holding last shell command for "!!" */
+@@ -89,6 +90,7 @@ static struct ungot* ungot = NULL;
+ 
+ static void multi_search();
+ static void mdocmx_search();
++static void _mdocmx_check_xr();
+ 
+ /*
+  * Move the cursor to start of prompt line before executing a command.
+@@ -967,6 +969,9 @@ multi_search(pattern, n, silent)
+  * mdocmx(7) -- reference extension for mdoc(7) semantic markup language.
+  * Search for a specially crafted anchor in the document and scroll the
+  * respective position into view.
++ * If a matching anchor is found it may also be a reference to an external
++ * manual page: in this case prepare the necessary man(1) command and give the
++ * user the option to confirm the action
+  */
+ 	static void
+ mdocmx_search(cbuf)
+@@ -1005,8 +1010,10 @@ mdocmx_search(cbuf)
+ 		repaint_hilite(0);
+ 		hilite_search = 0;
+ #endif
+-		if (search(SRCH_FORW | srch_flags, q, 1) != 0 &&
+-				search(SRCH_BACK | srch_flags, q, 1) != 0)
++		if (search(SRCH_FORW | srch_flags, q, 1) == 0 ||
++				search(SRCH_BACK | srch_flags, q, 1) == 0)
++			_mdocmx_check_xr(q);
++		else
+ 			error("No such anchor: %s", &parg);
+ #if HILITE_SEARCH
+ 		hilite_search = save_hilite_search;
+@@ -1018,6 +1025,92 @@ mdocmx_search(cbuf)
+ }
+ 
+ /*
++ * We have found the mdocmx(7) anchor -- is it an external .Xr reference?
++ */
++	static void
++_mdocmx_check_xr(anchor)
++	char const *anchor;
++{
++#if HAVE_STRSTR
++	char c, *cp, *sect, *sect_top, *man, *man_top, *buf;
++
++	/* Find the anchor on the line again; play safe */
++	if ((cp = strstr(mdocmx_line, anchor)) == NULL)
++		goto jleave;
++	cp += strlen(anchor);
++
++	/* Does a .Xr follow?
++	 * .Xr anchor: '{!SECTION;MANUAL}', each char doubled and ^H'd away.
++	 * In the following we simply jump off when we see faulty syntax:
++	 * i wonder wether an error message should be used instead */
++	if (strncmp(cp, "{\b{\b!\b!\b", sizeof("{\b{\b!\b!\b") -1))
++		goto jleave;
++
++	for (sect = (cp += 8);; cp += 4) {
++		if ((c = cp[0]) == '\0' || cp[1] != '\b' ||
++				cp[2] != c || cp[3] != '\b')
++			goto jleave;
++		if (c == ';')
++			break;
++	}
++	sect_top = cp;
++
++	for (man = (cp += 4);; cp += 4) {
++		if ((c = cp[0]) == '\0' || cp[1] != '\b' ||
++				cp[2] != c || cp[3] != '\b')
++			goto jleave;
++		if (c == '}')
++			break;
++	}
++	man_top = cp;
++
++	/* This is an external reference! */
++	if (secure) {
++		error("Feature not available in secure mode", NULL_PARG);
++		goto jleave;
++	}
++
++# define __Y "!man "
++# define __X "Read external manual: "
++	buf = ecalloc(sizeof(__X __Y) -1 +
++		(int)(sect_top - sect) + 1 + (int)(man_top - man) +1);
++
++	memcpy(buf, __X __Y, sizeof(__X __Y) -1);
++	cp = buf + sizeof(__X __Y) -1;
++	for (; sect < sect_top; sect += 4)
++		*cp++ = *sect;
++	*cp++ = ' ';
++	for (; man < man_top; man += 4)
++		*cp++ = *man;
++	*cp++ = '\0';
++
++	cmd_putstr(buf);
++	switch (getcc()) {
++	case '\n':
++	case '\r':
++# if HAVE_SYSTEM
++		lsystem(buf + sizeof(__X) -1 + 1, "!back from external manual");
++# else
++		error("Command not available", NULL_PARG);
++# endif
++		/* FALLTHRU */
++	default:
++		break;
++	}
++
++	free(buf);
++# undef __X
++# undef __Y
++
++jleave:
++	free(mdocmx_line);
++
++#else /* HAVE_STRSTR */
++	(void)anchor;
++#endif
++}
++
++/*
+  * Forward forever, or until a highlighted line appears.
+  */
+ 	static int
+diff --git a/search.c b/search.c
+index 15e80a7..3d037e2 100644
+--- a/search.c
++++ b/search.c
+@@ -1273,6 +1273,11 @@ search_range(pos, endpos, search_type, matches, maxlines, plinepos, pendpos)
+ 				search_info.text, line, line_len, &sp, &ep, 0,
+ 				search_type);
+ 			if (line_match) {
++				extern char *mdocmx_line;
++
++				mdocmx_line = (char*)ecalloc(1, line_len +1);
++				memcpy(mdocmx_line, line, line_len);
++				mdocmx_line[line_len] = '\0';
+ 				if (plinepos != NULL)
+ 					*plinepos = linepos;
+ 				return (0);
+-- 
+2.4.0.dirty
+
+
+From 12cf1d433ec2e9292182c1604dcc387ed2fdb904 Mon Sep 17 00:00:00 2001
+Message-Id: <12cf1d433ec2e9292182c1604dcc387ed2fdb904.1435138483.git.sdaoden@users.sf.net>
+In-Reply-To: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+References: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+From: Steffen Nurpmeso <sdaoden@users.sf.net>
+Date: Tue, 25 Nov 2014 14:33:21 +0100
+Subject: [PATCH 03/12] mdocmx(7): check embedded data before using it (simple)
+
+---
+ command.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/command.c b/command.c
+index 6d4dc24..b656d9a 100644
+--- a/command.c
++++ b/command.c
+@@ -1046,7 +1046,7 @@ _mdocmx_check_xr(anchor)
+ 	if (strncmp(cp, "{\b{\b!\b!\b", sizeof("{\b{\b!\b!\b") -1))
+ 		goto jleave;
+ 
+-	for (sect = (cp += 8);; cp += 4) {
++	for (sect = (cp += sizeof("{\b{\b!\b!\b") -1);; cp += 4) {
+ 		if ((c = cp[0]) == '\0' || cp[1] != '\b' ||
+ 				cp[2] != c || cp[3] != '\b')
+ 			goto jleave;
+@@ -1054,6 +1054,10 @@ _mdocmx_check_xr(anchor)
+ 			break;
+ 	}
+ 	sect_top = cp;
++	if (sect_top == sect) {
++		error("Bogus mdocmx(7) section reference", NULL_PARG);
++		goto jleave;
++	}
+ 
+ 	for (man = (cp += 4);; cp += 4) {
+ 		if ((c = cp[0]) == '\0' || cp[1] != '\b' ||
+@@ -1063,6 +1067,10 @@ _mdocmx_check_xr(anchor)
+ 			break;
+ 	}
+ 	man_top = cp;
++	if (man_top == man) {
++		error("Bogus mdocmx(7) manual reference", NULL_PARG);
++		goto jleave;
++	}
+ 
+ 	/* This is an external reference! */
+ 	if (secure) {
+-- 
+2.4.0.dirty
+
+
+From ec39afe737c954de90f099ac02f9f72061cad03d Mon Sep 17 00:00:00 2001
+Message-Id: <ec39afe737c954de90f099ac02f9f72061cad03d.1435138483.git.sdaoden@users.sf.net>
+In-Reply-To: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+References: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+From: Steffen Nurpmeso <sdaoden@users.sf.net>
+Date: Wed, 3 Dec 2014 16:46:07 +0100
+Subject: [PATCH 04/12] mdocmx(7): use ^A shortcut instead of ^X^R
+
+---
+ decode.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/decode.c b/decode.c
+index 39c3948..72a7abe 100644
+--- a/decode.c
++++ b/decode.c
+@@ -165,7 +165,7 @@ static unsigned char cmdtable[] =
+ 	':','q',0,			A_QUIT,
+ 	':','Q',0,			A_QUIT,
+ 	'Z','Z',0,			A_QUIT,
+-	CONTROL('X'),CONTROL('R'),0,	A_MDOCMX
++	CONTROL('A'),0,			A_MDOCMX
+ };
+ 
+ static unsigned char edittable[] =
+-- 
+2.4.0.dirty
+
+
+From ac6d34b2fa83d74b87bccbdb7bc24b313d89bb70 Mon Sep 17 00:00:00 2001
+Message-Id: <ac6d34b2fa83d74b87bccbdb7bc24b313d89bb70.1435138483.git.sdaoden@users.sf.net>
+In-Reply-To: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+References: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+From: Steffen Nurpmeso <sdaoden@users.sf.net>
+Date: Wed, 3 Dec 2014 16:46:13 +0100
+Subject: [PATCH 05/12] mdocmx(7): less.nro: add documentation
+
+---
+ less.nro | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/less.nro b/less.nro
+index 412e1d9..6ece13f 100644
+--- a/less.nro
++++ b/less.nro
+@@ -101,6 +101,13 @@ Scroll horizontally left N characters, default half the screen width
+ (see the \-# option).
+ If a number N is specified, it becomes the default for future RIGHTARROW
+ and LEFTARROW commands.
++.IP "^A"
++Enter the
++.I mdocmx
++(7) (a reference extension for the
++.I mdoc
++(7) semantic markup language used for manual pages)
++anchor to go to.
+ .IP "r or ^R or ^L"
+ Repaint the screen.
+ .IP R
+-- 
+2.4.0.dirty
+
+
+From 0fdb79ef8ef7e65f85651f599c973257d51fe8a0 Mon Sep 17 00:00:00 2001
+Message-Id: <0fdb79ef8ef7e65f85651f599c973257d51fe8a0.1435138483.git.sdaoden@users.sf.net>
+In-Reply-To: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+References: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+From: Steffen Nurpmeso <sdaoden@users.sf.net>
+Date: Sat, 6 Dec 2014 15:14:56 +0100
+Subject: [PATCH 06/12] mdocmx(7): don't leak on systems without HAVE_STRSTR
+ (ANSI C)
+
+---
+ command.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/command.c b/command.c
+index b656d9a..b52f1e7 100644
+--- a/command.c
++++ b/command.c
+@@ -1111,11 +1111,10 @@ _mdocmx_check_xr(anchor)
+ # undef __Y
+ 
+ jleave:
+-	free(mdocmx_line);
+-
+ #else /* HAVE_STRSTR */
+ 	(void)anchor;
+ #endif
++	free(mdocmx_line);
+ }
+ 
+ /*
+-- 
+2.4.0.dirty
+
+
+From 2eec600e3bbe8169400fee2651a2582d98cc066b Mon Sep 17 00:00:00 2001
+Message-Id: <2eec600e3bbe8169400fee2651a2582d98cc066b.1435138483.git.sdaoden@users.sf.net>
+In-Reply-To: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+References: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+From: Steffen Nurpmeso <sdaoden@users.sf.net>
+Date: Thu, 18 Dec 2014 19:58:38 +0100
+Subject: [PATCH 07/12] mdocmx(7): support lastmark() scrollback after ^A
+ (empty anchor or '')
+
+---
+ command.c | 8 ++++++--
+ less.nro  | 4 +++-
+ 2 files changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/command.c b/command.c
+index b52f1e7..b25f194 100644
+--- a/command.c
++++ b/command.c
+@@ -971,7 +971,9 @@ multi_search(pattern, n, silent)
+  * respective position into view.
+  * If a matching anchor is found it may also be a reference to an external
+  * manual page: in this case prepare the necessary man(1) command and give the
+- * user the option to confirm the action
++ * user the option to confirm the action.
++ * Anyway: set lastmark() so that it is possible to jump back; let the empty
++ * anchor be an alias for the desire to do so
+  */
+ 	static void
+ mdocmx_search(cbuf)
+@@ -989,8 +991,9 @@ mdocmx_search(cbuf)
+ 	parg.p_string = (char*)cbuf;
+ 	l = strtol(cbuf, &q, 10);
+ 
++	/* For convenience */
+ 	if (*cbuf == '\0')
+-		error("Need a reference anchor", NULL_PARG);
++		gomark('\'');
+ 	else if (*q != '\0' || l <= 0)
+ 		error("Invalid reference anchor: %s", &parg);
+ 	/* Local references are scrolled into view */
+@@ -1005,6 +1008,7 @@ mdocmx_search(cbuf)
+ 		qc[0] = '}'; qc[1] = '\b'; qc[2] = '}'; qc[3] = '\b';
+ 		/*qc[4] = '\0';*/
+ 
++		lastmark();
+ #if HILITE_SEARCH
+ 		save_hilite_search = hilite_search;
+ 		repaint_hilite(0);
+diff --git a/less.nro b/less.nro
+index 6ece13f..6eb1bd1 100644
+--- a/less.nro
++++ b/less.nro
+@@ -107,7 +107,9 @@ Enter the
+ (7) (a reference extension for the
+ .I mdoc
+ (7) semantic markup language used for manual pages)
+-anchor to go to.
++anchor to go to; the position before scrolling to an anchor will be
++recognized as the last position mark and can thus be scrolled to either
++by using ^A again with an empty anchor or by using the "''" command sequence.
+ .IP "r or ^R or ^L"
+ Repaint the screen.
+ .IP R
+-- 
+2.4.0.dirty
+
+
+From 65f3d81eef14af8461d99cd2ad285e56a81b6aaf Mon Sep 17 00:00:00 2001
+Message-Id: <65f3d81eef14af8461d99cd2ad285e56a81b6aaf.1435138483.git.sdaoden@users.sf.net>
+In-Reply-To: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+References: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+From: Steffen Nurpmeso <sdaoden@users.sf.net>
+Date: Fri, 1 May 2015 16:01:56 +0200
+Subject: [PATCH 08/12] mdocmx(7): evaporate BS sequence protocol
+
+---
+ command.c | 33 +++++++++++++++------------------
+ 1 file changed, 15 insertions(+), 18 deletions(-)
+
+diff --git a/command.c b/command.c
+index b25f194..725b4a1 100644
+--- a/command.c
++++ b/command.c
+@@ -998,15 +998,14 @@ mdocmx_search(cbuf)
+ 		error("Invalid reference anchor: %s", &parg);
+ 	/* Local references are scrolled into view */
+ 	else {
+-		/* Local anchor: '{DIGITS}', each char doubled and ^H'd away */
+-		q = ecalloc(strlen(cbuf)*4 + 4*2 +1, sizeof *q);
++		/* Local anchor: '{DIGITS}', each char ^H'd away */
++		q = ecalloc(strlen(cbuf)*2 + 2*2 +1, sizeof *q);
+ 
+-		q[0] = '{'; q[1] = '\b'; q[2] = '{'; q[3] = '\b';
+-		for (qc = q + 4; *cbuf != '\0'; qc += 4, ++cbuf)
+-			qc[0] = *cbuf, qc[1] = '\b',
+-			qc[2] = *cbuf, qc[3] = '\b';
+-		qc[0] = '}'; qc[1] = '\b'; qc[2] = '}'; qc[3] = '\b';
+-		/*qc[4] = '\0';*/
++		q[0] = '{'; q[1] = '\b';
++		for (qc = q + 2; *cbuf != '\0'; qc += 2, ++cbuf)
++			qc[0] = *cbuf, qc[1] = '\b';
++		qc[0] = '}'; qc[1] = '\b';
++		/*qc[2] = '\0';*/
+ 
+ 		lastmark();
+ #if HILITE_SEARCH
+@@ -1044,15 +1043,14 @@ _mdocmx_check_xr(anchor)
+ 	cp += strlen(anchor);
+ 
+ 	/* Does a .Xr follow?
+-	 * .Xr anchor: '{!SECTION;MANUAL}', each char doubled and ^H'd away.
++	 * .Xr anchor: '{!SECTION;MANUAL}', each char ^H'd away.
+ 	 * In the following we simply jump off when we see faulty syntax:
+ 	 * i wonder wether an error message should be used instead */
+-	if (strncmp(cp, "{\b{\b!\b!\b", sizeof("{\b{\b!\b!\b") -1))
++	if (strncmp(cp, "{\b!\b", sizeof("{\b!\b") -1))
+ 		goto jleave;
+ 
+-	for (sect = (cp += sizeof("{\b{\b!\b!\b") -1);; cp += 4) {
+-		if ((c = cp[0]) == '\0' || cp[1] != '\b' ||
+-				cp[2] != c || cp[3] != '\b')
++	for (sect = (cp += sizeof("{\b!\b") -1);; cp += 2) {
++		if ((c = cp[0]) == '\0' || cp[1] != '\b')
+ 			goto jleave;
+ 		if (c == ';')
+ 			break;
+@@ -1063,9 +1061,8 @@ _mdocmx_check_xr(anchor)
+ 		goto jleave;
+ 	}
+ 
+-	for (man = (cp += 4);; cp += 4) {
+-		if ((c = cp[0]) == '\0' || cp[1] != '\b' ||
+-				cp[2] != c || cp[3] != '\b')
++	for (man = (cp += 2);; cp += 2) {
++		if ((c = cp[0]) == '\0' || cp[1] != '\b')
+ 			goto jleave;
+ 		if (c == '}')
+ 			break;
+@@ -1089,10 +1086,10 @@ _mdocmx_check_xr(anchor)
+ 
+ 	memcpy(buf, __X __Y, sizeof(__X __Y) -1);
+ 	cp = buf + sizeof(__X __Y) -1;
+-	for (; sect < sect_top; sect += 4)
++	for (; sect < sect_top; sect += 2)
+ 		*cp++ = *sect;
+ 	*cp++ = ' ';
+-	for (; man < man_top; man += 4)
++	for (; man < man_top; man += 2)
+ 		*cp++ = *man;
+ 	*cp++ = '\0';
+ 
+-- 
+2.4.0.dirty
+
+
+From a87ca3f1e6596721978c9cf4fc88e4534dd96d33 Mon Sep 17 00:00:00 2001
+Message-Id: <a87ca3f1e6596721978c9cf4fc88e4534dd96d33.1435138483.git.sdaoden@users.sf.net>
+In-Reply-To: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+References: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+From: Steffen Nurpmeso <sdaoden@users.sf.net>
+Date: Mon, 12 Jan 2015 20:23:32 +0100
+Subject: [PATCH 09/12] mdocmx(7): forgot ^A documentation in less.hlp (Doug
+ McIlroy)..
+
+Yes, so he said on TUHS
+
+  Sorry for veering away from Unix history, but this pushed one of the hottest
+  of my buttons. Less is the epitome of modern Unix decadence. Besides the
+  maddening behavior described above, why, when all screens have a scroll bar,
+  should a pager do its own scrolling? But for a quantitative measure of
+  decadence, try less --help | wc. It takes excess to a level not dreamed of
+  in Pike's classic critique, "cat -v considered harmful".
+
+Clearly mdocmx(7) needs to be documented, too.
+---
+ less.hlp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/less.hlp b/less.hlp
+index 2a8e3e7..dc73edb 100644
+--- a/less.hlp
++++ b/less.hlp
+@@ -67,6 +67,8 @@
+         Each "find open bracket" command goes backward to the open bracket 
+           matching the (_N-th) close bracket in the bottom line.
+ 
++  ^A_<_t_e_x_t_>             Go to mdocmx(7) anchor <text>.
++
+   m_<_l_e_t_t_e_r_>            Mark the current position with <letter>.
+   '_<_l_e_t_t_e_r_>            Go to a previously marked position.
+   ''                   Go to the previous position.
+-- 
+2.4.0.dirty
+
+
+From d3e06f3add5eb0987a707fb0f9883c2ed8e1d80d Mon Sep 17 00:00:00 2001
+Message-Id: <d3e06f3add5eb0987a707fb0f9883c2ed8e1d80d.1435138483.git.sdaoden@users.sf.net>
+In-Reply-To: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+References: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+From: Steffen Nurpmeso <sdaoden@users.sf.net>
+Date: Mon, 19 Jan 2015 21:50:25 +0100
+Subject: [PATCH 10/12] mdocmx(7): available only if $MDOCMX_ENABLE env-var set
+ non-empty
+
+---
+ command.c | 18 +++++++++++++++++-
+ less.nro  |  2 ++
+ 2 files changed, 19 insertions(+), 1 deletion(-)
+
+diff --git a/command.c b/command.c
+index 725b4a1..7411029 100644
+--- a/command.c
++++ b/command.c
+@@ -62,6 +62,7 @@ extern int same_pos_bell;
+ extern int hilite_search;
+ #endif
+ public char *mdocmx_line;
++static int mdocmx_enabled;
+ 
+ #if SHELL_ESCAPE
+ static char *shellcmd = NULL;	/* For holding last shell command for "!!" */
+@@ -967,6 +968,7 @@ multi_search(pattern, n, silent)
+ 
+ /*
+  * mdocmx(7) -- reference extension for mdoc(7) semantic markup language.
++ * This is only enabled if the MDOCMX_ENABLE environment variable is non-empty.
+  * Search for a specially crafted anchor in the document and scroll the
+  * respective position into view.
+  * If a matching anchor is found it may also be a reference to an external
+@@ -1075,7 +1077,8 @@ _mdocmx_check_xr(anchor)
+ 
+ 	/* This is an external reference! */
+ 	if (secure) {
+-		error("Feature not available in secure mode", NULL_PARG);
++		error("External references not available in secure mode",
++			NULL_PARG);
+ 		goto jleave;
+ 	}
+ 
+@@ -1963,6 +1966,19 @@ commands()
+ 			break;
+ 
+ 		case A_MDOCMX:
++			if (!mdocmx_enabled) {
++				char const *cp = getenv("MDOCMX_ENABLE");
++				if (cp != NULL && *cp != '\0')
++					mdocmx_enabled = 1;
++				else
++					mdocmx_enabled = -1;
++			}
++			if (mdocmx_enabled < 0) {
++				error("MDOCMX_ENABLE environ not set or empty",
++					NULL_PARG);
++				break;
++			}
++
+ 			start_mca(A_MDOCMX, "[anchor]:",
+ 				(void*)NULL, CF_QUIT_ON_ERASE);
+ 			c = getcc();
+diff --git a/less.nro b/less.nro
+index 6eb1bd1..0c92458 100644
+--- a/less.nro
++++ b/less.nro
+@@ -110,6 +110,8 @@ Enter the
+ anchor to go to; the position before scrolling to an anchor will be
+ recognized as the last position mark and can thus be scrolled to either
+ by using ^A again with an empty anchor or by using the "''" command sequence.
++This command is only available if the MDOCMX_ENABLE environment variable is
++set to a non-empty value.
+ .IP "r or ^R or ^L"
+ Repaint the screen.
+ .IP R
+-- 
+2.4.0.dirty
+
+
+From aca39af005e3bacfc637b195988a4b049a2160ef Mon Sep 17 00:00:00 2001
+Message-Id: <aca39af005e3bacfc637b195988a4b049a2160ef.1435138483.git.sdaoden@users.sf.net>
+In-Reply-To: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+References: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+From: Steffen Nurpmeso <sdaoden@users.sf.net>
+Date: Mon, 19 Jan 2015 21:18:14 +0100
+Subject: [PATCH 11/12] mdocmx(7): compile-in only if MDOCMX is defined
+
+---
+ command.c | 53 +++++++++++++++++++++++++++++++++--------------------
+ less.h    |  2 ++
+ lesskey.c |  2 ++
+ search.c  |  2 ++
+ 4 files changed, 39 insertions(+), 20 deletions(-)
+
+diff --git a/command.c b/command.c
+index 7411029..b0d1f45 100644
+--- a/command.c
++++ b/command.c
+@@ -58,11 +58,13 @@ extern int forw_prompt;
+ extern int same_pos_bell;
+ 
+ /* For mdocmx */
+-#if HILITE_SEARCH
++#if MDOCMX
++# if HILITE_SEARCH
+ extern int hilite_search;
++# endif
++public char *mdocmx_line /* = NULL */;
++static int mdocmx_enabled /* = 0 */;
+ #endif
+-public char *mdocmx_line;
+-static int mdocmx_enabled;
+ 
+ #if SHELL_ESCAPE
+ static char *shellcmd = NULL;	/* For holding last shell command for "!!" */
+@@ -90,8 +92,10 @@ struct ungot {
+ static struct ungot* ungot = NULL;
+ 
+ static void multi_search();
++#if MDOCMX
+ static void mdocmx_search();
+ static void _mdocmx_check_xr();
++#endif
+ 
+ /*
+  * Move the cursor to start of prompt line before executing a command.
+@@ -296,9 +300,11 @@ exec_mca()
+ 		error("|done", NULL_PARG);
+ 		break;
+ #endif
++#if MDOCMX
+ 	case A_MDOCMX:
+ 		mdocmx_search(cbuf);
+ 		break;
++#endif
+ 	}
+ }
+ 
+@@ -977,6 +983,7 @@ multi_search(pattern, n, silent)
+  * Anyway: set lastmark() so that it is possible to jump back; let the empty
+  * anchor be an alias for the desire to do so
+  */
++#if MDOCMX
+ 	static void
+ mdocmx_search(cbuf)
+ 	char const *cbuf;
+@@ -986,9 +993,9 @@ mdocmx_search(cbuf)
+ 	PARG parg;
+ 	char *q, *qc;
+ 	long l;
+-#if HILITE_SEARCH
++# if HILITE_SEARCH
+ 	int save_hilite_search;
+-#endif
++# endif
+ 
+ 	parg.p_string = (char*)cbuf;
+ 	l = strtol(cbuf, &q, 10);
+@@ -1010,20 +1017,20 @@ mdocmx_search(cbuf)
+ 		/*qc[2] = '\0';*/
+ 
+ 		lastmark();
+-#if HILITE_SEARCH
++# if HILITE_SEARCH
+ 		save_hilite_search = hilite_search;
+ 		repaint_hilite(0);
+ 		hilite_search = 0;
+-#endif
++# endif
+ 		if (search(SRCH_FORW | srch_flags, q, 1) == 0 ||
+-				search(SRCH_BACK | srch_flags, q, 1) == 0)
++		    search(SRCH_BACK | srch_flags, q, 1) == 0)
+ 			_mdocmx_check_xr(q);
+ 		else
+ 			error("No such anchor: %s", &parg);
+-#if HILITE_SEARCH
++# if HILITE_SEARCH
+ 		hilite_search = save_hilite_search;
+ 		repaint_hilite(1);
+-#endif
++# endif
+ 
+ 		free(q);
+ 	}
+@@ -1036,7 +1043,7 @@ mdocmx_search(cbuf)
+ _mdocmx_check_xr(anchor)
+ 	char const *anchor;
+ {
+-#if HAVE_STRSTR
++# if HAVE_STRSTR
+ 	char c, *cp, *sect, *sect_top, *man, *man_top, *buf;
+ 
+ 	/* Find the anchor on the line again; play safe */
+@@ -1082,8 +1089,8 @@ _mdocmx_check_xr(anchor)
+ 		goto jleave;
+ 	}
+ 
+-# define __Y "!man "
+-# define __X "Read external manual: "
++#  define __Y "!man "
++#  define __X "Read external manual: "
+ 	buf = ecalloc(sizeof(__X __Y) -1 +
+ 		(int)(sect_top - sect) + 1 + (int)(man_top - man) +1);
+ 
+@@ -1100,26 +1107,27 @@ _mdocmx_check_xr(anchor)
+ 	switch (getcc()) {
+ 	case '\n':
+ 	case '\r':
+-# if HAVE_SYSTEM
++#  if HAVE_SYSTEM
+ 		lsystem(buf + sizeof(__X) -1 + 1, "!back from external manual");
+-# else
++#  else
+ 		error("Command not available", NULL_PARG);
+-# endif
++#  endif
+ 		/* FALLTHRU */
+ 	default:
+ 		break;
+ 	}
+ 
+ 	free(buf);
+-# undef __X
+-# undef __Y
++#  undef __X
++#  undef __Y
+ 
+ jleave:
+-#else /* HAVE_STRSTR */
++# else /* HAVE_STRSTR */
+ 	(void)anchor;
+-#endif
++# endif
+ 	free(mdocmx_line);
+ }
++#endif /* MDOCMX */
+ 
+ /*
+  * Forward forever, or until a highlighted line appears.
+@@ -1966,6 +1974,7 @@ commands()
+ 			break;
+ 
+ 		case A_MDOCMX:
++#if MDOCMX
+ 			if (!mdocmx_enabled) {
+ 				char const *cp = getenv("MDOCMX_ENABLE");
+ 				if (cp != NULL && *cp != '\0')
+@@ -1983,6 +1992,10 @@ commands()
+ 				(void*)NULL, CF_QUIT_ON_ERASE);
+ 			c = getcc();
+ 			goto again;
++#else
++			error("Command not available", NULL_PARG);
++			break;
++#endif
+ 
+ 		default:
+ 			bell();
+diff --git a/less.h b/less.h
+index ca9057e..f316468 100644
+--- a/less.h
++++ b/less.h
+@@ -364,7 +364,9 @@ struct wchar_range_table
+ #define SRCH_NO_REGEX   (1 << 12) /* Don't use regular expressions */
+ #define SRCH_FILTER     (1 << 13) /* Search is for '&' (filter) command */
+ #define SRCH_AFTER_TARGET (1 << 14) /* Start search after the target line */
++#if MDOCMX
+ #define SRCH_MDOCMX	(1 << 15) /* mdocmx(7) anchor search */
++#endif
+ 
+ #define	SRCH_REVERSE(t)	(((t) & SRCH_FORW) ? \
+ 				(((t) & ~SRCH_FORW) | SRCH_BACK) : \
+diff --git a/lesskey.c b/lesskey.c
+index c43f445..e24dd63 100644
+--- a/lesskey.c
++++ b/lesskey.c
+@@ -127,7 +127,9 @@ struct cmdname cmdnames[] =
+ 	{ "index-file",           A_INDEX_FILE },
+ 	{ "invalid",              A_UINVALID },
+ 	{ "left-scroll",          A_LSHIFT },
++#if MDOCMX
+ 	{ "mdocmx",               A_MDOCMX },
++#endif
+ 	{ "next-file",            A_NEXT_FILE },
+ 	{ "next-tag",             A_NEXT_TAG },
+ 	{ "noaction",             A_NOACTION },
+diff --git a/search.c b/search.c
+index 3d037e2..235cede 100644
+--- a/search.c
++++ b/search.c
+@@ -1268,6 +1268,7 @@ search_range(pos, endpos, search_type, matches, maxlines, plinepos, pendpos)
+ 		/* Special case MDOCMX searches: we actually really want to
+ 		 * match the plain line content, so avoid any useless
+ 		 * allocations and text conversions */
++#if MDOCMX
+ 		if (search_type & SRCH_MDOCMX) {
+ 			line_match = match_pattern(info_compiled(&search_info),
+ 				search_info.text, line, line_len, &sp, &ep, 0,
+@@ -1284,6 +1285,7 @@ search_range(pos, endpos, search_type, matches, maxlines, plinepos, pendpos)
+ 			}
+ 			continue;
+ 		}
++#endif
+ 
+ 		/*
+ 		 * If it's a caseless search, convert the line to lowercase.
+-- 
+2.4.0.dirty
+
+
+From a00ffebedf96d57bedad9fd0e5a6e4fadbe46e0c Mon Sep 17 00:00:00 2001
+Message-Id: <a00ffebedf96d57bedad9fd0e5a6e4fadbe46e0c.1435138483.git.sdaoden@users.sf.net>
+In-Reply-To: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+References: <f41b058471fe12bc39ed5de151f8f4a81ff75191.1435138483.git.sdaoden@users.sf.net>
+From: Steffen Nurpmeso <sdaoden@users.sf.net>
+Date: Mon, 19 Jan 2015 21:24:35 +0100
+Subject: [PATCH 12/12] mdocmx(7): configure.ac, defines.h.in: MDOCMX
+
+---
+ configure.ac | 6 ++++++
+ defines.h.in | 6 ++++++
+ 2 files changed, 12 insertions(+)
+
+diff --git a/configure.ac b/configure.ac
+index 4ac9a35..3d6bf4d 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -575,6 +575,12 @@ AH_TOP([
+ #define	LOGFILE		(!SECURE)
+ 
+ /*
++ * MDOCMX is 1 if you wish to support mdocmx(7), the reference extension
++ * of the mdoc(7) semantic markup language that is used for manual pages.
++ */
++#define MDOCMX		(!SECURE)
++
++/*
+  * GNU_OPTIONS is 1 if you wish to support the GNU-style command
+  * line options --help and --version.
+  */
+diff --git a/defines.h.in b/defines.h.in
+index 46232c0..b68a198 100644
+--- a/defines.h.in
++++ b/defines.h.in
+@@ -88,6 +88,12 @@
+ #define	LOGFILE		(!SECURE)
+ 
+ /*
++ * MDOCMX is 1 if you wish to support mdocmx(7), the reference extension
++ * of the mdoc(7) semantic markup language that is used for manual pages.
++ */
++#define MDOCMX		(!SECURE)
++
++/*
+  * GNU_OPTIONS is 1 if you wish to support the GNU-style command
+  * line options --help and --version.
+  */
+-- 
+2.4.0.dirty
+
