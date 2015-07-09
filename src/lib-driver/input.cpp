@@ -6,7 +6,7 @@
  *@ syntax of the intermediate output format.  Consequently, the programming of
  *@ roff postprocessors is similar to the development of device drivers.
  *
- * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
  *
  * Copyright (C) 1989 - 1992, 2001 - 2006, 2008
  *    Free Software Foundation, Inc.

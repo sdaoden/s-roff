@@ -6,7 +6,7 @@
 .\"@ tutorial part; %%REFERENCE%% the reference part.  %%POSTLUDE%% the
 .\"@ bibliography and end matter after the reference part.
 .\"
-.\" Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+.\" Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .\"
 .\" Copyright (C) 2006, 2007, 2008
 .\"   Free Software Foundation, Inc.
