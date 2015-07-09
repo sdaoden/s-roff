@@ -33,9 +33,9 @@
 // Unweildly large floating number
 #define BIG               999999999999.0
 
-#define MAXVECT	          40
-#define MAXPOINTS	        200
-#define LINELENGTH	      1
+#define MAXVECT           40
+#define MAXPOINTS         200
+#define LINELENGTH        1
 #define PointsPerInterval 64
 
 #endif // _GRN_CONFIG_H

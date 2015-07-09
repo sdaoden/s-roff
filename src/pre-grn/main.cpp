@@ -226,23 +226,25 @@ main(int argc,
      char **argv)
 {
   /* FIXME GREMLIN: use getopt(), iterate sequentially (options, then files)! */
-  int k;
-  char c;
-  int gfil = 0;
-  char *file[50];
-  char *operand(int *argcp, char ***argvp);
-  setlocale(LC_NUMERIC, "C");
+  char *operand(int *argcp, char ***argvp); /* TODO */
+  size_t filecnt = 0;
+  char *fileargs[50], c;
+
   program_name = argv[0];
+  setlocale(LC_NUMERIC, "C"); /* TODO ? */
 
-  while (--argc) {
-    if (**++argv != '-')
-      file[gfil++] = *argv;
-    else
-      switch (c = (*argv)[1]) {
-
+  while (--argc > 0) {
+    if (**++argv != '-') {
+      if (filecnt == NELEM(fileargs))
+        fatal("too many file operands");
+      fileargs[filecnt++] = *argv;
+    } else
+      switch ((c = (*argv)[1])) {
       case 0:
-	file[gfil++] = NULL;
-	break;
+        if (filecnt == NELEM(file))
+          fatal("too many file operands");
+        fileargs[filecnt++] = NULL;
+        break;
 
       case 'C':		/* compatibility mode */
 	compatibility_flag = TRUE;
@@ -287,16 +289,19 @@ main(int argc,
 
   getres();			/* set the resolution for an output device */
 
-  if (gfil == 0) {		/* no filename, use standard input */
-    file[0] = NULL;
-    gfil++;
+  /* Standard input is default if no file arguments were seen */
+  if (filecnt == 0) {
+    fileargs[0] = NULL;
+    filecnt = 1;
   }
 
-  for (k = 0; k < gfil; k++) {
+  while (filecnt > 0) {
+    char const *cp = fileargs[NELEM(fileargs) - filecnt--];
     file_case *fcp;
-    if ((fcp = file_case::muxer(file[k])) == NULL) {
-      assert(file[k] != NULL);
-      fatal("can't open %1", file[k]);
+
+    if ((fcp = file_case::muxer(cp)) == NULL) {
+      assert(cp != NULL);
+      fatal("can't open %1", cp);
     }
 
     while (doinput(fcp)) {
