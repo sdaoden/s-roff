@@ -87,7 +87,7 @@
 # define ISSLASH(C) ((C) == DIRECTORY_SEPARATOR)
 #endif
 
-#if HAVE_DECL_GETC_UNLOCKED
+#if HAVE_STDIO_UNLOCKED
 # undef getc
 # define getc getc_unlocked
 #endif
