@@ -1,28 +1,49 @@
-.ig
-@ @L_ROFF@_char.7
-
-Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
-
-Copyright (C) 1989 - 2004, 2006, 2007, 2008
-  Free Software Foundation, Inc.
-written by Werner Lemberg <wl@gnu.org>
-with additions by Bernd Warken <bwarken@mayn.de>
-
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
-any later version published by the Free Software Foundation; with the
-Invariant Sections being this .ig-section and AUTHOR, with no
-Front-Cover Texts, and with no Back-Cover Texts.
-
-You should have received a copy of the Free Documentation License
-as part of the file COPYING; also located in the main directory of the
-source package of this program.
-..
+'\" t -- preprocess: tbl(1)
+.\"@ @L_ROFF@_char.7
 .
 .TH @U_ROFF@_CHAR @MAN7EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .SH NAME
 @L_ROFF@_char \- @T_ROFF@ glyph names
-.SH DESCRIPTION
+.
+.de co
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
+Copyright \(co 1989-2014 Free Software Foundation, Inc.
+
+You can redistribute it and/or modify it under the terms of the GNU
+General Public License as published by the Free Software Foundation,
+either version 2 of the License, or (at your option) any later
+version.
+
+You should have received a copy of the GNU General Public License
+along with this program.
+.
+If not, see
+.UR http://www.gnu.org/licenses/gpl-2.0.html
+GPL2
+.UE .
+..
+.
+.de au
+This document was written by
+.MT jjc@jclark.com
+James Clark
+.ME
+with additions by
+.MT wl@gnu.org
+Werner Lemberg
+.ME
+and
+.MT groff-bernd.warken-72@web.de
+Bernd Warken
+.ME .
+.
+This document was revised to use real tables by
+.MT esr@thyrsus.com
+Eric S. Raymond
+.ME .
+..
+.
 .
 .\"
 .\" Setup Part 1
@@ -37,311 +58,16 @@ source package of this program.
 .
 .ds aq \(aq
 .
+.\" Compat with old tbl(1) where x column takes a macro: use xx..
+.de x
+..
+.
 .\" non-groff
 .if !\n(.g .if '\(aq'' .ds aq \'
 .
-.\" groff
-.if !\n(.g .ig
-.  tr \[aq]\[aq]
-.  if !c\[aq] \
-.    ds aq \'
-.  \" This is very special.  The standard devdvi fonts don't have a
-.  \" real `aq' glyph; it is defined with .char to be ' instead.
-.  \" The .tr request below in the definition of the C macro maps
-.  \" the apostrophe ' onto the `aq' glyph which would cause a
-.  \" recursive loop.  gtroff prevents this within the .char
-.  \" request, trying to access glyph `aq' directly from the font.
-.  \" Consequently, we get a warning, and nothing is printed.
-.  \"
-.  \" The following line prevents this.
-.  if '\*[.T]'dvi' \
-.    if !r ECFONTS \
-.      ds aq \'
-.  \" The same is true for X
-.  ds dev \*[.T]
-.  substring dev 0 0
-.  if '\*[dev]'X' .ds aq \'
-.  ig
-..
 .
 .\"
-.\" .Ac accented-char accent char (groff)
-.
-.if !\n(.g .ig
-.de Ac
-.  if !c\\$1 \{\
-.    ie c\\$2 \
-.      char \\$1 \
-\k[acc]\
-\h'\w'\\$3'u'\
-\h'(u;-\w'\\$2'-\w'\\$3'/2+\\\\n[skw]+(\w'x'*0)-\\\\n[skw])'\
-\v'(u;\w'x'*0+\\\\n[rst]+(\w'\\$3'*0)-\\\\n[rst])'\
-\\$2\
-\v'(u;\w'x'*0-\\\\n[rst]+(\w'\\$3'*0)+\\\\n[rst])'\
-\h'|\\\\n[acc]u'\
-\\$3
-.    el \
-.      char \\$1 \\$3
-.    hcode \\$1 \\$3
-.  \}
-..
-.
-.\"
-.\" Setup Part 2
-.\"
-.
-.nr Sp 2n
-.
-.\"
-.\" .C2/.CN (groff)
-.
-.if !\n(.g .ig
-.de CN
-.  C \e[\\$1] "" \[\\$1] \\$2 "\\$3" "\\$4"
-..
-.
-.\" .Ns (groff) start .CN block
-.
-.if !\n(.g .ig
-.de Ns
-.  CN "\\$1" "\\$2" "\\$3" "\\$4"
-.  if !\n[cR] \
-.    wh (\\n[nl]u + \\n[.t]u - \\n[.V]u) Fo
-..
-.
-.\" .Ne (groff) end .CN block
-.
-.if !\n(.g .ig
-.de Ne
-.  ch Fo
-.  CN "\\$1" "\\$2" "\\$3" "\\$4"
-..
-.
-.if \n(.g \{\
-.  als C2 CN
-.  als 2s Ns
-.  als 2e Ne
-.\}
-.
-.\"
-.\" .C2 (non-groff)
-.
-.if \n(.g .ig
-.de C2
-.  C \e(\\$1 "" \\(\\$1 \\$2 "\\$3" "\\$4"
-..
-.
-.\" .2s (non-groff) start .C2 block
-.
-.if \n(.g .ig
-.de 2s
-.  C2 "\\$1" "\\$2" "\\$3" "\\$4"
-.  if !\n(cR \
-.    wh \\n(nlu+\\n(.tu-\\n(.Vu Fo
-..
-.
-.\" .2e (non-groff) end .C2 block
-.
-.if \n(.g .ig
-.de 2e
-.  ch Fo
-.  C2 "\\$1" "\\$2" "\\$3" "\\$4"
-..
-.
-.\"
-.\" .CD (groff)
-.
-.if !\n(.g .ig
-.de CD
-.  C \[char\\$1] \\$1 \[char\\$1] \\$2 "\\$3" "\\$4" 1
-..
-.
-.\" .Ds (groff) start .CD block
-.
-.if !\n(.g .ig
-.de Ds
-.  CD "\\$1" "\\$2" "\\$3" "\\$4"
-.  if !\n[cR] \
-.    wh (\\n[nl]u + \\n[.t]u - \\n[.V]u) Fo
-..
-.
-.\" .De (groff) end .CD block
-.
-.if !\n(.g .ig
-.de De
-.  ch Fo
-.  CD "\\$1" "\\$2" "\\$3" "\\$4"
-..
-.
-.\"
-.
-.do if !r ECFONTS .do fspecial CR R
-.
-.\" .CT
-.
-.de CT
-.  nr c1 \w'\\$1'
-.  if \\n(c1 \
-.    nr c1 +\\n(Spu
-.  nr c2 \\n(c1+\w'\\$2'
-.  if \\n(c1<\\n(c2 \
-.    nr c2 +\\n(Spu
-.  nr c3 \\n(c2+\w'\\$3'
-.  if \\n(c2<\\n(c3 \
-.    nr c3 +\\n(Spu
-.  nr c4 \\n(c3+\w'\\$4'
-.  if \\n(c3<\\n(c4 \
-.    nr c4 +\\n(Spu
-.  nr c5 \\n(c4+\w'\\$5'
-.  if \\n(c4<\\n(c5 \
-.    nr c5 +\\n(Spu
-..
-.
-.\" .CL
-.
-.de CL
-\\$1\c
-\h'\\n(c1u-\\n(.ku'\\$2\c
-\h'\\n(c2u-\\n(.ku'\\$3\c
-\h'\\n(c3u-\\n(.ku'\\$4\c
-\h'\\n(c4u-\\n(.ku'\\$5\c
-\h'\\n(c5u-\\n(.ku'\\$6
-.  br
-..
-.
-.\"
-.\" input-name decimal-code output-name ps-name unicode description is-char
-.\" .C (groff)
-.
-.if !\n(.g .ig
-.de C
-.  nr CH 1
-.  if \\$7 \
-.    if !c\\$1 \
-.      nr CH 0
-.  ie !\\n[CH] \
-.    ds CH
-.  el \{\
-.    ft CR
-.    tr `\`'\*[aq]
-.    in 0
-.    di CH
-.    nop \&\\$1
-.    br
-.    di
-.    chop CH
-.    in
-.    ft
-.    ds CH \\*[CH]
-.    tr ``''
-.  \}
-.  di CC
-.  ie c\\$3 \{\
-.    nop \\&\\$3\c
-.    \" The \x values assure that oversized symbols don't
-.    \" overlap vertically.  The constant 1.5p is heuristic.
-.    nop \x'(\w'('*0 - ((\\n[.cht]u - \\n[rst]u - 1.5p) >? 0))'\c
-.    nop \x'((\\n[.cdp]u + \\n[rsb]u - 1.5p) >? 0)'\c
-.    nop \h'(\\n[c1]u - \\n[.k]u)'\\*[CH]\c
-.    nop \h'(\\n[c2]u - \\n[.k]u)'\\$2\c
-.  \}
-.  el \{\
-.    nop (N/A)\c
-.    nop \h'(\\n[c1]u - \\n[.k]u)'\\*[CH]\c
-.  \}
-.  nop \h'(\\n[c3]u - \\n[.k]u)'\\$4\c
-.  nop \h'(\\n[c4]u - \\n[.k]u)'\\$5\c
-.  br
-.  di
-.  \" we move upwards later on so force a page break now if necessary
-.  if (\\n[dn] >= \\n[.t]) \
-.    bp
-.  mk C1
-.  in 0
-.  CC
-.  in
-.  \" allow multiple lines for last column
-.  in +\\n[c5]u
-.  mk C2
-.  sp |\\n[C1]u
-.  nr PN \\n[%]
-.  ad l
-.  nop \\$6
-.  ad b
-.  in
-.  if (\\n[PN] == \\n[%]) \
-.    if (\\n[nl] < \\n[C2]) \
-.      sp |\\n[C2]u
-..
-.
-.\"
-.\" .C (non-groff)
-.
-.if \n(.g .ig
-.de C
-.  ft B
-.  tr `\`'\*(aq
-.  in 0
-.  di CH
-\&\\$1
-.  br
-.  di
-.  in
-.  ft
-.  ds CH \\*(CH\
-.  tr ``''
-.  di CC
-.  ie !'\\$3'' \{\
-\&\\$3\c
-\h'\\n(c1u-\\n(.ku)'\\*(CH\c
-\h'\\n(c2u-\\n(.ku)'\\$2\c
-\h'\\n(c3u-\\n(.ku)'\\$4\c
-.  \}
-.  el \{\
-(N/A)\c
-\h'\\n(c1u-\\n(.ku)'\\*(CH\c
-\h'\\n(c3u-\\n(.ku)'\\$4\c
-.  \}
-\h'\\n(c4u-\\n(.ku)'\\$5\c
-\h'\\n(c5u-\\n(.ku)'\\$6
-.  br
-.  di
-.  \" we move upwards later on so force a page break now if necessary
-.  if \\n(dn>=\\n(.t \
-.    bp
-.  mk C1
-.  in 0
-.  CC
-.  in
-.  \" allow multiple lines for last column
-.  in +\\n(c5u
-.  mk C2
-.  sp |\\n(C1u
-.  nr PN \\n%
-.  ad l
-\\$6
-.  ad b
-.  in
-.  if \\n(PN==\\n% \
-.    if \\n(nl<\\n(C2 \
-.      sp |\\n(C2u
-..
-.
-.\"
-.
-.de Fo
-'  bp
-.  He
-..
-.
-.de Pa
-.  P
-.  ne 3
-..
-.
-.
-.\"
-.\" .SH DESCRIPTION
+.SH DESCRIPTION
 .\"
 .
 This manual page lists the standard
@@ -355,10 +81,10 @@ for the
 .BR man (1)
 program or the roff formatter).
 .
-Glyphs not available for the device that
-is being used to print or view this manual page are marked with
-.ie \n(.g `(N/A)'; the device currently used is `\*(.T'.
-.el `(N/A)'.
+Glyphs not available for the device that is being used to print or
+view this manual page are marked with
+.ie \n(.g \[oq](N/A)\[cq]; the device currently used is \[oq]\*(.T\[cq].
+.el \[oq](N/A)\[cq].
 .
 .
 .P
@@ -367,9 +93,10 @@ In the actual version,
 provides only \%8-bit characters for direct input and named entities
 for further glyphs.
 .
-On ASCII platforms, input character codes in the range 0 to 127 (decimal)
-represent the usual \%7-bit ASCII characters, while codes between 127
-and 255 are interpreted as the corresponding characters in the
+On ASCII platforms, input character codes in the range 0 to 127
+(decimal) represent the usual \%7-bit ASCII characters, while codes
+between 127 and 255 are interpreted as the corresponding characters in
+the
 .I \%latin1
 .RI ( \%ISO-8859-1 )
 code set by default.
@@ -404,14 +131,15 @@ Some of the predefined @T_ROFF@ escape sequences (with names of length\ 1)
 also produce single glyphs; these exist for historical reasons or
 are printable versions of syntactical characters.
 .
-They include `\f(CW\e\e\fP', `\f(CW\e\'\fP', `\f(CW\e`\fP', `\f(CW\e-\fP',
-`\f(CW\e.\fP', and `\f(CW\ee\fP'; see
+They include \[oq]\f(CW\e\e\fP\[cq], \[oq]\f(CW\e\'\fP\[cq],
+\[oq]\f(CW\e`\fP\[cq], \[oq]\f(CW\e-\fP\[cq], \[oq]\f(CW\e.\fP\[cq],
+and \[oq]\f(CW\ee\fP\[cq]; see
 .BR @L_ROFF@ (@MAN7EXT@).
 .
 .
 .P
 In @T_ROFF@, all of these different types of characters and glyphs can be
-tested positively with the `\f(CW.if\ c\fP' conditional.
+tested positively with the \[oq]\f(CW.if\ c\fP\[cq] conditional.
 .
 .
 .\"
@@ -454,6 +182,16 @@ gives the usual PostScript name of the glyph.
 .I "Unicode decomposed"
 is the glyph name used in composite glyph names.
 .
+The names in the Unicode column look like
+.B u0021
+or
+.BR u0041_0300 .
+.
+In @T_ROFF@, the corresponding Unicode characters can be constructed
+by adding a backslash and a pair of square brackets, for example
+.B \e[u0021]
+or
+.BR \e[u0041_0300] .
 .
 .
 .\"
@@ -466,7 +204,8 @@ They are identical to the printable characters of the
 character standards \%ISO-8859-1 (\%latin1) and Unicode (range
 .IR "Basic Latin" ).
 .
-The glyph names used in composite glyph names are `u0020' up to `u007E'.
+The glyph names used in composite glyph names are \[oq]u0020\[cq] up
+to \[oq]u007E\[cq].
 .
 .
 .P
@@ -503,78 +242,78 @@ themselves; the only exceptions are the following characters:
 .
 .TP
 .B \`
-the ISO \%latin1 `Grave Accent' (code\ 96) prints as `, a left single
-quotation mark; the original character can be obtained with `\f(CW\e`\fP'.
+the ISO \%latin1 \[oq]Grave Accent\[cq] (code\ 96) prints as \[oq], a
+left single quotation mark; the original character can be obtained
+with \[oq]\f(CW\e`\fP\[cq].
 .
 .
 .TP
 .B \*(aq
-the ISO \%latin1 `Apostrophe' (code\ 39) prints as ', a right single
-quotation mark; the original character can be obtained with `\f(CW\e(aq\fP'.
+the ISO \%latin1 \[oq]Apostrophe\[cq] (code\ 39) prints as ', a right
+single quotation mark; the original character can be obtained with
+\[oq]\f(CW\e(aq\fP\[cq].
 .
 .
 .TP
 .B -
-the ISO \%latin1 `Hyphen, Minus Sign' (code\ 45) prints as a hyphen; a
-minus sign can be obtained with `\f(CW\e-\fP'.
+the ISO \%latin1 \[oq]Hyphen, Minus Sign\[cq] (code\ 45) prints as a
+hyphen; a minus sign can be obtained with \[oq]\f(CW\e-\fP\[cq].
 .
 .
 .TP
 .B ~
-the ISO \%latin1 `Tilde' (code\ 126) is reduced in size to be usable as
-a diacritic; a larger glyph can be obtained with `\f(CW\e(ti\fP'.
+the ISO \%latin1 \[oq]Tilde\[cq] (code\ 126) is reduced in size to be
+usable as a diacritic; a larger glyph can be obtained with
+\[oq]\f(CW\e(ti\fP\[cq].
 .
 .
 .TP
 .B ^
-the ISO \%latin1 `Circumflex Accent' (code\ 94) is reduced in size to be
-usable as a diacritic; a larger glyph can be obtained with `\f(CW\e(ha\fP'.
+the ISO \%latin1 \[oq]Circumflex Accent\[cq] (code\ 94) is reduced in
+size to be usable as a diacritic; a larger glyph can be obtained with
+\[oq]\f(CW\e(ha\fP\[cq].
 .
 .
 .P
-.CT "\fIOutput" "\fIInput" "\fIInput" "bracketright" "decomposed"
-.de He
-.  P
-.  ne 4
-.  ft I
-.  CL "Output" "Input" "Input" "PostScript" "Unicode"    "Notes"
-.  CL ""       "name"  "code"  "name"       "decomposed" ""
-.  ft
-.  P
-..
-.He
-.Ds 33 exclam u0021
-.CD 34 quotedbl u0022
-.CD 35 numbersign u0023
-.CD 36 dollar u0024
-.CD 37 percent u0025
-.CD 38 ampersand u0026
-.CD 39 quoteright u0027
-.CD 40 parenleft u0028
-.CD 41 parenright u0029
-.CD 42 asterisk u002A
-.CD 43 plus u002B
-.CD 44 comma u002C
-.CD 45 hyphen u2010
-.CD 46 period u002E
-.CD 47 slash u002F
-.CD 58 colon u003A
-.CD 59 semicolon u003B
-.CD 60 less u003C
-.CD 61 equal u003D
-.CD 62 greater u003E
-.CD 63 question u003F
-.CD 64 at u0040
-.CD 91 bracketleft u005B
-.CD 92 backslash u005C
-.CD 93 bracketright u005D
-.CD 94 circumflex u005E "circumflex accent"
-.CD 95 underscore u005F
-.CD 96 quoteleft u0060
-.CD 123 braceleft u007B
-.CD 124 bar u007C
-.CD 125 braceright u007D
-.De 126 tilde u007E "tilde accent"
+.na
+.TS
+l l l l l lxx.
+Output	Input	Code	PostScript	Unicode	Notes
+_
+\[char33]	\[char33]	33	exclam	u0021	exclamation mark (bang)
+\[char34]	\[char34]	34	quotedbl	u0022	double quote
+\[char35]	\[char35]	35	numbersign	u0023	number sign
+\[char36]	\[char36]	36	dollar	u0024	currency dollar sign
+\[char37]	\[char37]	37	percent	u0025	percent
+\[char38]	\[char38]	38	ampersand	u0026	ampersand
+\[char39]	\[char39]	39	quoteright	u0027	right quote
+\[char40]	\[char40]	40	parenleft	u0028	parentheses left
+\[char41]	\[char41]	41	parenright	u0029	parentheses right
+\[char42]	\[char42]	42	asterisk	u002A	asterisk
+\[char43]	\[char43]	43	plus	u002B	plus
+\[char44]	\[char44]	44	comma	u002C	comma
+\[char45]	\[char45]	45	hyphen	u2010	hyphen
+\[char46]	\[char46]	46	period	u002E	period, dot
+\[char47]	\[char47]	47	slash	u002F	slash
+\[char58]	\[char58]	58	colon	u003A	colon
+\[char59]	\[char59]	59	semicolon	u003B	semicolon
+\[char60]	\[char60]	60	less	u003C	less than
+\[char61]	\[char61]	61	equal	u003D	equal
+\[char62]	\[char62]	62	greater	u003E	greater than
+\[char63]	\[char63]	63	question	u003F	question mark
+\[char64]	\[char64]	64	at	u0040	at
+\[char91]	\[char91]	91	bracketleft	u005B	square bracket left
+\[char92]	\[char92]	92	backslash	u005C	backslash
+\[char93]	\[char93]	93	bracketright	u005D	square bracket right
+\[char94]	\[char94]	94	circumflex	u005E	circumflex accent
+\[char95]	\[char95]	95	underscore	u005F	underscore
+\[char96]	\[char96]	96	quoteleft	u0060	quote left
+\[char123]	\[char123]	123	braceleft	u007B	curly brace left
+\[char124]	\[char124]	124	bar	u007C	bar
+\[char125]	\[char125]	125	braceright	u007D	curly brace right
+\[char126]	\[char126]	126	tilde	u007E	tilde accent
+.TE
+.ad
 .
 .
 .\"
@@ -598,7 +337,8 @@ characters.
 .
 the ISO \%latin1
 .I no-break space
-is mapped to `\f(CW\e~\fP', the stretchable space character.
+is mapped to \[oq]\f(CW\e\(ti\fP\[cq], the stretchable space
+character.
 .
 .
 .TP
@@ -607,8 +347,8 @@ is mapped to `\f(CW\e~\fP', the stretchable space character.
 the soft hyphen control character.
 .
 .B @T_ROFF@
-never uses this character for output (thus it is omitted in the
-table below); the input character\ 173 is mapped onto `\f(CW\e%\fP'.
+never uses this character for output (thus it is omitted in the table
+below); the input character\ 173 is mapped onto \[oq]\f(CW\e%\fP\[cq].
 .
 .
 .P
@@ -620,102 +360,107 @@ with a \%latin1 code page, it is better to use their glyph names;
 see next section.
 .
 .P
-.CT "\fIOutput" "\fIInput" "\fIInput" "guillemotright" "decomposed"
-.He
-.Ds 161 exclamdown u00A1 "inverted exclamation mark"
-.CD 162 cent u00A2
-.CD 163 sterling u00A3
-.CD 164 currency u00A4
-.CD 165 yen u00A5
-.CD 166 brokenbar u00A6
-.CD 167 section u00A7
-.CD 168 dieresis u00A8
-.CD 169 copyright u00A9
-.CD 170 ordfeminine u00AA
-.CD 171 guillemotleft u00AB
-.CD 172 logicalnot u00AC
-.CD 174 registered u00AE
-.CD 175 macron u00AF
-.CD 176 degree u00B0
-.CD 177 plusminus u00B1
-.CD 178 twosuperior u00B2
-.CD 179 threesuperior u00B3
-.CD 180 acute u00B4 "acute accent"
-.CD 181 mu u00B5 "micro sign"
-.CD 182 paragraph u00B6
-.CD 183 periodcentered u00B7
-.CD 184 cedilla u00B8
-.CD 185 onesuperior u00B9
-.CD 186 ordmasculine u00BA
-.CD 187 guillemotright u00BB
-.CD 188 onequarter u00BC
-.CD 189 onehalf u00BD
-.CD 190 threequarters u00BE
-.CD 191 questiondown u00BF
-.CD 192 Agrave u0041_0300
-.CD 193 Aacute u0041_0301
-.CD 194 Acircumflex u0041_0302
-.CD 195 Atilde u0041_0303
-.CD 196 Adieresis u0041_0308
-.CD 197 Aring u0041_030A
-.CD 198 AE u00C6
-.CD 199 Ccedilla u0043_0327
-.CD 200 Egrave u0045_0300
-.CD 201 Eacute u0045_0301
-.CD 202 Ecircumflex u0045_0302
-.CD 203 Edieresis u0045_0308
-.CD 204 Igrave u0049_0300
-.CD 205 Iacute u0049_0301
-.CD 206 Icircumflex u0049_0302
-.CD 207 Idieresis u0049_0308
-.CD 208 Eth u00D0
-.CD 209 Ntilde u004E_0303
-.CD 210 Ograve u004F_0300
-.CD 211 Oacute u004F_0301
-.CD 212 Ocircumflex u004F_0302
-.CD 213 Otilde u004F_0303
-.CD 214 Odieresis u004F_0308
-.CD 215 multiply u00D7
-.CD 216 Oslash u00D8
-.CD 217 Ugrave u0055_0300
-.CD 218 Uacute u0055_0301
-.CD 219 Ucircumflex u0055_0302
-.CD 220 Udieresis u0055_0308
-.CD 221 Yacute u0059_0301
-.CD 222 Thorn u00DE
-.CD 223 germandbls u00DF
-.CD 224 agrave u0061_0300
-.CD 225 aacute u0061_0301
-.CD 226 acircumflex u0061_0302
-.CD 227 atilde u0061_0303
-.CD 228 adieresis u0061_0308
-.CD 229 aring u0061_030A
-.CD 230 ae u00E6
-.CD 231 ccedilla u0063_0327
-.CD 232 egrave u0065_0300
-.CD 233 eacute u0065_0301
-.CD 234 ecircumflex u0065_0302
-.CD 235 edieresis u0065_0308
-.CD 236 igrave u0069_0300
-.CD 237 iacute u0069_0301
-.CD 238 icircumflex u0069_0302
-.CD 239 idieresis u0069_0308
-.CD 240 eth u00F0
-.CD 241 ntilde u006E_0303
-.CD 242 ograve u006F_0300
-.CD 243 oacute u006F_0301
-.CD 244 ocircumflex u006F_0302
-.CD 245 otilde u006F_0303
-.CD 246 odieresis u006F_0308
-.CD 247 divide u00F7
-.CD 248 oslash u00F8
-.CD 249 ugrave u0075_0300
-.CD 250 uacute u0075_0301
-.CD 251 ucircumflex u0075_0302
-.CD 252 udieresis u0075_0308
-.CD 253 yacute u0079_0301
-.CD 254 thorn u00FE
-.De 255 ydieresis u0079_0308
+.na
+.TS
+l l l l l lxx.
+Output	Input	Code	PostScript	Unicode	Notes
+_
+\[char161]	\[char161]	161	exclamdown	u00A1	inverted exclamation mark
+\[char162]	\[char162]	162	cent	u00A2	currency unit
+\[char163]	\[char163]	163	sterling	u00A3	pound sterling
+\[char164]	\[char164]	164	currency	u00A4	generic currency symbol
+\[char165]	\[char165]	165	yen	u00A5	Japanese currency symbol
+\[char166]	\[char166]	166	brokenbar	u00A6	broken bar
+\[char167]	\[char167]	167	section	u00A7	section sign
+\[char168]	\[char168]	168	dieresis	u00A8	dieresis (umlaut)
+\[char169]	\[char169]	169	copyright	u00A9	copyright symbol
+\[char170]	\[char170]	170	ordfeminine	u00AA	feminine ordinal (Spanish)
+\[char171]	\[char171]	171	guillemotleft	u00AB	left guillemet [sic]
+\[char172]	\[char172]	172	logicalnot	u00AC	logical not
+\[char174]	\[char174]	174	registered	u00AE	registered mark symbol
+\[char175]	\[char175]	175	macron	u00AF	overbar accent
+\[char176]	\[char176]	176	degree	u00B0	degree sign
+\[char177]	\[char177]	177	plusminus	u00B1	plus-minus sign
+\[char178]	\[char178]	178	twosuperior	u00B2	superscript 2
+\[char179]	\[char179]	179	threesuperior	u00B3	superscript 3
+\[char180]	\[char180]	180	acute	u00B4	acute accent
+\[char181]	\[char181]	181	mu	u00B5	micro sign
+\[char182]	\[char182]	182	paragraph	u00B6	end of paragraphs marker
+\[char183]	\[char183]	183	periodcentered	u00B7	centered period
+\[char184]	\[char184]	184	cedilla	u00B8	cedilla accent
+\[char185]	\[char185]	185	onesuperior	u00B9	superscript 1
+\[char186]	\[char186]	186	ordmasculine	u00BA	masculine ordinal (Spanish)
+\[char187]	\[char187]	187	guillemotright	u00BB	right guillemet [sic]
+\[char188]	\[char188]	188	onequarter	u00BC	1/4 symbol
+\[char189]	\[char189]	189	onehalf	u00BD	1/2 symbol
+\[char190]	\[char190]	190	threequarters	u00BE	3/4 symbol
+\[char191]	\[char191]	191	questiondown	u00BF	inverted question mark
+\[char192]	\[char192]	192	Agrave	u0041_0300	A grave
+\[char193]	\[char193]	193	Aacute	u0041_0301	A acute
+\[char194]	\[char194]	194	Acircumflex	u0041_0302	A circumflex
+\[char195]	\[char195]	195	Atilde	u0041_0303	A tilde
+\[char196]	\[char196]	196	Adieresis	u0041_0308	A dieresis (umlaut)
+\[char197]	\[char197]	197	Aring	u0041_030A	A ring
+\[char198]	\[char198]	198	AE	u00C6	A+E combined
+\[char199]	\[char199]	199	Ccedilla	u0043_0327	C cedilla
+\[char200]	\[char200]	200	Egrave	u0045_0300	E grave
+\[char201]	\[char201]	201	Eacute	u0045_0301	E acute
+\[char202]	\[char202]	202	Ecircumflex	u0045_0302	E circumflex
+\[char203]	\[char203]	203	Edieresis	u0045_0308	E dieresis (umlaut)
+\[char204]	\[char204]	204	Igrave	u0049_0300	I grave
+\[char205]	\[char205]	205	Iacute	u0049_0301	I acute
+\[char206]	\[char206]	206	Icircumflex	u0049_0302	I circumflex
+\[char207]	\[char207]	207	Idieresis	u0049_0308	I dieresis
+\[char208]	\[char208]	208	Eth	u00D0	E th
+\[char209]	\[char209]	209	Ntilde	u004E_0303	N tilde
+\[char210]	\[char210]	210	Ograve	u004F_0300	O grave
+\[char211]	\[char211]	211	Oacute	u004F_0301	O acute
+\[char212]	\[char212]	212	Ocircumflex	u004F_0302	O circumflex
+\[char213]	\[char213]	213	Otilde	u004F_0303	O tilde
+\[char214]	\[char214]	214	Odieresis	u004F_0308	O dieresis (umlaut)
+\[char215]	\[char215]	215	multiply	u00D7	multiply
+\[char216]	\[char216]	216	Oslash	u00D8	O slash
+\[char217]	\[char217]	217	Ugrave	u0055_0300	U grave
+\[char218]	\[char218]	218	Uacute	u0055_0301	U acute
+\[char219]	\[char219]	219	Ucircumflex	u0055_0302	U circumflex
+\[char220]	\[char220]	220	Udieresis	u0055_0308	U dieresis (umlaut)
+\[char221]	\[char221]	221	Yacute	u0059_0301	Y acute
+\[char222]	\[char222]	222	Thorn	u00DE	Thorn
+\[char223]	\[char223]	223	germandbls	u00DF	German double s (sharp s)
+\[char224]	\[char224]	224	agrave	u0061_0300	a grave
+\[char225]	\[char225]	225	aacute	u0061_0301	a acute
+\[char226]	\[char226]	226	acircumflex	u0061_0302	a circumflex
+\[char227]	\[char227]	227	atilde	u0061_0303	a tilde
+\[char228]	\[char228]	228	adieresis	u0061_0308	a dieresis (umlaut)
+\[char229]	\[char229]	229	aring	u0061_030A	a ring
+\[char230]	\[char230]	230	ae	u00E6	a+e combined
+\[char231]	\[char231]	231	ccedilla	u0063_0327	c cedilla
+\[char232]	\[char232]	232	egrave	u0065_0300	e grave
+\[char233]	\[char233]	233	eacute	u0065_0301	e acute
+\[char234]	\[char234]	234	ecircumflex	u0065_0302	e circumflex
+\[char235]	\[char235]	235	edieresis	u0065_0308	e dieresis (umlaut)
+\[char236]	\[char236]	236	igrave	u0069_0300	i grave
+\[char237]	\[char237]	237	iacute	u0069_0301	i acute
+\[char238]	\[char238]	238	icircumflex	u0069_0302	i circumflex
+\[char239]	\[char239]	239	idieresis	u0069_0308	i dieresis (umlaut)
+\[char240]	\[char240]	240	eth	u00F0	e th
+\[char241]	\[char241]	241	ntilde	u006E_0303	n tilde
+\[char242]	\[char242]	242	ograve	u006F_0300	o grave
+\[char243]	\[char243]	243	oacute	u006F_0301	o acute
+\[char244]	\[char244]	244	ocircumflex	u006F_0302	o circumflex
+\[char245]	\[char245]	245	otilde	u006F_0303	o tilde
+\[char246]	\[char246]	246	odieresis	u006F_0308	o dieresis (umlaut)
+\[char247]	\[char247]	247	divide	u00F7	divide
+\[char248]	\[char248]	248	oslash	u00F8	o slash
+\[char249]	\[char249]	249	ugrave	u0075_0300	u grave
+\[char250]	\[char250]	250	uacute	u0075_0301	u acute
+\[char251]	\[char251]	251	ucircumflex	u0075_0302	u circumflex
+\[char252]	\[char252]	252	udieresis	u0075_0308	u dieresis (umlaut)
+\[char253]	\[char253]	253	yacute	u0079_0301	y acute
+\[char254]	\[char254]	254	thorn	u00FE	thorn
+\[char255]	\[char255]	255	ydieresis	u0079_0308	y dieresis (umlaut)
+.TE
+.ad
 .
 .
 .\"
@@ -739,27 +484,28 @@ A glyph having the 2-character name
 .IR ch .
 .
 .TP
-\f(CW\e[\fP\fIchar_name\fP\f(CW]\fP
+\f(CW\e[\fP\,\fIchar_name\/\fP\f(CW]\fP
 A glyph having the name
 .I char_name
-(having length 1, 2, 3, .\|.\|.).
+(having length 1, 2, 3, \&.\|.\|.).
 .
-Note that `\fIc\fP' is not the same as
-`\f(CW\e[\fP\fIc\fP\f(CW]\fP' (\fIc\fP\ a single character):
-The latter is internally mapped to glyph name `\e\fIc\fP'.
+Note that \[oq]\fIc\fP\[cq] is not the same as
+\[oq]\f(CW\e[\fP\,\fIc\/\fP\f(CW]\fP\[cq] (\,\fIc\fP\ a single
+character): The latter is internally mapped to glyph name
+\[oq]\e\fIc\fP\[cq].
 .
-By default, @T_ROFF@ defines a single glyph name starting with a backslash,
-namely \%`\e-', which can be either accessed as `\f(CW\e\-\fP' or
-`\f(CW\e[-]\fP'.
+By default, @T_ROFF@ defines a single glyph name starting with a
+backslash, namely \%\[oq]\e-\[cq], which can be either accessed as
+\[oq]\f(CW\e\-\fP\[cq] or \[oq]\f(CW\e[-]\fP\[cq].
 .
 .TP
-\f(CW\e[\fP\fIbase_glyph composite_1 composite_2 .\|.\|.\fP\f(CW]\fP
+\f(CW\e[\fP\,\fIbase_glyph composite_1 composite_2 \&.\|.\|.\/\fP\f(CW]\fP
 A composite glyph; see below for a more detailed description.
 .
 .
 .P
 In @T_ROFF@, each \%8-bit input character can also referred to by the construct
-`\f(CW\e[char\fP\fIn\fP\f(CW]\fP' where
+\[oq]\f(CW\e[char\fP\,\fIn\/\fP\f(CW]\fP\[cq] where
 .I n
 is the decimal code of the character, a number between 0 and\ 255
 without leading zeros (those entities are
@@ -768,127 +514,145 @@ glyph names).
 .
 They are normally mapped onto glyphs using the \f(CW.trin\fP request.
 .
+.P
 Another special convention is the handling of glyphs with names directly
-derived from a Unicode code point; this is discussed below.
+derived from a Unicode code point; this is shown in the
+\[oq]Unicode\[cq] column of the table below.
+.
+In general, all glyphs not having a name as listed in this manual page can
+be accessed with the \[oq]\f(CW\e[u\fP\,\fIXXXX\/\fP\f(CW]\fP\[cq]
+construct.
 .
 Moreover, new glyph names can be created by the \f(CW.char\fP request; see
 .BR @L_ROFF@ (@MAN7EXT@).
 .
 .P
-In the following, a plus sign in the `Notes' column indicates that this
-particular glyph name appears in the PS version of the original troff
-documentation, CSTR\ 54.
+In the following, a plus sign in the \[oq]Notes\[cq] column indicates
+that this particular glyph name appears in the PS version of the
+original troff documentation, CSTR\ 54.
 .
 .P
-Entries marked with `***' denote glyphs for mathematical purposes (mainly
-used for DVI output).  Normally, such glyphs have metrics which make them
-unusable in normal text.
+Entries marked with \[oq]***\[cq] denote glyphs for mathematical
+purposes (mainly used for DVI output).
+.
+Normally, such glyphs have metrics which make them unusable in normal
+text.
 .
 .
 .P
-.CT "\fIOutput" "\f(CW\e[-D]" "" "Ocircumflex" "u0066_0066_006C"
-.de He
-.  P
-.  ne 4
-.  ft I
-.  CL "Output" "Input" "" "PostScript" "Unicode"    "Notes"
-.  CL ""       "name"  "" "name"       "decomposed" ""
-.  ft
-.  P
-..
-.He
-.2s -D Eth u00D0 "uppercase eth"
-.C2 Sd eth u00F0 "lowercase eth"
-.C2 TP Thorn u00DE "uppercase thorn"
-.C2 Tp thorn u00FE "lowercase thorn"
-.2e ss germandbls u00DF "German sharp s"
+.na
+.TS
+l l l l lxx.
+Output	Input	PostScript	Unicode	Notes
+_
+\[-D]	\e[-D]	Eth	u00D0	uppercase eth
+\[Sd]	\e[Sd]	eth	u00F0	lowercase eth
+\[TP]	\e[TP]	Thorn	u00DE	uppercase thorn
+\[Tp]	\e[Tp]	thorn	u00FE	lowercase thorn
+\[ss]	\e[ss]	germandbls	u00DF	German double s (sharp s)
+.TE
+.ad
 .
-.Pa
+.P
 .I Ligatures and Other Latin Glyphs
 .P
-.2s ff ff u0066_0066 "ff ligature +"
-.C2 fi fi u0066_0069 "fi ligature +"
-.C2 fl fl u0066_006C "fl ligature +"
-.C2 Fi ffi u0066_0066_0069 "ffi ligature +"
-.C2 Fl ffl u0066_0066_006C "ffl ligature +"
-.C2 /L Lslash u0141 "(Polish)"
-.C2 /l lslash u0142 "(Polish)"
-.C2 /O Oslash u00D8 "(Scandinavic)"
-.C2 /o oslash u00F8 "(Scandinavic)"
-.C2 AE AE u00C6
-.C2 ae ae u00E6
-.C2 OE OE u0152
-.C2 oe oe u0153
-.C2 IJ IJ u0132 "(Dutch)"
-.C2 ij ij u0133 "(Dutch)"
-.C2 .i dotlessi u0131 "(Turkish)"
-.2e .j dotlessj --- "j without a dot"
+.na
+.TS
+l l l l lxx.
+Output	Input	PostScript	Unicode	Notes
+_
+\[ff]	\e[ff]	ff	u0066_0066	ff ligature +
+\[fi]	\e[fi]	fi	u0066_0069	fi ligature +
+\[fl]	\e[fl]	fl	u0066_006C	fl ligature +
+\[Fi]	\e[Fi]	ffi	u0066_0066_0069	ffi ligature +
+\[Fl]	\e[Fl]	ffl	u0066_0066_006C	ffl ligature +
+\[/L]	\e[/L]	Lslash	u0141	L slash (Polish)
+\[/l]	\e[/l]	lslash	u0142	l slash (Polish)
+\[/O]	\e[/O]	Oslash	u00D8	O slash (Scandinavian)
+\[/o]	\e[/o]	oslash	u00F8	o slash (Scandinavian)
+\[AE]	\e[AE]	AE	u00C6	A+E combined
+\[ae]	\e[ae]	ae	u00E6	a+e combined
+\[OE]	\e[OE]	OE	u0152	O+E combined
+\[oe]	\e[oe]	oe	u0153	o+e combined
+\[IJ]	\e[IJ]	IJ	u0132	I+J combined (Dutch)
+\[ij]	\e[ij]	ij	u0133	i+j combined(Dutch)
+\[.i]	\e[.i]	dotlessi	u0131	i without a dot (Turkish)
+\[.j]	\e[.j]	dotlessj	u0237	j without a dot
+.TE
+.ad
 .
-.Pa
+.P
 .I Accented Characters
 .P
-.2s 'A Aacute u0041_0301
-.C2 'C Cacute u0043_0301
-.C2 'E Eacute u0045_0301
-.C2 'I Iacute u0049_0301
-.C2 'O Oacute u004F_0301
-.C2 'U Uacute u0055_0301
-.C2 'Y Yacute u0059_0301
-.C2 'a aacute u0061_0301
-.C2 'c cacute u0063_0301
-.C2 'e eacute u0065_0301
-.C2 'i iacute u0069_0301
-.C2 'o oacute u006F_0301
-.C2 'u uacute u0075_0301
-.C2 'y yacute u0079_0301
-.C2 :A Adieresis u0041_0308 "A with umlaut"
-.C2 :E Edieresis u0045_0308
-.C2 :I Idieresis u0049_0308
-.C2 :O Odieresis u004F_0308
-.C2 :U Udieresis u0055_0308
-.C2 :Y Ydieresis u0059_0308
-.C2 :a adieresis u0061_0308
-.C2 :e edieresis u0065_0308
-.C2 :i idieresis u0069_0308
-.C2 :o odieresis u006F_0308
-.C2 :u udieresis u0075_0308
-.C2 :y ydieresis u0079_0308
-.C2 ^A Acircumflex u0041_0302
-.C2 ^E Ecircumflex u0045_0302
-.C2 ^I Icircumflex u0049_0302
-.C2 ^O Ocircumflex u004F_0302
-.C2 ^U Ucircumflex u0055_0302
-.C2 ^a acircumflex u0061_0302
-.C2 ^e ecircumflex u0065_0302
-.C2 ^i icircumflex u0069_0302
-.C2 ^o ocircumflex u006F_0302
-.C2 ^u ucircumflex u0075_0302
-.C2 `A Agrave u0041_0300
-.C2 `E Egrave u0045_0300
-.C2 `I Igrave u0049_0300
-.C2 `O Ograve u004F_0300
-.C2 `U Ugrave u0055_0300
-.C2 `a agrave u0061_0300
-.C2 `e egrave u0065_0300
-.C2 `i igrave u0069_0300
-.C2 `o ograve u006F_0300
-.C2 `u ugrave u0075_0300
-.C2 ~A Atilde u0041_0303
-.C2 ~N Ntilde u004E_0303
-.C2 ~O Otilde u004F_0303
-.C2 ~a atilde u0061_0303
-.C2 ~n ntilde u006E_0303
-.C2 ~o otilde u006F_0303
-.C2 vS Scaron u0053_030C
-.C2 vs scaron u0073_030C
-.C2 vZ Zcaron u005A_030C
-.C2 vz zcaron u007A_030C
-.C2 ,C Ccedilla u0043_0327
-.C2 ,c ccedilla u0063_0327
-.C2 oA Aring u0041_030A
-.2e oa aring u0061_030A
+.na
+.TS
+l l l l lxx.
+Output	Input	PostScript	Unicode	Notes
+_
+\['A]	\e['A]	Aacute	u0041_0301	A acute
+\['C]	\e['C]	Cacute	u0043_0301	C acute
+\['E]	\e['E]	Eacute	u0045_0301	E acute
+\['I]	\e['I]	Iacute	u0049_0301	I acute
+\['O]	\e['O]	Oacute	u004F_0301	O acute
+\['U]	\e['U]	Uacute	u0055_0301	U acute
+\['Y]	\e['Y]	Yacute	u0059_0301	Y acute
+\['a]	\e['a]	aacute	u0061_0301	a acute
+\['c]	\e['c]	cacute	u0063_0301	c acute
+\['e]	\e['e]	eacute	u0065_0301	e acute
+\['i]	\e['i]	iacute	u0069_0301	i acute
+\['o]	\e['o]	oacute	u006F_0301	o acute
+\['u]	\e['u]	uacute	u0075_0301	u acute
+\['y]	\e['y]	yacute	u0079_0301	y acute
+\[:A]	\e[:A]	Adieresis	u0041_0308	A dieresis (umlaut)
+\[:E]	\e[:E]	Edieresis	u0045_0308	E dieresis (umlaut)
+\[:I]	\e[:I]	Idieresis	u0049_0308	I dieresis (umlaut)
+\[:O]	\e[:O]	Odieresis	u004F_0308	O dieresis (umlaut)
+\[:U]	\e[:U]	Udieresis	u0055_0308	U dieresis (umlaut)
+\[:Y]	\e[:Y]	Ydieresis	u0059_0308	Y dieresis (umlaut)
+\[:a]	\e[:a]	adieresis	u0061_0308	a dieresis (umlaut)
+\[:e]	\e[:e]	edieresis	u0065_0308	e dieresis (umlaut)
+\[:i]	\e[:i]	idieresis	u0069_0308	i dieresis (umlaut)
+\[:o]	\e[:o]	odieresis	u006F_0308	o dieresis (umlaut)
+\[:u]	\e[:u]	udieresis	u0075_0308	u dieresis (umlaut)
+\[:y]	\e[:y]	ydieresis	u0079_0308	y dieresis (umlaut)
+\[^A]	\e[^A]	Acircumflex	u0041_0302	A circumflex
+\[^E]	\e[^E]	Ecircumflex	u0045_0302	E circumflex
+\[^I]	\e[^I]	Icircumflex	u0049_0302	I circumflex
+\[^O]	\e[^O]	Ocircumflex	u004F_0302	O circumflex
+\[^U]	\e[^U]	Ucircumflex	u0055_0302	U circumflex
+\[^a]	\e[^a]	acircumflex	u0061_0302	a circumflex
+\[^e]	\e[^e]	ecircumflex	u0065_0302	e circumflex
+\[^i]	\e[^i]	icircumflex	u0069_0302	i circumflex
+\[^o]	\e[^o]	ocircumflex	u006F_0302	o circumflex
+\[^u]	\e[^u]	ucircumflex	u0075_0302	u circumflex
+\[`A]	\e[`A]	Agrave	u0041_0300	A grave
+\[`E]	\e[`E]	Egrave	u0045_0300	E grave
+\[`I]	\e[`I]	Igrave	u0049_0300	I grave
+\[`O]	\e[`O]	Ograve	u004F_0300	O grave
+\[`U]	\e[`U]	Ugrave	u0055_0300	U grave
+\[`a]	\e[`a]	agrave	u0061_0300	a grave
+\[`e]	\e[`e]	egrave	u0065_0300	e grave
+\[`i]	\e[`i]	igrave	u0069_0300	i grave
+\[`o]	\e[`o]	ograve	u006F_0300	o grave
+\[`u]	\e[`u]	ugrave	u0075_0300	u grave
+\[~A]	\e[~A]	Atilde	u0041_0303	A tilde
+\[~N]	\e[~N]	Ntilde	u004E_0303	N tilde
+\[~O]	\e[~O]	Otilde	u004F_0303	O tilde
+\[~a]	\e[~a]	atilde	u0061_0303	a tilde
+\[~n]	\e[~n]	ntilde	u006E_0303	n tilde
+\[~o]	\e[~o]	otilde	u006F_0303	o tilde
+\[vS]	\e[vS]	Scaron	u0053_030C	S caron
+\[vs]	\e[vs]	scaron	u0073_030C	s caron
+\[vZ]	\e[vZ]	Zcaron	u005A_030C	Z caron
+\[vz]	\e[vz]	zcaron	u007A_030C	z caron
+\[,C]	\e[,C]	Ccedilla	u0043_0327	C cedilla
+\[,c]	\e[,c]	ccedilla	u0063_0327	c cedilla
+\[oA]	\e[oA]	Aring	u0041_030A	A ring
+\[oa]	\e[oa]	aring	u0061_030A	a ring
+.TE
+.ad
 .
-.Pa
+.P
 .I Accents
 .P
 The
@@ -897,54 +661,77 @@ request is used to map most of the accents to non-spacing glyph names;
 the values given in parentheses are the original (spacing) ones.
 .
 .P
-.Ac \(vc \(ah c
-.Ac \('a \(aa a
+.na
+.TS
+l l l l lxx.
+Output	Input	PostScript	Unicode	Notes
+_
+\[a"]	\e[a"]	hungarumlaut	u030B (u02DD)	Hungarian umlaut
+\[a-]	\e[a-]	macron	u0304 (u00AF)	overbar accent
+\[a.]	\e[a.]	dotaccent	u0307 (u02D9)	dot accent
+\[a^]	\e[a^]	circumflex	u0302 (u005E)	circumflex accent
+\[aa]	\e[aa]	acute	u0301 (u00B4)	acute accent
+\[ga]	\e[ga]	grave	u0300 (u0060)	grave accent
+\[ab]	\e[ab]	breve	u0306 (u02D8)	breve accent
+\[ac]	\e[ac]	cedilla	u0327 (u00B8)	cedilla accent
+\[ad]	\e[ad]	dieresis	u0308 (u00A8)	umlaut accent
+\[ah]	\e[ah]	caron	u030C (u02C7)	caron accent
+\[ao]	\e[ao]	ring	u030A (u02DA)	small circle, ring accent
+\[a~]	\e[a~]	tilde	u0303 (u007E)	tilde accent
+\[ho]	\e[ho]	ogonek	u0328 (u02DB)	hook accent
+\[ha]	\e[ha]	asciicircum	u005E	T{
+high circumflex, ASCII character, in mathematics the power sign
+T}
+\[ti]	\e[ti]	asciitilde	u007E	T{
+tilde in vertical middle, ASCII, in Unix-like the home directory
+T}
+.TE
+.ad
 .
-.\" we don't use the third column
-.CT "\fIOutput" "\f(CW\e[-D]" "" "quotesinglebase" "uCCCC (uCCCC)"
-.He
-.2s a" hungarumlaut "u030B (u02DD)" "(Hungarian)"
-.C2 a- macron "u0304 (u00AF)"
-.C2 a. dotaccent "u0307 (u02D9)"
-.C2 a^ circumflex "u0302 (u005E)"
-.C2 aa acute "u0301 (u00B4)" "+"
-.C2 ga grave "u0300 (u0060)" "+"
-.C2 ab breve "u0306 (u02D8)"
-.C2 ac cedilla "u0327 (u00B8)"
-.C2 ad dieresis "u0308 (u00A8)" "umlaut"
-.C2 ah caron "u030C (u02C7)" "h\('a\(vcek"
-.C2 ao ring "u030A (u02DA)" "circle"
-.C2 a~ tilde "u0303 (u007E)"
-.C2 ho ogonek "u0328 (u02DB)" "hook"
-.C2 ha asciicircum u005E "(spacing)"
-.2e ti asciitilde u007E "(spacing)"
-.
-.Pa
+.P
 .I Quotes
 .P
-.2s Bq quotedblbase u201E "low double comma quote"
-.C2 bq quotesinglbase u201A "low single comma quote"
-.C2 lq quotedblleft u201C
-.C2 rq quotedblright u201D
-.C2 oq quoteleft u2018 "single open quote"
-.C2 cq quoteright u2019 "single closing quote"
-.C2 aq quotesingle u0027 "apostrophe quote (ASCII 39)"
-.C2 dq quotedbl u0022 "double quote (ASCII 34)"
-.C2 Fo guillemotleft u00AB
-.C2 Fc guillemotright u00BB
-.C2 fo guilsinglleft u2039
-.2e fc guilsinglright u203A
+.na
+.TS
+l l l l lxx.
+Output	Input	PostScript	Unicode	Notes
+_
+\[Bq]	\e[Bq]	quotedblbase	u201E	low double comma quote
+\[bq]	\e[bq]	quotesinglbase	u201A	low single comma quote
+\[lq]	\e[lq]	quotedblleft	u201C	left double quote
+\[rq]	\e[rq]	quotedblright	u201D	right double quote
+\[oq]	\e[oq]	quoteleft	u2018	single open (left) quote
+\[cq]	\e[cq]	quoteright	u2019	single closing (right) quote
+\[aq]	\e[aq]	quotesingle	u0027	apostrophe quote (ASCII 39)
+\[dq]	\e[dq]	quotedbl	u0022	double quote (ASCII 34)
+\[Fo]	\e[Fo]	guillemotleft	u00AB	left guillemet [sic]
+\[Fc]	\e[Fc]	guillemotright	u00BB	right guillemet [sic]
+\[fo]	\e[fo]	guilsinglleft	u2039	T{
+single left-pointing angle quotation mark
+T}
+\[fc]	\e[fc]	guilsinglright	u203A	T{
+single right-pointing angle quotation mark
+T}
+.TE
+.ad
 .
-.Pa
+.P
 .I Punctuation
 .P
-.2s r! exclamdown u00A1
-.C2 r? questiondown u00BF
-.C2 em emdash u2014 "+"
-.C2 en endash u2013
-.2e hy hyphen u2010 "+"
+.na
+.TS
+l l l l lxx.
+Output	Input	PostScript	Unicode	Notes
+_
+\[r!]	\e[r!]	exclamdown	u00A1	inverted exclamation mark
+\[r?]	\e[r?]	questiondown	u00BF	inverted question mark
+\[em]	\e[em]	emdash	u2014	em-dash symbol
+\[en]	\e[en]	endash	u2013	en-dash symbol
+\[hy]	\e[hy]	hyphen	u2010	hyphen symbol
+.TE
+.ad
 .
-.Pa
+.P
 .I Brackets
 .P
 The extensible bracket pieces are font-invariant glyphs.
@@ -956,8 +743,8 @@ We map it rather arbitrarily to u23AA.
 .
 .P
 Note that not all devices contain extensible bracket pieces which can
-be piled up with `\f(CW\eb\fP' due to the restrictions of the escape's
-piling algorithm.
+be piled up with \[oq]\f(CW\eb\fP\[cq] due to the restrictions of the
+escape\[aq]s piling algorithm.
 .
 A general solution to build brackets out of pieces is the following
 macro:
@@ -966,10 +753,10 @@ macro:
 .nf
 .RS
 .ft C
-\&.\e" Make a pile centered vertically 0.5em
-\&.\e" above the baseline.
-\&.\e" The first argument is placed at the top.
-\&.\e" The pile is returned in string `pile'
+\&.\e" Make a pile centered vertically 0.5em\""
+\&.\e" above the baseline.\""
+\&.\e" The first argument is placed at the top.\""
+\&.\e" The pile is returned in string `pile'\""
 \&.eo
 \&.de pile-make
 \&.  nr pile-wd 0
@@ -980,16 +767,16 @@ macro:
 \&.  while \en[pile-#] \e{\e
 \&.    nr pile-wd (\en[pile-wd] >? \ew'\e$[\en[pile-#]]')
 \&.    nr pile-ht +(\en[rst] - \en[rsb])
-\&.    as pile-args \ev'\en[rsb]u'\e"
-\&.    as pile-args \eZ'\e$[\en[pile-#]]'\e"
-\&.    as pile-args \ev'-\en[rst]u'\e"
+\&.    as pile-args \ev'\en[rsb]u'\e"\""
+\&.    as pile-args \eZ'\e$[\en[pile-#]]'\e"\""
+\&.    as pile-args \ev'-\en[rst]u'\e"\""
 \&.    nr pile-# -1
 \&.  \e}
 \&.
-\&.  ds pile \ev'(-0.5m + (\en[pile-ht]u / 2u))'\e"
-\&.  as pile \e*[pile-args]\e"
-\&.  as pile \ev'((\en[pile-ht]u / 2u) + 0.5m)'\e"
-\&.  as pile \eh'\en[pile-wd]u'\e"
+\&.  ds pile \ev'(-0.5m + (\en[pile-ht]u / 2u))'\e"\""
+\&.  as pile \e*[pile-args]\e"\""
+\&.  as pile \ev'((\en[pile-ht]u / 2u) + 0.5m)'\e"\""
+\&.  as pile \eh'\en[pile-wd]u'\e"\""
 \&..
 \&.ec
 .ft
@@ -997,14 +784,17 @@ macro:
 .fi
 .
 .P
-Another complication is the fact that some glyphs which represent bracket
-pieces in original troff can be used for other mathematical symbols also,
-for example `lf' and `rf' which provide the `floor' operator.
+Another complication is the fact that some glyphs which represent
+bracket pieces in original troff can be used for other mathematical
+symbols also, for example \[oq]lf\[cq] and \[oq]rf\[cq] which provide
+the \[oq]floor\[cq] operator.
 .
-Other devices (most notably for DVI output) don't unify such glyphs.
+Other devices (most notably for DVI output) don\[aq]t unify such
+glyphs.
 .
-For this reason, the four glyphs `lf', `rf', `lc', and `rc' are not
-unified with similarly looking bracket pieces.
+For this reason, the four glyphs \[oq]lf\[cq], \[oq]rf\[cq],
+\[o]lc\[cq], and \[oq]rc\[cq] are not unified with similarly looking
+bracket pieces.
 .
 In
 .BR @T_ROFF@ ,
@@ -1012,241 +802,395 @@ only glyphs with long names are guaranteed to pile up correctly for all
 devices (provided those glyphs exist).
 .
 .P
-.CT "\fIOutput" "\f(CW\e[bracketrightex]" "" "bracketrightex" "decomposed"
-.He
-.2s lB bracketleft u005B
-.C2 rB bracketright u005D
-.C2 lC braceleft u007B
-.C2 rC braceright u007D
-.C2 la angleleft u27E8 "left angle bracket"
-.C2 ra angleright u27E9 "right angle bracket"
+.na
+.TS
+l l l l lxx.
+Output	Input	PostScript	Unicode	Notes
+_
+\[lB]	\e[lB]	bracketleft	u005B	T{
+left square bracket
+T}
+\[rB]	\e[rB]	bracketright	u005D	T{
+right square bracket
+T}
+\[lC]	\e[lC]	braceleft	u007B	T{
+left curly brace
+T}
+\[rC]	\e[rC]	braceright	u007D	T{
+right curly brace
+T}
+\[la]	\e[la]	angleleft	u27E8	T{
+left angle bracket
+T}
+\[ra]	\e[ra]	angleright	u27E9	T{
+right angle bracket
+T}
+
+\[bv]	\e[bv]	braceex	u23AA	T{
+curly brace vertical extension
+T}
+\[braceex]	\e[braceex]	braceex	u23AA	T{
+curly brace vertical extension
+T}
+
+\[bracketlefttp]	\e[bracketlefttp]	bracketlefttp	u23A1	T{
+left square bracket top
+T}
+\[bracketleftbt]	\e[bracketleftbt]	bracketleftbt	u23A3	T{
+left square bracket bottom
+T}
+\[bracketleftex]	\e[bracketleftex]	bracketleftex	u23A2	T{
+left square bracket extension
+T}
+\[bracketrighttp]	\e[bracketrighttp]	bracketrighttp	u23A4	T{
+right square bracket top
+T}
+\[bracketrightbt]	\e[bracketrightbt]	bracketrightbt	u23A6	T{
+right square bracket bottom
+T}
+\[bracketrightex]	\e[bracketrightex]	bracketrightex	u23A5	T{
+right square bracket extension
+T}
+
+\[lt]	\e[lt]	bracelefttp	u23A7	T{
+left curly brace top
+T}
+\[bracelefttp]	\e[bracelefttp]	bracelefttp	u23A7	T{
+left curly brace top
+T}
+\[lk]	\e[lk]	braceleftmid	u23A8	T{
+left curly brace middle
+T}
+\[braceleftmid]	\e[braceleftmid]	braceleftmid	u23A8	T{
+left curly brace middle
+T}
+\[lb]	\e[lb]	braceleftbt	u23A9	T{
+left curly brace bottom
+T}
+\[braceleftbt]	\e[braceleftbt]	braceleftbt	u23A9	T{
+left curly brace bottom
+T}
+\[braceleftex]	\e[braceleftex]	braceleftex	u23AA	T{
+left curly brace extension
+T}
+\[rt]	\e[rt]	bracerighttp	u23AB	T{
+right curly brace top
+T}
+\[bracerighttp]	\e[bracerighttp]	bracerighttp	u23AB	T{
+right curly brace top
+T}
+\[rk]	\e[rk]	bracerightmid	u23AC	T{
+right curly brace middle
+T}
+\[bracerightmid]	\e[bracerightmid]	bracerightmid	u23AC	T{
+right curly brace middle
+T}
+\[rb]	\e[rb]	bracerightbt	u23AD	T{
+right curly brace bottom
+T}
+\[bracerightbt]	\e[bracerightbt]	bracerightbt	u23AD	T{
+right curly brace bottom
+T}
+\[bracerightex]	\e[bracerightex]	bracerightex	u23AA	T{
+right curly brace extension
+T}
+\[parenlefttp]	\e[parenlefttp]	parenlefttp	u239B	T{
+left parenthesis top
+T}
+\[parenleftbt]	\e[parenleftbt]	parenleftbt	u239D	T{
+left parenthesis bottom
+T}
+\[parenleftex]	\e[parenleftex]	parenleftex	u239C	T{
+left parenthesis extension
+T}
+\[parenrighttp]	\e[parenrighttp]	parenrighttp	u239E	T{
+right parenthesis top
+T}
+\[parenrightbt]	\e[parenrightbt]	parenrightbt	u23A0	T{
+right parenthesis bottoom
+T}
+\[parenrightex]	\e[parenrightex]	parenrightex	u239F	T{
+right parenthesis extension
+T}
+.TE
+.ad
 .
-.C2 bv braceex u23AA "vertical extension *** +"
-.CN braceex braceex u23AA
-.
-.CN bracketlefttp bracketlefttp u23A1
-.CN bracketleftbt bracketleftbt u23A3
-.CN bracketleftex bracketleftex u23A2
-.CN bracketrighttp bracketrighttp u23A4
-.CN bracketrightbt bracketrightbt u23A6
-.CN bracketrightex bracketrightex u23A5
-.
-.C2 lt bracelefttp u23A7 "+"
-.CN bracelefttp bracelefttp u23A7
-.C2 lk braceleftmid u23A8 "+"
-.CN braceleftmid braceleftmid u23A8
-.C2 lb braceleftbt u23A9 "+"
-.CN braceleftbt braceleftbt u23A9
-.CN braceleftex braceleftex u23AA
-.C2 rt bracerighttp u23AB "+"
-.CN bracerighttp bracerighttp u23AB
-.C2 rk bracerightmid u23AC "+"
-.CN bracerightmid bracerightmid u23AC
-.C2 rb bracerightbt u23AD "+"
-.CN bracerightbt bracerightbt u23AD
-.CN bracerightex bracerightex u23AA
-.
-.CN parenlefttp parenlefttp u239B
-.CN parenleftbt parenleftbt u239D
-.CN parenleftex parenleftex u239C
-.CN parenrighttp parenrighttp u239E
-.CN parenrightbt parenrightbt u23A0
-.Ne parenrightex parenrightex u239F
-.
-.Pa
+.P
 .I Arrows
 .P
-.2s <- arrowleft u2190 "+"
-.C2 -> arrowright u2192 "+"
-.C2 <> arrowboth u2194 "(horizontal)"
-.C2 da arrowdown u2193 "+"
-.C2 ua arrowup u2191 "+"
-.C2 va arrowupdn u2195
-.C2 lA arrowdblleft u21D0
-.C2 rA arrowdblright u21D2
-.C2 hA arrowdblboth u21D4 "(horizontal)"
-.C2 dA arrowdbldown u21D3
-.C2 uA arrowdblup u21D1
-.C2 vA uni21D5 u21D5 "vertical double-headed double arrow"
-.2e an arrowhorizex u23AF "horizontal arrow extension"
+.na
+.TS
+l l l l lxx.
+Output	Input	PostScript	Unicode	Notes
+_
+\[<-]	\e[<-]	arrowleft	u2190	horizontal arrow left
+\[->]	\e[->]	arrowright	u2192	horizontal arrow right
+\[<>]	\e[<>]	arrowboth	u2194	T{
+horizontal arrow in both directions
+T}
+\[da]	\e[da]	arrowdown	u2193	vertical arrow down
+\[ua]	\e[ua]	arrowup	u2191	vertical arrow up
+\[va]	\e[va]	arrowupdn	u2195	T{
+vertical arrow in both directions
+T}
+\[lA]	\e[lA]	arrowdblleft	u21D0	horizontal double arrow left
+\[rA]	\e[rA]	arrowdblright	u21D2	horizontal double arrow right
+\[hA]	\e[hA]	arrowdblboth	u21D4	T{
+horizontal double arrow in both directions
+T}
+\[dA]	\e[dA]	arrowdbldown	u21D3	vertical double arrow down
+\[uA]	\e[uA]	arrowdblup	u21D1	vertical double arrow up
+\[vA]	\e[vA]	uni21D5	u21D5	T{
+vertical double arrow in both directions
+T}
+\[an]	\e[an]	arrowhorizex	u23AF	horizontal arrow extension
+.TE
+.ad
 .
-.Pa
+.P
 .I Lines
 .P
-The font-invariant glyphs `br', `ul', and `rn' form corners;
-they can be used to build boxes.
+The font-invariant glyphs \[oq]br\[cq], \[oq]ul\[cq], and \[oq]rn\[cq]
+form corners; they can be used to build boxes.
 .
 Note that both the PostScript and the Unicode-derived names of
 these three glyphs are just rough approximations.
 .
 .P
-`rn' also serves in classical troff as the horizontal extension of the
-square root sign.
+\[oq]rn\[cq] also serves in classical troff as the horizontal
+extension of the square root sign.
 .
 .P
-`ru' is a font-invariant glyph, namely a rule of length 0.5m.
+\[oq]ru\[cq] is a font-invariant glyph, namely a rule of length 0.5m.
 .
 .P
-.CT "\fIOutput" "\f(CW\e[integral]" "" "propersuperset" "decomposed"
-.He
-.2s ba bar u007C
-.C2 br SF110000 u2502 "box rule +"
-.C2 ul underscore u005F "+"
-.C2 rn overline u203E "use `\f(CW\e[radicalex]\fP' for continuation of square root +"
-.C2 ru --- --- "baseline rule +"
-.C2 bb brokenbar u00A6
-.C2 sl slash u002F "+"
-.2e rs backslash u005C "reverse solidus"
+.na
+.TS
+l l l l lxx.
+Output	Input	PostScript	Unicode	Notes
+_
+\[ba]	\e[ba]	bar	u007C	bar
+\[br]	\e[br]	SF110000	u2502	box rule
+\[ul]	\e[ul]	underscore	u005F	underscore
+\[rn]	\e[rn]	overline	u203E	overline
+\[ru]	\e[ru]	---	---	baseline rule
+\[bb]	\e[bb]	brokenbar	u00A6	broken bar
+\[sl]	\e[sl]	slash	u002F	slash, solidus
+\[rs]	\e[rs]	backslash	u005C	reverse slash, reverse solidus
+.TE
+.ad
 .
-.Pa
+.P
+Use \[oq]\f(CW\e[radicalex]\fP\[cq], not
+\[oq]\f(CW\e[overline]\fP\[cq], for continuation of square root.
+.
+.P
 .I Text markers
 .P
-.2s ci circle u25CB "+"
-.C2 bu bullet u2022 "+"
-.C2 dd daggerdbl u2021 "double dagger sign +"
-.C2 dg dagger u2020 "+"
-.C2 lz lozenge u25CA
-.C2 sq uni25A1 u25A1 "white square +"
-.C2 ps paragraph u00B6
-.C2 sc section u00A7 "+"
-.C2 lh uni261C u261C "hand pointing left +"
-.C2 rh a14 u261E "hand pointing right +"
-.C2 at at u0040
-.C2 sh numbersign u0023
-.C2 CR carriagereturn u21B5
-.2e OK a19 u2713 "check mark, tick"
+.na
+.TS
+l l l l lxx.
+Output	Input	PostScript	Unicode	Notes
+_
+\[ci]	\e[ci]	circle	u25CB	circle
+\[bu]	\e[bu]	bullet	u2022	bullet
+\[dd]	\e[dd]	daggerdbl	u2021	double dagger sign
+\[dg]	\e[dg]	dagger	u2020	dagger
+\[lz]	\e[lz]	lozenge	u25CA	lozenge, diamond, pound key
+\[sq]	\e[sq]	uni25A1	u25A1	white square
+\[ps]	\e[ps]	paragraph	u00B6	end of paragraphs marker
+\[sc]	\e[sc]	section	u00A7	section sign
+\[lh]	\e[lh]	uni261C	u261C	hand pointing left
+\[rh]	\e[rh]	a14	u261E	hand pointing right
+\[at]	\e[at]	at	u0040	at
+\[sh]	\e[sh]	numbersign	u0023	number sign
+\[CR]	\e[CR]	carriagereturn	u21B5	carriage return
+\[OK]	\e[OK]	a19	u2713	check mark, tick
+.TE
+.ad
 .
-.Pa
+.P
 .I Legal Symbols
 .P
-.2s co copyright u00A9 "+"
-.C2 rg registered u00AE "+"
-.C2 tm trademark u2122
-.2e bs --- --- "AT&T Bell Labs logo (not used in @T_ROFF@) +"
+.na
+.TS
+l l l l lxx.
+Output	Input	PostScript	Unicode	Notes
+_
+\[co]	\e[co]	copyright	u00A9	copyright sign
+\[rg]	\e[rg]	registered	u00AE	registered mark
+\[tm]	\e[tm]	trademark	u2122	trademark symbol
+\[bs]	\e[bs]	---	---	AT&T Bell Labs logo +
+.TE
+.ad
 .
-.Pa
+.P
+The Bell Labs logo is not supported in groff.
+.
+.P
 .I Currency symbols
 .P
-.2s Do dollar u0024
-.C2 ct cent u00A2 "+"
-.C2 eu --- u20AC "official Euro symbol"
-.C2 Eu Euro u20AC "font-specific Euro glyph variant"
-.C2 Ye yen u00A5
-.C2 Po sterling u00A3 "British currency sign"
-.C2 Cs currency u00A4 "Scandinavian currency sign"
-.2e Fn florin u0192 "Dutch currency sign"
+.na
+.TS
+l l l l lxx.
+Output	Input	PostScript	Unicode	Notes
+_
+\[Do]	\e[Do]	dollar	u0024	dollar
+\[ct]	\e[ct]	cent	u00A2	cent
+\[eu]	\e[eu]	---	u20AC	official Euro symbol
+\[Eu]	\e[Eu]	Euro	u20AC	font-specific Euro glyph variant
+\[Ye]	\e[Ye]	yen	u00A5	Japanese Yen
+\[Po]	\e[Po]	sterling	u00A3	pound sterling (British)
+\[Cs]	\e[Cs]	currency	u00A4	Scandinavian currency sign
+\[Fn]	\e[Fn]	florin	u0192	Dutch currency sign
+.TE
+.ad
 .
-.Pa
+.P
 .I Units
 .P
-.2s de degree u00B0 "+"
-.C2 %0 perthousand u2030 "per thousand, per mille sign"
-.C2 fm minute u2032 "footmark, prime +"
-.C2 sd second u2033
-.C2 mc mu u00B5 "micro sign"
-.C2 Of ordfeminine u00AA
-.2e Om ordmasculine u00BA
+.na
+.TS
+l l l l lxx.
+Output	Input	PostScript	Unicode	Notes
+_
+\[de]	\e[de]	degree	u00B0	degree
+\[%0]	\e[%0]	perthousand	u2030	per thousand, per mille sign
+\[fm]	\e[fm]	minute	u2032	arc minute sign
+\[sd]	\e[sd]	second	u2033	acr second sign
+\[mc]	\e[mc]	mu	u00B5	mu, micro sign
+\[Of]	\e[Of]	ordfeminine	u00AA	feminine ordinal (Spanish)
+\[Om]	\e[Om]	ordmasculine	u00BA	masculine ordinal (Spanish)
+.TE
+.ad
 .
-.Pa
+.P
 .I Logical Symbols
 .P
-.2s AN logicaland u2227
-.C2 OR logicalor u2228
-.C2 no logicalnot u00AC "+"
-.CN tno logicalnot u00AC "text variant of `no'"
-.C2 te existential u2203 "there exists, existential quantifier"
-.C2 fa universal u2200 "for all, universal quantifier"
-.C2 st suchthat u220B
-.C2 3d therefore u2234
-.C2 tf therefore u2234
+.na
+.TS
+l l l l lxx.
+Output	Input	PostScript	Unicode	Notes
+_
+\[AN]	\e[AN]	logicaland	u2227	logical and
+\[OR]	\e[OR]	logicalor	u2228	logical or
+\[no]	\e[no]	logicalnot	u00AC	logical not
+\[tno]	\e[tno]	logicalnot	u00AC	text variant of \[oq]no\[cq]
+\[te]	\e[te]	existential	u2203	there exists
+\[fa]	\e[fa]	universal	u2200	for all
+\[st]	\e[st]	suchthat	u220B	sucht that
+\[3d]	\e[3d]	therefore	u2234	therefore
+\[tf]	\e[tf]	therefore	u2234	therefore
+\[or]	\e[or]	bar	u007C	T{
+bitwise OR operator (as used in\ C)
+T}
+.TE
+.ad
 .
-.2e or bar u007C "bitwise OR operator (as used in C) +"
-.
-.Pa
+.P
 .I Mathematical Symbols
 .P
-.2s 12 onehalf u00BD "+"
-.C2 14 onequarter u00BC "+"
-.C2 34 threequarters u00BE "+"
-.C2 18 oneeighth u215B
-.C2 38 threeeighths u215C
-.C2 58 fiveeighths u215D
-.C2 78 seveneighths u215E
-.C2 S1 onesuperior u00B9
-.C2 S2 twosuperior u00B2
-.C2 S3 threesuperior u00B3
+.na
+.TS
+l l l l lxx.
+Output	Input	PostScript	Unicode	Notes
+_
+\[12]	\e[12]	onehalf	u00BD	1/2 symbol
+\[14]	\e[14]	onequarter	u00BC	1/4 symbol
+\[34]	\e[34]	threequarters	u00BE	3/4 symbol
+\[18]	\e[18]	oneeighth	u215B	1/8 symbol
+\[38]	\e[38]	threeeighths	u215C	3/8 symbol
+\[58]	\e[58]	fiveeighths	u215D	5/8 symbol
+\[78]	\e[78]	seveneighths	u215E	7/8 symbol
+\[S1]	\e[S1]	onesuperior	u00B9	superscript 1
+\[S2]	\e[S2]	twosuperior	u00B2	superscript 2
+\[S3]	\e[S3]	threesuperior	u00B3	superscript 3
+
+\[pl]	\e[pl]	plus	u002B	plus in special font
+\[mi]	\e[mi]	minus	u2212	minus in special font
+\[-+]	\e[-+]	uni2213	u2213	minus-plus
+\[+-]	\e[+-]	plusminus	u00B1	plus-minus
+\[t+-]	\e[t+-]	plusminus	u00B1	text variant of \e[+-]
+\[pc]	\e[pc]	periodcentered	u00B7	period centered
+\[md]	\e[md]	dotmath	u22C5	multiplication dot
+\[mu]	\e[mu]	multiply	u00D7	multiply sign
+\[tmu]	\e[tmu]	multiply	u00D7	text variant of \e[mu]
+\[c*]	\e[c*]	circlemultiply	u2297	multiply sign in circle
+\[c+]	\e[c+]	circleplus	u2295	plus sign in circle
+\[di]	\e[di]	divide	u00F7	division sign
+\[tdi]	\e[tdi]	divide	u00F7	text variant of \e[di]
+\[f/]	\e[f/]	fraction	u2044	bar for fractions
+\[**]	\e[**]	asteriskmath	u2217	mathematical asterisk
+
+\[<=]	\e[<=]	lessequal	u2264	less or equal
+\[>=]	\e[>=]	greaterequal	u2265	greater or equal
+\[<<]	\e[<<]	uni226A	u226A	much less
+\[>>]	\e[>>]	uni226B	u226B	much greater
+\[eq]	\e[eq]	equal	u003D	equals in special font
+\[!=]	\e[!=]	notequal	u003D_0338	not equal
+\[==]	\e[==]	equivalence	u2261	equivalent
+\[ne]	\e[ne]	uni2262	u2261_0338	not equivalent
+\[=~]	\e[=~]	congruent	u2245	T{
+congruent, approx. equal
+T}
+\[|=]	\e[|=]	uni2243	u2243	asymptot. equal to
+\[ap]	\e[ap]	similar	u223C	similar
+\[~~]	\e[~~]	approxequal	u2248	almost equal to
+\[~=]	\e[~=]	approxequal	u2248	almost equal to
+\[pt]	\e[pt]	proportional	u221D	proportional
+
+\[es]	\e[es]	emptyset	u2205	empty set
+\[mo]	\e[mo]	element	u2208	element of a set
+\[nm]	\e[nm]	notelement	u2208_0338	not element of set
+\[sb]	\e[sb]	propersubset	u2282	proper subset
+\[nb]	\e[nb]	notsubset	u2282_0338	not supset
+\[sp]	\e[sp]	propersuperset	u2283	proper superset
+\[nc]	\e[nc]	uni2285	u2283_0338	not superset
+\[ib]	\e[ib]	reflexsubset	u2286	subset or equal
+\[ip]	\e[ip]	reflexsuperset	u2287	superset or equal
+\[ca]	\e[ca]	intersection	u2229	intersection, cap
+\[cu]	\e[cu]	union	u222A	union, cup
+
+\[/_]	\e[/_]	angle	u2220	angle
+\[pp]	\e[pp]	perpendicular	u22A5	perpendicular
+\[is]	\e[is]	integral	u222B	integral
+\[integral]	\e[integral]	integral	u222B	integral
+\[sum]	\e[sum]	summation	u2211	summation
+\[product]	\e[product]	product	u220F	product
+\[coproduct]	\e[coproduct]	uni2210	u2210	coproduct
+\[gr]	\e[gr]	gradient	u2207	gradient
+\[sr]	\e[sr]	radical	u221A	square root
+\[sqrt]	\e[sqrt]	radical	u221A	square root
+\[radicalex]	\e[radicalex]	radicalex	---	T{
+square root continuation
+T}
+\[sqrtex]	\e[sqrtex]	radicalex	---	T{
+square root continuation
+T}
+
+\[lc]	\e[lc]	uni2308	u2308	left ceiling
+\[rc]	\e[rc]	uni2309	u2309	right ceiling
+\[lf]	\e[lf]	uni230A	u230A	left floor
+\[rf]	\e[rf]	uni230B	u230B	right floor
+
+\[if]	\e[if]	infinity	u221E	infinity
+\[Ah]	\e[Ah]	aleph	u2135	aleph
+\[Im]	\e[Im]	Ifraktur	u2111	Gothic I, imaginary
+\[Re]	\e[Re]	Rfraktur	u211C	Gothic R, real
+\[wp]	\e[wp]	weierstrass	u2118	Weierstrass\~p
+\[pd]	\e[pd]	partialdiff	u2202	T{
+partial differentiation
+T}
+\[-h]	\e[-h]	uni210F	u210F	T{
+Planck\ constant\ /\ 2pi (h-bar)
+T}
+\[hbar]	\e[hbar]	uni210F	u210F	T{
+Planck\ constant\ /\ 2pi (h-bar)
+T}
+.TE
+.ad
 .
-.C2 pl plus u002B "plus sign in special font +"
-.C2 mi minus u2212 "minus sign in special font +"
-.C2 -+ uni2213 u2213
-.C2 +- plusminus u00B1 "+"
-.CN t+- plusminus u00B1 "text variant of `+\-'"
-.C2 pc periodcentered u00B7
-.C2 md dotmath u22C5 "multiplication dot"
-.C2 mu multiply u00D7 "+"
-.CN tmu multiply u00D7 "text variant of `mu'"
-.C2 c* circlemultiply u2297 "multiply sign in a circle"
-.C2 c+ circleplus u2295 "plus sign in a circle"
-.C2 di divide u00F7 "division sign +"
-.CN tdi divide u00F7 "text variant of `di'"
-.C2 f/ fraction u2044 "bar for fractions"
-.C2 ** asteriskmath u2217 "+"
-.
-.C2 <= lessequal u2264 "+"
-.C2 >= greaterequal u2265 "+"
-.C2 << uni226A u226A "much less"
-.C2 >> uni226B u226B "much greater"
-.C2 eq equal u003D "equals sign in special font +"
-.C2 != notequal u003D_0338 "+"
-.C2 == equivalence u2261 "+"
-.C2 ne uni2262 u2261_0338
-.C2 =~ congruent u2245 "approx.\& equal"
-.C2 |= uni2243 u2243 "asymptot.\& equal to +"
-.C2 ap similar u223C "+"
-.C2 ~~ approxequal u2248 "almost equal to"
-.C2 ~= approxequal u2248
-.C2 pt proportional u221D "+"
-.
-.C2 es emptyset u2205 "+"
-.C2 mo element u2208 "+"
-.C2 nm notelement u2208_0338
-.C2 sb propersubset u2282 "+"
-.C2 nb notsubset u2282_0338
-.C2 sp propersuperset u2283 "+"
-.C2 nc uni2285 u2283_0338 "not superset"
-.C2 ib reflexsubset u2286 "+"
-.C2 ip reflexsuperset u2287 "+"
-.C2 ca intersection u2229 "intersection, cap +"
-.C2 cu union u222A "union, cup +"
-.
-.C2 /_ angle u2220
-.C2 pp perpendicular u22A5
-.C2 is integral u222B "+"
-.CN integral integral u222B "***"
-.CN sum summation u2211 "***"
-.CN product product u220F "***"
-.CN coproduct uni2210 u2210 "***"
-.C2 gr gradient u2207 "+"
-.C2 sr radical u221A "square root +"
-.CN sqrt radical u221A "***"
-.CN radicalex radicalex --- "continuation of square root"
-.CN sqrtex radicalex --- "***"
-.
-.C2 lc uni2308 u2308 "left ceiling +"
-.C2 rc uni2309 u2309 "right ceiling +"
-.C2 lf uni230A u230A "left floor +"
-.C2 rf uni230B u230B "right floor +"
-.
-.C2 if infinity u221E "+"
-.C2 Ah aleph u2135
-.C2 Im Ifraktur u2111 "Gothic I, imaginary"
-.C2 Re Rfraktur u211C "Gothic R, real"
-.C2 wp weierstrass u2118 "Weierstrass p"
-.C2 pd partialdiff u2202 "partial differentiation sign +"
-.C2 -h uni210F u210F "Planck constant over two pi"
-.2e hbar uni210F u210F
-.
-.Pa
+.P
 .I Greek glyphs
 .P
 These glyphs are intended for technical use, not for real Greek; normally,
@@ -1263,115 +1207,97 @@ Starting with Unicode\ 3.0, the reference glyphs have been exchanged and
 described verbally also: In mathematical context, U+03D5 is the stroked
 variant and U+03C6 the curly glyph.
 .
-Unfortunately, most font vendors didn't update their fonts to
+Unfortunately, most font vendors didn\[aq]t update their fonts to
 this (incompatible) change in Unicode.
 .
-At the time of this writing (January 2006), it is not clear yet whether
-the Adobe Glyph Names `phi' and `phi1' also change its meaning if used for
-mathematics, thus compatibility problems are likely to happen \(en being
-conservative, @T_ROFF@ currently assumes that `phi' in a PostScript symbol
-font is the stroked version.
+At the time of this writing (January 2006), it is not clear yet
+whether the Adobe Glyph Names \[oq]phi\[cq] and \[oq]phi1\[cq] also
+change its meaning if used for mathematics, thus compatibility
+problems are likely to happen \[en] being conservative, @T_ROFF@
+currently assumes that \[oq]phi\[cq] in a PostScript symbol font is
+the stroked version.
 .P
-In @T_ROFF@, symbol `\f(CW\e[*f]\fP' always denotes the stroked version of
-phi, and `\f(CW\e[+f]\fP' the curly variant.
-.P
-.2s *A Alpha u0391 "+"
-.C2 *B Beta u0392 "+"
-.C2 *G Gamma u0393 "+"
-.C2 *D Delta u0394 "+"
-.C2 *E Epsilon u0395 "+"
-.C2 *Z Zeta u0396 "+"
-.C2 *Y Eta u0397 "+"
-.C2 *H Theta u0398 "+"
-.C2 *I Iota u0399 "+"
-.C2 *K Kappa u039A "+"
-.C2 *L Lambda u039B "+"
-.C2 *M Mu u039C "+"
-.C2 *N Nu u039D "+"
-.C2 *C Xi u039E "+"
-.C2 *O Omicron u039F "+"
-.C2 *P Pi u03A0 "+"
-.C2 *R Rho u03A1 "+"
-.C2 *S Sigma u03A3 "+"
-.C2 *T Tau u03A4 "+"
-.C2 *U Upsilon u03A5 "+"
-.C2 *F Phi u03A6 "+"
-.C2 *X Chi u03A7 "+"
-.C2 *Q Psi u03A8 "+"
-.C2 *W Omega u03A9 "+"
-.C2 *a alpha u03B1 "+"
-.C2 *b beta u03B2 "+"
-.C2 *g gamma u03B3 "+"
-.C2 *d delta u03B4 "+"
-.C2 *e epsilon u03B5 "+"
-.C2 *z zeta u03B6 "+"
-.C2 *y eta u03B7 "+"
-.C2 *h theta u03B8 "+"
-.C2 *i iota u03B9 "+"
-.C2 *k kappa u03BA "+"
-.C2 *l lambda u03BB "+"
-.C2 *m mu u03BC "+"
-.C2 *n nu u03BD "+"
-.C2 *c xi u03BE "+"
-.C2 *o omicron u03BF "+"
-.C2 *p pi u03C0 "+"
-.C2 *r rho u03C1 "+"
-.C2 ts sigma1 u03C2 "terminal sigma +"
-.C2 *s sigma u03C3 "+"
-.C2 *t tau u03C4 "+"
-.C2 *u upsilon u03C5 "+"
-.C2 *f phi u03D5 "(stroked glyph)+"
-.C2 *x chi u03C7 "+"
-.C2 *q psi u03C8 "+"
-.C2 *w omega u03C9 "+"
-.C2 +h theta1 u03D1 "variant theta"
-.C2 +f phi1 u03C6 "variant phi (curly shape)"
-.C2 +p omega1 u03D6 "variant pi, looking like omega"
-.2e +e uni03F5 u03F5 "variant epsilon"
+In @T_ROFF@, symbol \[oq]\f(CW\e[*f]\fP\[cq] always denotes the stroked
+version of phi, and \[oq]\f(CW\e[+f]\fP\[cq] the curly variant.
 .
-.Pa
+.P
+.na
+.TS
+l l l l lxx.
+Output	Input	PostScript	Unicode	Notes
+_
+\[*A]	\e[*A]	Alpha	u0391	Alpha
+\[*B]	\e[*B]	Beta	u0392	Beta
+\[*G]	\e[*G]	Gamma	u0393	Gamma
+\[*D]	\e[*D]	Delta	u0394	Delta
+\[*E]	\e[*E]	Epsilon	u0395	Epsilon
+\[*Z]	\e[*Z]	Zeta	u0396	Zeta
+\[*Y]	\e[*Y]	Eta	u0397	Eta
+\[*H]	\e[*H]	Theta	u0398	Theta
+\[*I]	\e[*I]	Iota	u0399	Iota
+\[*K]	\e[*K]	Kappa	u039A	Kappa
+\[*L]	\e[*L]	Lambda	u039B	Lamda
+\[*M]	\e[*M]	Mu	u039C	Mu
+\[*N]	\e[*N]	Nu	u039D	Nu
+\[*C]	\e[*C]	Xi	u039E	Xi
+\[*O]	\e[*O]	Omicron	u039F	Omicron
+\[*P]	\e[*P]	Pi	u03A0	Pi
+\[*R]	\e[*R]	Rho	u03A1	Rho
+\[*S]	\e[*S]	Sigma	u03A3	Sigma
+\[*T]	\e[*T]	Tau	u03A4	Tau
+\[*U]	\e[*U]	Upsilon	u03A5	Upsilon
+\[*F]	\e[*F]	Phi	u03A6	Phi
+\[*X]	\e[*X]	Chi	u03A7	Chi
+\[*Q]	\e[*Q]	Psi	u03A8	Psi
+\[*W]	\e[*W]	Omega	u03A9	Omega
+\[*a]	\e[*a]	alpha	u03B1	alpha
+\[*b]	\e[*b]	beta	u03B2	beta
+\[*g]	\e[*g]	gamma	u03B3	gamma
+\[*d]	\e[*d]	delta	u03B4	delta
+\[*e]	\e[*e]	epsilon	u03B5	epsilon
+\[*z]	\e[*z]	zeta	u03B6	zeta
+\[*y]	\e[*y]	eta	u03B7	eta
+\[*h]	\e[*h]	theta	u03B8	theta
+\[*i]	\e[*i]	iota	u03B9	iota
+\[*k]	\e[*k]	kappa	u03BA	kappa
+\[*l]	\e[*l]	lambda	u03BB	lambda
+\[*m]	\e[*m]	mu	u03BC	mu
+\[*n]	\e[*n]	nu	u03BD	nu
+\[*c]	\e[*c]	xi	u03BE	xi
+\[*o]	\e[*o]	omicron	u03BF	omicron
+\[*p]	\e[*p]	pi	u03C0	pi
+\[*r]	\e[*r]	rho	u03C1	rho
+\[ts]	\e[ts]	sigma1	u03C2	terminal sigma
+\[*s]	\e[*s]	sigma	u03C3	sigma
+\[*t]	\e[*t]	tau	u03C4	tau
+\[*u]	\e[*u]	upsilon	u03C5	upsilon
+\[*f]	\e[*f]	phi	u03D5	phi oked glyph)
+\[*x]	\e[*x]	chi	u03C7	chi
+\[*q]	\e[*q]	psi	u03C8	psi
+\[*w]	\e[*w]	omega	u03C9	omega
+\[+h]	\e[+h]	theta1	u03D1	variant theta
+\[+f]	\e[+f]	phi1	u03C6	variant phi (curly shape)
+\[+p]	\e[+p]	omega1	u03D6	variant pi, looking like omega
+\[+e]	\e[+e]	uni03F5	u03F5	variant epsilon
+.TE
+.ad
+.
+.P
 .I Card symbols
 .P
-.2s CL club u2663 "black club suit"
-.C2 SP spade u2660 "black spade suit"
-.C2 HE heart u2665 "black heart suit"
-.C2 u2662 uni2662 u2662 "white heart suit"
-.C2 DI diamond u2666 "black diamond suit"
-.2e u2661 uni2661 u2661 "white diamond suit"
-.
-.
-.\"
-.SH "AUTHOR"
-.\"
-.
-Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
-
-Copyright \(co 1989 - 2000, 2001 - 2004, 2006, 2008
-   Free Software Foundation, Inc.
-.
-.P
-This document is distributed under the terms of the FDL (GNU Free
-Documentation License) version 1.1 or later.
-.
-You should have received a copy of the FDL on your system, it is also
-available on-line at the
-.UR http://\:www.gnu.org/\:copyleft/\:fdl.html
-GNU copyleft site
-.UE .
-.
-.P
-It was written by
-.MT jjc@jclark.com
-James Clark
-.ME
-with additions by
-.MT wl@gnu.org
-Werner Lemberg
-.ME
-and
-.MT bwarken@mayn.de
-Bernd Warken
-.ME .
+.na
+.TS
+l l l l lxx.
+Output	Input	PostScript	Unicode	Notes
+_
+\[CL]	\e[CL]	club	u2663	black club suit
+\[SP]	\e[SP]	spade	u2660	black spade suit
+\[HE]	\e[HE]	heart	u2665	black heart suit
+\[u2661]	\e[u2661]	uni2661	u2661	white heart suit
+\[DI]	\e[DI]	diamond	u2666	black diamond suit
+\[u2662]	\e[u2662]	uni2662	u2662	white diamond suit
+.TE
+.ad
 .
 .
 .\"
@@ -1397,6 +1323,20 @@ No. 2, Summer 1989
 .UR http://\:www.unicode.org
 The Unicode Standard
 .UE
+.
+.
+.\"
+.SH "COPYING"
+.\"
+.
+.co
+.
+.
+.\"
+.SH "AUTHORS"
+.\"
+.
+.au
 .
 .cp \n[roff_char_C]
 .\" s-ts-mode
