@@ -71,7 +71,9 @@
 .    ns
 .  \}
 .
-.  HP \w'\fB\\$1\fP\ 'u
+.  nr mT \w'\fB\\$1\fP\ '
+.  HP \\n(mTu
+.  rr mT
 .  B "\\$1"
 ..
 .
@@ -182,15 +184,18 @@
 .
 .\" Start example.
 .de EX
+.  do ds mF \\n[.fam]
 .  nr mE \\n(.f
 .  nf
 .  nh
+.  do fam C
 .  ft CW
 ..
 .
 .
 .\" End example.
 .de EE
+.  do fam \\*(mF
 .  ft \\n(mE
 .  fi
 .  hy \\n(HY
