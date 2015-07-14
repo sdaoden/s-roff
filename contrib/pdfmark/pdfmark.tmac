@@ -1,7 +1,7 @@
 .ig
 @ pdfmark.tmac
 
-Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
 Copyright (C) 2004, 2005, 2006, 2007
   Free Software Foundation, Inc.
@@ -1118,7 +1118,7 @@ ps:exec \\*[pdf:composed.line]
 .pdf*href.set \\*[pdf:href-N] \\*[pdf:href-D] \\$1
 .\"
 .\" If we specified a cross reference, with the "-X" option, and the
-.\" reference mark has been sucessfully created, then we now need to
+.\" reference mark has been successfully created, then we now need to
 .\" write the cross reference info to the STDERR stream
 .\"
 .if \\n[pdf:href-X] .pdf*href.export \\*[PDFHREF.INFO]
@@ -1591,7 +1591,7 @@ ps:exec \\*[pdf:composed.line]
 .   \" "pdf*href.mark.end" macro has nothing further to do.
 .   \"
 .   pdf*href.mark.resolve \\$@
-.   rn pdf*href.mark.resolve pdf*href.mark.begin
+.   als pdf*href.mark.begin pdf*href.mark.resolve
 .   als pdf*href.mark.end pdf*href.mark.idle
 .   \}
 .el \{\
@@ -1654,7 +1654,7 @@ ps:exec \\*[pdf:composed.line]
 .      \"
 .      nr pdf:llx \\n(.o+\\n[.in]
 .      \"
-.      \" If the current page can accomodate more than the current line,
+.      \" If the current page can accommodate more than the current line,
 .      \" then it will include a second active region for this link; this
 .      \" will extend from just below the current line to the end of page
 .      \" trap, if any, or the bottom of the page otherwise, and occupy

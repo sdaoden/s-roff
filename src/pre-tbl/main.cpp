@@ -1,5 +1,5 @@
 /*@
- * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
  *
  * Copyright (C) 1989 - 1992, 2000 - 2005, 2007, 2008
  *    Free Software Foundation, Inc.
@@ -500,6 +500,10 @@ options *process_options(table_input &in)
       if (arg)
 	error("`nospaces' option does not take an argument");
       opt->flags |= table::NOSPACES;
+    } else if (strieq(p, "nowarn")) { // TODO if(arg)goto jerr; anywhere here
+      if (arg)
+        error("`nowarn' option does not take an argument");
+      opt->flags |= table::NOWARN;
     }
     else if (strieq(p, "decimalpoint")) {
       if (!arg)

@@ -1,5 +1,6 @@
-#! /bin/sh
-# Compile fonts in the sizes needed by groff.
+#!/bin/sh -
+#@ Compile fonts in the sizes needed by roff.
+
 sizes="5 6 7 8 9 10 10.95 12 14 14.40 16 17.28 18 20 20.74 22 24 24.88 28 36"
 fonts="cmr10 cmti10 cmbx10 cmbxti10 cmtt10 cmex10 cmmi10 cmsy10 cmss10 cmssbx10 cmssi10"
 mode=cx
@@ -13,3 +14,5 @@ for f in $fonts; do
 	rm $f.${mag}gf
     done
 done
+
+# s-sh-mode

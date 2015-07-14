@@ -1,5 +1,5 @@
 #!/usr/bin/env perl -w
-# Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+# Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 #
 # Copyright (C) 1989 - 2008
 # Free Software Foundation, Inc.
@@ -29,24 +29,25 @@ $prog =~ s@.*/@@;
 my $groff_sys_fontdir = "@FONTDIR@";
 
 use Getopt::Std;
-getopts('a:cd:e:f:i:kmnsvx');
+getopts('a:cd:e:f:i:kmno:svx');
 
-our ($opt_a, $opt_c, $opt_d, $opt_e, $opt_f, $opt_i,
-     $opt_k, $opt_m, $opt_n, $opt_s, $opt_v, $opt_x);
+our ($opt_a, $opt_c, $opt_d, $opt_e, $opt_f, $opt_i, $opt_k,
+     $opt_m, $opt_n, $opt_o, $opt_s, $opt_v, $opt_x);
 
 if ($opt_v) {
-    print "@L_AFMTODIT@ (@T_ROFF@) v @VERSION@\n";
+    print "@L_AFMTODIT@ (@T_ROFF@) v@VERSION@\n";
     exit 0;
 }
 
 if ($#ARGV != 2) {
     die "Synopsis: $prog [-ckmnsvx] [-a angle] [-d DESC] [-e encoding]\n" .
-	"       [-f name] [-i n] afmfile mapfile font\n";
+	"       [-f name] [-i n] [-o outfile] afmfile mapfile font\n";
 }
 
 my $afm = $ARGV[0];
 my $map = $ARGV[1];
 my $font = $ARGV[2];
+my $outfile = $opt_o || $font;
 my $desc = $opt_d || "DESC";
 my $sys_map = $groff_sys_fontdir . "/dev-ps/generate/" . $map;
 my $sys_desc = $groff_sys_fontdir . "/dev-ps/" . $desc;
@@ -415,7 +416,7 @@ while (my ($lig, $components) = each %default_ligatures) {
 
 # print it all out
 
-open(FONT, ">$font") || die "$prog: can't open \`$font' for output: $!\n";
+open(FONT, ">$outfile") || die "$prog: can't open \`$outfile' for output: $!\n";
 select(FONT);
 
 print("# This file has been generated with " .

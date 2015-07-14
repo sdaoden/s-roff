@@ -1,7 +1,7 @@
 .ig
 @ @L_P_EQN@.1
 
-Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
 Copyright (C) 1989 - 2001, 2004, 2005, 2007
   Free Software Foundation, Inc.
@@ -22,12 +22,13 @@ translations approved by the Free Software Foundation instead of in
 the original English.
 ..
 .
+.do nr __compat \n[.C]
+.cp 0
 .
 .ie \n(.V<\n(.v \
 .  ds tx T\h'-.1667m'\v'.224m'E\v'-.224m'\h'-.125m'X
 .el \
 .  ds tx TeX
-.
 .
 .\" Like TP, but if specified indent is more than half
 .\" the current line-length - indent, use the default indent.
@@ -35,7 +36,6 @@ the original English.
 .  ie \\n(.$=0:((0\\$1)*2u>(\\n(.lu-\\n(.iu)) .TP
 .  el .TP "\\$1"
 ..
-.
 .
 .\" The BSD man macros can't handle " in arguments to font change macros,
 .\" so use \(ts instead of ".
@@ -61,10 +61,6 @@ the original English.
 .OP \-m n
 .RI [ files\|.\|.\|. ]
 .YS
-.
-.LP
-It is possible to have whitespace between a command line option and its
-parameter.
 .
 .
 .SH DESCRIPTION
@@ -243,6 +239,7 @@ There are some references to the differences between \*(tx and
 .B @L_P_EQN@
 below;
 these may safely be ignored if you do not know \*(tx.
+.
 .
 .SS Automatic spacing
 .B eqn
@@ -1168,6 +1165,17 @@ A type of
 causes a character to be set in roman type.
 .
 .
+.SH "INTERACTION"
+It is not possible to use the hash character (#) as a delimiter for
+inline equations in
+.B @L_P_EQN@
+since
+.BR @L_P_TBL@ (@MAN1EXT@)
+uses a macro called
+.BR .T# ,
+causing a clash.
+.
+.
 .SH FILES
 .Tp \w'\fB@MACRODIR@/eqnrc'u+2n
 .B @MACRODIR@/eqnrc
@@ -1248,7 +1256,10 @@ This is allowed by the specification, but inefficient.
 .BR @L_ROFF@ (@MAN1EXT@),
 .BR @L_TROFF@ (@MAN1EXT@),
 .BR @L_P_PIC@ (@MAN1EXT@),
-.BR @L_ROFF@_font (@MAN5EXT@),
+.BR @L_ROFF@-font (@MAN5EXT@),
 .I The\ \*(txbook
+.
+.cp \n[__compat]
+.rr __compat
 .
 .\" s-ts-mode

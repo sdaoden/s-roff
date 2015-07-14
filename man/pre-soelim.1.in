@@ -2,7 +2,7 @@
 .ig
 @ L_P_SOELIM@.1
 
-Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
 Copyright (C) 1989 - 2001, 2003, 2004, 2006, 2008
 Free Software Foundation, Inc.
@@ -24,6 +24,10 @@ the original English.
 ..
 .
 .mso pic.tmac
+.
+.do nr __compat \n[.C]
+.cp 0
+.
 .
 .TH @U_P_SOELIM@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
@@ -249,5 +253,8 @@ box invisible width 0.5 height 0.4 "output" "file"
 .SH "SEE ALSO"
 .
 .BR @L_ROFF@ (@MAN1EXT@)
+.
+.cp \n[__compat]
+.rr __compat
 .
 .\" s-ts-mode

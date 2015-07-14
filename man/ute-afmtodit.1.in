@@ -1,7 +1,7 @@
 .ig
 @ @L_AFMTODIT@.1
 
-Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
 Copyright (C) 1989 - 2003, 2005, 2006, 2008
   Free Software Foundation, Inc.
@@ -56,6 +56,7 @@ the original English.
 .OP \-e enc_file
 .OP \-f internal_name
 .OP \-i n
+.OP \-o output_file
 .I afm_file
 .I map_file
 .I font
@@ -143,8 +144,11 @@ Glyph indices of unencoded characters don't have a specific order; it
 is best to access them with glyph names only.
 .
 .LP
-The @L_ROFF@ font file will be output to a file called
-.IR font .
+The @L_ROFF@ font file will be written to a file named
+.IR font
+unless a name has been specified with the
+.B \-o
+option.
 .
 .LP
 If there is a downloadable font file for the font, it may be listed in
@@ -162,7 +166,7 @@ will automatically generate an italic correction,
 a left italic correction and a subscript correction
 for each character
 (the significance of these parameters is explained in
-.BR @L_ROFF@_font (@MAN5EXT@));
+.BR @L_ROFF@-font (@MAN5EXT@));
 these parameters may be specified for individual characters by
 adding to the
 .I afm_file
@@ -300,6 +304,15 @@ command for this font.
 Use this with constant-width fonts.
 .
 .TP
+.BI \-o output_file
+The output will be written to
+.I output_file
+instead of
+.IR font .
+.
+.TP
+.
+.TP
 .B \-s
 The font is special.
 .
@@ -343,6 +356,6 @@ Standard mapping.
 .BR @L_ROFF@ (@MAN1EXT@),
 .BR @L_D_PS@ (@MAN1EXT@),
 .BR perl (1) ,
-.BR @L_ROFF@_font (@MAN5EXT@)
+.BR @L_ROFF@-font (@MAN5EXT@)
 .
 .\" s-ts-mode

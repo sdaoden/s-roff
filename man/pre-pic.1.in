@@ -1,7 +1,7 @@
 .ig
 @ @L_P_PIC@.1
 
-Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
 Copyright (C) 1989 - 2004, 2007 Free Software Foundation, Inc.
 
@@ -20,6 +20,9 @@ versions, except that this permission notice may be included in
 translations approved by the Free Software Foundation instead of in
 the original English.
 ..
+.
+.do nr __compat \n[.C]
+.cp 0
 .
 .\" Like TP, but if specified indent is more than half
 .\" the current line-length - indent, use the default indent.
@@ -141,7 +144,7 @@ Don't use the @L_ROFF@ extensions to the troff drawing commands.
 You should use this if you are using a postprocessor that doesn't support
 these extensions.
 The extensions are described in
-.BR @L_ROFF@_out (@MAN5EXT@).
+.BR @L_ROFF@-out (@MAN5EXT@).
 The
 .B \-n
 option also causes
@@ -1068,7 +1071,7 @@ macros.
 .SH "SEE ALSO"
 .
 .BR @L_TROFF@ (@MAN1EXT@),
-.BR @L_ROFF@_out (@MAN5EXT@),
+.BR @L_ROFF@-out (@MAN5EXT@),
 .BR tex (1),
 .BR gs (1),
 .BR ps2eps (1),
@@ -1113,5 +1116,8 @@ is incompatible with the pic in 10th edition Unix,
 which interprets 0 as black and 1 as white.
 .LP
 PostScript\*R is a registered trademark of Adobe Systems Incorporation.
+.
+.cp \n[__compat]
+.rr __compat
 .
 .\" s-ts-mode

@@ -1,5 +1,5 @@
 /*@
- * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
  *
  * Copyright (C) 1989 - 1992, 2000, 2001, 2004 Free Software Foundation, Inc.
  *      Written by James Clark (jjc@jclark.com)
@@ -66,10 +66,10 @@
 
 struct char_info_word {
   unsigned char width_index;
-  char height_index;
-  char depth_index;
-  char italic_index;
-  char tag;
+  unsigned char height_index;
+  unsigned char depth_index;
+  unsigned char italic_index;
+  unsigned char tag;
   unsigned char remainder;
 };
 

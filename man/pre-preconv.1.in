@@ -1,7 +1,7 @@
 .ig
 @ @L_P_PRECONV@.1
 
-Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
 Copyright (C) 2006 - 2008 Free Software Foundation, Inc.
 
@@ -20,6 +20,10 @@ versions, except that this permission notice may be included in
 translations approved by the Free Software Foundation instead of in
 the original English.
 ..
+.
+.do nr __compat \n[.C]
+.cp 0
+.
 .
 .TH @U_P_PRECONV@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
@@ -291,4 +295,8 @@ file.
 .
 .SH "SEE ALSO"
 .BR @L_ROFF@ (@MAN1EXT@)
+.
+.cp \n[__compat]
+.rr __compat
+.
 .\" s-ts-mode

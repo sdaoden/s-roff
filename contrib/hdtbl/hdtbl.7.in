@@ -1,7 +1,7 @@
 .ig
 @ hdtbl.7.in
 
-Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
 Copyright (C) 2005, 2006, 2008, 2009
   Free Software Foundation, Inc.
@@ -25,6 +25,8 @@ source package of this program.
 .SH NAME
 @L_ROFF@_hdtbl \- @L_ROFF@ `hdtbl' macros for generation of tables
 .
+.do nr __compat \n[.C]
+.cp 0
 .
 .ig
   Some simple formatting macros.  Note that we use `.ig' here and not a
@@ -919,18 +921,12 @@ if you use the
 .B ms
 macro package.
 .
-.PP
-.B hdtbl
-has built-in page header and page footer macros,
-.B HM
-and
-.BR BM .
-If they interfere with your own header and footer macros, simply
-say
-.CR ".rm\ HM"
-and
-.CR ".rm\ BM"
-to remove them.
+The macro
+.CR t*EM
+checks for held or kept tables,
+and for missing
+.CR ETB
+macros (table not closed).
 .
 .
 .SH AUTHOR
@@ -947,5 +943,8 @@ Please send your commments to the
 mailing list
 .ME
 or directly to the author.
+.
+.cp \n[__compat]
+.rr __compat
 .
 .\" s-tr-mode

@@ -3,7 +3,16 @@
 #define _HTML_CONFIG_H
 
 /* maximum number of character that can be pushed back */
-#define MAXPUSHBACKSTACK  4096
+#define MAXPUSHBACKSTACK      4096
+
+/* Images are generated via postscript, gs, and the pnm utilities */
+#define IMAGE_DEVICE          "-Tps"
+
+// Inches wide
+#define DEFAULT_LINE_LENGTH   7
+// Number of pixels per inch resolution
+#define DEFAULT_IMAGE_RES     100
+#define IMAGE_BOARDER_PIXELS  0
 
 #endif // _HTML_CONFIG_H
 // s-it2-mode

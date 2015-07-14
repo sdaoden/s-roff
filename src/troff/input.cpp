@@ -1,5 +1,5 @@
 /*@
- * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
  *
  * Copyright (C) 1989 - 1992, 2000 - 2008 Free Software Foundation, Inc.
  *      Written by James Clark (jjc@jclark.com)
@@ -48,7 +48,7 @@
 // warnings that are enabled by default
 #ifndef DEFAULT_WARNING_MASK
 # define DEFAULT_WARNING_MASK \
-     (WARN_CHAR|WARN_NUMBER|WARN_BREAK|WARN_SPACE|WARN_FONT)
+     (WARN_CHAR|WARN_NUMBER|WARN_BREAK|WARN_SPACE|WARN_FONT|WARN_FILE)
 #endif
 
 // initial size of buffer for reading names; expanded as necessary
@@ -76,8 +76,8 @@ static int backtrace_flag = 0;
 #ifndef POPEN_MISSING
 char *pipe_command = 0;
 #endif
-charinfo *charset_table[256];
-unsigned char hpf_code_table[256];
+charinfo *charset_table[UCHAR_MAX +1];
+unsigned char hpf_code_table[UCHAR_MAX +1];
 
 static int warning_mask = DEFAULT_WARNING_MASK;
 static int inhibit_errors = 0;
@@ -2342,6 +2342,10 @@ int token::delimiter(int err)
       return 1;
     }
   case TOKEN_NODE:
+    // the user doesn't know what a node is
+    if (err)
+      error("missing argument or invalid starting delimiter");
+    return 0;
   case TOKEN_SPACE:
   case TOKEN_STRETCHABLE_SPACE:
   case TOKEN_UNSTRETCHABLE_SPACE:
@@ -6073,7 +6077,7 @@ void do_ps_file(file_case *fcp, const char* filename)
 {
   bounding_box bb;
   int bb_at_end = 0;
-  char buf[PS_LINE_MAX];
+  char buf[PS_LINE_MAX + 1 /* NL */ +1];
   llx_reg_contents = lly_reg_contents =
     urx_reg_contents = ury_reg_contents = 0;
   if (!ps_get_line(buf, fcp, filename)) {
@@ -6557,7 +6561,7 @@ static void init_charset_table()
 {
   char buf[16];
   strcpy(buf, "char");
-  for (int i = 0; i < 256; i++) {
+  for (int i = 0; i <= UCHAR_MAX; i++) {
     strcpy(buf + 4, i_to_a(i));
     charset_table[i] = get_charinfo(symbol(buf));
     charset_table[i]->set_ascii_code(i);
@@ -6575,6 +6579,7 @@ static void init_charset_table()
   charset_table['*']->set_flags(charinfo::TRANSPARENT);
   get_charinfo(symbol("dg"))->set_flags(charinfo::TRANSPARENT);
   get_charinfo(symbol("rq"))->set_flags(charinfo::TRANSPARENT);
+  get_charinfo(symbol("cq"))->set_flags(charinfo::TRANSPARENT);
   get_charinfo(symbol("em"))->set_flags(charinfo::BREAK_AFTER);
   get_charinfo(symbol("hy"))->set_flags(charinfo::BREAK_AFTER);
   get_charinfo(symbol("ul"))->set_flags(charinfo::OVERLAPS_HORIZONTALLY);
@@ -6588,8 +6593,8 @@ static void init_charset_table()
 
 static void init_hpf_code_table()
 {
-  for (int i = 0; i < 256; i++)
-    hpf_code_table[i] = i;
+  for (unsigned char i = 0; i <= UCHAR_MAX; ++i)
+    hpf_code_table[i] = cmlower(i);
 }
 
 static void do_translate(int translate_transparent, int translate_input)
@@ -8139,7 +8144,7 @@ static void read_color_draw_node(token &start)
 static struct {
   const char *name;
   int mask;
-} warning_table[] = { // FIXME const?
+} warning_table[] = { // FIXME const?  make fun-local; use jumptable??
   { "char", WARN_CHAR },
   { "range", WARN_RANGE },
   { "break", WARN_BREAK },
@@ -8160,6 +8165,7 @@ static struct {
   { "reg", WARN_REG },
   { "ig", WARN_IG },
   { "color", WARN_COLOR },
+  { "file", WARN_FILE },
   { "all", WARN_TOTAL & ~(WARN_DI | WARN_MAC | WARN_REG) },
   { "w", WARN_TOTAL },
   { "default", DEFAULT_WARNING_MASK },
@@ -8167,12 +8173,13 @@ static struct {
 
 static int lookup_warning(const char *name)
 {
-  for (unsigned int i = 0;
-       i < sizeof(warning_table)/sizeof(warning_table[0]);
-       i++)
-    if (strcmp(name, warning_table[i].name) == 0)
-      return warning_table[i].mask;
-  return 0;
+  int rv = 0;
+  for (size_t i = 0; i < NELEM(warning_table); ++i)
+    if (!strcmp(name, warning_table[i].name)) {
+      rv = warning_table[i].mask;
+      break;
+    }
+  return rv;
 }
 
 static void enable_warning(const char *name)
@@ -8426,9 +8433,9 @@ dictionary numbered_charinfo_dictionary(11);
 
 charinfo *get_charinfo_by_number(int n)
 {
-  static charinfo *number_table[256];
+  static charinfo *number_table[UCHAR_MAX +1];
 
-  if (n >= 0 && n < 256) {
+  if (n >= 0 && n <= UCHAR_MAX) {
     charinfo *ci = number_table[n];
     if (!ci) {
       ci = new charinfo(UNNAMED_SYMBOL);

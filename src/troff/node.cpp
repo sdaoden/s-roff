@@ -1,5 +1,5 @@
 /*@
- * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
  *
  * Copyright (C) 1989 - 1992, 2000 - 2006, 2008 Free Software Foundation, Inc.
  *      Written by James Clark (jjc@jclark.com)
@@ -1516,7 +1516,7 @@ void troff_output_file::really_off()
 void troff_output_file::really_put_filename(const char *filename, int po)
 {
   flush_tbuf();
-  put("F ");
+  put("x F ");
   if (po)
     put("<");
   put(filename);
@@ -1819,6 +1819,14 @@ void suppress_output_file::really_begin_page(int, vunits)
 
 void suppress_output_file::really_transparent_char(unsigned char)
 {
+}
+
+node::~node()
+{
+  if (state != NULL)
+    delete state;
+  if (push_state != NULL)
+    delete push_state;
 }
 
 /* glyphs, ligatures, kerns, discretionary breaks */
@@ -2791,9 +2799,18 @@ int italic_corrected_node::character_type()
 class break_char_node
 : public node
 {
+public:
+  enum break_types {
+    BT_NONE             = 0,
+    BT_CAN_BREAK_BEFORE = 1<<0,
+    BT_CAN_BREAK_AFTER  = 1<<1,
+    BT_IGNORE_HCODES    = 1<<2
+  };
+
+private:
   node *ch;
-  char break_code;
   color *col;
+  int break_code;
 
 public:
   break_char_node(node *, int, color *, node * = 0);
@@ -2823,13 +2840,13 @@ public:
 };
 
 break_char_node::break_char_node(node *n, int bc, color *c, node *x)
-: node(x), ch(n), break_code(bc), col(c)
+: node(x), ch(n), col(c), break_code(bc)
 {
 }
 
 break_char_node::break_char_node(node *n, int bc, color *c, statem *s,
 				 int pop, node *x)
-: node(x, s, pop), ch(n), break_code(bc), col(c)
+: node(x, s, pop), ch(n), col(c), break_code(bc)
 {
 }
 
@@ -2872,16 +2889,16 @@ int break_char_node::ends_sentence()
 node *break_char_node::add_self(node *n, hyphen_list **p)
 {
   assert((*p)->hyphenation_code == 0);
-  if (break_code & 1) {
-    if ((*p)->breakable || break_code & 4) {
+  if (break_code & BT_CAN_BREAK_BEFORE) {
+    if ((*p)->breakable || (break_code & BT_IGNORE_HCODES)) {
       n = new space_node(H0, col, n);
       n->freeze_space();
     }
   }
   next = n;
   n = this;
-  if (break_code & 2) {
-    if ((*p)->breakable || break_code & 4) {
+  if (break_code & BT_CAN_BREAK_AFTER) {
+    if ((*p)->breakable || (break_code & BT_IGNORE_HCODES)) {
       n = new space_node(H0, col, n);
       n->freeze_space();
     }
@@ -3229,11 +3246,6 @@ inline void space_node::operator delete(void *p)
 
 space_node::space_node(hunits nn, color *c, node *p)
 : node(p, 0, 0), n(nn), set(0), was_escape_colon(0), col(c)
-{
-}
-
-space_node::space_node(hunits nn, color *c, statem *s, int pop, node *p)
-: node(p, s, pop), n(nn), set(0), was_escape_colon(0), col(c)
 {
 }
 
@@ -5019,7 +5031,7 @@ node *make_node(charinfo *ci, environment *env)
   case charinfo::TRANSLATE_DUMMY:
     return new dummy_node;
   case charinfo::TRANSLATE_HYPHEN_INDICATOR:
-    error("translation to \\% ignored in this context");
+    error("translation to \\%% ignored in this context");
     break;
   }
   charinfo *tem = ci->get_translation();
@@ -5109,14 +5121,14 @@ node *node::add_char(charinfo *ci, environment *env,
 	*glyph_comp_np = res;
     }
   }
-  int break_code = 0;
+  int break_code = break_char_node::BT_NONE;
   if (ci->can_break_before())
-    break_code = 1;
+    break_code = break_char_node::BT_CAN_BREAK_BEFORE;
   if (ci->can_break_after())
-    break_code |= 2;
+    break_code |= break_char_node::BT_CAN_BREAK_AFTER;
   if (ci->ignore_hcodes())
-    break_code |= 4;
-  if (break_code) {
+    break_code |= break_char_node::BT_IGNORE_HCODES;
+  if (break_code != break_char_node::BT_NONE) {
     node *next1 = res->next;
     res->next = 0;
     res = new break_char_node(res, break_code, env->get_fill_color(), next1);

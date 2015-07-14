@@ -8,7 +8,7 @@
  *@ region limits are read by pre-html and an image is generated via
  *@   troff -Tps -> gs -> png
  *
- * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
  *
  * Copyright (C) 2000 - 2002, 2008 Free Software Foundation, Inc.
  *      Written by Gaius Mulley (gaius@glam.ac.uk)

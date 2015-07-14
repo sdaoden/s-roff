@@ -2,7 +2,7 @@
 .ig
 @ pdfroff.1.in
 
-Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
 Copyright (C) 2005 - 2007 Free Software Foundation, Inc.
 written by Keith Marshall <keith.d.marshall@ntlworld.com>
@@ -515,7 +515,7 @@ defaults to
 .IP
 .I
 .ad l
-.NH gs \-dBATCH \-dQUIET \-dNOPAUSE \-sDEVICE=pdfwrite \-sOutputFile=\-
+.NH gs \-dBATCH \-dQUIET \-dNOPAUSE \-dSAFER \-sDEVICE=pdfwrite \-sOutputFile=\-
 .ad
 .RE
 .
@@ -729,7 +729,7 @@ in the proper sequence,
 .\"
 .
 .SH AUTHOR
-Copyright \(co 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+Copyright \(co 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .br
 Copyright \(co 2005 - 2007 Free Software Foundation, Inc.
 .

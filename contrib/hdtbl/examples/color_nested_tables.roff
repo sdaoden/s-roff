@@ -1,7 +1,7 @@
 .ig
 @ color_nested_tables.roff
 
-Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
 Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
 written by Joachim Walsdorff <Joachim.Walsdorff@urz.uni-heidelberg.de>.
@@ -27,20 +27,23 @@ Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 .nr # 0 1
 *****
 .PN 39 .random# ".defcolor c\\n[#] rgb \\\\*[#random] " \
-".TBL csp=0 cpd=0 border=1n bc=c\\n[#]" \
-".if \\\\n+#=1 .CPTN val=b Nested Tables with Randomly Colored Border" \
-.TR .TD
+ ".TBL csp=0 cpd=0 border=1n bc=c\\n[#]" \
+ ".if \\\\n+#=1 .CPTN val=b Nested Tables with Randomly Colored Border" \
+ .TR .TD
 .PN 39 .ETB
 .PN 15 Text after first table.
 .time
+.
+.bp
+.
 .time start
 .PN 15 Text before second table.
 *****
 .nr # 0 1
 .PN 39 .random# ".defcolor c\\n[#] rgb \\\\*[#random] " \
-".TBL csp=0 cpd=1n border= bgc=c\\n[#]" \
-".if \\\\n+#=1 .CPTN val=b Nested Tables with Randomly Colored Background" \
-.TR .TD
+ ".TBL csp=0 cpd=1n border= bgc=c\\n[#]" \
+ ".if \\\\n+#=1 .CPTN val=b Nested Tables with Randomly Colored Background" \
+ .TR .TD
 .PN 39 .ETB
 .PN 25 Text after second table.
 .time

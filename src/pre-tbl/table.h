@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
  *
  * Copyright (C) 1989 - 1992, 2001 - 2004, 2007, 2008
  *    Free Software Foundation, Inc.
@@ -147,6 +147,7 @@ public:
     DOUBLEBOX    = 0x00000010,
     NOKEEP       = 0x00000020,
     NOSPACES     = 0x00000040,
+    NOWARN       = 1<<7,     // FIXME all around here: indentation, use shifts
     EXPERIMENTAL = 0x80000000	// undocumented; use as a hook for experiments
     };
   char *expand;

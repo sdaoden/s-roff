@@ -1,5 +1,5 @@
 /*@
- * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
  *
  * Copyright (C) 1989 - 1992, 2000 - 2004, 2006
  *    Free Software Foundation, Inc.
@@ -126,26 +126,22 @@ public:
 };
 
 inline node::node()
-: next(0), last(0), state(0), push_state(0), div_nest_level(0), is_special(0)
+: next(NULL), last(NULL), state(NULL), push_state(NULL),
+  div_nest_level(0), is_special(0)
 {
 }
 
 inline node::node(node *n)
-: next(n), last(0), state(0), push_state(0), div_nest_level(0), is_special(0)
+: next(n), last(NULL), state(NULL), push_state(NULL),
+  div_nest_level(0), is_special(0)
 {
 }
 
 inline node::node(node *n, statem *s, int divlevel)
-: next(n), last(0), push_state(0), div_nest_level(divlevel), is_special(0)
+: next(n), last(NULL), push_state(NULL),
+  div_nest_level(divlevel), is_special(0)
 {
-  if (s)
-    state = new statem(s);
-  else
-    state = 0;
-}
-
-inline node::~node()
-{
+  state = (s != NULL) ? new statem(s) : NULL;
 }
 
 // 0 means it doesn't, 1 means it does, 2 means it's transparent
@@ -192,7 +188,6 @@ protected:
   space_node(hunits, int, int, color *, statem *, int, node * = 0);
 
 public:
-  space_node(hunits, color *, statem *, int, node * = 0);
   space_node(hunits, color *, node * = 0);
 #if 0
   ~space_node();

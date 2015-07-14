@@ -1,7 +1,7 @@
 .ig
 @ @L_ADDFTINFO@.1
 
-Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
 Copyright (C) 1989 - 2001 Free Software Foundation, Inc.
 
@@ -108,7 +108,7 @@ a Times font.
 .
 .SH "SEE ALSO"
 .BR @L_ROFF@ (@MAN1EXT@),
-.BR @L_ROFF@_font (@MAN5EXT@),
-.BR @L_ROFF@_char (@MAN7EXT@)
+.BR @L_ROFF@-font (@MAN5EXT@),
+.BR @L_ROFF@-char (@MAN7EXT@)
 .
 .\" s-ts-mode

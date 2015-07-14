@@ -1,5 +1,5 @@
 /*@
- * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
  *
  * Copyright (C) 1989 - 1992, 2000 - 2002, 2005, 2007
  *    Free Software Foundation, Inc.
@@ -114,13 +114,14 @@ void do_file(file_case *fcp, const char *filename)
       inline_flag = 0;
       yyparse();
       restore_compatibility();
-      if (non_empty_flag)
-	if (output_format == mathml)
-	  putchar('\n');
+      if (non_empty_flag) {
+        if (output_format == mathml)
+          putchar('\n');
         else {
-	  printf(".lf %d\n", current_lineno - 1);
-	  output_string();
-	}
+          printf(".lf %d\n", current_lineno - 1);
+          output_string();
+        }
+      }
       if (output_format == troff)
 	printf(".lf %d\n", current_lineno);
       put_string(linebuf, stdout);

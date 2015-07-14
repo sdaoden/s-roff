@@ -1,7 +1,5 @@
-#
-# This is the font encoding used by grops to encode the standard PS text
-# fonts (excluding special fonts).
-#
+#@ This is the font encoding used by grops to encode the standard
+#@ PS text fonts (excluding special fonts).
 asciicircum 0
 asciitilde 1
 Scaron 2

@@ -1,5 +1,5 @@
 /*@
- * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
  *
  * Copyright (C) 1989 - 1992, 2000, 2002 - 2004, 2006, 2007
  *     Free Software Foundation, Inc.
@@ -86,13 +86,15 @@ file_input::~file_input()
   delete _fcp;
 }
 
-int file_input::read_line()
+int file_input::read_line() /* TODO lib-roff */
 {
   for (;;) {
     line.clear();
     lineno++;
     for (;;) {
       int c = _fcp->get_c();
+      if (c == '\r' && (c = _fcp->get_c()) != '\n')
+        lex_error("invalid input character CR (carriage return)");
       if (c == EOF)
 	break;
       else if (invalid_input_char(c))

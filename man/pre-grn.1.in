@@ -2,7 +2,7 @@
 .ig
 @ @L_P_GRN@.1
 
-Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
 Copyright (C) 2000 - 2004, 2006
   Free Software Foundation, Inc.
@@ -60,9 +60,8 @@ the original English.
 [
 .IR file\.\.\.\&
 ]
-.PP
-It is possible to have whitespace between a command line option and its
-parameter.
+.
+.
 .SH DESCRIPTION
 .I @L_P_GRN@
 is a preprocessor for including
@@ -142,10 +141,9 @@ for subdirectories
 is the name of the device) for the
 .B DESC
 file before the default font directories
-.BR @LOCALFONTDIR@ ,
-.BR @FONTDIR@ ,
+.BR @LOCALFONTDIR@
 and
-.BR @LEGACYFONTDIR@ .
+.BR @FONTDIR@ .
 .TP
 .B \-C
 Recognize

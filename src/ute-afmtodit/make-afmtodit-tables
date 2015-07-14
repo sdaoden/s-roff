@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -
 #@ make-afmtodit-tables -- script for creating the `unicode_decomposed'
 #@                         and `AGL_to_unicode' tables
 #@ Synopsis:
@@ -12,7 +12,7 @@
 #@ This program needs a C preprocessor.
 #@ TODO remove in favour of S-CText
 #
-# Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+# Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 #
 # Copyright (C) 2005
 # Free Software Foundation, Inc.

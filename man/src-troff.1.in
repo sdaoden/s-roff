@@ -2,7 +2,7 @@
 .ig
 @ @L_TROFF@.1
 
-Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
 Copyright (C) 1989, 2000 - 2003, 2007, 2008
   Free Software Foundation, Inc.
@@ -55,7 +55,7 @@ and translates roff text input into an intermediate output language that
 can be and usually is furtherly used by @T_ROFF@ output devices.
 It is functionally compatible with UNIX troff, but has many
 extensions, see
-.BR \%@L_ROFF@_diff (@MAN7EXT@).
+.BR \%@L_ROFF@-diff (@MAN7EXT@).
 Usually it is invoked by using the
 .BR @L_ROFF@ (@MAN1EXT@)
 command which will also run preprocessors and postprocessors in the
@@ -315,6 +315,7 @@ _
 7@128@syntax@17@131072@font
 8@256@di@18@262144@ig
 9@512@mac@19@524288@color
+@@@20@1048576@file
 .TE
 .
 .P
@@ -361,6 +362,13 @@ request.
 Unrecognized escape sequences.
 When an unrecognized escape sequence is encountered, the escape
 character is ignored.
+.
+.TP
+.BR file "\t1048576"
+Indicates a missing file for the
+.B mso
+request.
+Enabled by default.
 .
 .TP
 .BR font "\t131072"
@@ -577,7 +585,7 @@ A description of the roff language, including a short but complete
 reference of all predefined requests, registers, and escapes.
 .
 .TP
-.BR \%@L_ROFF@_diff (@MAN7EXT@)
+.BR \%@L_ROFF@-diff (@MAN7EXT@)
 The differences of the
 .I @T_ROFF@
 language, GNU troff and the
@@ -585,7 +593,7 @@ language, GNU troff and the
 language.
 .
 .TP
-.BR roff (@MAN7EXT@)
+.BR @L_ROFF@ (@MAN7EXT@)
 An overview over roff.
 .
 .\" s-it2-mode

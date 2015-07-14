@@ -1,7 +1,7 @@
 .ig
 @ @L_D_PS@.1
 
-Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
 Copyright (C) 1989 - 2006, 2008
   Free Software Foundation, Inc.
@@ -22,6 +22,9 @@ translations approved by the Free Software Foundation instead of in
 the original English.
 ..
 .
+.do nr __compat \n[.C]
+.cp 0
+.
 .\" Like TP, but if specified indent is more than half
 .\" the current line-length - indent, use the default indent.
 .de Tp
@@ -30,7 +33,8 @@ the original English.
 ..
 .
 .de FT
-.  if '\\*(.T'ps' .ft \\$1
+.  ie '\\*(.T'ps' .ft \\$1
+.  el .if '\\*(.T'pdf' .ft \\$1
 ..
 .
 .TH @U_D_PS@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
@@ -268,7 +272,7 @@ file; it accepts the same arguments as the
 command.
 .
 See
-.B @L_ROFF@_font (@MAN5EXT@)
+.B @L_ROFF@-font (@MAN5EXT@)
 for details.
 .
 .TP
@@ -302,7 +306,7 @@ must be in the format output by
 .BR @L_TROFF@ (@MAN1EXT@).
 .
 This is described in
-.BR @L_ROFF@_out (@MAN5EXT@).
+.BR @L_ROFF@-out (@MAN5EXT@).
 .
 .LP
 In addition, the device and font description files for the device used
@@ -317,7 +321,7 @@ device uses a resolution of 72000 and a sizescale of 1000.
 .
 .LP
 The device description file must contain a valid paper size; see
-.BR @L_ROFF@_font (@MAN5EXT@)
+.BR @L_ROFF@-font (@MAN5EXT@)
 for more information.
 .
 .LP
@@ -973,7 +977,7 @@ request.
 .
 .IP
 See
-.BR @L_ROFF@_tmac (@MAN5EXT@)
+.BR @L_ROFF@-tmac (@MAN5EXT@)
 for a description of the
 .B PSPIC
 macro which provides a convenient high-level interface for inclusion of
@@ -1290,7 +1294,7 @@ directory in addition to the default ones.
 See
 .BR @L_TROFF@ (@MAN1EXT@)
 and
-.BR \%@L_ROFF@_font (@MAN5EXT@)
+.BR \%@L_ROFF@-font (@MAN5EXT@)
 for more details.
 .
 .
@@ -1340,14 +1344,17 @@ PostScript printers (e.g., `eth' or `thorn').
 .BR @L_ROFF@ (@MAN1EXT@),
 .BR @L_TROFF@ (@MAN1EXT@),
 .BR \%@L_PFBTOPS@ (@MAN1EXT@),
-.BR \%@L_ROFF@_out (@MAN5EXT@),
-.BR \%@L_ROFF@_font (@MAN5EXT@),
-.BR \%@L_ROFF@_char (@MAN7EXT@),
-.BR \%@L_ROFF@_tmac (@MAN5EXT@)
+.BR \%@L_ROFF@-out (@MAN5EXT@),
+.BR \%@L_ROFF@-font (@MAN5EXT@),
+.BR \%@L_ROFF@-char (@MAN7EXT@),
+.BR \%@L_ROFF@-tmac (@MAN5EXT@)
 .
 .LP
 .UR http://\:partners.adobe.com/\:public/\:developer/\:en/\:ps/\:5001.DSC_Spec.pdf
 PostScript Language Document Structuring Conventions Specification
 .UE
+.
+.cp \n[__compat]
+.rr __compat
 .
 .\" s-ts-mode

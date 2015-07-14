@@ -1,5 +1,5 @@
 /*@
- * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
  *
  * Copyright (C) 1989 - 1992, 2001, 2002, 2004
  *    Free Software Foundation, Inc.
@@ -359,7 +359,7 @@ static int parse_expr(units *v, int scale_indicator,
     case '*':
       if (v2 < 0) {
 	if (*v > 0) {
-	  if (*v > -(unsigned)INT_MIN / -(unsigned)v2)
+	  if ((unsigned)*v > -(unsigned)INT_MIN / -(unsigned)v2)
 	    overflow = 1;
 	}
 	else if (-(unsigned)*v > INT_MAX / -(unsigned)v2)

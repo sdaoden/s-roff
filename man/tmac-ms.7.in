@@ -2,7 +2,7 @@
 .ig
 @ @L_ROFF@_ms.7
 
-Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
 Copyright (C) 1989 - 1995, 2001 - 2007
   Free Software Foundation, Inc.
@@ -231,8 +231,8 @@ FL	Footnote length	next footnote	\[rs]n[LL]*5/6
 FI	Footnote indent	next footnote	2n
 FF	Footnote format	next footnote	0
 FPS	Point size	next footnote	\[rs]n[PS]-2
-FVS	Vert. spacing	next footnote	\[rs]n[FPS]+2
-FPD	Para. spacing	next footnote	\[rs]n[PD]/2
+FVS	Vert.\& spacing	next footnote	\[rs]n[FPS]+2
+FPD	Para.\& spacing	next footnote	\[rs]n[PD]/2
 _
 .TE
 .RE
@@ -246,6 +246,7 @@ cb   cb cb cb
 lfCW l  l  l.
 Reg.	Definition	Effective	Default
 _
+DD	Display, table, eqn, pic spacing	next para.	0.5v
 MINGW	Minimum width between columns	next page	2n
 _
 .TE
@@ -388,7 +389,7 @@ when a section heading
 (see subsection
 .I Headings
 below)
-preceeds any of these paragraph types,
+precedes any of these paragraph types,
 the
 .B HORPHANS
 document control register specifies the
@@ -598,7 +599,7 @@ given the same settings for
 .B GROWPS
 and
 .BR PSINCR ,
-as used in the preceeding
+as used in the preceding
 .B .NH
 example,
 the sequence:
@@ -1082,7 +1083,7 @@ The syntax for these macros is as follows:
 .RS
 .
 .IP
-.B ".OH '\fIleft\fP'\fIcenter\fP'\fIright\fP'"
+.B ".OH '\fIleft\/\fP'\,\fIcenter\/\fP'\,\fIright\/\fP'"
 .RE
 .
 .IP
@@ -1303,7 +1304,7 @@ macros both collide with different macros in the Berkeley version of
 .IP
 These emulations are sufficient to give back the 1976 Kernighan\~& Cherry
 paper
-.I "Typsetting Mathematics \(en User's Guide"
+.I "Typesetting Mathematics \(en User's Guide"
 its section headings, and restore some text that had gone missing as
 arguments of undefined macros.
 No warranty express or implied is given as to how well the typographic
@@ -1457,7 +1458,7 @@ are controlled by the number registers
 and
 .BR FPD ;
 at initialization these are set to
-.BR \[rs]n(PS-2 ,
+.BR \[rs]n(PS\-2 ,
 .BR \[rs]n[FPS]+2 ,
 and
 .BR \[rs]n(PD/2 ,
@@ -1485,13 +1486,12 @@ You can place an accent over most characters
 by specifying the string defining the accent
 directly after the character.
 For example,
-.B n\[rs]*~
+.B n\[rs]*\[ti]
 produces an n with a tilde over it.
 .
 .\"
 .SH "NAMING CONVENTIONS"
 .
-.LP
 The following conventions are used for names of macros, strings and
 number registers.
 External names available to documents that use the
@@ -1548,6 +1548,7 @@ Names containing only uppercase letters and digits.
 .B @MACRODIR@/s.tmac
 .
 .\"
+.ad l
 .SH "SEE ALSO"
 .
 .BR @L_ROFF@ (@MAN1EXT@),

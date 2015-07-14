@@ -4,4 +4,39 @@ W e l c o m e  t o  S - r o f f
 Please refer to the file INSTALL for build and installation remarks,
 and to NEWS for release update information.
 
+XX. Noticable tags
+
+
+
+XX. Noticable tags
+------------------
+
+. s-roff
+  The last GNU roff commit before the S-roff fork.
+  This is 1.19.2-574-gecbf4f1, which also marks the last commit in
+  a GPL2 licensed tree.
+
+. s-roff-sync.1
+  This tag points to the S-roff tree after all the synchronization was
+  done.  I.e., any non-GPL3 covered changes of the GNU roff [master]
+  branch until 2015-05-20 have been incorporated, any NetBSD change on
+  their local GPL2 GNU roff tree from the years 2006 - 2014.
+  The script ./s-gnu-diff.sh can be used to compare the trees of S-roff
+  and GNU roff (look in the script head, say "MANUALS=false" to get
+  a significantly smaller diff).
+
+  We don't include some changes consciously, but others will come once
+  i have implemented the code myself in a building and running S-roff,
+  in order to avoid copyright violations (GPL3 is free, so i hope
+  thinking the changes myself is sufficient to avoid violations).
+
+  It wasn't planned that way, so unfortunately [s-roff-sync.1] already
+  includes the [topic/file_case] branch that encapsulates searchpath::
+  stuff into the new file_case class (allowing `.so' to include
+  compressed files; in fact allowing *any* ROFF file to be compressed).
+  And tmac-mdoc.7.in is mdocmx(7)ified already.
+  And some only-style changes exist, like placing class members in the
+  implicit private: range before going public: explicitly.
+  Sorry especially for the latter.  It wasn't planned that way.
+
 # s-ts-mode

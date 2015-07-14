@@ -1,6 +1,6 @@
 /*@ Provide a troff like state machine interface which generates html text.
  *
- * Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
  *
  * Copyright (C) 2000 - 2005, 2007
  * Free Software Foundation, Inc.
@@ -862,7 +862,6 @@ void html_text::remove_def (tag_definition *t)
 {
   tag_definition *p    = stackptr;
   tag_definition *l    = 0;
-  tag_definition *q    = 0;
 
   while ((p != 0) && (p != t)) {
     l = p;
@@ -873,12 +872,10 @@ void html_text::remove_def (tag_definition *t)
       stackptr = stackptr->next;
       if (stackptr == NULL)
 	lastptr = NULL;
-      q = stackptr;
     } else if (l == 0) {
       error("stack list pointers are wrong");
     } else {
       l->next = p->next;
-      q = p->next;
       if (l->next == NULL)
 	lastptr = l;
     }

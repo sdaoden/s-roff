@@ -1,7 +1,7 @@
 .ig
 @ @L_ROFF@.1
 
-Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
 Copyright (C) 1989, 2002 - 2008
 Free Software Foundation, Inc.
@@ -18,6 +18,8 @@ as part of the file COPYING; also located in the main directory of the
 source package of this program.
 ..
 .
+.do nr __compat \n[.C]
+.cp 0
 .
 .\" Environment variable
 .de EnvVar
@@ -31,7 +33,9 @@ source package of this program.
 .  ft
 ..
 .
+.
 .TH @U_ROFF@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
+.
 .
 .\"
 .SH NAME
@@ -80,7 +84,7 @@ This document describes the
 program, the main front-end for the
 .I @T_ROFF@
 document formatting system, which is a
-.BR roff (@MAN7EXT@)
+.BR @L_ROFF@ (@MAN7EXT@)
 implementation that has all features of the classical
 .IR roff ,
 but also adds extensions.
@@ -191,7 +195,7 @@ Send the output to a spooler program for printing.
 The command that should be used for this is specified by the
 .B print
 command in the device description file, see
-.BR \%@L_ROFF@_font (@MAN5EXT@).
+.BR \%@L_ROFF@-font (@MAN5EXT@).
 If this command is not present, the output is piped into the
 .BR lpr (1)
 program by default.
@@ -302,7 +306,7 @@ generates the
 .I intermediate
 .IR output ;
 see
-.BR \%@L_ROFF@_out (@MAN5EXT@).
+.BR \%@L_ROFF@-out (@MAN5EXT@).
 Then
 .B @L_ROFF@
 calls a postprocessor to convert
@@ -402,7 +406,7 @@ This will cause
 .B @L_TROFF@
 output to appear on standard output,
 replacing the usual postprocessor output; see
-.BR \%@L_ROFF@_out (@MAN5EXT@).
+.BR \%@L_ROFF@-out (@MAN5EXT@).
 .
 .\"
 .SS Transparent Options
@@ -464,7 +468,7 @@ Include macro file
 (or
 .BI tmac. name\c
 ); see also
-.BR \%@L_ROFF@_tmac (@MAN5EXT@).
+.BR \%@L_ROFF@-tmac (@MAN5EXT@).
 .
 .TP
 .BI \-M\  dir
@@ -502,8 +506,10 @@ disable warning
 .
 The
 .I @T_ROFF@ system
-implements the infrastructure of classical roff; see
-.BR roff (@MAN7EXT@)
+implements the infrastructure of classical
+.IR roff;
+see
+.BR @L_ROFF@ (@MAN7EXT@)
 for a survey on how a
 .I roff
 system works in general.
@@ -512,7 +518,7 @@ it easier than
 .IR "classical roff"
 with its pipeline approach.
 This section gives an overview of those added parts and complements
-.BR roff (@MAN7EXT@).
+.BR @L_ROFF@ (@MAN7EXT@).
 .
 .\"
 .SS Paper Size
@@ -527,7 +533,7 @@ to format the input is controlled globally with the requests
 and
 .BR .ll .
 See
-.BR @L_ROFF@_tmac (@MAN5EXT@)
+.BR @L_ROFF@-tmac (@MAN5EXT@)
 for the `papersize' macro package which provides a convenient interface.
 .
 .P
@@ -541,7 +547,7 @@ with the command line options
 and
 .BR \-l .
 See
-.BR @L_ROFF@_font (@MAN5EXT@)
+.BR @L_ROFF@-font (@MAN5EXT@)
 and the man pages of the output devices for more details.
 .B @L_ROFF@
 uses the command line option
@@ -562,7 +568,8 @@ and automatically runs the postprocessor that is appropriate for the
 selected device after processing the data with @L_TROFF@.
 @L_ROFF@ therefore acts as a replacement for the necessity to manually
 specify the processor pipeline as is required by classical
-.BR roff (@MAN7EXT@).
+.BR roff " ("
+.BR @L_ROFF@ (@MAN7EXT@)).
 .
 .\"
 .SS Preprocessors
@@ -621,7 +628,7 @@ Actually, the following macro packages are included:
 .TP
 .B man
 The traditional man page format; see
-.BR \%@L_ROFF@_man (@MAN7EXT@).
+.BR \%@L_ROFF@-man (@MAN7EXT@).
 It can be specified on the command line as
 .B \-man
 or
@@ -644,7 +651,7 @@ or
 .TP
 .B mdoc
 The \f[CR]BSD\f[]-style man page format; see
-.BR \%@L_ROFF@_mdoc (@MAN7EXT@).
+.BR \%@L_ROFF@-mdoc (@MAN7EXT@).
 It can be specified on the command line as
 .B \-mdoc
 or
@@ -655,7 +662,7 @@ or
 The classical
 .I me
 document format; see
-.BR \%@L_ROFF@_me (@MAN7EXT@).
+.BR \%@L_ROFF@-me (@MAN7EXT@).
 It can be specified on the command line as
 .B \-me
 or
@@ -666,7 +673,7 @@ or
 The classical
 .I ms
 document format; see
-.BR \%@L_ROFF@_ms (@MAN7EXT@).
+.BR \%@L_ROFF@-ms (@MAN7EXT@).
 It can be specified on the command line as
 .B \-ms
 or
@@ -677,12 +684,12 @@ or
 HTML-like macros for inclusion in arbitrary
 .I groff
 documents; see
-.BR \%@L_ROFF@_www (@MAN7EXT@).
+.BR \%@L_ROFF@-www (@MAN7EXT@).
 .
 .P
 Details on the naming of macro files and their placement can be found
 in
-.BR \%@L_ROFF@_tmac (@MAN5EXT@);
+.BR \%@L_ROFF@-tmac (@MAN5EXT@);
 this man page also documents some other, minor auxiliary macro packages
 not mentioned here.
 .
@@ -692,7 +699,7 @@ not mentioned here.
 General concepts common to all
 .I roff
 programming languages are described in
-.BR roff (@MAN7EXT@).
+.BR @L_ROFF@ (@MAN7EXT@).
 .
 .P
 The
@@ -700,7 +707,7 @@ The
 extensions to the classical
 .I troff
 language are documented in
-.BR \%@L_ROFF@_diff (@MAN7EXT@).
+.BR \%@L_ROFF@-diff (@MAN7EXT@).
 In here you find also differences in between GNU troff and @T_ROFF@.
 .
 .P
@@ -748,7 +755,7 @@ the current locale.
 The formatter program generates
 .IR "intermediate output" ;
 see
-.BR \%@L_ROFF@_out (@MAN7EXT@).
+.BR \%@L_ROFF@-out (@MAN7EXT@).
 .
 .\"
 .SS Devices
@@ -806,7 +813,7 @@ XHTML output.
 The postprocessor to be used for a device is specified by the
 .B postpro
 command in the device description file; see
-.BR \%@L_ROFF@_font (@MAN5EXT@).
+.BR \%@L_ROFF@-font (@MAN5EXT@).
 .
 .P
 The default device is
@@ -968,7 +975,7 @@ directory in addition to the default ones.
 See
 .BR @L_TROFF@ (@MAN1EXT@)
 and
-.BR \%@L_ROFF@_font (@MAN5EXT@)
+.BR \%@L_ROFF@-font (@MAN5EXT@)
 for more details.
 .
 .TP
@@ -978,7 +985,7 @@ the default directories.
 See
 .BR @L_TROFF@ (@MAN1EXT@)
 and
-.BR \%@L_ROFF@_tmac (@MAN5EXT@)
+.BR \%@L_ROFF@-tmac (@MAN5EXT@)
 for more details.
 .
 .TP
@@ -1032,7 +1039,7 @@ in the @T_ROFF@ system installation this directory is
 .IR @MACRODIR@ .
 Note that more than a single directory is searched for those files
 as documented in
-.BR \%@L_ROFF@_tmac (@MAN5EXT@)
+.BR \%@L_ROFF@-tmac (@MAN5EXT@)
 .
 .P
 The following files contained in the
@@ -1079,7 +1086,7 @@ have a special meaning:
 Device description file for device
 .IR name ,
 see
-.BR \%@L_ROFF@_font (@MAN5EXT@).
+.BR \%@L_ROFF@-font (@MAN5EXT@).
 .
 .TP
 .BI dev name / F
@@ -1110,7 +1117,7 @@ mailing list
 .
 .\"
 .SH AUTHORS
-Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .
 Copyright \(co 1989, 2002 - 2008
 Free Software Foundation, Inc.
@@ -1146,7 +1153,7 @@ Werner Lemberg
 .
 .TP
 Introduction, history and further readings:
-.BR roff (@MAN7EXT@).
+.BR \%@L_ROFF@-history (@MAN7EXT@).
 .
 .TP
 Wrapper programs for formatters:
@@ -1166,19 +1173,19 @@ Roff preprocessors:
 .TP
 Roff language with the groff extensions:
 .BR \%@L_ROFF@ (@MAN7EXT@),
-.BR \%@L_ROFF@_char (@MAN7EXT@),
-.BR \%@L_ROFF@_diff (@MAN7EXT@),
-.BR \%@L_ROFF@_font (@MAN5EXT@).
+.BR \%@L_ROFF@-char (@MAN7EXT@),
+.BR \%@L_ROFF@-diff (@MAN7EXT@),
+.BR \%@L_ROFF@-font (@MAN5EXT@).
 .
 .TP
 Roff formatter programs:
 .BR \%@L_NROFF@ (@MAN1EXT@),
 .BR \%@L_TROFF@ (@MAN1EXT@),
-.BR ditroff (@MAN7EXT@).
+.BR \%@L_DITROFF@ (@MAN7EXT@).
 .
 .TP
 The intermediate output language:
-.BR \%@L_ROFF@_out (@MAN7EXT@).
+.BR \%@L_ROFF@-out (@MAN7EXT@).
 .
 .TP
 Postprocessors for the output devices:
@@ -1189,13 +1196,13 @@ Postprocessors for the output devices:
 .
 .TP
 Groff macro packages and macro-specific utilities:
-.BR \%@L_ROFF@_tmac (@MAN5EXT@),
-.BR \%@L_ROFF@_man (@MAN7EXT@),
-.BR \%@L_ROFF@_mdoc (@MAN7EXT@),
-.BR \%@L_ROFF@_me (@MAN7EXT@),
-.BR \%@L_ROFF@_ms (@MAN7EXT@),
-.BR \%@L_ROFF@_www (@MAN7EXT@),
-.BR \%@L_ROFF@_trace (@MAN7EXT@),
+.BR \%@L_ROFF@-tmac (@MAN5EXT@),
+.BR \%@L_ROFF@-man (@MAN7EXT@),
+.BR \%@L_ROFF@-mdoc (@MAN7EXT@),
+.BR \%@L_ROFF@-me (@MAN7EXT@),
+.BR \%@L_ROFF@-ms (@MAN7EXT@),
+.BR \%@L_ROFF@-www (@MAN7EXT@),
+.BR \%@L_ROFF@-trace (@MAN7EXT@),
 .
 .TP
 The following utilities are available:
@@ -1207,5 +1214,8 @@ The following utilities are available:
 .BR \%@L_PDFROFF@ (@MAN1EXT@),
 .BR \%@L_PFBTOPS@ (@MAN1EXT@),
 .BR \%@L_TFMTODIT@ (@MAN1EXT@),
+.
+.cp \n[__compat]
+.rr __compat
 .
 .\" s-ts-mode
