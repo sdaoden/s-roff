@@ -31,10 +31,6 @@
 #include <stdlib.h>
 #include <time.h>
 
-#if HAVE_SYS_TIME_H
-# include <sys/time.h>
-#endif
-
 #include "nonposix.h"
 #include "posix.h"
 
@@ -67,7 +63,11 @@ int gen_tempname(char *tmpl, int dir)
   char *XXXXXX = &tmpl[len - 6];
 
   /* Get some more or less random data.  */
-#if HAVE_GETTIMEOFDAY
+#ifdef HAVE_CLOCK_GETTIME
+  struct timespec ts;
+  clock_gettime(CLOCK_REALTIME, &ts);
+  uint64_t random_time_bits = ((uint64_t)tv.tv_nsec << 16) ^ tv.tv_sec;
+#elif defined HAVE_GETTIMEOFDAY
   timeval tv;
   gettimeofday(&tv, NULL);
   uint64_t random_time_bits = ((uint64_t)tv.tv_usec << 16) ^ tv.tv_sec;
