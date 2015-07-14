@@ -1,18 +1,19 @@
-.\" tty-char.tmac
+.\"@ tty-char.tmac
+.\"@ This file defines standard troff characters and some groff characters for
+.\"@ use with -Tascii, -Tlatin1, -Tutf8, and -Tcp1047.
+.\"@
+.\"@ These definitions are chosen so that, as far as possible, they:
+.\"@ - work with all of -Tascii, -Tlatin1, -Tutf8, and -Tcp1047.
+.\"@ - work on devices that display only the last overstruck character
+.\"@   as well as on devices that support overstriking
+.\"@ - represent the character's graphical shape (not its meaning)
+.\"@
+.\"@ Note that the optical appearance of the definitions contained in this
+.\"@ file is inferior compared to that of the replacement characters defined
+.\"@ in the file tty.tmac.
 .\"
-.\" This file defines standard troff characters and some groff characters for
-.\" use with -Tascii, -Tlatin1, -Tutf8, and -Tcp1047.
-.\"
-.\" These definitions are chosen so that, as far as possible, they:
-.\" - work with all of -Tascii, -Tlatin1, -Tutf8, and -Tcp1047.
-.\" - work on devices that display only the last overstruck character
-.\"   as well as on devices that support overstriking
-.\" - represent the character's graphical shape (not its meaning)
-.\"
-.\" Note that the optical appearance of the definitions contained in this
-.\" file is inferior compared to that of the replacement characters defined
-.\" in the file tty.tmac.
-.\"
+.\" Adapted to S-roff by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+.
 .nr _C \n(.C
 .cp 0
 .
@@ -235,3 +236,5 @@
 .	do mso cp1047.tmac
 .el \
 .	do mso latin1.tmac
+.
+.\" s-ts-mode

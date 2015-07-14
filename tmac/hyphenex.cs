@@ -1,7 +1,9 @@
-% List of exceptions created by Karel Horak
-% (Mathamatical Institute of Czechoslovak Acadamy of Science)
-% Prague, April 1, 1991
+%@ List of exceptions created by Karel Horak
+%@ (Mathamatical Institute of Czechoslovak Acadamy of Science)
+%@ Prague, April 1, 1991
 %
+% Adapted to S-roff by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
 \hyphenation{
   koe-fi-ci-ent
   koe-fi-ci-en-ty
@@ -10,7 +12,4 @@
   úhlo-pøíè-ky
 }
 
-%%% Local Variables:
-%%% mode: tex
-%%% coding: latin-2
-%%% End:
+% s-ts-mode

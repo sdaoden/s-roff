@@ -1,7 +1,6 @@
-% This is the file `hyphen.fr'.
-%
-% It contains the same hyphenation patterns as `frhyph.tex'.  Here the
-% copyright message:
+%@ This is the file `hyphen.fr'.
+%@ It contains the same hyphenation patterns as `frhyph.tex'.  Here the
+%@ copyright message:
 %
 %    frhyph.tex % French hyphenation patterns
 %   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -17,6 +16,8 @@
 % (this is, the oe ligature `½' is used), and everything except the
 % \pattern command has been discarded since it isn't needed (and groff
 % doesn't understand this stuff anyway).
+%
+% Adapted to S-roff by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 %
 %\patterns{
 %-------------------%-----------------------%
@@ -488,7 +489,7 @@ g1s2
                     i1arthr
                     i1è2dre
 % ill patterns missing from nb list
-    il2l 
+    il2l
    cil3l
   rcil4l
   ucil4l
@@ -1317,8 +1318,4 @@ privatdo3zent.
 
 \endinput
 
-% Local Variables:
-% coding: latin-9
-% End:
-%
-% End of file `hyphen.fr'.
+% s-ts-mode

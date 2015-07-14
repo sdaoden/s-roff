@@ -1,10 +1,8 @@
-% This is the groff hyphenation pattern file `hyphen.den' for German with
-% hyphenation rules for the new orthography.
-%
-% It is based on the TeX pattern file `dehyphn.tex', revision level 31
-% (2001-05-07).
-%
-% Here is the copyright message:
+%@ This is the groff hyphenation pattern file `hyphen.den' for German with
+%@ hyphenation rules for the new orthography.
+%@ It is based on the TeX pattern file `dehyphn.tex', revision level 31
+%@ (2001-05-07).
+%@ Here is the copyright message:
 %
 %   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   dehyphn   --  TeX-Trennmuster fuer die
@@ -35,6 +33,8 @@
 %
 % It has been made suitable for groff by expanding all macros to real
 % characters in latin-1 encoding.
+%
+% Adapted to S-roff by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 %
 \patterns{%
 .aa6l .ab3a4s .ab3ei .abi2 .ab3it .ab1l .ab1r .ab3u .ad3o4r .alti6
@@ -368,7 +368,7 @@ l1öl 1lös lö1ß6t 6l1übe 1ma
 malu8 ma8lut 2m1amp 3man mand2 man3ds 8mangr mani5o 8m5anst 6mappa
 4m3arbe mar8kr ma1r4o mar8schm 3mas ma1sc ma1tö 4m5auf ma5yo 2m1b
 mb6r 2m1c 2m1d md6sä 1me me1ch me5isc 5meld mel8sa 8memp me5nal
-men4dr men8schl men8schw 8mentsp me1ra mer4gl me1ro 3mes me6s5ei 
+men4dr men8schl men8schw 8mentsp me1ra mer4gl me1ro 3mes me6s5ei
 meta3s2
 me1th
 me8ß 2m1f6 2m1g 2m1h 1mi mi1a mi6ale mi1la 2m1imm mi1na
@@ -559,7 +559,7 @@ s3tral
 3strec 6s3tref 8streib 5streif 6streno 6stres 6strev
 2st5rig
 8s2t1ris
-s8troma st5rose 
+s8troma st5rose
 2s1trua
 4struf 3strum
 6sträg 2st1s6 2stt
@@ -803,9 +803,4 @@ s2s3z
 1ckig
 1ckun
 }
-
-% Local Variables:
-% coding: latin-1
-% End:
-%
-% End of file `hyphen.den'.
+% s-ts-mode

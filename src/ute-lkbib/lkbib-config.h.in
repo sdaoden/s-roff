@@ -1,0 +1,7 @@
+/*@ Configurable stuff */
+#ifndef _LKBIB_CONFIG_H
+#define _LKBIB_CONFIG_H
+
+
+#endif // _LKBIB_CONFIG_H
+// s-it2-mode

@@ -1,21 +1,15 @@
-#! /usr/bin/env perl
-#
-#
-# hyphenex.pl
-#
-# This small filter converts a hyphenation exception log article for
-# TUGBoat to a real \hyphenation block.
+#!/usr/bin/env perl
+#@ hyphenex.pl
+#@ This small filter converts a hyphenation exception log article for
+#@ TUGBoat to a real \hyphenation block.
+#@ Version 1.2 (2007/11/16)
+#@ Synopsis:
+#@   [perl] hyphenex.pl < tugboat-article > hyphenation-exceptions
 #
 # Written by Werner Lemberg <wl@gnu.org>.
-#
-# Version 1.2 (2007/11/16)
-#
 # Public domain.
 #
-#
-# Usage:
-#
-#   [perl] hyphenex.pl < tugboat-article > hyphenation-exceptions
+# Adapted to S-roff by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
 # print header
 print "% Hyphenation exceptions for US English,\n";
@@ -79,3 +73,4 @@ while (<>) {
 print "}\n";
 print "\n";
 print "% EOF\n";
+# s-it2-mode

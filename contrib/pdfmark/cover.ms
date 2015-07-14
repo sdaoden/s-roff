@@ -1,3 +1,6 @@
+.\"@
+.\" Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+.\"
 .\" Copyright 2004
 .\"   Free Software Foundation, Inc.
 .\"
@@ -46,9 +49,6 @@
 .PSPIC logo.eps
 .nr PS 19
 .CD
-.fam H
-.tkf HR 10z 2p 20z 4p
-\H'-4z'A GNU MANUAL\H'0'
 .DE
 .\".nr PO \\n[PO*SAVED]
 .nr LL \\n[LL*SAVED]
@@ -62,3 +62,4 @@
 .rr HM*SAVED
 .fam
 ..
+.\" s-ts-mode

@@ -1,0 +1,138 @@
+#!/bin/sh
+#@ Emulate nroff with @L_ROFF@.
+#
+# Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+#
+# Copyright (C) 1992 - 1994, 1999 - 2005, 2007
+#   Free Software Foundation, Inc.
+#
+# Written by James Clark, maintained by Werner Lemberg.
+#
+# `groff' is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License (GPL) as published
+# by the Free Software Foundation; either version 2, or (at your
+# option) any later version.
+#
+# `groff' is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with `groff'; see the files COPYING and LICENSE in the top
+# directory of the `groff' source.  If not, write to the Free Software
+# Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301,
+# USA.
+
+prog="$0"
+
+# Default device.
+# Check the @U_ROFF@_TYPESETTER environment variable.
+Tenv="${@U_ROFF@_TYPESETTER}"
+
+# Try the `locale charmap' command first because it is most reliable.
+# On systems where it doesn't exist, look at the environment variables.
+case "`exec 2>/dev/null ; locale charmap`" in
+  UTF-8)
+    Tloc=utf8 ;;
+  ISO-8859-1 | ISO-8859-15)
+    Tloc=latin1 ;;
+  IBM-1047)
+    Tloc=cp1047 ;;
+  *)
+    case "${LC_ALL-${LC_CTYPE-${LANG}}}" in
+      *.UTF-8)
+        Tloc=utf8 ;;
+      iso_8859_1 | *.ISO-8859-1 | *.ISO8859-1 | \
+      iso_8859_15 | *.ISO-8859-15 | *.ISO8859-15)
+        Tloc=latin1 ;;
+      *.IBM-1047)
+        Tloc=cp1047 ;;
+      *)
+        case "$LESSCHARSET" in
+          utf-8)
+            Tloc=utf8 ;;
+          latin1)
+            Tloc=latin1 ;;
+          cp1047)
+            Tloc=cp1047 ;;
+          *)
+            Tloc=ascii ;;
+        esac ;;
+    esac ;;
+esac
+
+# `for i; do' doesn't work with some versions of sh
+
+Topt=
+opts=
+for i
+  do
+  case $1 in
+    -c)
+      opts="$opts -P-c" ;;
+    -h)
+      opts="$opts -P-h" ;;
+    -[eq] | -s*)
+      # ignore these options
+      ;;
+    -[dMmrnoTwW])
+      echo "$prog: option $1 requires an argument" >&2
+      exit 1 ;;
+    -[iptSUC] | -[dMmrnowW]*)
+      opts="$opts $1" ;;
+    -T*)
+      Topt=$1 ;;
+    -u*)
+      # Solaris 2.2 through at least Solaris 9 `man' invokes
+      # `nroff -u0 ... | col -x'.  Ignore the -u0,
+      # since `less' and `more' can use the emboldening info.
+      # However, disable SGR, since Solaris `col' mishandles it.
+      opts="$opts -P-c" ;;
+    -v | --version)
+      echo "@L_NROFF@ (@T_ROFF@) v@VERSION@"
+      exit 0 ;;
+    --help)
+      echo "Synopsis: @L_NROFF@ [-CchipStUv] [-dCS] [-MDIR] [-mNAME] [-nNUM]"
+      echo "             [-oLIST] [-rCN] [-Tname] [-WNAME] [-wNAME] [FILE...]"
+      exit 0 ;;
+    --)
+      shift
+      break ;;
+    -)
+      break ;;
+    -*)
+      echo "$prog: invalid option $1" >&2
+      exit 1 ;;
+    *)
+      break ;;
+  esac
+  shift
+done
+
+if test "x$Topt" != x ; then
+  T=$Topt
+else
+  if test "x$Tenv" != x ; then
+    T=-T$Tenv
+  fi
+fi
+
+case $T in
+  -Tascii | -Tlatin1 | -Tutf8 | -Tcp1047)
+    ;;
+  *)
+    # ignore other devices and use locale fallback
+    T=-T$Tloc ;;
+esac
+
+# Set up the `@U_ROFF@_BIN_PATH' variable
+# to be exported in the current `@U_ROFF@_RUNTIME' environment.
+@U_ROFF_BIN_PATH_SETUP@
+export @U_ROFF@_BIN_PATH
+
+# Load nroff-style character definitions too.
+
+PATH="${@U_ROFF@_RUNTIME}${PATH}" @L_ROFF@ -mtty-char ${T} $opts ${1+"${@}"}
+
+# s-sh-mode

@@ -1,20 +1,18 @@
-.\" -*- nroff -*-
 .ig
+@ pdfmark.tmac
 
-pdfmark.tmac
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
 Copyright (C) 2004, 2005, 2006, 2007
   Free Software Foundation, Inc.
      Written by Keith Marshall (keith.d.marshall@ntlworld.com)
 
-This file is part of groff.
-
-groff is free software; you can redistribute it and/or modify it under
+This is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
 Software Foundation; either version 2, or (at your option) any later
 version.
 
-groff is distributed in the hope that it will be useful, but WITHOUT ANY
+This is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
@@ -1176,7 +1174,7 @@ ps:exec \\*[pdf:composed.line]
 .\" is synchronised with the placement of the reference mark,
 .\" especially when the mark is defined within a diversion.
 .\"
-.ie '\\n(.z'' .tm gropdf-info:href \\*[PDFHREF.NAME] \\$*
+.ie '\\n(.z'' .tm pdfmark-info:href \\*[PDFHREF.NAME] \\$*
 .el \!.\\$0 \\$@
 ..
 .\"
@@ -1738,7 +1736,7 @@ ps:exec \\*[pdf:composed.line]
 .   \" adjust the end-point vertical displacement by the same offset,
 .   \" and then relocate the link starting point to its new displacement,
 .   \" as established by this base line relative computation.
-.   \" 
+.   \"
 .   nr pdf:lly.end +\\n[pdf:ury.base]-\\n[pdf:ury]+\\*[PDFHREF.HEIGHT]
 .   rnn pdf:ury.base pdf:ury
 .   \}
@@ -1955,4 +1953,4 @@ ps:exec \\*[pdf:composed.line]
 .als pdf*href-W      pdf*href
 .ds  pdf*href-W.link /Action << /Subtype /URI /URI (\\\\*[pdf:href-D]) >>
 .\"
-.\" pdfmark.tmac: end of file / vim: ft=groff
+.\" s-tr-mode

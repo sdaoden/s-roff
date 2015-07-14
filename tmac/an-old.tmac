@@ -1,18 +1,17 @@
-.\" an-old.tmac
+.\"@ an-old.tmac
 .\"
-.\" Copyright (C) 1989, 1990, 1991, 1992, 2001, 2002, 2003, 2004, 2005,
-.\"               2007, 2008, 2009
+.\" Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+.\"
+.\" Copyright (C) 1989 - 1992, 2001 - 2005, 2007 - 2009
 .\"   Free Software Foundation, Inc.
 .\"      Written by James Clark (jjc@jclark.com)
 .\"
-.\" This file is part of groff.
-.\"
-.\" groff is free software; you can redistribute it and/or modify it under
+.\" This is free software; you can redistribute it and/or modify it under
 .\" the terms of the GNU General Public License as published by the Free
 .\" Software Foundation; either version 2, or (at your option) any later
 .\" version.
 .\"
-.\" groff is distributed in the hope that it will be useful, but WITHOUT ANY
+.\" This is distributed in the hope that it will be useful, but WITHOUT ANY
 .\" WARRANTY; without even the implied warranty of MERCHANTABILITY or
 .\" FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 .\" for more details.
@@ -35,7 +34,7 @@
 .\" If you need to add things to TH, use `.am1 TH'.
 .\"
 .
-.if !\n(.g .ab These man macros work only with groff.
+.if !\n(.g .ab These man macros work only with groff / compatible.
 .
 .do if d RI .nx
 .
@@ -45,7 +44,7 @@
 .cp 0
 .
 .if (\n[.x]\n[.y] < 118) \
-.  ab You need GNU troff version 1.18 or higher to run this version of man!
+.  ab You need a newer troff (v1.18 or higher) for this version of man!
 .
 .if !r D .nr D 0
 .if !r C .nr C 0
@@ -669,4 +668,4 @@
 .
 .cp \n[_C]
 .
-.\" end of an-old.tmac
+.\" s-ts-mode

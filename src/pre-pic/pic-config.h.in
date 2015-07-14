@@ -1,0 +1,31 @@
+/*@ Configurable stuff */
+#ifndef _PIC_CONFIG_H
+#define _PIC_CONFIG_H
+
+//#define FIG_SUPPORT       1
+#define TEX_SUPPORT       1
+
+#define FILL_REG          "00"
+
+// If this register > 0, then pic will generate \X'ps: ...' commands
+// if the aligned attribute is used.
+#define LDPS_REG          "0p"
+
+// If this register is defined, geqn won't produce `\x's.
+#define EQN_NO_EXTRA_SPACE_REG "0x"
+
+// First character of the range representing $1-$<MAX_ARG>.
+// All of them must be invalid input characters.
+#ifndef IS_EBCDIC_HOST
+# define ARG1             0x80
+# define MAX_ARG          32
+#else
+# define ARG1             0x30
+# define MAX_ARG          16
+#endif
+
+/* Maximum number of characters produced by printf("%g") FIXME */
+#define GDIGITS           14
+
+#endif // _PIC_CONFIG_H
+// s-it2-mode

@@ -1,0 +1,8 @@
+/*@ Configurable stuff */
+#ifndef _SOELIM_CONFIG_H
+#define _SOELIM_CONFIG_H
+
+// FIXME this file is empty
+
+#endif // _SOELIM_CONFIG_H
+// s-it2-mode

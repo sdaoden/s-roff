@@ -1,4 +1,6 @@
-.\" Startup file for troff.
+.\"@ Startup file for troff.
+.\"
+.\" Adapted to S-roff by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 .
 .\" This is tested by pic.
 .nr 0p 0
@@ -41,4 +43,4 @@ troffrc!html
 .\" Handle PS images.
 .do mso pspic.tmac
 .
-.\" Don't let blank lines creep in here.
+.\" s-ts-mode

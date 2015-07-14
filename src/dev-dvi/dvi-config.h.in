@@ -1,0 +1,22 @@
+/*@ Configurable stuff */
+#ifndef _DVI_CONFIG_H
+#define _DVI_CONFIG_H
+
+#define DEFAULT_LINEWIDTH 40
+
+// These values were chosen because:
+//  (MULTIPLIER*SIZESCALE)/(RES*UNITWIDTH) == 1/(2^20 * 72.27)
+// and 57816 is an exact multiple of both 72.27*SIZESCALE and 72.
+//
+// The width in the roff font file is the product of MULTIPLIER and the width
+// in the tfm file.
+#define RES               57816
+#define RES_7227          (RES/7227)
+#define UNITWIDTH         131072
+#define SIZESCALE         100
+#define MULTIPLIER        1
+
+#define FONTS_MAX         256
+
+#endif // _DVI_CONFIG_H
+// s-it2-mode

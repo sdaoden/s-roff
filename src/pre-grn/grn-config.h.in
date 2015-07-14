@@ -1,0 +1,42 @@
+/*@ Configurable stuff */
+#ifndef _GRN_CONFIG_H
+#define _GRN_CONFIG_H
+
+#define SUN_SCALEFACTOR   0.70
+
+//#define DEFSTIPPLE        "gs"
+#define DEFSTIPPLE        "cf"
+
+// This grn implementation emits `.st' requests to control stipple effects,
+// but groff does not (currently) support any such request.
+//
+// This hack disables the emission of such requests, without destroying the
+// infrastructure necessary to support the feature in the future; to enable
+// the emission of `.st' requests, at a future date when groff can support
+// them, simply rewrite the following #define as:
+//
+//   #define USE_ST_REQUEST  stipple
+//
+// with accompanying comment: ``emit `.st' requests as required''.
+// 0: never emit `.st' requests
+#define USE_ST_REQUEST    0
+
+// input line length
+#define MAXINLINE         100
+
+#define MAXSTRING         128
+#define MAXSTRING_S       "127"
+
+// Scaling factor, screen to inches
+#define SCREENtoINCH      0.02
+
+// Unweildly large floating number
+#define BIG               999999999999.0
+
+#define MAXVECT	          40
+#define MAXPOINTS	        200
+#define LINELENGTH	      1
+#define PointsPerInterval 64
+
+#endif // _GRN_CONFIG_H
+// s-it2-mode

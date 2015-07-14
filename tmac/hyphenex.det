@@ -1,8 +1,8 @@
-% dehyphtex.tex
+%@ dehyphtex.tex
+%@ Errata für dehypht.tex 1999-03-03
+%@ kompiliert 2006-01-28
 %
-% Errata für dehypht.tex 1999-03-03
-%
-% kompiliert 2006-01-28
+%Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 %
 % Copyright (C) 2005, 2006 Werner Lemberg <wl@gnu.org>
 %
@@ -22,7 +22,6 @@
 % Web2c based TeX implementations need to increase the value of
 % `hyph_size' (in texmf.cnf) to, say, 5000 to avoid an overflow
 % of TeX's exception dictionary.
-%
 
 \begingroup
 
@@ -3832,7 +3831,4 @@
 
 \endinput
 
-%%% Local Variables:
-%%% mode: tex
-%%% coding: latin-1
-%%% End:
+%%% s-ts-mode

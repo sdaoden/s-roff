@@ -1,24 +1,26 @@
 .ig
-devtag.tmac - macro package for adding tags to roff documents.
+@ devtag.tmac - macro package for adding tags to roff documents.
+@ A simple set of macros to provide markup devices (currently only grohtml)
+@ with tags that define the meaning of the formatted text and also
+@ basic formatting instructions.  It generalizes the tag concept used within
+@ grohtml and in the future it is hoped that more markup based devices
+@ can capitalize on this work.  It also clearly defines those tags which are
+@ honoured by grohtml.  Note that not all tags are included here.  Some
+@ of the grohtml specific tags (header specific and jobname, etc.) are
+@ called directly from within www.tmac.  The tags defined here are
+@ reasonably generic and could be applied to other devices.
 
-File position: <groff_source_top>/tmac/devtag.tmac
-Installed position: groff's main macro directory.
-
-------------------------------------------------------------------------
-    Legalize
-------------------------------------------------------------------------
-
-This file is part of groff, the GNU roff type-setting system.
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
 
 Copyright (C) 2004 Free Software Foundation, Inc.
 written by Gaius Mulley <gaius@glam.ac.uk>.
 
-groff is free software; you can redistribute it and/or modify it under
+This is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
 Software Foundation; either version 2, or (at your option) any later
 version.
 
-groff is distributed in the hope that it will be useful, but WITHOUT
+This is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
@@ -27,21 +29,6 @@ You should have received a copy of the GNU General Public License
 along with groff; see the file COPYING.  If not, write to the Free
 Software Foundation, 51 Franklin St - Fifth Floor, Boston, MA
 02110-1301, USA.
-
-
-------------------------------------------------------------------------
-    Description
-------------------------------------------------------------------------
-
-A simple set of macros to provide markup devices (currently only grohtml)
-with tags that define the meaning of the formatted text and also
-basic formatting instructions.  It generalizes the tag concept used within
-grohtml and in the future it is hoped that more markup based devices
-can capitalize on this work.  It also clearly defines those tags which are
-honoured by grohtml.  Note that not all tags are included here.  Some
-of the grohtml specific tags (header specific and jobname, etc.) are
-called directly from within www.tmac.  The tags defined here are
-reasonably generic and could be applied to other devices.
 ..
 .
 .do if d DEVTAG-NH .nx
@@ -49,7 +36,6 @@ reasonably generic and could be applied to other devices.
 .nr _C \n(.C
 .cp 0
 .
-.\" --------------------------------------------------------------------
 .\" DEVTAG <name>
 .\"
 .\"   Emit a tag <name>
@@ -57,7 +43,6 @@ reasonably generic and could be applied to other devices.
 .de DEVTAG
 .  tag devtag:\\$*
 ..
-.\" --------------------------------------------------------------------
 .\" DEVTAG-NEXT <name>
 .\"
 .\"   When the troff state changes, emit tag <name>
@@ -66,7 +51,6 @@ reasonably generic and could be applied to other devices.
 .  taga devtag:\\$*
 ..
 .
-.\" --------------------------------------------------------------------
 .\"  SH <level>
 .\"  NH <level>
 .\"       tell device we are starting a numbered heading
@@ -78,7 +62,6 @@ reasonably generic and could be applied to other devices.
 ..
 .als DEVTAG-SH DEVTAG-NH
 .
-.\" --------------------------------------------------------------------
 .\"  COL <n>
 .\"     indicate that the following text is aligned for the column <n>
 .\"     n: [1..MAX(n)]
@@ -87,21 +70,18 @@ reasonably generic and could be applied to other devices.
 .   DEVTAG ".col \\$1"
 ..
 .
-.\" --------------------------------------------------------------------
 .\"  EO-H
 .\"     indicate that a header has finished.
 .
 .de DEVTAG-EO-H
 .   DEVTAG ".eo.h"
 ..
-.\" --------------------------------------------------------------------
 .\"  EO-TL
 .\"     indicate that a title has finished.
 .
 .de DEVTAG-EO-TL
 .   DEVTAG ".eo.tl"
 ..
-.\" --------------------------------------------------------------------
 .\"  TL
 .\"     indicate that the following text forms a title.
 .
@@ -109,7 +89,6 @@ reasonably generic and could be applied to other devices.
 .   DEVTAG ".tl"
 ..
 .
-.\" --------------------------------------------------------------------
 .\"  COL-NEXT <n>
 .\"     emit a column tag just before the next glyph.
 .
@@ -120,12 +99,4 @@ reasonably generic and could be applied to other devices.
 .
 .cp \n[_C]
 .
-.
-.\" --------------------------------------------------------------------
-.\" Emacs settings
-.\" --------------------------------------------------------------------
-.
-.\" Local Variables:
-.\" mode: nroff
-.\" End:
-.\" EOF
+.\" s-ts-mode

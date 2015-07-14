@@ -1,0 +1,9 @@
+/*@ Configurable stuff */
+#ifndef _HTML_CONFIG_H
+#define _HTML_CONFIG_H
+
+/* maximum number of character that can be pushed back */
+#define MAXPUSHBACKSTACK  4096
+
+#endif // _HTML_CONFIG_H
+// s-it2-mode

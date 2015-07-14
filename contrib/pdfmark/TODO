@@ -1,3 +1,5 @@
+    Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
     Copyright 2004, 2005
       Free Software Foundation, Inc.
 
@@ -58,3 +60,5 @@ PDF marks.
 This facility now provided by `pdfroff' script; documented in `pdfroff.man'.
 Man page still requires an additional section, to describe use of `stylesheet'
 feature.  Script also requires documentation in PDF and texinfo formats.
+
+# s-ts-mode

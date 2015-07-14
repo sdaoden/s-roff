@@ -1,0 +1,45 @@
+.ig
+@ @L_P_NEQN@.1
+
+Copyright (c) 2014 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+
+Copyright (C) 2001 Free Software Foundation, Inc.
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the
+entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+
+Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that this permission notice may be included in
+translations approved by the Free Software Foundation instead of in
+the original English.
+..
+.TH @U_P_NEQN@ @MAN1EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
+.SH NAME
+@L_P_NEQN@ \- format equations for ascii output
+.SH SYNOPSIS
+.B @L_P_NEQN@
+[@L_P_EQN@ options]
+.SH DESCRIPTION
+The
+.B @L_P_NEQN@
+program is actually just a shell script which invokes the
+.BR @L_P_EQN@ (@MAN1EXT@)
+command with the
+.B ascii
+output device.
+.LP
+Note that
+.B @L_P_EQN@
+does not support low-resolution, typewriter-like devices (although it may
+work adequately for very simple input).
+.SH "SEE ALSO"
+.BR @L_P_EQN@ (@MAN1EXT@)
+.
+.\" s-ts-mode

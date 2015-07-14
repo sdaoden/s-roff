@@ -1,0 +1,10 @@
+#!/bin/sh
+# Provision of this shell script should not be taken to imply that use of
+# eqn with roff -Tascii|-Tlatin1|-Tutf8|-Tcp1047 is supported.
+
+@U_ROFF_BIN_PATH_SETUP@
+PATH="${U_ROFF_RUNTIME}${PATH}"
+export PATH
+exec @L_P_EQN@ -Tascii ${1+"${@}"}
+
+# s-sh-mode
