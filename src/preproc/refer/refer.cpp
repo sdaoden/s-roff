@@ -24,6 +24,7 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 #include "ref.h"
 #include "token.h"
 #include "search.h"
+#include "file_case.h"
 #include "command.h"
 
 extern "C" const char *Version_string;
@@ -422,18 +423,13 @@ static int is_list(const string &str)
 
 static void do_file(const char *filename)
 {
-  FILE *fp;
-  if (strcmp(filename, "-") == 0) {
-    fp = stdin;
+  file_case *fcp;
+  if ((fcp = file_case::muxer(filename)) == NULL) {
+    assert(strcmp(filename, "-"));
+    error("can't open `%1': %2", filename, strerror(errno));
+    return;
   }
-  else {
-    errno = 0;
-    fp = fopen(filename, "r");
-    if (fp == 0) {
-      error("can't open `%1': %2", filename, strerror(errno));
-      return;
-    }
-  }
+
   current_filename = filename;
   fprintf(outfp, ".lf 1 %s\n", filename);
   string line;
@@ -441,7 +437,7 @@ static void do_file(const char *filename)
   for (;;) {
     line.clear();
     for (;;) {
-      int c = getc(fp);
+      int c = fcp->get_c();
       if (c == EOF) {
 	if (line.length() > 0)
 	  line += '\n';
@@ -466,7 +462,7 @@ static void do_file(const char *filename)
       string post;
       string pre(line.contents() + 2, line.length() - 3);
       for (;;) {
-	int c = getc(fp);
+	int c = fcp->get_c();
 	if (c == EOF) {
 	  error_with_file_and_line(current_filename, start_lineno,
 				   "missing `.]' line");
@@ -475,9 +471,9 @@ static void do_file(const char *filename)
 	if (start_of_line)
 	  current_lineno++;
 	if (start_of_line && c == '.') {
-	  int d = getc(fp);
+	  int d = fcp->get_c();
 	  if (d == ']') {
-	    while ((d = getc(fp)) != '\n' && d != EOF) {
+	    while ((d = fcp->get_c()) != '\n' && d != EOF) {
 	      if (invalid_input_char(d))
 		error("invalid input character code %1", d);
 	      else
@@ -486,7 +482,7 @@ static void do_file(const char *filename)
 	    break;
 	  }
 	  if (d != EOF)
-	    ungetc(d, fp);
+	    fcp->unget_c(d);
 	}
 	if (invalid_input_char(c))
 	  error("invalid input character code %1", c);
@@ -549,21 +545,20 @@ static void do_file(const char *filename)
       int start_of_line = 1;
       int start_lineno = current_lineno;
       for (;;) {
-	int c = getc(fp);
+	int c = fcp->get_c();
 	if (c != EOF && start_of_line)
 	  current_lineno++;
 	if (start_of_line && c == '.') {
-	  c = getc(fp);
-	  if (c == 'R') {
-	    c = getc(fp);
-	    if (c == '2') {
-	      c = getc(fp);
-	      if (compatible_flag || c == ' ' || c == '\n' || c == EOF) {
-		while (c != EOF && c != '\n')
-		  c = getc(fp);
-		break;
-	      }
-	      else {
+    c = fcp->get_c();
+    if (c == 'R') {
+      c = fcp->get_c();
+      if (c == '2') {
+        c = fcp->get_c();
+        if (compatible_flag || c == ' ' || c == '\n' || c == EOF) {
+          while (c != EOF && c != '\n')
+            c = fcp->get_c();
+          break;
+        } else {
 		line += '.';
 		line += 'R';
 		line += '2';
@@ -604,8 +599,8 @@ static void do_file(const char *filename)
   }
   need_syncing = 0;
   output_pending_line();
-  if (fp != stdin)
-    fclose(fp);
+
+  delete fcp;
 }
 
 class label_processing_state {

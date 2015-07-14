@@ -28,6 +28,7 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 #include "stringclass.h"
 #include "mtsm.h"
 #include "env.h"
+#include "file_case.h"
 #include "request.h"
 #include "node.h"
 #include "token.h"
@@ -226,7 +227,7 @@ private:
   virtual int get_location(int, const char **, int *) { return 0; }
   virtual void backtrace() {}
   virtual int set_location(const char *, int) { return 0; }
-  virtual int next_file(FILE *, const char *) { return 0; }
+  virtual int next_file(file_case *, const char *) { return 0; }
   virtual void shift(int) {}
   virtual int is_boundary() {return 0; }
   virtual int is_file() { return 0; }
@@ -271,53 +272,48 @@ public:
 };
 
 class file_iterator : public input_iterator {
-  FILE *fp;
+  file_case *_fcp;
   int lineno;
   const char *filename;
-  int popened;
   int newline_flag;
   int seen_escape;
   enum { BUF_SIZE = 512 };
   unsigned char buf[BUF_SIZE];
   void close();
 public:
-  file_iterator(FILE *, const char *, int = 0);
+  file_iterator(file_case *, const char *);
   ~file_iterator();
   int fill(node **);
   int peek();
   int get_location(int, const char **, int *);
   void backtrace();
   int set_location(const char *, int);
-  int next_file(FILE *, const char *);
+  int next_file(file_case *, const char *);
   int is_file();
 };
 
-file_iterator::file_iterator(FILE *f, const char *fn, int po)
-: fp(f), lineno(1), filename(fn), popened(po),
-  newline_flag(0), seen_escape(0)
+file_iterator::file_iterator(file_case *fcp, const char *fn)
+: _fcp(fcp), lineno(1), filename(fn), newline_flag(0), seen_escape(0)
 {
   if ((font::use_charnames_in_special) && (fn != 0)) {
     if (!the_output)
       init_output();
-    the_output->put_filename(fn, po);
+    the_output->put_filename(fn, _fcp->is_pipe());
   }
 }
 
 file_iterator::~file_iterator()
 {
-  close();
+  if (_fcp != NULL)
+    delete _fcp;
 }
 
 void file_iterator::close()
 {
-  if (fp == stdin)
-    clearerr(stdin);
-#ifndef POPEN_MISSING
-  else if (popened)
-    pclose(fp);
-#endif /* not POPEN_MISSING */
-  else
-    fclose(fp);
+  if (_fcp != NULL) {
+    delete _fcp;
+    _fcp = NULL;
+  }
 }
 
 int file_iterator::is_file()
@@ -325,15 +321,14 @@ int file_iterator::is_file()
   return 1;
 }
 
-int file_iterator::next_file(FILE *f, const char *s)
+int file_iterator::next_file(file_case *fcp, const char *s)
 {
   close();
+  _fcp = fcp;
   filename = s;
-  fp = f;
   lineno = 1;
   newline_flag = 0;
   seen_escape = 0;
-  popened = 0;
   ptr = 0;
   eptr = 0;
   return 1;
@@ -348,7 +343,7 @@ int file_iterator::fill(node **)
   ptr = p;
   unsigned char *e = p + BUF_SIZE;
   while (p < e) {
-    int c = getc(fp);
+    int c = _fcp->get_c();
     if (c == EOF)
       break;
     if (invalid_input_char(c))
@@ -375,13 +370,13 @@ int file_iterator::fill(node **)
 
 int file_iterator::peek()
 {
-  int c = getc(fp);
+  int c = _fcp->get_c();
   while (invalid_input_char(c)) {
     warning(WARN_INPUT, "invalid input character code %1", int(c));
-    c = getc(fp);
+    c = _fcp->get_c();
   }
   if (c != EOF)
-    ungetc(c, fp);
+    _fcp->unget_c(c);
   return c;
 }
 
@@ -399,7 +394,7 @@ int file_iterator::get_location(int /*allow_macro*/,
 void file_iterator::backtrace()
 {
   errprint("%1:%2: backtrace: %3 `%1'\n", filename, lineno,
-	   popened ? "process" : "file");
+	   _fcp->is_pipe() ? "process" : "file");
 }
 
 int file_iterator::set_location(const char *f, int ln)
@@ -431,7 +426,7 @@ public:
   static int set_location(const char *, int);
   static void backtrace();
   static void backtrace_all();
-  static void next_file(FILE *, const char *);
+  static void next_file(file_case *, const char *);
   static void end_file();
   static void shift(int n);
   static void add_boundary();
@@ -714,15 +709,15 @@ int input_stack::set_location(const char *filename, int lineno)
   return 0;
 }
 
-void input_stack::next_file(FILE *fp, const char *s)
+void input_stack::next_file(file_case *fcp, const char *s)
 {
   input_iterator **pp;
   for (pp = &top; *pp != &nil_iterator; pp = &(*pp)->next)
-    if ((*pp)->next_file(fp, s))
+    if ((*pp)->next_file(fcp, s))
       return;
   if (++level > limit && limit > 0)
     fatal("input stack limit exceeded");
-  *pp = new file_iterator(fp, s);
+  *pp = new file_iterator(fcp, s);
   (*pp)->next = &nil_iterator;
 }
 
@@ -802,12 +797,12 @@ void next_file()
   if (nm.is_null())
     input_stack::end_file();
   else {
-    errno = 0;
-    FILE *fp = include_search_path.open_file_cautious(nm.contents());
-    if (!fp)
-      error("can't open `%1': %2", nm.contents(), strerror(errno));
+    file_case *fcp = include_search_path.open_file_cautious(nm.contents(),
+        fcp->fc_const_path);
+    if (fcp != NULL)
+      input_stack::next_file(fcp, nm.contents());
     else
-      input_stack::next_file(fp, nm.contents());
+      error("can't open `%1': %2", nm.contents(), strerror(errno));
   }
   tok.next();
 }
@@ -5899,10 +5894,10 @@ void source()
   else {
     while (!tok.newline() && !tok.eof())
       tok.next();
-    errno = 0;
-    FILE *fp = include_search_path.open_file_cautious(nm.contents());
-    if (fp)
-      input_stack::push(new file_iterator(fp, nm.contents()));
+    file_case *fcp = include_search_path.open_file_cautious(nm.contents(),
+        fcp->mux_unpack);
+    if (fcp != NULL)
+      input_stack::push(new file_iterator(fcp, nm.contents()));
     else
       error("can't open `%1': %2", nm.contents(), strerror(errno));
     tok.next();
@@ -5948,11 +5943,14 @@ void pipe_source()
       buf[buf_used] = '\0';
       errno = 0;
       FILE *fp = popen(buf, POPEN_RT);
-      if (fp)
-	input_stack::push(new file_iterator(fp, symbol(buf).contents(), 1));
-      else
-	error("can't open pipe to process `%1': %2", buf, strerror(errno));
-      a_delete buf;
+      if (fp != NULL)
+        input_stack::push(new file_iterator(
+          new file_case(fp, buf, file_case::fc_pipe | file_case::fc_take_path),
+                symbol(buf).contents()));
+      else {
+        error("can't open pipe to process `%1': %2", buf, strerror(errno));
+        a_delete buf;
+      }
     }
     tok.next();
 #endif /* not POPEN_MISSING */
@@ -6007,9 +6005,9 @@ int parse_bounding_box(char *p, bounding_box *bb)
 #define PS_LINE_MAX 255
 cset white_space("\n\r \t");
 
-int ps_get_line(char *buf, FILE *fp, const char* filename)
+int ps_get_line(char *buf, file_case *fcp, const char* filename)
 {
-  int c = getc(fp);
+  int c = fcp->get_c();
   if (c == EOF) {
     buf[0] = '\0';
     return 0;
@@ -6026,14 +6024,14 @@ int ps_get_line(char *buf, FILE *fp, const char* filename)
       error("PostScript file `%1' is non-conforming "
 	    "because length of line exceeds 255", filename);
     }
-    c = getc(fp);
+    c = fcp->get_c();
   }
   buf[i++] = '\n';
   buf[i] = '\0';
   if (c == '\r') {
-    c = getc(fp);
+    c = fcp->get_c();
     if (c != EOF && c != '\n')
-      ungetc(c, fp);
+      fcp->unget_c(c);
   }
   return 1;
 }
@@ -6046,14 +6044,14 @@ inline void assign_registers(int llx, int lly, int urx, int ury)
   ury_reg_contents = ury;
 }
 
-void do_ps_file(FILE *fp, const char* filename)
+void do_ps_file(file_case *fcp, const char* filename)
 {
   bounding_box bb;
   int bb_at_end = 0;
   char buf[PS_LINE_MAX];
   llx_reg_contents = lly_reg_contents =
     urx_reg_contents = ury_reg_contents = 0;
-  if (!ps_get_line(buf, fp, filename)) {
+  if (!ps_get_line(buf, fcp, filename)) {
     error("`%1' is empty", filename);
     return;
   }
@@ -6062,7 +6060,7 @@ void do_ps_file(FILE *fp, const char* filename)
 	  filename);
     return;
   }
-  while (ps_get_line(buf, fp, filename) != 0) {
+  while (ps_get_line(buf, fcp, filename) != 0) {
     // in header comments, `%X' (`X' any printable character except
     // whitespace) is possible too
     if (buf[0] == '%') {
@@ -6097,12 +6095,12 @@ void do_ps_file(FILE *fp, const char* filename)
     for (offset = 512; !last_try; offset *= 2) {
       int had_trailer = 0;
       int got_bb = 0;
-      if (offset > 32768 || fseek(fp, -offset, 2) == -1) {
+      if (offset > 32768 || fcp->seek(-offset, fcp->seek_end) == -1) {
 	last_try = 1;
-	if (fseek(fp, 0L, 0) == -1)
+	if (fcp->seek(0L, fcp->seek_set) == -1)
 	  break;
       }
-      while (ps_get_line(buf, fp, filename) != 0) {
+      while (ps_get_line(buf, fcp, filename) != 0) {
 	if (buf[0] == '%' && buf[1] == '%') {
 	  if (!had_trailer) {
 	    if (strncmp(buf + 2, "Trailer", 7) == 0)
@@ -6143,16 +6141,14 @@ void ps_bbox_request()
   else {
     while (!tok.newline() && !tok.eof())
       tok.next();
-    errno = 0;
     // PS files might contain non-printable characters, such as ^Z
     // and CRs not followed by an LF, so open them in binary mode.
-    FILE *fp = include_search_path.open_file_cautious(nm.contents(),
-						      0, FOPEN_RB);
-    if (fp) {
-      do_ps_file(fp, nm.contents());
-      fclose(fp);
-    }
-    else
+    file_case *fcp = include_search_path.open_file_cautious(nm.contents(),
+        fcp->mux_need_seek | fcp->mux_need_binary);
+    if (fcp != NULL) {
+      do_ps_file(fcp, nm.contents());
+      delete fcp;
+    } else
       error("can't open `%1': %2", nm.contents(), strerror(errno));
     tok.next();
   }
@@ -7171,26 +7167,26 @@ void transparent_file()
   if (break_flag)
     curenv->do_break();
   if (!filename.is_null()) {
-    errno = 0;
-    FILE *fp = include_search_path.open_file_cautious(filename.contents());
-    if (!fp)
+    file_case *fcp = include_search_path
+        .open_file_cautious(filename.contents());
+    if (fcp == NULL)
       error("can't open `%1': %2", filename.contents(), strerror(errno));
     else {
       int bol = 1;
       for (;;) {
-	int c = getc(fp);
-	if (c == EOF)
-	  break;
-	if (invalid_input_char(c))
-	  warning(WARN_INPUT, "invalid input character code %1", int(c));
-	else {
-	  curdiv->transparent_output(c);
-	  bol = c == '\n';
-	}
+        int c = fcp->get_c();
+        if (c == EOF)
+          break;
+        if (invalid_input_char(c))
+          warning(WARN_INPUT, "invalid input character code %1", int(c));
+        else {
+          curdiv->transparent_output(c);
+          bol = c == '\n';
+        }
       }
       if (!bol)
-	curdiv->transparent_output('\n');
-      fclose(fp);
+        curdiv->transparent_output('\n');
+      delete fcp;
     }
   }
   tok.next();
@@ -7268,46 +7264,41 @@ static void parse_output_page_list(char *p)
   }
 }
 
-static FILE *open_mac_file(const char *mac, char **path)
+static file_case *open_mac_file(const char *mac)
 {
   // Try first FOOBAR.tmac, then tmac.FOOBAR
-  char *s1 = new char[strlen(mac)+strlen(MACRO_POSTFIX)+1];
-  strcpy(s1, mac);
-  strcat(s1, MACRO_POSTFIX);
-  FILE *fp = mac_path->open_file(s1, path);
-  a_delete s1;
-  if (!fp) {
-    char *s2 = new char[strlen(mac)+strlen(MACRO_PREFIX)+1];
-    strcpy(s2, MACRO_PREFIX);
-    strcat(s2, mac);
-    fp = mac_path->open_file(s2, path);
-    a_delete s2;
+  char *s = new char[strlen(mac) + strlen(MACRO_POSTFIX) +1];
+  strcpy(s, mac);
+  strcat(s, MACRO_POSTFIX);
+
+  file_case *fcp;
+  if ((fcp = mac_path->open_file(s, fcp->fc_take_path)) == NULL) {
+    s = new char[strlen(mac) + strlen(MACRO_PREFIX) +1];
+    strcpy(s, MACRO_PREFIX);
+    strcat(s, mac);
+    fcp = mac_path->open_file(s, fcp->fc_take_path);
   }
-  return fp;
+  return fcp;
 }
 
 static void process_macro_file(const char *mac)
 {
-  char *path;
-  FILE *fp = open_mac_file(mac, &path);
-  if (!fp)
+  file_case *fcp = open_mac_file(mac);
+  if (fcp == NULL)
     fatal("can't find macro file %1", mac);
-  const char *s = symbol(path).contents();
-  a_delete path;
-  input_stack::push(new file_iterator(fp, s));
+  const char *s = symbol(fcp->path()).contents();
+  input_stack::push(new file_iterator(fcp, s));
   tok.next();
   process_input_stack();
 }
 
 static void process_startup_file(const char *filename)
 {
-  char *path;
   search_path *orig_mac_path = mac_path;
   mac_path = &config_macro_path;
-  FILE *fp = mac_path->open_file(filename, &path);
-  if (fp) {
-    input_stack::push(new file_iterator(fp, symbol(path).contents()));
-    a_delete path;
+  file_case *fcp;
+  if ((fcp = mac_path->open_file(filename)) != NULL) {
+    input_stack::push(new file_iterator(fcp, symbol(fcp->path()).contents()));
     tok.next();
     process_input_stack();
   }
@@ -7322,55 +7313,47 @@ void macro_source()
   else {
     while (!tok.newline() && !tok.eof())
       tok.next();
-    char *path;
-    FILE *fp = mac_path->open_file(nm.contents(), &path);
     // .mso doesn't (and cannot) go through open_mac_file, so we
     // need to do it here manually: If we have tmac.FOOBAR, try
     // FOOBAR.tmac and vice versa
-    if (!fp) {
+    file_case *fcp;
+    if ((fcp = mac_path->open_file(nm.contents())) == NULL) {
       const char *fn = nm.contents();
+
       if (strncasecmp(fn, MACRO_PREFIX, sizeof(MACRO_PREFIX) - 1) == 0) {
-	char *s = new char[strlen(fn) + sizeof(MACRO_POSTFIX)];
-	strcpy(s, fn + sizeof(MACRO_PREFIX) - 1);
-	strcat(s, MACRO_POSTFIX);
-	fp = mac_path->open_file(s, &path);
-	a_delete s;
+        char *s = new char[strlen(fn) + sizeof(MACRO_POSTFIX)];
+        strcpy(s, fn + sizeof(MACRO_PREFIX) - 1);
+        strcat(s, MACRO_POSTFIX);
+        fcp = mac_path->open_file(s, fcp->fc_take_path);
       }
-      if (!fp) {
-	if (strncasecmp(fn + strlen(fn) - sizeof(MACRO_POSTFIX) + 1,
-			MACRO_POSTFIX, sizeof(MACRO_POSTFIX) - 1) == 0) {
-	  char *s = new char[strlen(fn) + sizeof(MACRO_PREFIX)];
-	  strcpy(s, MACRO_PREFIX);
-	  strncat(s, fn, strlen(fn) - sizeof(MACRO_POSTFIX) + 1);
-	  fp = mac_path->open_file(s, &path);
-	  a_delete s;
-	}
+
+      if (fcp == NULL) {
+        if (strncasecmp(fn + strlen(fn) - sizeof(MACRO_POSTFIX) + 1,
+            MACRO_POSTFIX, sizeof(MACRO_POSTFIX) - 1) == 0) {
+          char *s = new char[strlen(fn) + sizeof(MACRO_PREFIX)];
+          strcpy(s, MACRO_PREFIX);
+          strncat(s, fn, strlen(fn) - sizeof(MACRO_POSTFIX) + 1);
+          fcp = mac_path->open_file(s, fcp->fc_take_path);
+        }
       }
     }
-    if (fp) {
-      input_stack::push(new file_iterator(fp, symbol(path).contents()));
-      a_delete path;
-    }
+
+    if (fcp != NULL)
+      input_stack::push(new file_iterator(fcp, symbol(fcp->path()).contents()));
     else
-      error("can't find macro file `%1'", nm.contents());
+      warning(WARN_FILE, "can't find macro file `%1'", nm.contents());
     tok.next();
   }
 }
 
 static void process_input_file(const char *name)
 {
-  FILE *fp;
-  if (strcmp(name, "-") == 0) {
-    clearerr(stdin);
-    fp = stdin;
-  }
-  else {
-    errno = 0;
-    fp = include_search_path.open_file_cautious(name);
-    if (!fp)
-      fatal("can't open `%1': %2", name, strerror(errno));
-  }
-  input_stack::push(new file_iterator(fp, name));
+  file_case *fcp;
+  if ((fcp = include_search_path.open_file_cautious(name)) == NULL) {
+    assert(strcmp(name, "-"));
+    fatal("can't open `%1': %2", name, strerror(errno));
+   }
+  input_stack::push(new file_iterator(fcp, name));
   tok.next();
   process_input_stack();
 }

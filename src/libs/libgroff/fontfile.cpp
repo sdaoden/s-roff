@@ -24,6 +24,7 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 #include <assert.h>
 #include <stdlib.h>
 #include <errno.h>
+#include "file_case.h"
 #include "font.h"
 #include "searchpath.h"
 #include "device.h"
@@ -60,11 +61,11 @@ void font::command_line_font_dir(const char *dir)
   font_path.command_line_dir(dir);
 }
 
-FILE *font::open_file(const char *nm, char **pathp)
+file_case *font::open_file(const char *name, uint32_t flags)
 {
-  char *filename = new char[strlen(nm) + strlen(device) + 5];
-  sprintf(filename, "dev%s/%s", device, nm);
-  FILE *fp = font_path.open_file(filename, pathp);
-  a_delete filename;
-  return fp;
+  assert(!(flags & ~file_case::mux_mask));
+
+  char *filename = new char[strlen(name) + strlen(device) + 5];
+  sprintf(filename, "dev%s/%s", device, name);
+  return font_path.open_file(filename, flags | file_case::fc_take_path);
 }

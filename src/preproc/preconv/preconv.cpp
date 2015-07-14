@@ -26,6 +26,7 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 #include <errno.h>
 #include "errarg.h"
 #include "error.h"
+#include "file_case.h"
 #include "localcharset.h"
 #include "nonposix.h"
 #include "stringclass.h"
@@ -420,14 +421,14 @@ unicode_entity(int u)
 
 // Conversion from ISO-8859-1 (aka Latin-1) to Unicode.
 void
-conversion_latin1(FILE *fp, const string &data)
+conversion_latin1(file_case *fcp, const string &data)
 {
   int len = data.length();
   const unsigned char *ptr = (const unsigned char *)data.contents();
   for (int i = 0; i < len; i++)
     unicode_entity(ptr[i]);
   int c = -1;
-  while ((c = getc(fp)) != EOF)
+  while ((c = fcp->get_c()) != EOF)
     unicode_entity(c);
 }
 
@@ -436,7 +437,7 @@ conversion_latin1(FILE *fp, const string &data)
 // moved to the troff program.
 
 struct utf8 {
-  FILE *fp;
+  file_case *_fcp;
   unsigned char s[6];
   enum {
     FIRST = 0,
@@ -449,14 +450,14 @@ struct utf8 {
   int expected_bytes;
   int invalid_warning;
   int incomplete_warning;
-  utf8(FILE *);
+  utf8(file_case *);
   ~utf8();
   void add(unsigned char);
   void invalid();
   void incomplete();
 };
 
-utf8::utf8(FILE *f) : fp(f), byte(FIRST), expected_bytes(1),
+utf8::utf8(file_case *fcp) : _fcp(fcp), byte(FIRST), expected_bytes(1),
 		      invalid_warning(1), incomplete_warning(1)
 {
   // empty
@@ -592,22 +593,22 @@ utf8::incomplete()
 
 // Conversion from UTF-8 to Unicode.
 void
-conversion_utf8(FILE *fp, const string &data)
+conversion_utf8(file_case *fcp, const string &data)
 {
-  utf8 u(fp);
+  utf8 u(fcp);
   int len = data.length();
   const unsigned char *ptr = (const unsigned char *)data.contents();
   for (int i = 0; i < len; i++)
     u.add(ptr[i]);
   int c = -1;
-  while ((c = getc(fp)) != EOF)
+  while ((c = fcp->get_c()) != EOF)
     u.add(c);
   return;
 }
 
 // Conversion from cp1047 (EBCDIC) to UTF-8.
 void
-conversion_cp1047(FILE *fp, const string &data)
+conversion_cp1047(file_case *fcp, const string &data)
 {
   static unsigned char cp1047[] = {
     0x00, 0x01, 0x02, 0x03, 0x9C, 0x09, 0x86, 0x7F,	// 0x00
@@ -648,14 +649,14 @@ conversion_cp1047(FILE *fp, const string &data)
   for (int i = 0; i < len; i++)
     unicode_entity(cp1047[ptr[i]]);
   int c = -1;
-  while ((c = getc(fp)) != EOF)
+  while ((c = fcp->get_c()) != EOF)
     unicode_entity(cp1047[c]);
 }
 
 // Locale-sensible conversion.
 #if HAVE_ICONV
 void
-conversion_iconv(FILE *fp, const string &data, char *enc)
+conversion_iconv(file_case *fcp, const string &data, char *enc)
 {
   iconv_t handle = iconv_open(UNICODE, enc);
   if (handle == (iconv_t)-1) {
@@ -702,7 +703,7 @@ conversion_iconv(FILE *fp, const string &data, char *enc)
   // Handle `fp' and switch to `inbuf'.
   size_t read_bytes;
   char *read_start = inbuf + inbytes_left;
-  while ((read_bytes = fread(read_start, 1, BUFSIZ - inbytes_left, fp)) > 0) {
+  while ((read_bytes = fcp->get_buf(read_start, BUFSIZ - inbytes_left)) > 0) {
     inptr = inbuf;
     inbytes_left += read_bytes;
     while (inbytes_left > 0) {
@@ -757,7 +758,7 @@ conversion_iconv(FILE *fp, const string &data, char *enc)
 // Return encoding if a BOM is found, NULL otherwise.
 // ---------------------------------------------------------
 const char *
-get_BOM(FILE *fp, string &BOM, string &data)
+get_BOM(file_case *fcp, string &BOM, string &data)
 {
   // The BOM is U+FEFF.  We have thus the following possible
   // representations.
@@ -781,7 +782,7 @@ get_BOM(FILE *fp, string &BOM, string &data)
   const char *retval = NULL;
   int len;
   for (len = 0; len < 4; len++) {
-    int c = getc(fp);
+    int c = fcp->get_c();
     if (c == EOF)
       break;
     BOM_string[len] = char(c);
@@ -811,7 +812,7 @@ get_BOM(FILE *fp, string &BOM, string &data)
 // (which is stored unmodified in `data').
 // ---------------------------------------------------------
 char *
-get_tag_lines(FILE *fp, string &data)
+get_tag_lines(file_case *fcp, string &data)
 {
   int newline_count = 0;
   int c, prev = -1;
@@ -828,7 +829,7 @@ get_tag_lines(FILE *fp, string &data)
     return NULL;
   int emit_warning = 1;
   for (int lines = newline_count; lines < 2; lines++) {
-    while ((c = getc(fp)) != EOF) {
+    while ((c = fcp->get_c()) != EOF) {
       if (c == '\0' && debug_flag && emit_warning) {
 	fprintf(stderr,
 		"  null byte(s) found in input stream --\n"
@@ -841,9 +842,9 @@ get_tag_lines(FILE *fp, string &data)
     }
     // Handle CR, LF, and CRLF as line separators.
     if (c == '\r') {
-      c = getc(fp);
+      c = fcp->get_c();
       if (c != EOF && c != '\n')
-	ungetc(c, fp);
+        fcp->unget_c(c);
       else
 	data += char(c);
     }
@@ -966,9 +967,9 @@ get_variable_value_pair(char *d1, char **variable, char **value)
 // XXX Add support for tag at the end of buffer.
 // ---------------------------------------------------------
 char *
-check_coding_tag(FILE *fp, string &data)
+check_coding_tag(file_case *fcp, string &data)
 {
-  char *inbuf = get_tag_lines(fp, data);
+  char *inbuf = get_tag_lines(fcp, data);
   char *lineend;
   for (char *p = inbuf; is_comment_line(p); p = lineend + 1) {
     if ((lineend = strchr(p, '\n')) == NULL)
@@ -1006,24 +1007,17 @@ check_coding_tag(FILE *fp, string &data)
 int
 do_file(const char *filename)
 {
-  FILE *fp;
+  if (debug_flag)
+    fprintf(stderr, "file `%s':\n", filename);
+  file_case *fcp;
+  if ((fcp = file_case::muxer(filename, fcp->mux_need_binary)) == NULL) {
+    assert(strcmp(filename, "-"));
+    error("can't open `%1': %2", filename, strerror(errno));
+    return 0;
+  }
+
   string BOM, data;
-  if (strcmp(filename, "-")) {
-    if (debug_flag)
-      fprintf(stderr, "file `%s':\n", filename);
-    fp = fopen(filename, FOPEN_RB);
-    if (!fp) {
-      error("can't open `%1': %2", filename, strerror(errno));
-      return 0;
-    }
-  }
-  else {
-    if (debug_flag)
-      fprintf(stderr, "standard input:\n");
-    SET_BINARY(fileno(stdin));
-    fp = stdin;
-  }
-  const char *BOM_encoding = get_BOM(fp, BOM, data);
+  const char *BOM_encoding = get_BOM(fcp, BOM, data);
   // Determine the encoding.
   char *encoding;
   if (user_encoding[0]) {
@@ -1044,7 +1038,7 @@ do_file(const char *filename)
   }
   else {
     // `check_coding_tag' returns a pointer to a static array (or NULL).
-    char *file_encoding = check_coding_tag(fp, data);
+    char *file_encoding = check_coding_tag(fcp, data);
     if (!file_encoding) {
       if (debug_flag)
 	fprintf(stderr, "  no file encoding\n");
@@ -1072,21 +1066,21 @@ do_file(const char *filename)
   int success = 1;
   // Call converter (converters write to stdout).
   if (!strcasecmp(encoding, "ISO-8859-1"))
-    conversion_latin1(fp, BOM + data);
+    conversion_latin1(fcp, BOM + data);
   else if (!strcasecmp(encoding, "UTF-8"))
-    conversion_utf8(fp, data);
+    conversion_utf8(fcp, data);
   else if (!strcasecmp(encoding, "cp1047"))
-    conversion_cp1047(fp, BOM + data);
+    conversion_cp1047(fcp, BOM + data);
   else {
 #if HAVE_ICONV
-    conversion_iconv(fp, BOM + data, encoding);
+    conversion_iconv(fcp, BOM + data, encoding);
 #else
     error("encoding system `%1' not supported", encoding);
     success = 0;
 #endif /* HAVE_ICONV */
   }
-  if (fp != stdin)
-    fclose(fp);
+
+  delete fcp;
   return success;
 }
 

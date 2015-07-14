@@ -29,7 +29,9 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 #include "errarg.h"
 #include "error.h"
 #include "cset.h"
+#include "file_case.h"
 #include "font.h"
+#include "searchpath.h"
 #include "unicode.h"
 #include "paper.h"
 
@@ -68,38 +70,36 @@ struct font_widths_cache {
 /* text_file */
 
 struct text_file {
-  FILE *fp;
-  char *path;
+  file_case *fcp;
   int lineno;
   int size;
   int skip_comments;
   int silent;
   char *buf;
-  text_file(FILE *fp, char *p);
+  text_file(file_case *fcp);
   ~text_file();
   int next();
-  void error(const char *format, 
+  void error(const char *format,
 	     const errarg &arg1 = empty_errarg,
 	     const errarg &arg2 = empty_errarg,
 	     const errarg &arg3 = empty_errarg);
 };
 
-text_file::text_file(FILE *p, char *s) 
-: fp(p), path(s), lineno(0), size(0), skip_comments(1), silent(0), buf(0)
+text_file::text_file(file_case *fcp)
+: fcp(fcp), lineno(0), size(0), skip_comments(1), silent(0), buf(0)
 {
 }
 
 text_file::~text_file()
 {
   a_delete buf;
-  a_delete path;
-  if (fp)
-    fclose(fp);
+  if (fcp != NULL)
+    delete fcp;
 }
 
 int text_file::next()
 {
-  if (fp == 0)
+  if (fcp == NULL)
     return 0;
   if (buf == 0) {
     buf = new char[128];
@@ -108,7 +108,7 @@ int text_file::next()
   for (;;) {
     int i = 0;
     for (;;) {
-      int c = getc(fp);
+      int c = fcp->get_c();
       if (c == EOF)
 	break;
       if (invalid_input_char(c))
@@ -139,13 +139,13 @@ int text_file::next()
   return 0;
 }
 
-void text_file::error(const char *format, 
+void text_file::error(const char *format,
 		      const errarg &arg1,
 		      const errarg &arg2,
 		      const errarg &arg3)
 {
   if (!silent)
-    error_with_file_and_line(path, lineno, format, arg1, arg2, arg3);
+    error_with_file_and_line(fcp->path(), lineno, format, arg1, arg2, arg3);
 }
 
 
@@ -803,16 +803,15 @@ int font::load(int *not_found, int head_only)
       error("`DESC' is not a valid font file name");
     return 0;
   }
-  char *path;
-  FILE *fp;
-  if ((fp = open_file(name, &path)) == NULL) {
+  file_case *fcp;
+  if ((fcp = open_file(name)) == NULL) {
     if (not_found)
       *not_found = 1;
     else
       error("can't find font file `%1'", name);
     return 0;
   }
-  text_file t(fp, path);
+  text_file t(fcp);
   t.skip_comments = 1;
   t.silent = head_only;
   char *p;
@@ -878,7 +877,8 @@ int font::load(int *not_found, int head_only)
     else if (strcmp(p, "kernpairs") != 0 && strcmp(p, "charset") != 0) {
       char *command = p;
       p = strtok(0, "\n");
-      handle_unknown_font_command(command, trim_arg(p), t.path, t.lineno);
+      handle_unknown_font_command(command, trim_arg(p), t.fcp->path(),
+        t.lineno);
     }
     else
       break;
@@ -1062,13 +1062,12 @@ static struct {
 int font::load_desc()
 {
   int nfonts = 0;
-  FILE *fp;
-  char *path;
-  if ((fp = open_file("DESC", &path)) == 0) {
+  file_case *fcp;
+  if ((fcp = open_file("DESC")) == NULL) {
     error("can't find `DESC' file");
     return 0;
   }
-  text_file t(fp, path);
+  text_file t(fcp);
   t.skip_comments = 1;
   res = 0;
   while (t.next()) {
@@ -1244,7 +1243,8 @@ int font::load_desc()
     else if (unknown_desc_command_handler) {
       char *command = p;
       p = strtok(0, "\n");
-      (*unknown_desc_command_handler)(command, trim_arg(p), t.path, t.lineno);
+      (*unknown_desc_command_handler)(command, trim_arg(p), t.fcp->path(),
+        t.lineno);
     }
   }
   if (res == 0) {

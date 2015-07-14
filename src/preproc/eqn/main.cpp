@@ -22,6 +22,7 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 #include "eqn.h"
 #include "stringclass.h"
 #include "device.h"
+#include "file_case.h"
 #include "searchpath.h"
 #include "macropath.h"
 #include "htmlhint.h"
@@ -34,7 +35,7 @@ extern int yyparse();
 extern "C" const char *Version_string;
 
 static char *delim_search    (char *, int);
-static int   inline_equation (FILE *, string &, string &);
+static int   inline_equation (file_case *, string &, string &);
 
 char start_delim = '\0';
 char end_delim = '\0';
@@ -48,11 +49,11 @@ int html = 0;
 int xhtml = 0;
 eqnmode_t output_format;
 
-int read_line(FILE *fp, string *p)
+int read_line(file_case *fcp, string *p)
 {
   p->clear();
   int c = -1;
-  while ((c = getc(fp)) != EOF) {
+  while ((c = fcp->get_c()) != EOF) {
     if (!invalid_input_char(c))
       *p += char(c);
     else
@@ -64,7 +65,7 @@ int read_line(FILE *fp, string *p)
   return p->length() > 0;
 }
 
-void do_file(FILE *fp, const char *filename)
+void do_file(file_case *fcp, const char *filename)
 {
   string linebuf;
   string str;
@@ -72,7 +73,7 @@ void do_file(FILE *fp, const char *filename)
     printf(".lf 1 %s\n", filename);
   current_filename = filename;
   current_lineno = 0;
-  while (read_line(fp, &linebuf)) {
+  while (read_line(fcp, &linebuf)) {
     if (linebuf.length() >= 4
 	&& linebuf[0] == '.' && linebuf[1] == 'l' && linebuf[2] == 'f'
 	&& (linebuf[3] == ' ' || linebuf[3] == '\n' || compatible_flag)) {
@@ -91,7 +92,7 @@ void do_file(FILE *fp, const char *filename)
       int start_lineno = current_lineno + 1;
       str.clear();
       for (;;) {
-	if (!read_line(fp, &linebuf))
+	if (!read_line(fcp, &linebuf))
 	  fatal("end of file before .EN");
 	if (linebuf.length() >= 3 && linebuf[0] == '.' && linebuf[1] == 'E') {
 	  if (linebuf[2] == 'N'
@@ -124,7 +125,7 @@ void do_file(FILE *fp, const char *filename)
       put_string(linebuf, stdout);
     }
     else if (start_delim != '\0' && linebuf.search(start_delim) >= 0
-	     && inline_equation(fp, linebuf, str))
+	     && inline_equation(fcp, linebuf, str))
       ;
     else
       put_string(linebuf, stdout);
@@ -135,7 +136,7 @@ void do_file(FILE *fp, const char *filename)
 
 // Handle an inline equation.  Return 1 if it was an inline equation,
 // otherwise.
-static int inline_equation(FILE *fp, string &linebuf, string &str)
+static int inline_equation(file_case *fcp, string &linebuf, string &str)
 {
   linebuf += '\0';
   char *ptr = &linebuf[0];
@@ -170,7 +171,7 @@ static int inline_equation(FILE *fp, string &linebuf, string &str)
 	break;
       }
       str += ptr;
-      if (!read_line(fp, &linebuf))
+      if (!read_line(fcp, &linebuf))
 	fatal("unterminated `%1' at line %2, looking for `%3'",
 	      start_delim, start_lineno, end_delim);
       linebuf += '\0';
@@ -389,31 +390,27 @@ int main(int argc, char **argv)
 	   ".tm warning: (it is advisable to invoke groff via: groff -Thtml -e)\n",
 	   device);
   }
+
+  file_case *fcp;
   if (load_startup_file) {
-    char *path;
-    FILE *fp = config_macro_path.open_file(STARTUP_FILE, &path);
-    if (fp) {
-      do_file(fp, path);
-      fclose(fp);
-      a_delete path;
+    if ((fcp = config_macro_path.open_file(STARTUP_FILE, fcp->fc_const_path)
+        ) != NULL) {
+      do_file(fcp, fcp->path());
+      delete fcp;
     }
   }
-  if (optind >= argc)
-    do_file(stdin, "-");
-  else
-    for (int i = optind; i < argc; i++)
-      if (strcmp(argv[i], "-") == 0)
-	do_file(stdin, "-");
-      else {
-	errno = 0;
-	FILE *fp = fopen(argv[i], "r");
-	if (!fp)
-	  fatal("can't open `%1': %2", argv[i], strerror(errno));
-	else {
-	  do_file(fp, argv[i]);
-	  fclose(fp);
-	}
-      }
+
+  do /*while (optind < argc)*/ {
+    char const *name = argv[optind++];
+    fcp = file_case::muxer(name);
+    if (name == NULL)
+      name = "-";
+    if (fcp == NULL)
+      fatal("can't open `%1': %2", name, strerror(errno));
+    do_file(fcp, name);
+    delete fcp;
+  } while (optind < argc);
+
   if (ferror(stdout) || fflush(stdout) < 0)
     fatal("output error");
   return 0;

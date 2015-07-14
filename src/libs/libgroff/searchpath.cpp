@@ -25,6 +25,7 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 #include <assert.h>
 #include <errno.h>
 
+#include "file_case.h"
 #include "searchpath.h"
 #include "nonposix.h"
 
@@ -33,6 +34,51 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 #else
 # define relocate(path) strsave(path)
 #endif
+
+static file_case *  _try_iter(char const *dirs, char const *name,
+                      uint32_t flags);
+
+static file_case *
+_try_iter(char const *dirs, char const *name, uint32_t flags)
+{
+  file_case *fcp;
+  bool delname = ((flags & fcp->fc_take_path) != 0);
+  flags = (flags & ~(fcp->fc_const_path)) | fcp->fc_take_path;
+  unsigned namelen = strlen(name);
+  char const *p = dirs;
+
+  for (;;) {
+    char *end = strchr(p, PATH_SEP_CHAR);
+    if (end == NULL)
+      end = strchr(p, '\0');
+    int need_slash = (end > p && strchr(DIR_SEPS, end[-1]) == NULL);
+    char *origpath = new char[(end - p) + need_slash + namelen + 1];
+    memcpy(origpath, p, end - p);
+    if (need_slash)
+      origpath[end - p] = '/';
+    strcpy(origpath + (end - p) + need_slash, name);
+#if 0
+    fprintf(stderr, "origpath `%s'\n", origpath);
+#endif
+    char *path = relocate(origpath);
+    a_delete origpath;
+#if 0
+    fprintf(stderr, "trying `%s'\n", path);
+#endif
+    if ((fcp = file_case::muxer(path, flags)) != NULL)
+      goto jleave;
+    if (errno != ENOENT)
+      goto jleave;
+    if (*end == '\0')
+      break;
+    p = end + 1;
+  }
+  errno = ENOENT;
+jleave:
+  if (delname)
+    a_delete name;
+  return fcp;
+}
 
 search_path::search_path(const char *envvar, const char *standard,
 			 int add_home, int add_current)
@@ -94,115 +140,29 @@ void search_path::command_line_dir(const char *s)
   a_delete old;
 }
 
-FILE *search_path::open_file(const char *name, char **pathp)
+file_case *search_path::open_file(char const *name, uint32_t flags)
 {
-  assert(name != 0);
-  if (IS_ABSOLUTE(name) || *dirs == '\0') {
-    FILE *fp = fopen(name, "r");
-    if (fp) {
-      if (pathp)
-	*pathp = strsave(name);
-      return fp;
-    }
-    else
-      return 0;
-  }
-  unsigned namelen = strlen(name);
-  char *p = dirs;
-  for (;;) {
-    char *end = strchr(p, PATH_SEP_CHAR);
-    if (!end)
-      end = strchr(p, '\0');
-    int need_slash = end > p && strchr(DIR_SEPS, end[-1]) == 0;
-    char *origpath = new char[(end - p) + need_slash + namelen + 1];
-    memcpy(origpath, p, end - p);
-    if (need_slash)
-      origpath[end - p] = '/';
-    strcpy(origpath + (end - p) + need_slash, name);
-#if 0
-    fprintf(stderr, "origpath `%s'\n", origpath);
-#endif
-    char *path = relocate(origpath);
-    a_delete origpath;
-#if 0
-    fprintf(stderr, "trying `%s'\n", path);
-#endif
-    FILE *fp = fopen(path, "r");
-    if (fp) {
-      if (pathp)
-	*pathp = path;
-      else
-	a_delete path;
-      return fp;
-    }
-    a_delete path;
-    if (*end == '\0')
-      break;
-    p = end + 1;
-  }
-  return 0;
+  assert(name != NULL);
+
+  file_case *fcp;
+  if (IS_ABSOLUTE(name) || *dirs == '\0')
+    fcp = file_case::muxer(name, flags);
+  else
+    fcp = _try_iter(dirs, name, flags);
+  return fcp;
 }
 
-FILE *search_path::open_file_cautious(const char *name, char **pathp,
-				      const char *mode)
+file_case *search_path::open_file_cautious(char const *name, uint32_t flags)
 {
-  if (!mode)
-    mode = "r";
-  bool reading = (strchr(mode, 'r') != 0);
-  if (name == 0 || strcmp(name, "-") == 0) {
-    if (pathp)
-      *pathp = strsave(reading ? "stdin" : "stdout");
-    return (reading ? stdin : stdout);
+  file_case *fcp;
+  if (name == NULL || strcmp(name, "-") == 0) {
+    name = NULL;
+    goto jmuxer;
   }
-  if (!reading || IS_ABSOLUTE(name) || *dirs == '\0') {
-    FILE *fp = fopen(name, mode);
-    if (fp) {
-      if (pathp)
-	*pathp = strsave(name);
-      return fp;
-    }
-    else
-      return 0;
-  }
-  unsigned namelen = strlen(name);
-  char *p = dirs;
-  for (;;) {
-    char *end = strchr(p, PATH_SEP_CHAR);
-    if (!end)
-      end = strchr(p, '\0');
-    int need_slash = end > p && strchr(DIR_SEPS, end[-1]) == 0;
-    char *origpath = new char[(end - p) + need_slash + namelen + 1];
-    memcpy(origpath, p, end - p);
-    if (need_slash)
-      origpath[end - p] = '/';
-    strcpy(origpath + (end - p) + need_slash, name);
-#if 0
-    fprintf(stderr, "origpath `%s'\n", origpath);
-#endif
-    char *path = relocate(origpath);
-    a_delete origpath;
-#if 0
-    fprintf(stderr, "trying `%s'\n", path);
-#endif
-    FILE *fp = fopen(path, mode);
-    if (fp) {
-      if (pathp)
-	*pathp = path;
-      else
-	a_delete path;
-      return fp;
-    }
-    int err = errno;
-    a_delete path;
-    if (err != ENOENT)
-    {
-      errno = err;
-      return 0;
-    }
-    if (*end == '\0')
-      break;
-    p = end + 1;
-  }
-  errno = ENOENT;
-  return 0;
+  if (IS_ABSOLUTE(name) || *dirs == '\0')
+jmuxer:
+    fcp = file_case::muxer(name, flags);
+  else
+    fcp = _try_iter(dirs, name, flags);
+  return fcp;
 }

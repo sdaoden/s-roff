@@ -75,14 +75,14 @@ int input::get_location(const char **, int *)
   return 0;
 }
 
-file_input::file_input(FILE *f, const char *fn)
-: fp(f), filename(fn), lineno(0), ptr("")
+file_input::file_input(file_case *fcp, const char *fn)
+: _fcp(fcp), filename(fn), lineno(0), ptr("")
 {
 }
 
 file_input::~file_input()
 {
-  fclose(fp);
+  delete _fcp;
 }
 
 int file_input::read_line()
@@ -91,7 +91,7 @@ int file_input::read_line()
     line.clear();
     lineno++;
     for (;;) {
-      int c = getc(fp);
+      int c = _fcp->get_c();
       if (c == EOF)
 	break;
       else if (invalid_input_char(c))
@@ -1459,13 +1459,12 @@ void do_for(char *var, double from, double to, int by_is_multiplicative,
 
 void do_copy(const char *filename)
 {
-  errno = 0;
-  FILE *fp = fopen(filename, "r");
-  if (fp == 0) {
+  file_case *fcp = file_case::muxer(filename);
+  if (fcp == NULL) {
     lex_error("can't open `%1': %2", filename, strerror(errno));
     return;
   }
-  input_stack::push(new file_input(fp, filename));
+  input_stack::push(new file_input(fcp, filename));
 }
 
 class copy_thru_input : public input {
@@ -1651,32 +1650,32 @@ int copy_thru_input::get_line()
 class simple_file_input : public input {
   const char *filename;
   int lineno;
-  FILE *fp;
+  file_case *_fcp;
 public:
-  simple_file_input(FILE *, const char *);
+  simple_file_input(file_case *, const char *);
   ~simple_file_input();
   int get();
   int peek();
   int get_location(const char **, int *);
 };
 
-simple_file_input::simple_file_input(FILE *p, const char *s)
-: filename(s), lineno(1), fp(p)
+simple_file_input::simple_file_input(file_case *fcp, const char *s)
+: filename(s), lineno(1), _fcp(fcp)
 {
 }
 
 simple_file_input::~simple_file_input()
 {
   // don't delete the filename
-  fclose(fp);
+  delete _fcp;
 }
 
 int simple_file_input::get()
 {
-  int c = getc(fp);
+  int c = _fcp->get_c();
   while (invalid_input_char(c)) {
     error("invalid input character code %1", c);
-    c = getc(fp);
+    c = _fcp->get_c();
   }
   if (c == '\n')
     lineno++;
@@ -1685,13 +1684,13 @@ int simple_file_input::get()
 
 int simple_file_input::peek()
 {
-  int c = getc(fp);
+  int c = _fcp->get_c();
   while (invalid_input_char(c)) {
     error("invalid input character code %1", c);
-    c = getc(fp);
+    c = _fcp->get_c();
   }
   if (c != EOF)
-    ungetc(c, fp);
+    _fcp->unget_c(c);
   return c;
 }
 
@@ -1705,13 +1704,12 @@ int simple_file_input::get_location(const char **fnp, int *lnp)
 
 void copy_file_thru(const char *filename, const char *body, const char *until)
 {
-  errno = 0;
-  FILE *fp = fopen(filename, "r");
-  if (fp == 0) {
+  file_case *fcp = file_case::muxer(filename);
+  if (fcp == NULL) {
     lex_error("can't open `%1': %2", filename, strerror(errno));
     return;
   }
-  input *in = new copy_file_thru_input(new simple_file_input(fp, filename),
+  input *in = new copy_file_thru_input(new simple_file_input(fcp, filename),
 				       body, until);
   input_stack::push(in);
 }

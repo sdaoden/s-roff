@@ -19,6 +19,8 @@ You should have received a copy of the GNU General Public License along
 with groff; see the file COPYING.  If not, write to the Free Software
 Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 
+#include "file_case.h"
+
 #include "pic.h"
 
 extern int yyparse();
@@ -41,22 +43,22 @@ static int lf_flag = 1;		// non-zero if we should attempt to understand
 // Non-zero means a parse error was encountered.
 static int had_parse_error = 0;
 
-void do_file(const char *filename);
+static void do_file(char const *filename);
 
 class top_input : public input {
-  FILE *fp;
+  file_case *_fcp;
   int bol;
   int eof;
   int push_back[3];
   int start_lineno;
 public:
-  top_input(FILE *);
+  top_input(file_case *);
   int get();
   int peek();
   int get_location(const char **, int *);
 };
 
-top_input::top_input(FILE *p) : fp(p), bol(1), eof(0)
+top_input::top_input(file_case *fcp) : _fcp(fcp), bol(1), eof(0)
 {
   push_back[0] = push_back[1] = push_back[2] = EOF;
   start_lineno = current_lineno;
@@ -81,20 +83,20 @@ int top_input::get()
     push_back[0] = EOF;
     return c;
   }
-  int c = getc(fp);
+  int c = _fcp->get_c();
   while (invalid_input_char(c)) {
     error("invalid input character code %1", int(c));
-    c = getc(fp);
+    c = _fcp->get_c();
     bol = 0;
   }
   if (bol && c == '.') {
-    c = getc(fp);
+    c = _fcp->get_c();
     if (c == 'P') {
-      c = getc(fp);
+      c = _fcp->get_c();
       if (c == 'F' || c == 'E') {
-	int d = getc(fp);
+	int d = _fcp->get_c();
 	if (d != EOF)
-	  ungetc(d, fp);
+	  _fcp->unget_c(d);
 	if (d == EOF || d == ' ' || d == '\n' || compatible_flag) {
 	  eof = 1;
 	  flyback_flag = c == 'F';
@@ -105,9 +107,9 @@ int top_input::get()
 	return '.';
       }
       if (c == 'S') {
-	c = getc(fp);
-	if (c != EOF)
-	  ungetc(c, fp);
+        c = _fcp->get_c();
+        if (c != EOF)
+          _fcp->unget_c(c);
 	if (c == EOF || c == ' ' || c == '\n' || compatible_flag) {
 	  error("nested .PS");
 	  eof = 1;
@@ -118,13 +120,13 @@ int top_input::get()
 	return '.';
       }
       if (c != EOF)
-	ungetc(c, fp);
+        _fcp->unget_c(c);
       push_back[0] = 'P';
       return '.';
     }
     else {
       if (c != EOF)
-	ungetc(c, fp);
+        _fcp->unget_c(c);
       return '.';
     }
   }
@@ -153,20 +155,20 @@ int top_input::peek()
     return push_back[1];
   if (push_back[0] != EOF)
     return push_back[0];
-  int c = getc(fp);
+  int c = _fcp->get_c();
   while (invalid_input_char(c)) {
     error("invalid input character code %1", int(c));
-    c = getc(fp);
+    c = _fcp->get_c();
     bol = 0;
   }
   if (bol && c == '.') {
-    c = getc(fp);
+    c = _fcp->get_c();
     if (c == 'P') {
-      c = getc(fp);
+      c = _fcp->get_c();
       if (c == 'F' || c == 'E') {
-	int d = getc(fp);
+	int d = _fcp->get_c();
 	if (d != EOF)
-	  ungetc(d, fp);
+	  _fcp->unget_c(d);
 	if (d == EOF || d == ' ' || d == '\n' || compatible_flag) {
 	  eof = 1;
 	  flyback_flag = c == 'F';
@@ -178,9 +180,9 @@ int top_input::peek()
 	return '.';
       }
       if (c == 'S') {
-	c = getc(fp);
+	c = _fcp->get_c();
 	if (c != EOF)
-	  ungetc(c, fp);
+	  _fcp->unget_c(c);
 	if (c == EOF || c == ' ' || c == '\n' || compatible_flag) {
 	  error("nested .PS");
 	  eof = 1;
@@ -192,20 +194,20 @@ int top_input::peek()
 	return '.';
       }
       if (c != EOF)
-	ungetc(c, fp);
+	_fcp->unget_c(c);
       push_back[0] = 'P';
       push_back[1] = '.';
       return '.';
     }
     else {
       if (c != EOF)
-	ungetc(c, fp);
+	_fcp->unget_c(c);
       push_back[0] = '.';
       return '.';
     }
   }
   if (c != EOF)
-    ungetc(c, fp);
+    _fcp->unget_c(c);
   if (c == '\n')
     return '\n';
   return c;
@@ -218,25 +220,25 @@ int top_input::get_location(const char **filenamep, int *linenop)
   return 1;
 }
 
-void do_picture(FILE *fp)
+void do_picture(file_case *fcp)
 {
   flyback_flag = 0;
   int c;
   a_delete graphname;
   graphname = strsave("graph");		// default picture name in TeX mode
-  while ((c = getc(fp)) == ' ')
+  while ((c = fcp->get_c()) == ' ')
     ;
   if (c == '<') {
     string filename;
-    while ((c = getc(fp)) == ' ')
+    while ((c = fcp->get_c()) == ' ')
       ;
     while (c != EOF && c != ' ' && c != '\n') {
       filename += char(c);
-      c = getc(fp);
+      c = fcp->get_c();
     }
     if (c == ' ') {
       do {
-	c = getc(fp);
+        c = fcp->get_c();
       } while (c != EOF && c != '\n');
     }
     if (c == '\n') 
@@ -263,7 +265,7 @@ void do_picture(FILE *fp)
 	break;
       }
       start_line += c;
-      c = getc(fp);
+      c = fcp->get_c();
     }
     if (c == EOF)
       return;
@@ -281,7 +283,7 @@ void do_picture(FILE *fp)
     }
     out->set_desired_width_height(wid, ht);
     out->set_args(start_line.contents());
-    lex_init(new top_input(fp));
+    lex_init(new top_input(fcp));
     if (yyparse()) {
       had_parse_error = 1;
       lex_error("giving up on this picture");
@@ -290,7 +292,7 @@ void do_picture(FILE *fp)
     lex_cleanup();
 
     // skip the rest of the .PF/.PE line
-    while ((c = getc(fp)) != EOF && c != '\n')
+    while ((c = fcp->get_c()) != EOF && c != '\n')
       ;
     if (c == '\n')
       current_lineno++;
@@ -298,25 +300,26 @@ void do_picture(FILE *fp)
   }
 }
 
-void do_file(const char *filename)
+static void
+do_file(char const *filename)
 {
-  FILE *fp;
-  if (strcmp(filename, "-") == 0)
-    fp = stdin;
-  else {
-    errno = 0;
-    fp = fopen(filename, "r");
-    if (fp == 0) {
-      delete out;
-      fatal("can't open `%1': %2", filename, strerror(errno));
-    }
+  file_case *fcp;
+  if ((fcp = file_case::muxer(filename)) == NULL) {
+    assert(strcmp(filename, "-"));
+    delete out;
+    fatal("can't open `%1': %2", filename, strerror(errno));
   }
+
   out->set_location(filename, 1);
   current_filename = filename;
   current_lineno = 1;
   enum { START, MIDDLE, HAD_DOT, HAD_P, HAD_PS, HAD_l, HAD_lf } state = START;
   for (;;) {
-    int c = getc(fp);
+    int c = fcp->get_c();
+    while (invalid_input_char(c)) {
+      error("invalid input character code %1", int(c));
+      c = fcp->get_c();
+    }
     if (c == EOF)
       break;
     switch (state) {
@@ -373,8 +376,8 @@ void do_file(const char *filename)
       break;
     case HAD_PS:
       if (c == ' ' || c == '\n' || compatible_flag) {
-	ungetc(c, fp);
-	do_picture(fp);
+	fcp->unget_c(c);
+	do_picture(fcp);
 	state = START;
       }
       else {
@@ -407,7 +410,7 @@ void do_file(const char *filename)
 	    current_lineno++;
 	    break;
 	  }
-	  c = getc(fp);
+	  c = fcp->get_c();
 	}
 	line += '\0';
 	interpret_lf_args(line.contents());
@@ -446,28 +449,27 @@ void do_file(const char *filename)
     fputs(".lf\n", stdout);
     break;
   }
-  if (fp != stdin)
-    fclose(fp);
+
+  delete fcp;
 }
 
 #ifdef FIG_SUPPORT
 void do_whole_file(const char *filename)
 {
   // Do not set current_filename.
-  FILE *fp;
-  if (strcmp(filename, "-") == 0)
-    fp = stdin;
-  else {
-    errno = 0;
-    fp = fopen(filename, "r");
-    if (fp == 0)
-      fatal("can't open `%1': %2", filename, strerror(errno));
+  file_case *fcp;
+  if ((fcp = file_case::muxer(filename)) == NULL) {
+    assert(strcmp(filename, "-"));
+    fatal("can't open `%1': %2", filename, strerror(errno));
   }
-  lex_init(new file_input(fp, filename));
+
+  lex_init(new file_input(fcp, filename));
   if (yyparse())
     had_parse_error = 1;
   parse_cleanup();
   lex_cleanup();
+
+  delete fcp;
 }
 #endif
 

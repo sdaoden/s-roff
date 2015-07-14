@@ -20,6 +20,8 @@ You should have received a copy of the GNU General Public License along
 with groff; see the file COPYING.  If not, write to the Free Software
 Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 
+#include "file_case.h"
+
 #include "table.h"
 
 #define MAX_POINT_SIZE 99
@@ -30,21 +32,21 @@ extern "C" const char *Version_string;
 int compatible_flag = 0;
 
 class table_input {
-  FILE *fp;
+  file_case *_fcp;
   enum { START, MIDDLE,
 	 REREAD_T, REREAD_TE, REREAD_E,
 	 LEADER_1, LEADER_2, LEADER_3, LEADER_4,
 	 END, ERROR } state;
   string unget_stack;
 public:
-  table_input(FILE *);
+  table_input(file_case *);
   int get();
   int ended() { return unget_stack.empty() && state == END; }
   void unget(char);
 };
 
-table_input::table_input(FILE *p)
-: fp(p), state(START)
+table_input::table_input(file_case *fcp)
+: _fcp(fcp), state(START)
 {
 }
 
@@ -70,17 +72,17 @@ int table_input::get()
   for (;;) {
     switch (state) {
     case START:
-      if ((c = getc(fp)) == '.') {
-	if ((c = getc(fp)) == 'T') {
-	  if ((c = getc(fp)) == 'E') {
+      if ((c = _fcp->get_c()) == '.') {
+	if ((c = _fcp->get_c()) == 'T') {
+	  if ((c = _fcp->get_c()) == 'E') {
 	    if (compatible_flag) {
 	      state = END;
 	      return EOF;
 	    }
 	    else {
-	      c = getc(fp);
+	      c = _fcp->get_c();
 	      if (c != EOF)
-		ungetc(c, fp);
+          _fcp->unget_c(c);
 	      if (c == EOF || c == ' ' || c == '\n') {
 		state = END;
 		return EOF;
@@ -91,14 +93,14 @@ int table_input::get()
 	  }
 	  else {
 	    if (c != EOF)
-	      ungetc(c, fp);
+	      _fcp->unget_c(c);
 	    state = REREAD_T;
 	    return '.';
 	  }
 	}
 	else {
 	  if (c != EOF)
-	    ungetc(c, fp);
+	    _fcp->unget_c(c);
 	  state = MIDDLE;
 	  return '.';
 	}
@@ -122,18 +124,18 @@ int table_input::get()
       break;
     case MIDDLE:
       // handle line continuation and uninterpreted leader character
-      if ((c = getc(fp)) == '\\') {
-	c = getc(fp);
-	if (c == '\n')
-	  c = getc(fp);		// perhaps state ought to be START now
+      if ((c = _fcp->get_c()) == '\\') {
+        c = _fcp->get_c();
+        if (c == '\n')
+          c = _fcp->get_c(); // perhaps state ought to be START now
 	else if (c == 'a' && compatible_flag) {
 	  state = LEADER_1;
 	  return '\\';
 	}
 	else {
-	  if (c != EOF)
-	    ungetc(c, fp);
-	  c = '\\';
+        if (c != EOF)
+          _fcp->unget_c(c);
+        c = '\\';
 	}
       }
       if (c == EOF) {
@@ -179,15 +181,15 @@ int table_input::get()
   }
 }
 
-void process_input_file(FILE *);
+void process_input_file(file_case *);
 void process_table(table_input &in);
 
-void process_input_file(FILE *fp)
+void process_input_file(file_case *fcp)
 {
   enum { START, MIDDLE, HAD_DOT, HAD_T, HAD_TS, HAD_l, HAD_lf } state;
   state = START;
   int c;
-  while ((c = getc(fp)) != EOF)
+  while ((c = fcp->get_c()) != EOF)
     switch (state) {
     case START:
       if (c == '.')
@@ -249,17 +251,17 @@ void process_input_file(FILE *fp)
 	    return;
 	  }
 	  putchar(c);
-	  c = getc(fp);
+	  c = fcp->get_c();
 	}
 	putchar('\n');
 	current_lineno++;
 	{
-	  table_input input(fp);
+	  table_input input(fcp);
 	  process_table(input);
 	  set_troff_location(current_filename, current_lineno);
 	  if (input.ended()) {
 	    fputs(".TE", stdout);
-	    while ((c = getc(fp)) != '\n') {
+	    while ((c = fcp->get_c()) != '\n') {
 	      if (c == EOF) {
 		putchar('\n');
 		return;
@@ -302,7 +304,7 @@ void process_input_file(FILE *fp)
 	    current_lineno++;
 	    break;
 	  }
-	  c = getc(fp);
+	  c = fcp->get_c();
 	}
 	line += '\0';
 	interpret_lf_args(line.contents());
@@ -340,8 +342,6 @@ void process_input_file(FILE *fp)
     fputs(".TS\n", stdout);
     break;
   }
-  if (fp != stdin)
-    fclose(fp);
 }
 
 struct options {
@@ -1598,33 +1598,24 @@ int main(int argc, char **argv)
   printf(".if !\\n(.g .ab GNU tbl requires GNU troff.\n"
 	 ".if !dTS .ds TS\n"
 	 ".if !dTE .ds TE\n");
-  if (argc > optind) {
-    for (int i = optind; i < argc; i++) 
-      if (argv[i][0] == '-' && argv[i][1] == '\0') {
-	current_filename = "-";
-	current_lineno = 1;
-	printf(".lf 1 -\n");
-	process_input_file(stdin);
-      }
-      else {
-	errno = 0;
-	FILE *fp = fopen(argv[i], "r");
-	if (fp == 0)
-	  fatal("can't open `%1': %2", argv[i], strerror(errno));
-	else {
-	  current_lineno = 1;
-	  current_filename = argv[i];
-	  printf(".lf 1 %s\n", current_filename);
-	  process_input_file(fp);
-	}
-      }
-  }
-  else {
-    current_filename = "-";
+
+  file_case *fcp;
+  do /*while (optind < argc)*/ {
+    if ((current_filename = argv[optind++]) == NULL)
+      current_filename = "-";
+    fcp = file_case::muxer(current_filename);
+    if (fcp == NULL) {
+      assert(strcmp(current_filename, "-"));
+      fatal("can't open `%1': %2", current_filename, strerror(errno));
+    }
+
     current_lineno = 1;
-    printf(".lf 1 -\n");
-    process_input_file(stdin);
-  }
+    printf(".lf 1 %s\n", current_filename);
+    process_input_file(fcp);
+
+    delete fcp;
+  } while (optind < argc);
+
   if (ferror(stdout) || fflush(stdout) < 0)
     fatal("output error");
   return 0;

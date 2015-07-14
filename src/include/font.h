@@ -19,6 +19,8 @@ You should have received a copy of the GNU General Public License along
 with groff; see the file COPYING.  If not, write to the Free Software
 Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 
+#include "file_case.h"
+
 // A function of this type can be registered to define the semantics of
 // arbitrary commands in a font DESC file.
 typedef void (*FONT_COMMAND_HANDLER)(const char *,	// command
@@ -213,13 +215,11 @@ public:
   static void command_line_font_dir(const char *);	// Prepend given
 			// path (arg1) to the list of directories in which
 			// to look up fonts.
-  static FILE *open_file(const char *, char **);	// Open a font file
-			// with the given name (arg1), searching along the
-			// current font path.  If arg2 points to a string
-			// pointer, set it to the found file name (this
-			// depends on the device also).  Return the opened
-			// file.  If not found, arg2 is unchanged, and NULL
-			// is returned.
+
+  // Open a font file with the given name, searching along the current font
+  // path.  Return the opened file or NULL.
+  static file_case *  open_file(const char *name,
+                        uint32_t flags=file_case::mux_default);
   static int load_desc();	// Open the DESC file (depending on the
 			// device) and initialize some static variables with
 			// info from there.

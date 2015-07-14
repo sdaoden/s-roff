@@ -74,6 +74,7 @@
 #include "gprint.h"
 
 #include "device.h"
+#include "file_case.h"
 #include "font.h"
 #include "searchpath.h"
 #include "macropath.h"
@@ -228,8 +229,8 @@ int compatibility_flag = FALSE;	/* TRUE if in compatibility mode */
 
 
 void getres();
-int doinput(FILE *fp);
-void conv(register FILE *fp, int baseline);
+int doinput(file_case *fcp);
+void conv(file_case *fcp, int baseline);
 void savestate();
 int has_polygon(register ELT *elist);
 void interpret(char *line);
@@ -257,14 +258,14 @@ int
 main(int argc,
      char **argv)
 {
-  setlocale(LC_NUMERIC, "C");
-  program_name = argv[0];
-  register FILE *fp;
-  register int k;
-  register char c;
-  register int gfil = 0;
+  /* FIXME GREMLIN: use getopt(), iterate sequentially (options, then files)! */
+  int k;
+  char c;
+  int gfil = 0;
   char *file[50];
   char *operand(int *argcp, char ***argvp);
+  setlocale(LC_NUMERIC, "C");
+  program_name = argv[0];
 
   while (--argc) {
     if (**++argv != '-')
@@ -325,22 +326,24 @@ main(int argc,
   }
 
   for (k = 0; k < gfil; k++) {
-    if (file[k] != NULL) {
-      if ((fp = fopen(file[k], "r")) == NULL)
-	fatal("can't open %1", file[k]);
-    } else
-      fp = stdin;
+    file_case *fcp;
+    if ((fcp = file_case::muxer(file[k])) == NULL) {
+      assert(file[k] != NULL);
+      fatal("can't open %1", file[k]);
+    }
 
-    while (doinput(fp)) {
+    while (doinput(fcp)) {
       if (*c1 == '.' && *c2 == 'G' && *c3 == 'S') {
 	if (compatibility_flag ||
 	    *c4 == '\n' || *c4 == ' ' || *c4 == '\0')
-	  conv(fp, linenum);
+	  conv(fcp, linenum);
 	else
 	  fputs(inputline, stdout);
       } else
 	fputs(inputline, stdout);
     }
+
+    delete fcp;
   }
 
   return 0;
@@ -416,9 +419,9 @@ getres()
  *----------------------------------------------------------------------------*/
 
 int
-doinput(FILE *fp)
+doinput(file_case *fcp)
 {
-  if (fgets(inputline, MAXINLINE, fp) == NULL)
+  if (fcp->get_line(inputline, MAXINLINE) == NULL)
     return 0;
   if (strchr(inputline, '\n'))	/* ++ only if it's a complete line */
     linenum++;
@@ -483,10 +486,9 @@ initpic()
  *----------------------------------------------------------------------------*/
 
 void
-conv(register FILE *fp,
+conv(file_case *fcp,
      int baseline)
 {
-  register FILE *gfp = NULL;	/* input file pointer */
   register int done = 0;	/* flag to remember if finished */
   register ELT *e;		/* current element pointer */
   ELT *PICTURE;			/* whole picture data base pointer */
@@ -502,7 +504,7 @@ conv(register FILE *fp,
   strcpy(GScommand, inputline);	/* save `.GS' line for later */
 
   do {
-    done = !doinput(fp);		/* test for EOF */
+    done = !doinput(fcp);		/* test for EOF */
     flyback = (*c3 == 'F');		/* and .GE or .GF */
     compat = (compatibility_flag ||
 	      *c4 == '\n' || *c4 == ' ' || *c4 == '\0');
@@ -518,13 +520,14 @@ conv(register FILE *fp,
 	  error("at line %1: no picture filename.\n", baseline);
 	return;
       }
-      char *path;
-      gfp = macro_path.open_file(gremlinfile, &path);
-      if (!gfp)
-	return;
-      PICTURE = DBRead(gfp);	/* read picture file */
-      fclose(gfp);
-      a_delete path;
+      {
+      file_case *fcp = macro_path.open_file(gremlinfile,
+          fcp->fc_const_path | fcp->mux_need_stdio); /* TODO _need_stdio! */
+      if (fcp == NULL)
+        return;
+      PICTURE = DBRead(fcp->file()); /* read picture file TODO _need_stdio! */
+      delete fcp;
+      }
       if (DBNullelt(PICTURE))
 	return;			/* If a request is made to make the  */
 				/* picture fit into a specific area, */

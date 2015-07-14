@@ -31,6 +31,7 @@
 #include <errno.h>
 #include "errarg.h"
 #include "error.h"
+#include "file_case.h"
 #include "stringclass.h"
 #include "posix.h"
 #include "defs.h"
@@ -247,9 +248,9 @@ void sys_fatal(const char *s)
  *             global line buffer.
  */
 
-int get_line(FILE *f)
+int get_line(file_case *fcp)
 {
-  if (f == 0)
+  if (fcp == NULL)
     return 0;
   if (linebuf == 0) {
     linebuf = new char[128];
@@ -258,16 +259,16 @@ int get_line(FILE *f)
   int i = 0;
   // skip leading whitespace
   for (;;) {
-    int c = getc(f);
+    int c = fcp->get_c();
     if (c == EOF)
       return 0;
     if (c != ' ' && c != '\t') {
-      ungetc(c, f);
+      fcp->unget_c(c);
       break;
     }
   }
   for (;;) {
-    int c = getc(f);
+    int c = fcp->get_c();
     if (c == EOF)
       break;
     if (i + 1 >= linebufsize) {
@@ -293,22 +294,19 @@ int get_line(FILE *f)
 
 static unsigned int get_resolution(void)
 {
-  char *pathp;
-  FILE *f;
   unsigned int res;
-  f = font_path.open_file("devps/DESC", &pathp);
-  a_delete pathp;
-  if (f == 0)
+  file_case *fcp;
+  if ((fcp = font_path.open_file("devps/DESC", fcp->fc_const_path)) == NULL)
     fatal("can't open devps/DESC");
-  while (get_line(f)) {
+  while (get_line(fcp)) {
     int n = sscanf(linebuf, "res %u", &res);
-    if (n >= 1) {
-      fclose(f);
-      return res;
-    }
+    if (n >= 1)
+      goto jleave;
   }
   fatal("can't find `res' keyword in devps/DESC");
-  return 0;
+jleave:
+  delete fcp;
+  return res;
 }
 
 /*
@@ -418,7 +416,7 @@ class char_buffer {
 public:
   char_buffer();
   ~char_buffer();
-  int read_file(FILE *fp);
+  int read_file(file_case *fcp);
   int do_html(int argc, char *argv[]);
   int do_image(int argc, char *argv[]);
   void emit_troff_output(int device_format_selector);
@@ -459,10 +457,10 @@ char_buffer::~char_buffer()
  *              char_blocks.
  */
 
-int char_buffer::read_file(FILE *fp)
+int char_buffer::read_file(file_case *fcp)
 {
   int n;
-  while (!feof(fp)) {
+  while (!fcp->is_eof()) {
     if (tail == NULL) {
       tail = new char_block;
       head = tail;
@@ -475,14 +473,17 @@ int char_buffer::read_file(FILE *fp)
     }
     // at this point we have a tail which is ready for the next SIZE
     // bytes of the file
-    n = fread(tail->buffer, sizeof(char), char_block::SIZE-tail->used, fp);
-    if (n <= 0)
-      // error
-      return 0;
-    else
+    n = fcp->get_buf(tail->buffer, char_block::SIZE - tail->used);
+    if (n != 0)
       tail->used += n * sizeof(char);
+    else {
+      n = fcp->is_eof();
+      goto jleave;
+    }
   }
-  return 1;
+  n = 1;
+jleave:
+  return n;
 }
 
 /*
@@ -1810,25 +1811,21 @@ int main(int argc, char **argv)
 
 static int do_file(const char *filename)
 {
-  FILE *fp;
+  file_case *fcp;
 
   current_filename = filename;
-  if (strcmp(filename, "-") == 0)
-    fp = stdin;
-  else {
-    fp = fopen(filename, "r");
-    if (fp == 0) {
-      error("can't open `%1': %2", filename, strerror(errno));
-      return 0;
-    }
+  fcp = file_case::muxer(filename);
+  if (fcp == NULL) {
+    assert(strcmp(filename, "-"));
+    error("can't open `%1': %2", filename, strerror(errno));
+    return 0;
   }
 
-  if (inputFile.read_file(fp)) {
+  if (inputFile.read_file(fcp)) {
     // XXX
   }
 
-  if (fp != stdin)
-    fclose(fp);
+  delete fcp;
   current_filename = NULL;
   return 1;
 }

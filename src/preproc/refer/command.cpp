@@ -22,6 +22,7 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 #include "refer.h"
 #include "refid.h"
 #include "search.h"
+#include "file_case.h"
 #include "command.h"
 
 cset cs_field_name = csalpha;
@@ -148,35 +149,31 @@ int input_stack::peek_char()
 
 void input_stack::push_file(const char *fn)
 {
-  FILE *fp;
-  if (strcmp(fn, "-") == 0) {
-    fp = stdin;
+  file_case *fcp = file_case::muxer(fn);
+  if (fcp == NULL) {
+    assert(strcmp(fn, "-"));
+    error("can't open `%1': %2", fn, strerror(errno));
+    return;
+  }
+  if (fn[0] == '-' && fn[1] == '\0')
     fn = "<standard input>";
-  }
-  else {
-    errno = 0;
-    fp = fopen(fn, "r");
-    if (fp == 0) {
-      error("can't open `%1': %2", fn, strerror(errno));
-      return;
-    }
-  }
+
   string buf;
   int bol = 1;
   int lineno = 1;
   for (;;) {
-    int c = getc(fp);
+    int c = fcp->get_c();
     if (bol && c == '.') {
       // replace lines beginning with .R1 or .R2 with a blank line
-      c = getc(fp);
+      c = fcp->get_c();
       if (c == 'R') {
-	c = getc(fp);
+	c = fcp->get_c();
 	if (c == '1' || c == '2') {
 	  int cc = c;
-	  c = getc(fp);
+	  c = fcp->get_c();
 	  if (compatible_flag || c == ' ' || c == '\n' || c == EOF) {
 	    while (c != '\n' && c != EOF)
-	      c = getc(fp);
+	      c = fcp->get_c();
 	  }
 	  else {
 	    buf += '.';
@@ -207,8 +204,9 @@ void input_stack::push_file(const char *fn)
 	bol = 0;
     }
   }
-  if (fp != stdin)
-    fclose(fp);
+
+  delete fcp;
+
   if (buf.length() > 0 && buf[buf.length() - 1] != '\n')
     buf += '\n';
   input_item *it = new input_item(buf, fn);
