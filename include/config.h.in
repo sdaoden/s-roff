@@ -38,9 +38,6 @@
 /* Define if you have the iconv() function. */
 #undef HAVE_ICONV
 
-/* Define to 1 if you have the <inttypes.h> header file. */
-#undef HAVE_INTTYPES_H
-
 /* Define to 1 if you have the `isatty' function. */
 #undef HAVE_ISATTY
 
@@ -58,9 +55,6 @@
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
-
-/* Define if you have mkstemp(). */
-#undef HAVE_MKSTEMP
 
 /* Define to 1 if you have a working `mmap' system call. */
 #undef HAVE_MMAP

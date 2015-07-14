@@ -114,7 +114,7 @@ temp_init::~temp_init()
  *  only the *template* is returned.
  */
 
-char *xtmptemplate(const char *postfix_long, const char *postfix_short)
+static char *xtmptemplate(const char *postfix_long, const char *postfix_short)
 {
   const char *postfix = use_short_postfix ? postfix_short : postfix_long;
   int postlen = 0;
@@ -178,7 +178,7 @@ FILE *xtmpfile(char **namep,
 {
   char *templ = xtmptemplate(postfix_long, postfix_short);
   errno = 0;
-  int fd = mkstemp(templ);
+  int fd = rf_mkstemp(templ, FAL0);
   if (fd < 0)
     fatal("cannot create temporary file: %1", strerror(errno));
   errno = 0;
