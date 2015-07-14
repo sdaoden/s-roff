@@ -996,7 +996,7 @@ next_command(void)
 inline bool
 odd(const int n)
 {
-  return (n & 1 == 1) ? true : false;
+  return (n & 1) ? true : false;
 }
 
 //////////////////////////////////////////////////////////////////////

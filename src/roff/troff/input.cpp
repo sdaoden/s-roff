@@ -2854,11 +2854,12 @@ void process_input_stack()
 	    do {
 	      node *n;
 	      cc = get_copy(&n);
-	      if (cc != EOF)
+	      if (cc != EOF) {
 		if (cc != '\0')
 		  curdiv->transparent_output(transparent_translate(cc));
 		else
 		  curdiv->transparent_output(n);
+	      }
 	    } while (cc != '\n' && cc != EOF);
 	    if (cc == EOF)
 	      curdiv->transparent_output('\n');

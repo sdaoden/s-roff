@@ -27,7 +27,7 @@ the original English.
 .TH GROFF_MMSE @MAN7EXT@ "@MDATE@" "Groff Version @VERSION@"
 .
 .
-.SH NAMN
+.SH NAME
 .
 groff_mmse \- svenska mm makro för groff
 .
