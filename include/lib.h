@@ -49,27 +49,28 @@ char *strsave(const char *s);
 int is_prime(unsigned);
 double groff_hypot(double, double);
 
-rf_C_DECL_BEGIN
 #ifndef HAVE_STRERROR
+C_DECL_BEGIN
    char *strerror(int);
+C_DECL_END
 #endif
+
+C_DECL_BEGIN
    const char *i_to_a(int);
    const char *ui_to_a(unsigned int);
    const char *if_to_a(int, int);
-rf_C_DECL_END
+C_DECL_END
 
-#ifndef HAVE_MKSTEMP
-/* since mkstemp() is defined as a real C++ function if taken from
-   groff's mkstemp.cpp we need a declaration */
-int mkstemp(char *tmpl);
-#endif /* HAVE_MKSTEMP */
-
-int mksdir(char *tmpl);
+C_DECL_BEGIN
+   /* The last six characters of template must be "XXXXXX";
+    * they are replaced with a string that makes the filename unique.
+    * Then open the file (or directory) and return a fd */
+   c_decl int rf_mkstemp(char *template, boole wantdir);
+C_DECL_END
 
 FILE *xtmpfile(char **namep = 0,
-	       const char *postfix_long = 0, const char *postfix_short = 0,
-	       int do_unlink = 1);
-char *xtmptemplate(const char *postfix_long, const char *postfix_short);
+             const char *postfix_long = 0, const char *postfix_short = 0,
+             int do_unlink = 1);
 
 #ifdef NEED_DECLARATION_POPEN
 extern "C" { FILE *popen(const char *, const char *); }

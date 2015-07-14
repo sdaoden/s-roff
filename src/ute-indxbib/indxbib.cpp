@@ -237,7 +237,7 @@ int main(int argc, char **argv)
     temp_index_file = strsave(TEMP_INDEX_TEMPLATE);
   }
   _catch_fatal_signals();
-  int fd = mkstemp(temp_index_file);
+  int fd = rf_mkstemp(temp_index_file, FAL0);
   if (fd < 0)
     fatal("can't create temporary index file: %1", strerror(errno));
   indxfp = fdopen(fd, FOPEN_WB);
