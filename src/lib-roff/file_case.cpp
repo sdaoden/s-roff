@@ -35,7 +35,7 @@
 
 #undef getc
 #undef a_getc
-#ifdef HAVE_DECL_GETC_UNLOCKED
+#ifdef HAVE_STDIO_UNLOCKED
 # define a_getc getc_unlocked
 #else
 # define a_getc fgetc
