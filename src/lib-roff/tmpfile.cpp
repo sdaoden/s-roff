@@ -24,6 +24,8 @@
 #include "config.h"
 #include "lib.h"
 
+#include "su/io.h"
+
 #include <errno.h>
 #include <stdlib.h>
 
@@ -90,7 +92,7 @@ temp_init::temp_init()
   if (need_slash)
     strcat(tem2, "/");
   const char *tem3 = TMPFILE_PREFIX_LONG;
-  if (file_name_max(tem2) <= 14) {
+  if (su_file_name_max(tem2) <= 14) {
     tem3 = TMPFILE_PREFIX_SHORT;
     use_short_postfix = 1;
   }

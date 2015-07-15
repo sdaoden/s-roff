@@ -23,6 +23,8 @@
 #include "config.h"
 #include "indxbib-config.h"
 
+#includ "su/io.h"
+
 #include <sys/types.h>
 
 #include <assert.h>
@@ -219,11 +221,11 @@ int main(int argc, char **argv)
   if (p) {
     char *dir = strsave(base_name);
     dir[p - base_name] = '\0';
-    name_max = file_name_max(dir);
+    name_max = su_file_name_max(dir);
     a_delete dir;
   }
   else
-    name_max = file_name_max(".");
+    name_max = su_file_name_max(".");
   const char *filename = p ? p + 1 : base_name;
   if (strlen(filename) + sizeof(INDEX_SUFFIX) - 1 > name_max)
     fatal("`%1.%2' is too long for a filename", filename, INDEX_SUFFIX);
