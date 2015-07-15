@@ -23,9 +23,6 @@
 /* Define to 1 if you have the <direct.h> header file. */
 #undef HAVE_DIRECT_H
 
-/* Define to 1 if you have the <dirent.h> header file. */
-#undef HAVE_DIRENT_H
-
 /* Define to 1 if you have the `fmod' function. */
 #undef HAVE_FMOD
 
@@ -106,9 +103,6 @@
 
 /* Define if <math.h> defines struct exception. */
 #undef HAVE_STRUCT_EXCEPTION
-
-/* Define to 1 if you have the <sys/dir.h> header file. */
-#undef HAVE_SYS_DIR_H
 
 /* Define if you have sys_errlist in <errno.h>, <stdio.h>, or <stdlib.h>. */
 #undef HAVE_SYS_ERRLIST
