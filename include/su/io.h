@@ -25,6 +25,9 @@ C_DECL_BEGIN
 /* _PC_NAME_MAX for files in directory dname */
 c_decl uiz su_file_name_max(char const *dname);
 
+/* _PC_PATH_MAX for files (in directory dname_or_nil) */
+c_decl uiz su_path_name_max(char const *dname_or_nil);
+
 C_DECL_END
 #include <su/code-ou.h>
 #endif /* su_IO_H */
