@@ -23,6 +23,8 @@
 #include "config.h"
 #include "lib.h"
 
+#include "su/io.h"
+
 #include <errno.h>
 #include <stdlib.h>
 
@@ -85,9 +87,11 @@ char *searchpath(const char *name, const char *pathp)
   // Try first NAME as such; success if NAME is an absolute filename,
   // or if NAME is found in the current directory.
   if (!access (name, F_OK)) {
-    path = new char[path_name_max()];
+    size_t pnm = su_path_name_max(NULL /* FIXME may be rel. directory! */);
+
+    path = new char[pnm];
 #ifdef _WIN32
-    path = _fullpath(path, name, path_name_max());
+    path = _fullpath(path, name, pnm);
 #else
     path = realpath(name, path);
 #endif
@@ -164,24 +168,26 @@ char *msw2posixpath(char *path)
 void set_current_prefix()
 {
   char *pathextstr;
-  curr_prefix = new char[path_name_max()];
+  size_t pnm = su_path_name_max(NULL /* FIXME may be rel. directory! */);
+  curr_prefix = new char[pnm];
   // Obtain the full path of the current binary;
   // using GetModuleFileName on MS-Windows,
   // and searching along PATH on other systems.
 #ifdef _WIN32
-  int len = GetModuleFileName(0, curr_prefix, path_name_max());
+  int len = GetModuleFileName(0, curr_prefix, pnm);
   if (len)
-    len = GetShortPathName(curr_prefix, curr_prefix, path_name_max());
+    len = GetShortPathName(curr_prefix, curr_prefix, pnm);
 # if DEBUG
   fprintf(stderr, "curr_prefix: %s\n", curr_prefix);
 # endif /* DEBUG */
 #else /* !_WIN32 */
-  curr_prefix = searchpath(program_name, getenv("PATH"));
+  char const *ep = getenv("PATH");
+  curr_prefix = searchpath(program_name, ep);
   if (!curr_prefix && !strchr(program_name, '.')) {	// try with extensions
     pathextstr = strsave(getenv("PATHEXT"));
     if (!pathextstr)
       pathextstr = strsave(PATH_EXT);
-    curr_prefix = searchpathext(program_name, pathextstr, getenv("PATH"));
+    curr_prefix = searchpathext(program_name, pathextstr, ep);
     a_delete pathextstr;
   }
   if (!curr_prefix)
