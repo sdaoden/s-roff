@@ -1,0 +1,186 @@
+#@ make.rc describes the set of used features and (default) values used etc.
+#@ You should have read INSTALL first.
+#@ Notes:
+#@ . Features / options have an OPT_ prefix and need to be assigned
+#@   a boolean value, as in OPT_ICONV=yes.  Booleans are 1/0, y/n,
+#@   true/false, yes/no and on/off (case doesn't matter).
+#@   The value "require" is also a true boolean, but will in addition
+#@   cause configuration to fail if the requested condition cannot be
+#@   satisfied.  This value is only available for a subset of options.
+#@ . Values use VAL_ instead, and are assigned strings.
+#@   E.g., VAL_PREFIX=/usr/local.
+#@   Variables which are only used during configuration, building,
+#@   and / or installation have no prefix, e.g., DESTDIR, VERBOSE, awk.
+#@ . Specifying settings on the command line will take precedence over
+#@   the variables in here (correctly triggering build updates as
+#@   necessary, too).
+#@ . This file is parsed by the shell: it is in sh(1), not in make(1)
+#@   syntax.  Evaluation occurs *after* it has been read, so command
+#@   line overwrites take effect.  To use multiline values, escape the
+#@   newlines on all lines but the last with a reverse solidus (back-
+#@   slash), as in "LINE \".
+#@   To embed a shell variable unexpanded, use two: "XY=\\${HOME}".
+#@   The parsing is sequential top-to-bottom (nonetheless), so that
+#@   shell snippets in a value can refer only to stuff yet defined.
+#@ . You may NOT comment out anything in here -- if you want to disable
+#@   a feature, set it to a false boolean.
+
+## IDENTITIES, PATHS AND PROGRAMS ##
+
+# Contact info.
+VAL_CONTACT_MAIL=steffen@sdaoden.eu
+VAL_CONTACT_WEB=https://www.sdaoden.eu/code.html
+
+# General prefix where the program should be installed.
+VAL_PREFIX=/usr/local
+
+# Fine tune individual locations, normally under $VAL_PREFIX.
+# . the place of the normal user binaries.
+VAL_BINDIR="${VAL_PREFIX}/bin"
+# . the place for internal binaries (as necessary).
+VAL_LIBEXECDIR="${VAL_PREFIX}/libexec"
+# . of the manual.
+VAL_MANDIR="${VAL_PREFIX}/share/man"
+# . of the exemplary resource file(s).
+VAL_SYSCONFDIR="${VAL_PREFIX}/etc"
+
+# The variable $DESTDIR is prepended to all the paths from above at
+# installation time; this feature can be used for, e.g., package
+# building: if $VAL_PREFIX is "/usr/local", but $DESTDIR is set to "here",
+# then we will still think its $VAL_PREFIX is "/usr/local" whereis the
+# build system will instead use "here/usr/local".
+# NOTE: it cannot be set in here, but must be given on the command line
+# when invoking the "install" make(1) (directly or indirectly).
+# (That is, if you uncomment it, it'll be update-tracked...)
+#DESTDIR=
+
+# Default *SHELL* (sh(1) path).
+# Sometimes we simply invoke a command directly via execlp(2) instead of
+# indirectly through *SHELL* -- in these cases execlp(2) may fallback to
+# it's own built-in sh(1) path
+VAL_SHELL=/bin/sh
+
+# Some more default fallback values, some of which are standardized
+# and (thus)/or documented in the manual (changes not reflected there!).
+# Note that default paths are often not (shell) quoted when displayed
+VAL_TMPDIR=/tmp
+
+# The following tools may be provided a.k.a. overwritten,
+# `command -v NAME` is used to query the utility otherwise:
+#  MAKE=, STRIP=, awk=, basename=, cat=, chmod=, cp=, cmp=, cksum=,
+#     grep=, mkdir=, mv=, rm=, sed=, sort=, tee=, tr=
+# Note that awk(1), rm(1) and tr(1) are needed before this file is read,
+# all other utilities will be checked afterwards only.  For
+# cross-compilation setting $MAKE and $STRIP may be necessary.  Due to
+# the evaluation order of the build system all those programs are
+# usually needed, but by setting any of the variables to true(1), as in
+# chown=/usr/bin/true, availability of unneeded programs can be faked.
+# We require uname(1) -s, echo(1), printf(1) etc.
+# uname(1) can be circumvented by setting $OS (and $OSENV, $OSFULLSPEC).
+# $OS must be all-lowercase.
+
+## FEATURE SET ##
+
+# Some operating systems only support the C/POSIX (7-bit, but eight bit
+# bytes are passed through unchanged) and UTF-8 based locales, e.g.,
+# Plan9, Musl based Linux variants and newer OpenBSD.  For such
+# environments we can avoid a lot of tests and may enable support for
+# features which would otherwise not be available.
+# Note that $OS is available as normalized all-lowercase upon evaluation
+OPT_ALWAYS_UNICODE_LOCALE=`\
+   if [ "${OS}" = openbsd ]; then \
+      echo yes;\
+   else \
+      echo no;\
+   fi`
+
+# For cross-compilation purposes it may be useful to not actually run
+# systemcall etc. tests (link and run the executable) but only to
+# perform the link tests necessary to detect host environment.
+OPT_CROSS_BUILD=no
+
+# Shall we try to automatically detect a compiler and provide a set
+# of known-good compiler flags?  If so additions may still be provided
+# by setting $EXTRA_CFLAGS, $EXTRA_CXXFLAGS and $EXTRA_LDFLAGS to
+# whatever is desired.
+# Thus: set this to false and use your normal $CC / $CFLAGS / $CXX /
+# $CXXFLAGS / $LDFLAGS, otherwise pass additional flags via
+# $EXTRA_CFLAGS / $EXTRA_CXXFLAGS / $EXTRA_LDFLAGS:
+#     $ make EXTRA_CFLAGS=-std=c99 tangerine
+# Whatever you do, the configuration is fixated and updates will force
+# rebuilds.  And far below in this file there is $OPT_FORCED_STACKPROT,
+# too, which can be used to cause injection of stack protectors.
+# (There you could also find OPT_ASAN_ADDRESS and OPT_ASAN_MEMORY
+# (Remember, file is parsed from top to bottom, sorry).)
+OPT_AUTOCC=yes
+
+# Character set conversion allows working with files in multiple
+# character sets through usage of the iconv(3) library.
+# This should usually be enabled; it can be "require"d.
+OPT_ICONV=yes
+
+# Use termcap(5) for terminal control; can be "require"d.
+# Today most environments ship a termcap(5) that in fact is part of
+# terminfo(5), and acts as a converting wrapper for this library.
+# To avoid this redundancy we also support terminfo(5), and use it
+# instead if we find it (assuming that termcap(5) is a stub, then).
+# Can be "require"d.
+OPT_TERMCAP=yes
+OPT_TERMCAP_VIA_TERMINFO=yes
+
+##  --  >8  --  8<  --  ##
+## Normal users should not need to read any further
+
+## PATHS AND PROGRAMS, DEVELOPMENT ##
+
+# To ease the life of forkers and packagers "our" name can be changed.
+# The name is build by concatenating $VAL_SID and $VAL_XY, i.e.,
+# $(VAL_SID)$(VAL_ROFF).  Note that the final string must be longer
+# than two characters and may not contain any whitespace.
+VAL_SID=s-
+VAL_ROFF=roff
+
+## FEATURE SET, DEVELOPMENT ##
+
+# Use debug compiler flags, enable some additional commands and code
+# assertions.  Note that setting this also enables our own memory
+# canaries, which require a rather large amount of runtime memory.
+OPT_DEBUG=no
+
+# Experimental code etc.
+# Note: this forcefully enables OPT_DEBUG
+OPT_DEVEL=no
+
+# With $OPT_AUTOCC we can make use of the ASan AddressSanitizer and ASan
+# MemorySanitizer of Google
+# (https://github.com/google/sanitizers/wiki/AddressSanitizer).
+# These are definetely only useful for debugging.
+# Also, external libraries are often problematic (e.g., ncursesw), and
+# ASAN_MEMORY of the tried clang 4.0.0 (4.0.0-2 of ArchLinux) was faulty.
+# Can be "require"d.
+OPT_ASAN_ADDRESS=no
+OPT_ASAN_MEMORY=no
+
+# With $OPT_AUTOCC we will use stack protector guards shall the
+# detected compiler support them; this goes in line with our own (heap)
+# memory canaries and will detect buffer overflows.  It is usually only
+# useful during development, i.e., in a debug environment that tests all
+# aspects of a program.  But today it is often used even in shipout code.
+OPT_FORCED_STACKPROT=`\
+   if feat_yes DEVEL || feat_yes DEBUG; then \
+      echo yes;\
+   else \
+      echo no;\
+   fi`
+
+# If $OPT_DEBUG is true we'll use a simple memory wrapper with
+# canaries.  This interferes with memory debuggers like valgrind(1) or
+# the LLVM -fsanitize stuff.  Enable this to not use our wrapper.
+OPT_NOMEMDBG=`\
+   if feat_yes ASAN_MEMORY || feat_yes ASAN_ADDRESS; then \
+      echo yes;\
+   else \
+      echo no;\
+   fi`
+
+# vim:set tw=72: s-it-mode

@@ -1,0 +1,163 @@
+#@ make-config.in -- mk-config.mk template, completed by make-config.sh.
+#@ Please see INSTALL and make.rc instead.
+
+.PHONY: all test install uninstall clean distclean
+
+SIZE_CHECK = @if ( command -v size ) > /dev/null 2>&1; then size $(@); fi
+
+_version_from_header = VERSION="`< gen-version.h $(sed) \
+		-e '/ n_VERSION /b X' -e d -e ':X' \
+		-e 's/[^\"]*\"v\([^\"]\{1,\}\)\"/\1/'`"
+
+all: $(VAL_ROFF)
+
+$(VAL_ROFF): $(OBJ) uman.1 urc.rc
+	$(ECHO_LINK)$(CC) $(LDFLAGS) -o $(@) $(OBJ) $(LIBS)
+	$(SIZE_CHECK)
+
+$(OBJ): mk-config.h
+
+uman.1: $(SRCDIR)nail.1
+	$(ECHO_GEN)\
+	LC_ALL=C _SYSCONFRC="$(VAL_SYSCONFRC)" _UAGENT="$(VAL_UAGENT)" \
+		$(_version_from_header) \
+	< $(SRCDIR)nail.1 > $(@) $(awk) '\
+	BEGIN { written = 0 }\
+	/\.\\"--MKMAN-START--/, /\.\\"--MKMAN-END--/ {\
+		if (written++ != 0)\
+			next;\
+		OFS = "";\
+		print ".ds VV \\\\%v", ENVIRON["VERSION"];\
+		\
+		un = toupper(ENVIRON["_UAGENT"]);\
+		ln = tolower(un);\
+		cn = toupper(substr(ln, 1, 1)) substr(ln, 2);\
+		print ".ds UU \\\\%", un;\
+		print ".ds UA \\\\%", cn;\
+		print ".ds uA \\\\%", ln;\
+		\
+		path = ENVIRON["_SYSCONFRC"];\
+		gsub("/", "/\\:", path);\
+		print ".ds UR \\\\%", path;\
+		OFS = " ";\
+		next\
+	}\
+	{print}\
+	'
+
+install:
+	$(ECHO_BLOCK_BEGIN)\
+	__mkdir() {\
+		_dir="$(DESTDIR)$${1}";\
+		if [ -d "$${_dir}" ]; then :; else \
+			$(mkdir) -m 0755 -p "$${_dir}";\
+		fi;\
+	};\
+	__copyfile() {\
+		_mode=$${1} _src=$${2} _xdst=$${3} _dst="$(DESTDIR)$${3}";\
+		$(cp) -f "$${_src}" "$${_dst}";\
+		echo "rm -f \"\$${DESTDIR}$${_xdst}\"" >> \
+			"$(VAL_ROFF)-uninstall.sh";\
+		$(chmod) $${_mode} "$${_dst}";\
+		\
+	};\
+	__copychownfile() {\
+		_mode=$${1} _ident=$${2} _src=$${3} \
+			_xdst=$${4} _dst="$(DESTDIR)$${4}";\
+		$(cp) -f "$${_src}" "$${_dst}";\
+		echo "rm -f \"\$${DESTDIR}$${_xdst}\"" >> \
+			"$(VAL_ROFF)-uninstall.sh";\
+		$(chown) $${_ident} "$${_dst}" || true;\
+		$(chmod) $${_mode} "$${_dst}";\
+		\
+	};\
+	__stripfile() {\
+		_file=$${1};\
+		if [ "$(OPT_DEBUG)" != 0 ]; then :;\
+		elif [ -n "$(HAVE_STRIP)" ]; then \
+			$(strip) "$${_file}";\
+		fi;\
+	};\
+	\
+	echo '#!/bin/sh -' > "$(VAL_ROFF)-uninstall.sh";\
+	echo '#@ Uninstall script for $(VAL_ROFF)' >> \
+		"$(VAL_ROFF)-uninstall.sh";\
+	echo >> "$(VAL_ROFF)-uninstall.sh";\
+	echo 'DESTDIR="$(DESTDIR)"' >> "$(VAL_ROFF)-uninstall.sh";\
+	echo 'DESTDIR=' >> "$(VAL_ROFF)-uninstall.sh";\
+	echo >> "$(VAL_ROFF)-uninstall.sh";\
+	\
+	if [ -n "$(DESTDIR)" ]; then __mkdir ''; fi;\
+	__mkdir "$(VAL_BINDIR)";\
+	__mkdir "$(VAL_MANDIR)/man1";\
+	__mkdir "$(VAL_SYSCONFDIR)";\
+	\
+	if [ -z "$(DESTDIR)" ]; then \
+		__copyfile 0555 "$(VAL_ROFF)-uninstall.sh" \
+			"$(VAL_BINDIR)/$(VAL_ROFF)-uninstall.sh";\
+	fi;\
+	$(ECHO_BLOCK_END)
+
+uninstall:
+	@echo 'Invoke $(VAL_ROFF)-uninstall.sh to uninstall $(VAL_ROFF)'
+
+clean:
+	$(ECHO_CMD)\
+	$(rm) -f $(OBJ) $(VAL_ROFF) ./uman.1 ./urc.rc;\
+	\
+	if [ -f "$(VAL_ROFF)-uninstall.sh" ]; then \
+		$(rm) -f ./$(VAL_ROFF)-uninstall.sh;\
+	fi
+
+distclean: clean
+	$(ECHO_CMD)\
+	$(rm) -f ./mk-*
+
+# MUST work with "grep=grep sed=sed cmp=cmp mv=mv", otherwise need to change
+# make-release.inc
+_update-version:
+	@LC_ALL=C; export LC_ALL;\
+	if [ -z "$(VERSION)" ]; then \
+		eval VERSION="`(cd $(SRCDIR);\
+			[ -d .git ] && git describe --tags) 2>/dev/null`";\
+		if [ -n "$${VERSION}" ]; then \
+			VERSION="`echo $${VERSION} |\
+				$(sed) -e 's/^v\{0,1\}\(.*\)/\1/'`";\
+			[ "`(cd $(SRCDIR) && git status --porcelain) |\
+				$(awk) '\
+					BEGIN {n=0}\
+					/gen-version\.h/ {next}\
+					/^\?\?/ {next}\
+					{++n}\
+					END {print n}\
+				'`" -ne 0 ] &&\
+				VERSION="$${VERSION}-dirty";\
+		else \
+			$(_version_from_header);\
+			echo "$${VERSION}" | $(grep) -q -F dirty ||\
+				VERSION="$${VERSION}-dirty";\
+		fi;\
+	fi;\
+	vmaj="`echo \"$${VERSION}\" |\
+		$(sed) -e 's/^\([^.]\{1,\}\).*/\1/'`";\
+	vmin="`echo \"$${VERSION}\" |\
+		$(sed) -e 's/^[^.]\{1,\}\.\([^.]\{1,\}\).*/\1/'`";\
+	[ "$${vmin}" = "$${VERSION}" ] && VERSION="$${VERSION}.0" vmin=0;\
+	vupd="`echo \"$${VERSION}\" |\
+		$(sed) -e 's/^[^.]\{1,\}\.[^.]\{1,\}\.\([^.-]\{1,\}\).*/\1/'`";\
+	[ "$${vupd}" = "$${VERSION}" ] && VERSION="$${VERSION}.0" vupd=0;\
+	trap "$(rm) -f ./version.tmp" 0 1 2 15;\
+	printf > ./version.tmp "#define rf_VERSION \"v$${VERSION}\"\n";\
+	printf >> ./version.tmp \
+		"#define rf_VERSION_DATE \"`date -u +'%Y-%m-%d'`\"\n";\
+	printf >> ./version.tmp "#define rf_VERSION_MAJOR \"$${vmaj}\"\n";\
+	printf >> ./version.tmp "#define rf_VERSION_MINOR \"$${vmin}\"\n";\
+	printf >> ./version.tmp "#define rf_VERSION_UPDATE \"$${vupd}\"\n";\
+	printf >> ./version.tmp \
+		"#define rf_VERSION_HEXNUM \"0x%02X%03X%03X\"\n" \
+		"$${vmaj}" "$${vmin}" "$${vupd}";\
+	$(cmp) ./version.tmp ./gen-version.h >/dev/null 2>&1 && exit;\
+	$(mv) ./version.tmp ./gen-version.h;\
+	trap : 0 1 2 15
+
+# s-mk-mode

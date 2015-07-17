@@ -1,0 +1,5 @@
+#define rf_VERSION "v0.0.0"
+#define rf_VERSION_DATE "2017-08-21"
+#define rf_VERSION_MAJOR "0"
+#define rf_VERSION_MINOR "0"
+#define rf_VERSION_UPDATE "0"

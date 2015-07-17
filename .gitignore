@@ -1,5 +1,2 @@
-Makefile
-config.log
-config.status
-stamp-h
-test-groff
+.obj/
+.doc/
