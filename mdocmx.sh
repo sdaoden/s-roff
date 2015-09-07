@@ -406,10 +406,8 @@ function arg_quote(arg) {
 function mx_enable() {
   # However, are we running on an already preprocessed document?  Bypass!
   if (NF > 2) {
-    if (NF > 3 && $3 == "-preprocessed") {
-      $1 = $2 = $3 = ""
-      $0 = substr($0, 3)
-      print ".Mx -enable -preprocessed" $0
+    if ($3 == "-preprocessed") {
+      print
       mx_bypass = 1
       return
     }
