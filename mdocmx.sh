@@ -113,7 +113,7 @@ find_tmpdir() {
 find_tmpdir
 
 max=421
-[ ${V} -gt 1 ] && max=2
+[ ${V} -gt 1 ] && max=3
 i=1
 # RW by user only, avoid overwriting of existing files
 old_umask=`umask`
@@ -121,15 +121,14 @@ umask 077
 set -C
 while [ 1 ]; do
   tmpfile="${tmpdir}/mdocmx-${i}.mx"
-  { : > "${tmpfile}"; } >/dev/null 2>&1 && break
+  ( : > "${tmpfile}" ) >/dev/null 2>&1 && break
   i=`expr ${i} + 1`
   if [ ${i} -gt ${max} ]; then
     echo >&2 'Cannot create a temporary file within '"${tmpdir}"
     exit ${EX_TEMPFAIL}
   fi
 done
-
-trap "rm -f ${tmpfile}; exit ${EX_TEMPFAIL}" HUP INT QUIT PIPE TERM
+trap "exit ${EX_TEMPFAIL}" HUP INT QUIT PIPE TERM
 trap "rm -f ${tmpfile}" EXIT
 umask ${old_umask}
 
