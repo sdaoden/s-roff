@@ -1,0 +1,2379 @@
+include/errarg.h
+include/error.h
+include/file-case.h
+include/font.h
+include/gen-version.h
+include/geometry.h
+include/getopt.h
+include/getopt-int.h
+include/gettext.h
+include/html-strings.h
+include/htmlhint.h
+include/index.h
+include/itable.h
+include/lib.h
+include/localcharset.h
+include/macropath.h
+include/nonposix.h
+include/paper.h
+include/posix.h
+include/ptable.h
+include/refid.h
+include/relocate.h
+include/search.h
+include/searchpath.h
+include/stringclass.h
+include/symbol.h
+include/unicode.h
+make-config.sh
+make-emerge.sh
+make-release.sh
+mdocmx.sh
+src/dev-dvi/dvi-config.h.in
+src/dev-dvi/dvi.cpp
+src/dev-html/html-config.h.in
+src/dev-html/html-table.cpp
+src/dev-html/html-table.h
+src/dev-html/html-text.cpp
+src/dev-html/html-text.h
+src/dev-html/html.h
+src/dev-html/output.cpp
+src/dev-html/post-html.cpp
+src/dev-ps/ps-config.h.in
+src/dev-ps/ps.cpp
+src/dev-ps/ps.h
+src/dev-ps/psrm.cpp
+src/dev-tty/tty-config.h.in
+src/dev-tty/tty.cpp
+src/lib-bib/bib.h
+src/lib-bib/common.cpp
+src/lib-bib/index.cpp
+src/lib-bib/linear.cpp
+src/lib-bib/map.c
+src/lib-bib/search.cpp
+src/lib-roff/errarg.cpp
+src/lib-roff/error.cpp
+src/lib-roff/fatal.cpp
+src/lib-roff/file-case.cpp
+src/lib-roff/filename.cpp
+src/lib-roff/font.cpp
+src/lib-roff/fontfile.cpp
+src/lib-roff/geometry.cpp
+src/lib-roff/getopt.c
+src/lib-roff/getopt1.c
+src/lib-roff/glyphuni.cpp
+src/lib-roff/htmlhint.cpp
+src/lib-roff/hypot.cpp
+src/lib-roff/iftoa.c
+src/lib-roff/invalid.cpp
+src/lib-roff/itoa.c
+src/lib-roff/lf.cpp
+src/lib-roff/lineno.cpp
+src/lib-roff/localcharset.c
+src/lib-roff/macropath.cpp
+src/lib-roff/make-uniuni.sh
+src/lib-roff/matherr.c
+src/lib-roff/mkstemp.c
+src/lib-roff/name-max.c
+->su/io.h: Windows: FILENAME_MAX in stdio.h;stdlib.h:_MAX_DIR,_MAX_DRIVE,_MAX_FNAME,_MAX_PATH
+src/lib-roff/nametoindex.cpp
+src/lib-roff/new.cpp
+src/lib-roff/paper.cpp
+src/lib-roff/path-max.c
+->su/io.h: Windows: FILENAME_MAX in stdio.h;stdlib.h:_MAX_DIR,_MAX_DRIVE,_MAX_FNAME,_MAX_PATH
+src/lib-roff/prime.cpp
+src/lib-roff/progname.c
+src/lib-roff/ptable.cpp
+src/lib-roff/putenv.c
+src/lib-roff/quotearg.c
+src/lib-roff/relocatable.h
+src/lib-roff/relocate.cpp
+src/lib-roff/searchpath.cpp
+src/lib-roff/spawnvp.c
+src/lib-roff/str-support.c
+src/lib-roff/stringclass.cpp
+src/lib-roff/symbol.cpp
+src/lib-roff/tmpfile.cpp
+src/lib-roff/unicode.cpp
+src/lib-roff/uniglyph.cpp
+src/lib-roff/uniuni.cpp
+src/nroff/nroff.sh.in
+src/pre-eqn/box.cpp
+src/pre-eqn/box.h
+src/pre-eqn/delim.cpp
+src/pre-eqn/eqn-config.h.in
+src/pre-eqn/eqn.h
+src/pre-eqn/eqn.y
+src/pre-eqn/lex.cpp
+src/pre-eqn/limit.cpp
+src/pre-eqn/list.cpp
+src/pre-eqn/main.cpp
+src/pre-eqn/mark.cpp
+src/pre-eqn/neqn.sh.in
+src/pre-eqn/other.cpp
+src/pre-eqn/over.cpp
+src/pre-eqn/pbox.h
+src/pre-eqn/pile.cpp
+src/pre-eqn/script.cpp
+src/pre-eqn/special.cpp
+src/pre-eqn/sqrt.cpp
+src/pre-eqn/text.cpp
+src/pre-grn/gprint.h
+src/pre-grn/grn-config.h.in
+src/pre-grn/hdb.cpp
+src/pre-grn/hgraph.cpp
+src/pre-grn/hpoint.cpp
+src/pre-grn/main.cpp
+src/pre-html/html-config.h.in
+src/pre-html/pre-html.cpp
+src/pre-html/pre-html.h
+src/pre-html/pushback.cpp
+src/pre-html/pushback.h
+src/pre-pic/common.cpp
+src/pre-pic/common.h
+src/pre-pic/lex.cpp
+src/pre-pic/main.cpp
+src/pre-pic/object.cpp
+src/pre-pic/object.h
+src/pre-pic/output.h
+src/pre-pic/pic-config.h.in
+src/pre-pic/pic.h
+src/pre-pic/pic.y
+src/pre-pic/position.h
+src/pre-pic/tex.cpp
+src/pre-pic/text.h
+src/pre-pic/troff.cpp
+src/pre-preconv/preconv-config.h.in
+src/pre-preconv/preconv.cpp
+src/pre-refer/command.cpp
+src/pre-refer/command.h
+src/pre-refer/label.y
+src/pre-refer/ref.cpp
+src/pre-refer/ref.h
+src/pre-refer/refer-config.h.in
+src/pre-refer/refer.cpp
+src/pre-refer/refer.h
+src/pre-refer/token.cpp
+src/pre-refer/token.h
+src/pre-soelim/soelim-config.h.in
+src/pre-soelim/soelim.cpp
+src/pre-tbl/main.cpp
+src/pre-tbl/table.cpp
+src/pre-tbl/table.h
+src/pre-tbl/tbl-config.h.in
+src/roff/pipeline.c
+src/roff/pipeline.h
+src/roff/roff-config.h
+src/roff/roff.cpp
+src/troff/charinfo.h
+src/troff/column.cpp
+src/troff/dictionary.cpp
+src/troff/dictionary.h
+src/troff/div.cpp
+src/troff/div.h
+src/troff/env.cpp
+src/troff/env.h
+src/troff/hvunits.h
+src/troff/input.cpp
+src/troff/input.h
+src/troff/mtsm.cpp
+src/troff/mtsm.h
+src/troff/node.cpp
+src/troff/node.h
+src/troff/number.cpp
+src/troff/reg.cpp
+src/troff/reg.h
+src/troff/request.h
+src/troff/token.h
+src/troff/troff-config.h
+src/troff/troff.h
+src/ute-addftinfo/addftinfo-config.h.in
+src/ute-addftinfo/addftinfo.cpp
+src/ute-addftinfo/guess.cpp
+src/ute-addftinfo/guess.h
+src/ute-indxbib/indxbib-config.h.in
+src/ute-indxbib/indxbib.cpp
+src/ute-lkbib/lkbib-config.h.in
+src/ute-lkbib/lkbib.cpp
+src/ute-lookbib/lookbib-config.h
+src/ute-lookbib/lookbib.cpp
+src/ute-pfbtops/pfbtops-config.h
+src/ute-pfbtops/pfbtops.c
+src/ute-tfmtodit/tfmtodit-config.h
+src/ute-tfmtodit/tfmtodit.cpp
+
+-
+
+-MDOC:
+  . the mdoc manual doesn't list all the standards of .St.
+    Furthermore those are not sorted at all, see mdocml which does better
+  . .Lk is completely bogus, see nail.1.  Sometimes it is an inline element,
+    sometimes not.  I have not found rules by trying (.It or no list, whatever),
+    nail.1 uses workarounds which work in groff and mandoc!
+
+- MDOCMX
+  - Set ".An -nosplit" in the authors section
+  - .1: document exit status codes
+  - less: it would be nice if anchors could be jumped to from within the command
+   line; e.g., just in case apropos(1) would become extended, it would be
+   possible to man(1) (or so) directly to the anchor.
+  - Give a general "how it overall works" section, including grotty stuff.
+  - Debug should log when .Sx cannot be resolved!
+  - FreeBSD commit r284611 (Xin LI) shows a use case were we break, in
+    share/man/man4/acpi_ibm.4:
+       -.Ss Xr devd 8 Ss Events
+       +.Ss Xr devd 8 Events
+       Hotkey events received by
+       .Xr devd 8
+       provide the following information:
+    We resolve this as
+       .Mx -anchor-spass Ss "Xr devd 8 Events" 4
+    which (in debug mode) ends up as
+       @11@[11]devd(8) Events[35]
+    (instead of "devd(8)[35] Events@11@[11]")
+    [35] is the (correct) external manual reference devd(8)!
+    In fact i don't understand why we are able to resolve this at all, i'll
+    inspect that once S-roff is usable.
+    My current plan would be to provide debug logs for the preprocessor and
+    i don't know yet what i can do in mdocmx(7) in order to warn the user.
+    Can this ever work correctly in non-multipass troff(1) and without rewriting
+    mdoc(7) as imagined?  I don't know yet.  Like i've said, i'm wondering why
+    we are able to provide correct anchor and links as such.
+    For now i think it is absolutely sufficient to state -- for mdocmx -- that
+    people should use a headline like "Device daemon events" as the headline,
+    especially since the next output line contains the same reference again.
+ -- Also, in netbsd-bus-dma, if used
+
+	All data types and constants will be defined by the port-specific header
+	.Mx
+	.Dq In machine/bus_defs.h .
+         ^^
+If this is added the anchor will be recognized by the preprocessor, but the
+macros will delay
+	All functions will be defined
+	by the port-specific header
+	.Mx
+	.In machine/bus_funcs.h .
+	Note that this document
+>>>>>
+	.In machine/bus_defs.h .
+<<<<<<
+And if this is inserted, until here!
+Do check all the string-enclose things from mdoc(7), we don't handle this
+correctly yet!!!!
+	assumes the existence of types already defined by the current
+	.Dq bus.h
+	interface.
+	.Pp
+	Unless otherwise noted, all function calls in this interface may be
+	defined as
+	.Xr cpp 1
+	macros.
+ -- Also, 
+	.Fl h | Fl Fl help
+     here we will
+	DBG@nail.1:76: POP mac<Fl> USER key <h> stack size=1
+	DBG@nail.1:76: POP mac<Fl> USER key <Fl> stack size=0
+    so we need to be aware of recursive macros more than we do.
+
+-----------------
+
+ADATP:
+
+- For Cygwin / Windows etc. support i think we need to reconsider make.rc
+  / mk-mk.in / mk-conf.sh in sofar as
+	+ PREFIX is implicitly prepended to things like MANDIR.
+	  I.e., it is not possible to have PREFIX=/usr and
+	  MANDIR=/usr/local/share/man.
+	+ There is an optional PREFIXDEV which is implicitly prepended to PREFIX
+	  if set.  The former condition may be optional if no PREFIXDEV is set,
+	  but must be checked otherwise
+        + THUS: the installation rules can honour a simple DESTDIR (maybe that
+	  should be DESTPATH then?) by leaving OFF PREFIXDEV when doing the
+	  install with a set DESTDIR.
+	++ Before reply to <533CFF08.2080401@users.sourceforge.net>
+	   (96/2014.track.xz) and ask Keith Marshall if this approach would be
+	   really sufficient or whether i have forgotten something.
+
+- [257ce0c] (Add binary relocation support for Windows platforms., 2005-04-02)
+  simply introduced realpath(3) even though this function is part of an XSI
+  extension even today on 2015-07-15!
+  HAVE_REALPATH IT!!! (mk-conf.sh yet tests that)
+
+-  TODO We will have a shell function library that gets installed
+  TODO alongside S-roff, and allows safe creation of temporary
+  TODO files -- use that, then.
+
+- troff's -d option will not define a string testable via ".if d" unless you
+  give some argument to it, as in "-d string=VAL", even though ".ds string" will
+  do something else!
+- config.h HAS to include all the @\w+@ as preproc macro strings
+   also ROFF_URL
+- completely rework lib.h and derive config stuff (i dropped TRADITIONAL_CPP,
+  for example; etc.)
+  S-roff *will* require some defaults that are standard for way more than one,
+  or even two decades.   lib-roff can be stripped down a lot, then.
+- recheck all #include directives
+- drop localizations like de.tmac?
+- $PAPERSIZE?  or so..
+- why is setvbuf(3) used for stderr?  better rewrite to use some logging
+  facility instead if that is the desire
+- IS_EBCDIC_HOST -> Drop support, including devices??
+  Does this really work.  Rename to rf_HAVE_EBCDIC (yet used)
+- check all setlocale() calls (some now have FIXMEs), they set to "C" which is
+  redundant?
+- saw #ifdef isascii(), LONG_MAX, LONG_MIN, HAVE_LIMITS (directly used
+  otherwise)
+- HAVE_DECL_GETC_UNLOCKED
+- POPEN_MISSING -> either go and do fork() ourselfs, but anyway drop this.
+  it is *not* missing.
+  repeat: it is *not* missing.  drop this.
+- HAVE_GETTIMEOFDAY .. dropped; HAVE_INTTYPES_H (or so).. dropped
+- getcwd is no longer optional (add conf check?)
+- NEED_DECLARATION_RAND, NEED_DECLARATION_SRAND, RET_TYPE_SRAND_IS_VOID all
+  dropped; these are POSIX: "First released in Issue 1. Derived from Issue 1 of
+  the SVID."
+- HAVE_FMOD dropped; fmod(3) is POSIX Issue 1
+- drop groff_hypot(3)
+- drop all those occurrences of terrible GNU getopt and use my own Misc::GetOpt.
+-- search all NEED_DECLAR sauce
+- drop locale_charset(); if nl_langinfo(CODESET) doesn't exist require an
+  environment variable , parse it off; maybe add additional handling in equal
+  spirit to nail(1)s *ttycharset* (for BSD with ISO8859-1 instead of ISO-8859-1
+  etc).  Then we have our (s-xsystem) great name-decomposer.
+  Drop lib-roff/config.charset hack.
+- the COOKIE_BUG .. oh man
+- i saw at least three (different) hash functions all around that sauce.
+  use a single torek fun.
+- ditto multiple prime arrays; symbol.cpp uses a double to calculate hashmap
+  fill!!!
+- and the temporary file/name stuff from lib-roff is u-hu-hu-hu, too
+- it should be possible to generate a document in unsafe mode, meaning with TOC,
+  index, whatever.  what is this unsafe sauce anyway.
+- drop neqn(1) -- eqn(1) should instead look whether it's basename(argv[0]) is
+  neqn and ensure -Tascii instead; drop manual, adjust eqn.1 instead.
+- i've used /* s-xyy */ mdoe instead of // s-xy, but this is C++!!  (yay?!)
+-- ditto #endif #else stuff..
+- FIG_SUPPORT, TEX_SUPPORT (pic)
+- pdfroff: please drop crap support like SHOW_PROGRESS environment.
+- we have DEBUG, DEBUGGING, and of course inherit NDEBUG from standard
+  DROP ALL THAT, go for HAVE_DEBUG / HAVE_DEVEL (implies former)!!!!
+- get rid of preconv asap.
+- support a character set tag for our <'\" et -- encoding:CHARSET>.
+  this means to DROP the emacs modeline support instead (from preconv)
+- afmtodit:
+	Please refer to section `Using Symbols' in the @L_ROFF@ manual which
+	describes how groff glyph names are constructed.
+  this was the "info" file..
+- I've obsoleted RETSIGTYPE (always void for us) -- remove ALL!!
+- NSIG, HAVE_DECL_SYS_SIGLIST
+- NEED_DECLARATION_PUTENV dropped.
+  note that putenv() is not optional..
+  And use setenv() whenever possible!
+- l_roff.1.in documents which programs use temporary files.
+  i don't think this is a good idea.
+- troffrc, troffrc-end etc: how about troff.rc, troff-end.rc ..
+- LONG_FOR_TIME_T -> replace by homebrew time_t ???
+- many manuals and sources are terribly clobbered with (statements regarding)
+  HTML output (production), even in troff itself, and something like
+  (tmac-man.7.in):
+	  Use of this presentation-level macro is deprecated.
+	  It translates poorly to HTML, under which
+  etc.  I don't consider HTML to be a primary target; can't this be handled by
+  some new \X'' alike things which have to be used by macro packages, maybe even
+  modify the intermediate output language to keep some information instead (an
+  anchor, an index entry, a main index entry, a section: entry to the TOC etc.).
+  E.g., my TeX package did PDF plain via such injections and it was fine.
+
+  Thus: on the long run, scrape out all the HTML stuff AT LEAST in a way that
+  the entire HTML stuff becomes optional.
+-- tmac-www.7.in documents netpbm tool usage, we switch that to ImageMagick
+-- tbl output is rendered as png??
+- We use filenames > 14 bytes in the source form; ensure that the build version
+  does not.
+
+- Check all manuals for working in compatibility mode, ensure they are
+  encapsulated in 
+  +.do nr groff_C \n[.C]
+  +.cp 0
+  ...
+  +.cp \n[groff_C]
+- Replace uses of `WORD' with \[oq]WORD\[cq], or automatize macros.
+- MAY_SPAWN_ASYNCHRONOUS_CHILD, MAY_FORK_CHILD_PROCESS should be done
+  differently, maybe like in mailx, but anyway some global config thing!
+  DITTO: DEBUG_FILE_DIR.  Man!
+  Note some of those are all buried stubs.
+- rf_MAIN_SOURCE should ALSO be defined by an object of the main library which
+  is build FIRST, so that MCTA()s work
+- search NEWA, a_delete, ad_delete() for new[] syntax users, use C-style allocs
+  for C stuff and C++ objects (simple array template class or so) otherwise!
+- rf_library_init(): no more static etc. objects, needs to be called before any
+  libroff facility is used.
+
++++++++++++++++++++++++++++++++++++
+- [b690626] and [3bab8e6]
+  not yet cherry-picked since happened after GPL3 conversion and at least
+  parts of the changesets affect non-GPL3 code.  (in the one tbl(1) changes only
+  affect printf(3)ed roff output, can't that be back-licensed to GPL2??)
+
+- FIXME FIXME FIXME
+  SYNCING STOPPED AT COMMIT [b780e9e8]
+        git lss --reverse 1.22.3..master
+
+
++++++++++++++++++++++++++++++++++++
+
+
+-----------------
+
+http://cm.bell-labs.com/netlib/typesetting/chem.gz
+
+http://ftp.fi.muni.cz/pub/bibliography/tools/bibtex2refer [BELOW]
+	http://ftp.math.utah.edu/pub/tex/bib/linux.bib
+
+-----------------
+
+@g@ -> DROP!  we all have SID=!!  AND NEED ALL PROGS: @EQN@ etc.!!
+
+
+NOTE: @UUxy@ version are yet all uppercase @Uxy@ titlecase and @Lxy@ lowercase;
+change this to instead
+	@U_ROFF@ -> S-ROFF (manual entries)
+	@T_ROFF@  -> S-roff
+	@L_ROFF@  -> s-roff
+which would be the correct way to do things i think.. (aaargh!)
+
+@L_PDFROFF@ -> s-pdfroff
+
+@U_DITROFF@ -> S-DITROFF
+@T_DITROFF@
+@L_DITROFF@
+
+
+@L_TROFF@ -> s-troff
+@L_NROFF@ -> s-nroff ????      INTEGRATE THIS INTO PLAIN s-roff, argv[0]!
+
+@L_EQN@	-> s-eqn
+
+@L_PIC@	-> s-pic
+
+@L_TBL@	-> s-tbl
+@L_SOELIM@ -> s-soelim
+
+
+@L_AFMTODIT@ -> s-afmtodit
+@L_TFMTODIT@ -> s-tfmtodit
+@L_PFBTOPS@ -> s-pfbtops
+@L_INDXBIB@
+@L_LOOKBIB@
+@L_LKBIB@
+
+
+[ ALL IN @TDxy@ (still @U..) and @UDxy@ (still @UU..) form too
+@L_D_DVI@ -> s-ddvi (grodvi)
+@L_D_HTML@ -> s-dhtml (grohtml), L_D_PREHTML, L_D_POSTHTML
+@L_D_PS@ -> s-dps (grops)
+@L_D_TTY@ -> s-dtty (grotty)
+]
+
+[ ALL IN @TDxy@ and @UDxy@ form too
+NOTE 2:  INCLUDING the $ENV stuff!!
+@L_P_EQN
+@L_P_GRN
+@L_P_HTML   -- requires
+				(should have used [LTU]_name[_mods]..)
+
+]
+
+NOTE: to allow users to install S-roff side-by-side with another roff
+   implementation, say groff itself, it should be possible to allow for a direct
+   prefix for programs which exist in roffs: [nt]roff, n?eqn, pic, grn, refer,
+   soelim, indxbib, lookbib, chem.  GNU troff uses 'g' for this purpose
+   And those names mustn't clash with the usual $(SID)$(XY) concat, so i guess
+   this must be check by mk-conf.sh!
+   NOTE: the manual pages mustn't clash either, and the @\w+@ constructs from
+   above must of course end up pointing to our own documentation!
+   NOTE: and check $xy_COMMAND_PREFIX, including documentation, for more.
+         see below for more
+   i may have messed up several "@L_ROFF@" in favour of "@U_ROFF@" or vice
+   versa when referring to (@MANxy@) stuff...   Eh. vice versa..
+   Thus, correct to
+	.BR @L_ROFF@-out (@MAN5EXT@),
+	.BR @L_ROFF@-font (@MAN5EXT@),
+	.BR @L_ROFF@-char (@MAN7EXT@),
+	.BR @L_ROFF@-tmac (@MAN5EXT@)
+
+
+@FONTDIR@
+@BUGMAIL@
+@MACRODIR@
+
+@MAN7EXT@
+@MAN5EXT@
+@MAN1EXT@
+"@MDATE@"
+@VERSION@
+
+@PDFDOCDIR@
+
+@PATH_SEARCH_SETUP@
+@AWK_INTERPRETERS@
+	DROP THIS!  POSIX, but anyway: one is enough
+@GHOSTSCRIPT_INTERPRETERS@
+	DROP THIS!  but anyway: one is enough
+@BUGMAIL@
+@ROFF_URL@
+
+
+
+@SYSTEMMACRODIR@
+@LOCALMACRODIR@
+@MACRODIR@
+@LOCALFONTDIR@
+@FONTDIR@
+
+@DEVICE@ -> default device (-Tps by default)
+	also needed as preprocessor DEVICE!
+	--> changed to VAL_DEVICE, place that in make.rc!
+
+PROG_PREFIX (default of $GROFF_COMMAND_PREFIX, which should vanish?!)
+	@U_ROFF@_COMMAND_PREFIX
+	note: doesn't vanish, but is prepended to the normal @L_TROFF@ stuff,
+	i.e., if that is "s-troff" then "=xxx" would call "xxxs-troff".
+	Like this we have SID=s- by default, and have an easier (almost
+	unchanged, then) implementation at the beginning.
+	If people leave SID=s- around then they can still provide plain "troff"
+	wrapper scripts, for example.
+
+
+GROFF-WEBSITE -> ROFF-WEBSITE + @ROFF_WEBURL@ (http://sdaoden.users.sourceforge.net/code.html)
+
+stuff like
+	@U_ROFF_BIN_PATH_SETUP@  -> U_ROFF_...
+	PATH="$U_ROFF_RUNTIME$PATH"
+	export PATH
+	exec @g@eqn -Tascii ${1+"$@"}
+
+
+@DEFAULT_INDEX_NAME@@INDEX_SUFFIX@
+@DEFAULT_INDEX@  (-> DEFAULT_INDEX pre)
+	default database??  (ovw. by $REFER)
+@COMMON_WORDS_FILE@ <-> indxbib/eign (WHY ISN'T THIS IN LIBRARY?)
+
+
+
+----------------
+
+much docu on ENVVARS in l_roff.1.in!!!!!!
+
+$GROFF_ENCODING -> @U_ROFF@_ENCODING
+		FIXME THIS IS PLAIN SHIT!! THERE IS LC_CTYPE!!!
+		on the other hand setting this automatically enables input
+		character set conversion via preconv, so..
+		and empty value forces automatic detection, but that is
+		definitely plain shit and use nl_langinfo(CODESET) instead of
+		checking for emacs tags (and we have our own tag stuff too, see
+		TODO)
+$GROFF_GHOSTSCRIPT_INTERPRETER -> @U_ROFF@_...
+$GROFF_AWK_INTERPRETER -> @U_ROFF@_...
+$GROFF_BIN_DIR -> @U_ROFF@_..  FIXME
+$GROFF_BIN_PATH -> @U_ROFF@_..  FIXME : why this? this is shit!!
+$GROFF_PATH__ is used in roff as temporary and carried to troff..
+		(U_ROFF_PATH__)
+
+PDFROFF_POSTPROCESSOR_COMMAND -> @U_PDFROFF@_
+GROFF_RUNTIME  -> @U_ROFF@_RUNTIME
+@U_PDFROFF@_COLLATE
+	note: this is a misuse of the word collation in my opinion given what it
+	is used for otherwise (LC_COLLATE)
+PDFROFF_KILL_NULL_PAGES
+
+GROPS_PROLOGUE -> @U_D_PS@_..
+GROFF_NO_SGR -> @U_ROFF@_NO_SGR
+GROFF_TYPESETTER -> @U_ROFF@_TYPESETTER
+		(lib-roff/device.cpp+; should be in the single global config.h,
+		drop all dir-specific config.h.in again, keep only config.h's,
+		and only those which really define something of use)
+
+$REFER: overwrites default refer database (@DEFAULT_INDEX@)
+
+
+
+NOTE: wrong - these ust be U_ROFF, of course!
+ $@U_ROFF@_TMAC_PATH
+ $@U_ROFF@_FONT_PATH
+
+AND ALL OF THOSE MUST ALSO BE AVAILABLE FOR EXPANSION AS @U_ROFF_NO_SGR@ FOR
+MANUALS ETC.!
+
+
+
+drop the shitty $GROFF_TMPDIR (@U_ROFF@_TMPDIR) -> TMPDIR -> TMP -> TEMP
+	environment stuff, TMPDIR is standard for a long time.
+	use cmdline prefix assignments or wrapper scripts to change the default!
+	The fallback temporary directory is ONLY CWD if /tmp/ is not accessible!
+	NOTE: on Windows TMP, TEMP seems to be necessary.  (is this native?)
+	however, why not keep U_ROFF_TMPDIR around, for whatever reasons?
+	this is currently done
+	-- DO ADD A LIB FUCNTION which returns the directory!!!!
+
+
+
+
+printf(L_ROFF_COPYRIGHT_PRINTOUT);
+->
+  "Copyright (c) 2014 Steffen (Daode) Nurpmeso\n"
+  "Copyright (C) 2006 Free Software Foundation, Inc.\n"
+  "GNU groff comes with ABSOLUTELY NO WARRANTY.\n"
+  "You may redistribute copies of groff and its subprograms\n"
+  "under the terms of the GNU General Public License.\n"
+  "For more information about these matters, see the file named COPYING.\n");
+
+
+
+
+=========================================
+was in groff.man:
+
+.P
+There is a free implementation of the
+.B grap
+preprocessor, written by
+.MT faber@lunabase.org
+Ted Faber
+.ME .
+.
+The actual version can be found at the
+.
+.UR http://\:www.lunabase.org/\:~faber/\:Vault/\:software/\:grap/
+grap website
+.UE .
+This is the only grap version supported by
+.IR groff .
+===========================================
+
+--------------------------------
+thanks to Werner Lemberg for pointing to this!
+	(20140903.214336.56964044.wl@gnu.org, Re: [Groff] Extending refer)
+cat >bibtex2refer.orig<<__EOT
+#!/usr/bin/perl
+
+$version = '0.4'; # achilles@ira.uka.de (95/05/16)
+#                   - new, correct macro substitution mechanism
+#version = '0.3'; # achilles@ira.uka.de (94/11/25)
+#                   - added conversion of url bibtex fields to the
+#                     undefined but widely used %U refer fields
+#version = '0.2'; # achilles@ira.uka.de (94/09/15)
+#                   - fixed bug in line wrapping
+#                   - fixed bug in entry parsing
+#version = '0.1'; # achilles@ira.uka.de (94/08/16)
+#                   - First version number.
+#                   - Fixed a bug in expand_field and in the parsing of the
+#                     String entries
+#
+# Alf-Christian Achilles (achilles@ira.uka.de)
+# 93/10/25
+#
+# Convert bibtex to refer.
+# Run as filter or with filenames of BibTeX files on command line.
+# Refer output on stdout.
+#
+# usage: bibtex2refer [-s] [-strings FILE] ...  FILE ...
+#
+# the files given with the -strings option are only scanned for abbreviation
+# definitions to be used when converting the bibtex files
+#
+# option -s means silence: no warnings or error messages are displayed
+#
+# All bibtex files must have been filtered through bibclean
+# (available at ftp://ftp.math.utah.edu/pub/tex/bib/) without
+# errors, including the files specified with the -strings option !!!
+#
+# Handles @string abbreviations and concatenations ('#').
+# Ignores entries with crossreferences !
+#
+# Does *not* convert LaTeX formatting commands to roff!
+#
+# A list of unknown fields and unknown abbreviations will be printed on stderr.
+#
+# very slow !
+#
+
+# the following string is inserted for the join '#' operator
+$join_space = ' ';
+
+%refer = ();
+$refer{'author'} = "A";
+$refer{'address'} = "C";
+$refer{'year'} = "D";
+$refer{'editor'} = "E";
+$refer{'publisher'} = "I";
+$refer{'journal'} = "J";
+$refer{'series'} = "S";
+$refer{'keywords'} = "K";
+$refer{'pages'} = "P";
+$refer{'title'} = "T";
+$refer{'number'} = "N";
+$refer{'volume'} = "V";
+$refer{'booktitle'} = "B";
+$refer{'type'} = "R";
+$refer{'annote'} = "O";
+$refer{'organization'} = "I";
+$refer{'organisation'} = "I";
+$refer{'abstract'} = "X";
+$refer{'url'} = "U";
+
+# This string is used to order the refer entries
+# (label, author, corporate author, title, ...)
+$order = "LAQTJBRSEVNDPICKUXO";
+
+%abbrev = ('jan', '"January"',
+	   'feb', '"February"',
+	   'mar', '"March"',
+	   'apr', '"April"',
+	   'may', '"May"',
+	   'jun', '"June"',
+	   'jul', '"July"',
+	   'aug', '"August"',
+	   'sep', '"September"',
+	   'oct', '"October"',
+	   'nov', '"November"',
+	   'dec', '"December"',
+	   'acmcs', '"ACM Computing Surveys"',
+	   'acta', '"Acta Informatica"',
+	   'cacm', '"Communications of the ACM"',
+	   'compj', '"Computer Journal"',
+	   'ibmjrd', '"IBM Journal of Research and Development"',
+	   'ibmsj', '"IBM Systems Journal"',
+	   'ieeese', '"IEEE Transactions on Software Engineering"',
+	   'ieeetc', '"IEEE Transactions on Computers"',
+	   'ieeetcad', '"IEEE Transactions on Computer-Aided Design of Integrated Circuits"',
+	   'ipl', '"Information Processing Letters"',
+	   'jacm', '"Journal of the ACM"',
+	   'jcss', '"Journal of Computer and System Sciences"',
+	   'scp', '"Science of Computer Programming"',
+	   'sicomp', '"SIAM Journal on Computing"',
+	   'tocs', '"ACM Transactions on Computer Systems"',
+	   'tods', '"ACM Transactions on Database Systems"',
+	   'tog', '"ACM Transactions on Graphics"',
+	   'toms', '"ACM Transactions on Mathematical Software"',
+	   'toois', '"ACM Transactions on Office Information Systems"',
+	   'toplas', '"ACM Transactions on Programming Languages and Systems"',
+	   'tcs', '"Theoretical Computer Science"'
+	   );
+
+@string_files = ();
+$silent = 0;
+
+while ($_ = $ARGV[0], /^-/) {
+    shift;
+
+    if (!$ARGV[0]) {
+	die "Missing argument for option $_\n";
+    }
+
+    if (/^-s$/) {
+	$silent = 1;
+	next;
+    }
+
+    if (/^-strings$/) {
+	if (-f $ARGV[0] && -r $ARGV[0]) {
+	    push(@string_files, ($ARGV[0]));
+	} else {
+	    die "Abbreviation file \"$ARGV[0]\" is not a readable file, stopped at ";
+	}
+	shift;
+	next;
+    }
+
+    die "Unknown option: $_\n";
+}
+
+$*=1;
+$/="\n@";
+
+foreach $file (@string_files) {
+    if (!open(STRINGS,$file)) {
+	die "Can not open $file\n";
+    }
+    while (<STRINGS>) {
+
+	# handle @string entries
+	if (/^String\{(\S+) *= *(\S(.|\n +)*)\}\n\n/) {
+	    if ($abbrev{$1}) {
+		print STDERR "Multiple definition of abbreviation $abb\n"  if (!silent);
+	    }
+	    # store abbreviation in associative array
+	    $abbrev{$1} = $2;
+	    # remove redundant whitespace and all newlines
+	    while ($abbrev{$1} =~ s/\n|(\s\s+)/ /g) {};
+	    # macros are fully expanded when read
+	    &expand_value($abbrev{$1})
+	}
+    }
+    close(STRINGS);
+}
+
+%ignored_fields = ();
+%ignored_abbrevs = ();
+
+while (<>) {
+    # parse the bibtex entry
+    /^\w+/;
+    $type = $&;
+    $type =~ tr/A-Z/a-z/;
+
+    # handle @string entries
+    if ($type eq 'string') {
+	if (/^String\{(\S+) *= *(\S(.|\n +)*)\}\n\n/) {
+	    if ($abbrev{$1}) {
+		print STDERR "Multiple definition of abbreviation $abb\n"  if (!silent);
+	    }
+	    # store abbreviation in associative array
+	    $abbrev{$1} = $2;
+	    # remove redundant whitespace and all newlines
+	    while ($abbrev{$1} =~ s/\n|(\s\s+)/ /g) {};
+	    # macros are fully expanded when read
+	    &expand_value($abbrev{$1})
+	}
+	next;
+    }
+
+    # get fields of the entry
+    @pfields = split(/^  (\S+) =\s+/);
+
+    # if there is only one field then ignore the entry. This handles gross
+    # parsing errors and especially the case at the beginnning of the input,
+    # where the first parsed entry actually is the data from the beginning
+    # of the input to the first entry.
+    next if (scalar(@pfields) <= 1);
+
+    # get rid of the first field which is junk
+    @pfields = @pfields[1..$#pfields];
+
+    # clean the last field of the entry ending
+    $pfields[$#pfields] =~ s/,?\s*\n\}(.|\n)+@?$/,\n/;
+
+    # convert all field names to lower case
+    for ($count=0;$count <= $#pfields; $count += 2) {
+	$pfields[$count] =~ tr/A-Z/a-z/;
+    }
+
+    # convert the fields array into an associative array (the keys are
+    # the field names and the values are the field contents)
+    %fields = @pfields;
+    # process the contents of each field
+    foreach (keys(%fields)) {
+	# remove all newlines and redundant whitespace
+	while ($fields{$_} =~ s/\n|(\s\s+)/ /g) {};
+	# remove the trailing comma
+	$fields{$_} =~ s/,\s*$// ;
+	# remove double quotes and/or expand abbreviations and/or
+ 	# concatenate strings ('#')
+        &expand_value($fields{$_});
+	# remove double quotes
+	$fields{$_} =~ s/^"|"$//g;
+	# remove all whitespace at the start and the end
+	$fields{$_} =~ s/(^\s+)|(\s+$)//;
+    }
+
+    # cannot handle entries with crossreferences yet.
+    if ($fields{'crossref'}) {
+	if ($ignored_fields{'crossref'}) {
+	    $ignored_fields{'crossref'}++;
+	} else {
+	    $ignored_fields{'crossref'} = 1;
+	}
+	next;
+    }
+
+    # convert fields
+    # date: refer knows only one date field, combine the month and
+    # the year into the year field
+    if ($fields{'year'} && $fields{'month'}) {
+	$fields{'year'} = $fields{'month'} . " " . $fields{'year'};
+    }
+    $fields{'month'} = "";
+
+    # location: combine the address and a possible city field into the
+    # address field
+    &map_field('city','month',' ');
+
+    # commentaries
+    # Many fields for comment, notes, etc. are commonly used in
+    # bibtex. Combine them all into the annote field. When combining,
+    # we introduce newline again. This newlines indicate a new
+    # paragraph when a field is parsed for refer printing.
+    &map_field('howpublished','annote',"\n");
+    if ($field{'chapter'}) {
+        $fields{'chapter'} = "Chapter: " . $fields{'chapter'};
+    }
+    &map_field('chapter','annote',"\n");
+    &map_field('note','annote',"\n");
+    &map_field('comment','annote',"\n");
+
+    # organization: combine school and institution into
+    &map_field('school','organization',",");
+    &map_field('institution','organization',",");
+
+
+    # address: combine address and location
+    &map_field('location','address',",");
+
+    # typos
+    &map_field('keyword','keywords',",");
+    &map_field('kwd','keywords',",");
+    &map_field('kwds','keywords',",");
+
+    if ($type eq 'mastersthesis') {
+	$fields{'type'} = "M.S. Thesis " . $fields{'type'};
+    }
+    if ($type eq 'phdthesis') {
+	$fields{'type'} = "Ph.D. Thesis " . $fields{'type'};
+    }
+    if (($type eq 'techreport')) {
+	if (!$fields{'type'}) {
+	    $fields{'type'} = "Technical Report";
+	}
+	if ($fields{'number'}) {
+	    $fields{'type'} .= ' ' . $fields{'number'};
+	}
+	$fields{'number'} = "";
+    }
+
+    # sort fields according to the order string
+    @keys = sort {index($order,$refer{$a}) <=>
+		      index($order,$refer{$b})}
+	       keys(%fields);
+
+    # process each key for printing in refer format
+    foreach (@keys) {
+	if ($fields{$_}) {
+	    if ($_ eq 'author') {
+		# authors need special treatment to create one refer field
+		# per author
+		foreach (split(/ and /,$fields{'author'})) {
+		    print '%' . $refer{'author'} . " $_\n";
+		}
+		next;
+	    } elsif ($refer{$_}) {
+		    # print the field in refer format while
+		    # maintaining paragraphs indicated by newlines
+		    $prefix = '%' . $refer{$_} . ' ';
+		    foreach $field (split("\n",$fields{$_})) {
+			$field =~ s/\n$//;
+			$field =~ s/(^\s+)|(\s+$)//;
+			# if the whole field is surrounded by matching braces,
+			# then remove them
+			# this is an expensive operation !
+			$field =~ s/^{([^{}]*({[^{}]*}[^{}]*)*)}$/\1/;
+			while (length($field) > 72) {
+			    if (($wrap = rindex($field," ",72)) < 0) {
+		 	        $wrap = index($field," ",72);
+                            }
+			    print $prefix;
+			    print substr($field,0,$wrap);
+			    print "\n" if ($field !~ /\n$/);
+			    $field = substr($field,$wrap+1);
+			    $prefix = '   ';
+			}
+			print $prefix . $field;
+			print "\n" if ($field !~ /\n$/);
+		    }
+	    } else {
+		# unknown bibtex field
+		if ($ignored_fields{$_}) {
+		    $ignored_fields{$_}++;
+		} else {
+		    $ignored_fields{$_} = 1;
+		}
+	    }
+	}
+    }
+    # extra newline after refer entry
+    print "\n";
+}
+foreach (keys(%ignored_fields)) {
+    print STDERR "Unmapped field: $_ (" . $ignored_fields{$_} . " occurrences)\n" if (!silent);
+}
+foreach (keys(%ignored_abbrevs)) {
+    print STDERR "Undefined abbreviation: $_ (" . $ignored_abbrevs{$_} . " occurrences)\n" if (!silent);
+}
+
+sub map_field {
+    # args: field to be mapped, field onto which to map, separator(optional)
+    # map if field valid
+    if ($fields{$_[0]}) {
+	# append separator if given and necessary
+	if ($fields{$_[1]} && (scalar(@_) > 2)) {
+	    $fields{$_[1]} .= $_[2];
+	}
+	# append mapped field
+	$fields{$_[1]} .= $fields{$_[0]};
+	# invalidate the mapped field
+	$fields{$_[0]} = "";
+    }
+}
+
+
+sub expand_value {
+    # introduce a fake empty string at the beginning to get things started
+    $_[0] = '"" # ' . $_[0];
+
+    # substitute macros that follow a text
+    while ($_[0] =~ s/(" # )([^\" \t\n#,]+)( # |$)/$1 . &abbrev($2) . $3/eg) {};
+
+    # get rid of the dummy empty string
+    $_[0] =~ s/^\"\" # //;
+
+    # unexpand the strings with the magic cookies
+    $_[0] =~ s/\"\000([^\000#, \t]+)\000\"/$1/g;
+
+    # remove join operator between string values
+    $_[0] =~ s/\" # \"/$join_space/og;
+
+}
+
+sub abbrev {
+    if (defined($abbrev{$_[0]})) {
+	return $abbrev{$_[0]};
+    } else {
+	if ($ignored_abbrevs{$_[0]}) {
+	    $ignored_abbrevs{$_[0]}++;
+	} else {
+	    $ignored_abbrevs{$_[0]} = 1;
+	}
+	return "\"\000$_[0]\000\"";
+    }
+}
+
+# for require
+1;
+__EOT
+
+
+cat >bibtex2refer.new<<__EOT
+#!/usr/bin/perl
+
+#$version = '0.4'; # achilles@ira.uka.de (95/05/16)
+#                   - new, correct macro substitution mechanism
+#version = '0.3'; # achilles@ira.uka.de (94/11/25)
+#                   - added conversion of url bibtex fields to the
+#                     undefined but widely used %U refer fields
+#version = '0.2'; # achilles@ira.uka.de (94/09/15)
+#                   - fixed bug in line wrapping
+#                   - fixed bug in entry parsing
+#version = '0.1'; # achilles@ira.uka.de (94/08/16)
+#                   - First version number.
+#                   - Fixed a bug in expand_field and in the parsing of the
+#                     String entries
+#
+# Alf-Christian Achilles (achilles@ira.uka.de)
+# 93/10/25
+#
+# Convert bibtex to refer.
+# Run as filter or with filenames of BibTeX files on command line.
+# Refer output on stdout.
+#
+# usage: bibtex2refer [-s] [-strings FILE] ...  FILE ...
+#
+# the files given with the -strings option are only scanned for abbreviation
+# definitions to be used when converting the bibtex files
+#
+# option -s means silence: no warnings or error messages are displayed
+#
+# All bibtex files must have been filtered through bibclean
+# (available at ftp://ftp.math.utah.edu/pub/tex/bib/) without
+# errors, including the files specified with the -strings option !!!
+#
+# Handles @string abbreviations and concatenations ('#').
+# Ignores entries with crossreferences !
+#
+# Does *not* convert LaTeX formatting commands to roff!
+#
+# A list of unknown fields and unknown abbreviations will be printed on stderr.
+#
+# very slow !
+#
+
+# the following string is inserted for the join '#' operator
+$join_space = ' ';
+
+%refer = ();
+$refer{'author'} = "A";
+$refer{'address'} = "C";
+$refer{'year'} = "D";
+$refer{'editor'} = "E";
+$refer{'publisher'} = "I";
+$refer{'journal'} = "J";
+$refer{'series'} = "S";
+$refer{'keywords'} = "K";
+$refer{'pages'} = "P";
+$refer{'title'} = "T";
+$refer{'number'} = "N";
+$refer{'volume'} = "V";
+$refer{'booktitle'} = "B";
+$refer{'type'} = "R";
+$refer{'annote'} = "O";
+$refer{'organization'} = "I";
+$refer{'organisation'} = "I";
+$refer{'abstract'} = "X";
+$refer{'url'} = "U";
+
+# This string is used to order the refer entries
+# (label, author, corporate author, title, ...)
+$order = "LAQTJBRSEVNDPICKUXO";
+
+%abbrev = ('jan', '"January"',
+	   'feb', '"February"',
+	   'mar', '"March"',
+	   'apr', '"April"',
+	   'may', '"May"',
+	   'jun', '"June"',
+	   'jul', '"July"',
+	   'aug', '"August"',
+	   'sep', '"September"',
+	   'oct', '"October"',
+	   'nov', '"November"',
+	   'dec', '"December"',
+	   'acmcs', '"ACM Computing Surveys"',
+	   'acta', '"Acta Informatica"',
+	   'cacm', '"Communications of the ACM"',
+	   'compj', '"Computer Journal"',
+	   'ibmjrd', '"IBM Journal of Research and Development"',
+	   'ibmsj', '"IBM Systems Journal"',
+	   'ieeese', '"IEEE Transactions on Software Engineering"',
+	   'ieeetc', '"IEEE Transactions on Computers"',
+	   'ieeetcad', '"IEEE Transactions on Computer-Aided Design of Integrated Circuits"',
+	   'ipl', '"Information Processing Letters"',
+	   'jacm', '"Journal of the ACM"',
+	   'jcss', '"Journal of Computer and System Sciences"',
+	   'scp', '"Science of Computer Programming"',
+	   'sicomp', '"SIAM Journal on Computing"',
+	   'tocs', '"ACM Transactions on Computer Systems"',
+	   'tods', '"ACM Transactions on Database Systems"',
+	   'tog', '"ACM Transactions on Graphics"',
+	   'toms', '"ACM Transactions on Mathematical Software"',
+	   'toois', '"ACM Transactions on Office Information Systems"',
+	   'toplas', '"ACM Transactions on Programming Languages and Systems"',
+	   'tcs', '"Theoretical Computer Science"'
+	   );
+
+@string_files = ();
+$silent = 0;
+
+while ($_ = $ARGV[0], /^-/) {
+    shift;
+
+    if (!$ARGV[0]) {
+	die "Missing argument for option $_\n";
+    }
+
+    if (/^-s$/) {
+	$silent = 1;
+	next;
+    }
+
+    if (/^-strings$/) {
+	if (-f $ARGV[0] && -r $ARGV[0]) {
+	    push(@string_files, ($ARGV[0]));
+	} else {
+	    die "Abbreviation file \"$ARGV[0]\" is not a readable file, stopped at ";
+	}
+	shift;
+	next;
+    }
+
+    die "Unknown option: $_\n";
+}
+
+$/="\n@";
+
+foreach $file (@string_files) {
+    if (!open(STRINGS,$file)) {
+	die "Can not open $file\n";
+    }
+    while (<STRINGS>) {
+
+	# handle @string entries
+	if (/^String\{(\S+) *= *(\S(.|\n +)*)\}\n\n/m) {
+	    if ($abbrev{$1}) {
+		print STDERR "Multiple definition of abbreviation $abb\n"  if !$silent;
+	    }
+	    # store abbreviation in associative array
+	    $abbrev{$1} = $2;
+	    # remove redundant whitespace and all newlines
+	    while ($abbrev{$1} =~ s/\n|(\s\s+)/ /gm) {};
+	    # macros are fully expanded when read
+	    &expand_value($abbrev{$1})
+	}
+    }
+    close(STRINGS);
+}
+
+%ignored_fields = ();
+%ignored_abbrevs = ();
+
+while (<>) {
+    # parse the bibtex entry
+    /^\w+/m; # XXX /m?
+    $type = $&;
+    $type =~ tr/A-Z/a-z/;
+
+    # handle @string entries
+    if ($type eq 'string') {
+	if (/^String\{(\S+) *= *(\S(.|\n +)*)\}\n\n/m) {
+	    if ($abbrev{$1}) {
+		print STDERR "Multiple definition of abbreviation $abb\n"  if !$silent;
+	    }
+	    # store abbreviation in associative array
+	    $abbrev{$1} = $2;
+	    # remove redundant whitespace and all newlines
+	    while ($abbrev{$1} =~ s/\n|(\s\s+)/ /gm) {};
+	    # macros are fully expanded when read
+	    &expand_value($abbrev{$1})
+	}
+	next;
+    }
+
+    # get fields of the entry
+    @pfields = split(/^  (\S+) =\s+/m);
+
+    # if there is only one field then ignore the entry. This handles gross
+    # parsing errors and especially the case at the beginnning of the input,
+    # where the first parsed entry actually is the data from the beginning
+    # of the input to the first entry.
+    next if (scalar(@pfields) <= 1);
+
+    # get rid of the first field which is junk
+    @pfields = @pfields[1..$#pfields];
+
+    # clean the last field of the entry ending
+    $pfields[$#pfields] =~ s/,?\s*\n\}(.|\n)+@?$/,\n/m;
+
+    # convert all field names to lower case
+    for ($count=0;$count <= $#pfields; $count += 2) {
+	$pfields[$count] =~ tr/A-Z/a-z/;
+    }
+
+    # convert the fields array into an associative array (the keys are
+    # the field names and the values are the field contents)
+    %fields = @pfields;
+    # process the contents of each field
+    foreach (keys(%fields)) {
+	# remove all newlines and redundant whitespace
+	while ($fields{$_} =~ s/\n|(\s\s+)/ /gm) {};
+	# remove the trailing comma
+	$fields{$_} =~ s/,\s*$//m;
+	# remove double quotes and/or expand abbreviations and/or
+ 	# concatenate strings ('#')
+        &expand_value($fields{$_});
+	# remove double quotes
+	$fields{$_} =~ s/^"|"$//gm;
+	# remove all whitespace at the start and the end
+	$fields{$_} =~ s/(^\s+)|(\s+$)//m;
+    }
+
+    # cannot handle entries with crossreferences yet.
+    if ($fields{'crossref'}) {
+	if ($ignored_fields{'crossref'}) {
+	    $ignored_fields{'crossref'}++;
+	} else {
+	    $ignored_fields{'crossref'} = 1;
+	}
+	next;
+    }
+
+    # convert fields
+    # date: refer knows only one date field, combine the month and
+    # the year into the year field
+    if ($fields{'year'} && $fields{'month'}) {
+	$fields{'year'} = $fields{'month'} . " " . $fields{'year'};
+    }
+    $fields{'month'} = "";
+
+    # location: combine the address and a possible city field into the
+    # address field
+    &map_field('city','month',' ');
+
+    # commentaries
+    # Many fields for comment, notes, etc. are commonly used in
+    # bibtex. Combine them all into the annote field. When combining,
+    # we introduce newline again. This newlines indicate a new
+    # paragraph when a field is parsed for refer printing.
+    &map_field('howpublished','annote',"\n");
+    if ($field{'chapter'}) {
+        $fields{'chapter'} = "Chapter: " . $fields{'chapter'};
+    }
+    &map_field('chapter','annote',"\n");
+    &map_field('note','annote',"\n");
+    &map_field('comment','annote',"\n");
+
+    # organization: combine school and institution into
+    &map_field('school','organization',",");
+    &map_field('institution','organization',",");
+
+
+    # address: combine address and location
+    &map_field('location','address',",");
+
+    # typos
+    &map_field('keyword','keywords',",");
+    &map_field('kwd','keywords',",");
+    &map_field('kwds','keywords',",");
+
+    if ($type eq 'mastersthesis') {
+	$fields{'type'} = "M.S. Thesis " . $fields{'type'};
+    }
+    if ($type eq 'phdthesis') {
+	$fields{'type'} = "Ph.D. Thesis " . $fields{'type'};
+    }
+    if (($type eq 'techreport')) {
+	if (!$fields{'type'}) {
+	    $fields{'type'} = "Technical Report";
+	}
+	if ($fields{'number'}) {
+	    $fields{'type'} .= ' ' . $fields{'number'};
+	}
+	$fields{'number'} = "";
+    }
+
+    # sort fields according to the order string
+    @keys = sort {
+	    my $i1 = index($order, $refer{$a});
+	    my $i2 = index($order, $refer{$b});
+	    $i1 <=> $i2
+    } keys(%fields);
+
+    # process each key for printing in refer format
+    foreach (@keys) {
+	if ($fields{$_}) {
+	    if ($_ eq 'author') {
+		# authors need special treatment to create one refer field
+		# per author
+		foreach (split(/ and /,$fields{'author'})) {
+		    print '%' . $refer{'author'} . " $_\n";
+		}
+		next;
+	    } elsif ($refer{$_}) {
+		    # print the field in refer format while
+		    # maintaining paragraphs indicated by newlines
+		    $prefix = '%' . $refer{$_} . ' ';
+		    foreach $field (split("\n", $fields{$_})) {
+			$field =~ s/\n$//m;
+			$field =~ s/(^\s+)|(\s+$)//m;
+			# if the whole field is surrounded by matching braces,
+			# then remove them
+			# this is an expensive operation !
+			$field =~ s/^{([^{}]*({[^{}]*}[^{}]*)*)}$/$1/m;
+			# XXX Resulted in endless loop ($wrap may end up -1)
+			# XXX thus i've inserted "$wrap=75 if $wrap<0", but
+			# XXX but of course it should break at useful places
+			# XXX or don't break at all for certain fields (%U)?
+			while (length($field) > 75) {
+			    if (($wrap = rindex($field," ",72)) < 0) {
+		 	        $wrap = index($field," ",72);
+				$wrap = 75 if $wrap < 0;
+                            }
+			    print $prefix;
+			    print substr($field, 0, $wrap);
+			    print "\n" if ($field !~ /\n$/m);
+			    $field = substr($field, $wrap + 1);
+			    $prefix = '   ';
+			}
+			print $prefix . $field;
+			print "\n" if ($field !~ /\n$/m);
+		    }
+	    } else {
+		# unknown bibtex field
+		if ($ignored_fields{$_}) {
+		    $ignored_fields{$_}++;
+		} else {
+		    $ignored_fields{$_} = 1;
+		}
+	    }
+	}
+    }
+    # extra newline after refer entry
+    print "\n";
+}
+foreach (keys(%ignored_fields)) {
+    print STDERR "Unmapped field: $_ (" . $ignored_fields{$_} . " occurrences)\n"
+    	if !$silent;
+}
+foreach (keys(%ignored_abbrevs)) {
+    print STDERR "Undefined abbreviation: $_ (" . $ignored_abbrevs{$_} . " occurrences)\n"
+    	if !$silent;
+}
+
+sub map_field {
+    # args: field to be mapped, field onto which to map, separator(optional)
+    # map if field valid
+    if ($fields{$_[0]}) {
+	# append separator if given and necessary
+	if ($fields{$_[1]} && (scalar(@_) > 2)) {
+	    $fields{$_[1]} .= $_[2];
+	}
+	# append mapped field
+	$fields{$_[1]} .= $fields{$_[0]};
+	# invalidate the mapped field
+	$fields{$_[0]} = "";
+    }
+}
+
+
+sub expand_value {
+    # introduce a fake empty string at the beginning to get things started
+    $_[0] = '"" # ' . $_[0];
+
+    # substitute macros that follow a text
+    while ($_[0] =~ s/(" # )([^\" \t\n#,]+)( # |$)/$1 . &abbrev($2) . $3/egm) {
+    };
+
+    # get rid of the dummy empty string
+    $_[0] =~ s/^\"\" # //m;
+
+    # unexpand the strings with the magic cookies
+    $_[0] =~ s/\"\000([^\000#, \t]+)\000\"/$1/gm;
+
+    # remove join operator between string values
+    $_[0] =~ s/\" # \"/$join_space/ogm;
+
+}
+
+sub abbrev {
+    if (defined($abbrev{$_[0]})) {
+	return $abbrev{$_[0]};
+    } else {
+	if ($ignored_abbrevs{$_[0]}) {
+	    $ignored_abbrevs{$_[0]}++;
+	} else {
+	    $ignored_abbrevs{$_[0]} = 1;
+	}
+	return "\"\000$_[0]\000\"";
+    }
+}
+
+# for require
+1;
+__EOT
+--------------------------------
+
+# To unbundle, sh this file
+echo README 1>&2
+sed 's/.//' >README <<'//GO.SYSIN DD README'
+-INSTALLATION
+-
+-The file chem invokes chem.awk, which is where the dirty
+-work gets done.  chem.awk tells pic to include a copy
+-of chem.macros;  you will need to change a pathname on
+-the 2nd line of chem.awk.
+-
+-You need current versions of awk and pic.  In particular,
+-your awk has to support functions and your pic has to know
+-about the copy statement.  So if you get weird messages
+-from either of those, it's time to update.
+-
+-this version of awk is available from the AT&T Toolchest,
+-for a fee of $300.  For more
+-information, call 201-522-6900 and log in as "guest".
+-The current version of pic is part of the documentor's
+-workbench version 2.0, or the typesetter-independent
+-troff package;  both of these are available from AT&T
+-Software Sales at POBox 25000, Greensboro, NC 27420, 800-828-unix.
+-You don't want to know why there are different places and
+-different sources.
+-
+-There are several test files called *.p.
+-
+-
+-INTRODUCTION
+-
+-"chem" is yet another preprocessor like eqn, pic, etc.,
+-this time for producing chemical structure diagrams.
+-Today's version is best suited for organic chemistry
+-(bonds, rings) and it's excruciatingly slow sometimes.
+-Who knows what the future may hold.
+-
+-In a style reminiscent of eqn and pic, diagrams are
+-written in a special language and occur in a document
+-surrounded by lines beginning
+-	.cstart
+-and
+-	.cend
+-(in the first column, naturally).  Anything outside
+-these is copied through intact;  whatever is between
+-.cstart and .cend is converted into pic commands to
+-draw the diagram.
+-
+-So as a bare minimum,
+-
+-	.cstart
+-	CH3
+-	bond
+-	CH3
+-	.cend
+-
+-prints two CH3 groups with a bond between them.
+-To actually print this, you must run chem, pic,
+-troff, and your output filter on whatever file
+-contains the input:
+-
+-	chem [file...] | pic | troff ... | ...
+-
+-(By the way, chem needs the current version of awk;
+-you will get some mysterious error messages from awk
+-if your version is too old.  You will also profit from
+-having sensible and consistent definitions for the PS
+-and PE macros.)
+-
+-
+-THE LANGUAGE
+-
+-The chem input language is rather small.  It provides
+-bonds of several styles, moieties (e.g., C, NH3, ...),
+-rings of several styles, and a way to glue them together
+-as desired.  In addition, since chem is a pic preprocessor,
+-it's possible to include pic statements in the middle of
+-a diagram to draw things not provided for by chem itself.
+-
+-Bonds:
+-
+-	bond [direction] [length n] [from Name | picstuff]
+-
+-draws a single bond in direction from nearest corner of Name
+-"bond" can also be double bond, front bond, back bond, etc.
+-(We'll get back to "Name" in a minute.)
+-
+-"direction" is the angle in degrees (0 up, positive clockwise)
+-or a direction word like up, down, sw (= southwest), etc.
+-If no direction is specified, the bond goes in the current
+-direction (usually that of the last bond).
+-
+-Normally the bond begins at the last object placed;  this
+-can be changed by naming a "from" place.  For instance,
+-to make a simple alkyl chain:
+-
+-	CH3
+-	bond		(this one goes right from the CH3)
+-	C		(at the right end of the bond)
+-	double bond up	(from the C)
+-	O		(at the end of the double bond)
+-	bond right from C
+-	CH3
+-
+-A length in inches may be specified to override the default length.
+-Other pic commands can be tacked on to the end of a bond command,
+-to created dotted or dashed bonds or to specify a "to" place.
+-
+-
+-Names:
+-
+-In the alkyl chain above, notice that the carbon atom C
+-was used both to draw something and as the name for a place.
+-A moiety always defines a name for a place;  you can use
+-your own names for places instead, and indeed, for rings
+-you will have to.  A name is just
+-
+-	Name: ...
+-
+-"Name" is often the name of a moiety like CH3, but it
+-needn't be.  Any name that begins with a capital letter
+-and contains only letters and numbers is ok:
+-
+-	First:  bond
+-		bond 30 from First
+-
+-draws something like
+-
+-	     /
+-	____/
+-
+-
+-Moieties:
+-
+-A moiety is a string of characters beginning with a capital letter,
+-such as N(C2H5)2.  Numbers are converted to subscripts (unless
+-they appear to be fractional values, as in N2.5H).  The moiety
+-names itself after special characters have been stripped out:
+-N(C2H5)2) has the name NC2H52.
+-
+-BP is a special "branch point" (i.e., line crossing) that doesn't print.
+-
+-Normally a moiety is placed right after the last thing mentioned,
+-but it may be positioned by pic-like commands, e.g.,
+-
+-	CH3 at C + (0.5,0.5)
+-
+-Text within quotes "..." is treated more or less like a
+-moiety except that no changes are made to the quoted part.
+-
+-
+-Rings:
+-
+-There are lots of rings, but only 5 and 6-sided rings get
+-much support.  "ring" by itself is a 6-sided ring;
+-"benzene" is the benzene ring with a circle inside.
+-"aromatic" puts a circle into any kind of ring.
+-
+-	ring [pointing up|right|left|down] [aromatic]
+-		[put Mol at n] [double i,j k,l ...]
+-		[picstuff]
+-
+-The vertices of a ring are numbered 1,2,... from the vertex
+-that points in the natural compass direction.  So for a
+-hexagonal ring with the point at the top, the top vertex is 1,
+-while if the ring has a point at the east side, that is
+-vertex 1.  This is expressed as
+-
+-	R1: ring pointing up
+-	R2: ring pointing right
+-
+-The ring vertices are named .V1 .. .Vn, with .V1 in the
+-pointing direction.  So the corners of R1 are R1.V1 (the "top"),
+-R1.V2, R1.V3, R1.V4 (the "bottom"), etc., whereas for R2,
+-R2.V1 is the rightmost vertex and R2.V4 the leftmost.  These
+-vertex names are used for connecting bonds or other rings.
+-For example:
+-
+-	R1: benzene pointing right
+-	R2: benzene pointing right with .V6 at R1.V2
+-
+-creates two benzene rings connected along a side.
+-
+-Interior double bonds are specified as "double n1,n2 n3,n4 ...";
+-each number pair adds an interior bond.  So the alternate form
+-of a benzene ring is
+-
+-	ring double 1,2 3,4 5,6
+-
+-Heterocycles (rings with something other than carbon at a vertex)
+-are written as "put X at V", as in
+-
+-	R: ring put N at 1 put O at 2
+-
+-In this heterocycle, R.N and R.O become synonyms for R.V1 and R.V2.
+-
+-There are two 5-sided rings.  "ring5" is pentagonal with a side
+-that matches the 6-sided ring;  it has four natural directions.
+-A "flatring" is a 5-sided ring created by chopping one corner
+-of a 6-sided ring so that it exactly matches the 6-sided rings.
+-
+-The description of a ring has to fit on a single line.
+-
+-
+-Miscellaneous:
+-
+-The specific construction
+-
+-	bond... ; moiety		(spaces matter!)
+-
+-is equivalent to
+-
+-	bond
+-	moiety
+-
+-Otherwise, each item has to be on a separate line (and only one line).
+-
+-A period "." in column 1 signals a troff command, which is copied
+-through as is.
+-
+-A line whose first non-blank character is a # is treated as a comment.
+-
+-A line whose first word is "pic" is copied through as is after
+-the "pic" has been removed.
+-
+-The command
+-
+-	size n
+-
+-scales the diagram so it looks plausible at point size n
+-(default is 10 point).
+-
+-Anything else is assumed to be pic and is copied through with
+-a label.
+-
+-WISH LIST
+-
+-It's too slow (but it's too early in the game to optimize).
+-
+-Error checking is minimal;  errors are usually detected
+-and reported in an oblique fashion by pic.
+-
+-There's no library or file inclusion mechanism, and there's
+-no shorthand for repetitive structures.
+-
+-The extension mechanism is to create pic macros, but these
+-are tricky to get right and don't have all the properties
+-of built-in objects.
+-
+-There's no in-line chemistry yet (e.g., analogous to
+-the $...$ construct of eqn).
+-
+-There is no way to control entry point for bonds on groups.
+-Normally a bond connects to the carbon atom if entering from
+-the top or bottom and otherwise to the nearest corner.
+-
+-Bonds from substituted atoms on heterocycles do not join
+-at the proper place without adding a bit of pic.
+-
+-There is no decent primitive for brackets.
+-
+-Text (quoted strings) doesn't work very well.
+-
+-A squiggle bond is needed.
+-
+-
+-COMPLAINTS
+-
+-If something doesn't work, or if you can see a way to
+-make something better, let us know.
+-
+-	jon bentley
+-	lynn jelinski
+-	brian kernighan
+//GO.SYSIN DD README
+echo chem 1>&2
+sed 's/.//' >chem <<'//GO.SYSIN DD chem'
+-for i in $*
+-do
+-	if test ! -r $i
+-	then
+-		echo "chem: can't open file $i" 1>&2
+-		exit 1
+-	fi
+-done
+-awk -f chem.awk $*
+//GO.SYSIN DD chem
+echo chem.awk 1>&2
+sed 's/.//' >chem.awk <<'//GO.SYSIN DD chem.awk'
+-BEGIN {
+-	macros = "/usr/bwk/chem/chem.macros"	# CHANGE ME!!!!!
+-
+-	pi = 3.141592654
+-	deg = 57.29578
+-	setparams(1.0)
+-	set(dc, "up 0 right 90 down 180 left 270 ne 45 se 135 sw 225 nw 315")
+-	set(dc, "0 n 30 ne 45 ne 60 ne 90 e 120 se 135 se 150 se 180 s")
+-	set(dc, "300 nw 315 nw 330 nw 270 w 210 sw 225 sw 240 sw")
+-}
+-function init() {
+-	printf ".PS\n"
+-	if (firsttime++ == 0) {
+-		printf "copy \"%s\"\n", macros
+-		printf "\ttextht = %g; textwid = .1; cwid = %g\n", textht, cwid
+-		printf "\tlineht = %g; linewid = %g\n", lineht, linewid
+-	}
+-	printf "Last: 0,0\n"
+-	RING = "R"; MOL = "M"; BOND = "B"; OTHER = "O"	# manifests
+-	last = OTHER
+-	dir = 90
+-}
+-function setparams(scale) {
+-	lineht = scale * 0.2
+-	linewid = scale * 0.2
+-	textht = scale * 0.16
+-	db = scale * 0.2		# bond length
+-	cwid = scale * 0.12		# character width
+-	cr = scale * 0.08		# rad of invis circles at ring vertices
+-	crh = scale * 0.16		# ht of invis ellipse at ring vertices
+-	crw = scale * 0.12		# wid
+-	dav = scale * 0.015		# vertical shift up for atoms in atom macro
+-	dew = scale * 0.02		# east-west shift for left of/right of
+-	ringside = scale * 0.3		# side of all rings
+-	dbrack = scale * 0.1		# length of bottom of bracket
+-}
+-
+-	{ lineno++ }
+-
+-/^(\.cstart)|(begin chem)/	{ init(); inchem = 1; next }
+-/^(\.cend)|(end)/		{ inchem = 0; print ".PE"; next }
+-
+-/^\./		{ print; next }		# troff
+-
+-inchem == 0	{ print; next }		# everything else
+-
+-$1 == "pic"	{ shiftfields(1); print; next }	# pic pass-thru
+-$1 ~ /^#/	{ next }	# comment
+-
+-$1 == "textht"	{ textht = $NF; next }
+-$1 == "cwid"	{ cwid = $NF; next }
+-$1 == "db"	{ db = $NF; next }
+-$1 == "size"	{ if ($NF <= 4) size = $NF; else size = $NF/10
+-		  setparams(size); next }
+-
+-	{ print "\n#", $0 }	# debugging, etc.
+-	{ lastname = "" }
+-
+-$1 ~ /^[A-Z].*:$/ {	# label;  falls thru after shifting left
+-	lastname = substr($1, 1, length($1)-1)
+-	print $1
+-	shiftfields(1)
+-}
+-
+-$1 ~ /^\"/	{ print "Last: ", $0; last = OTHER; next }
+-
+-$1 ~ /bond/	{ bond($1); next }
+-$1 ~ /^(double|triple|front|back)$/ && $2 == "bond" {
+-		   $1 = $1 $2; shiftfields(2); bond($1); next }
+-
+-$1 == "aromatic" { temp = $1; $1 = $2; $2 = temp }
+-$1 ~ /ring|benz/ { ring($1); next }
+-
+-$1 == "methyl"	{ $1 = "CH3" }	# left here as an example
+-
+-$1 ~ /^[A-Z]/	{ molecule(); next }
+-
+-$1 == "left"	{ left[++stack] = fields(2, NF); printf("Last: [\n"); next }
+-
+-$1 == "right"	{ bracket(); stack--; next }
+-
+-$1 == "label"	{ label(); next }
+-
+-/./	{ print "Last: ", $0; last = OTHER }
+-
+-END	{ if (firsttime == 0) error("did you forget .cstart and .cend?")
+-	  if (inchem) printf ".PE\n"
+-}
+-
+-function bond(type,	i, goes, from) {
+-	goes = ""
+-	for (i = 2; i <= NF; i++)
+-		if ($i == ";") {
+-			goes = $(i+1)
+-			NF = i - 1
+-			break
+-		}
+-	leng = db
+-	from = ""
+-	for (cf = 2; cf <= NF; ) {
+-		if ($cf ~ /(\+|-)?[0-9]+|up|down|right|left|ne|se|nw|sw/)
+-			dir = cvtdir(dir)
+-		else if ($cf ~ /^leng/) {
+-			leng = $(cf+1)
+-			cf += 2
+-		} else if ($cf == "to") {
+-			leng = 0
+-			from = fields(cf, NF)
+-			break
+-		} else if ($cf == "from") {
+-			from = dofrom()
+-			break
+-		} else if ($cf ~ /^#/) {
+-			cf = NF+1
+-			break;
+-		} else {
+-			from = fields(cf, NF)
+-			break
+-		}
+-	}
+-	if (from ~ /( to )|^to/)	# said "from ... to ...", so zap length
+-		leng = 0
+-	else if (from == "")	# no from given at all
+-		from = "from Last." leave(last, dir) " " fields(cf, NF)
+-	printf "Last: %s(%g, %g, %s)\n", type, leng, dir, from
+-	last = BOND
+-	if (lastname != "")
+-		labsave(lastname, last, dir)
+-	if (goes) {
+-		$0 = goes
+-		molecule()
+-	}
+-}
+-
+-function dofrom(	n, s) {
+-	cf++	# skip "from"
+-	n = $cf
+-	if (n in labtype)	# "from Thing" => "from Thing.V.s"
+-		return "from " n "." leave(labtype[n], dir)
+-	if (n ~ /^\.[A-Z]/)	# "from .V" => "from Last.V.s"
+-		return "from Last" n "." corner(dir)
+-	if (n ~ /^[A-Z][^.]*\.[A-Z][^.]*$/)	# "from X.V" => "from X.V.s"
+-		return "from " n "." corner(dir)
+-	return fields(cf-1, NF)
+-}
+-
+-function bracket(	t) {
+-	printf("]\n")
+-	if ($2 == ")")
+-		t = "spline"
+-	else
+-		t = "line"
+-	printf("%s from last [].sw+(%g,0) to last [].sw to last [].nw to last [].nw+(%g,0)\n",
+-		t, dbrack, dbrack)
+-	printf("%s from last [].se-(%g,0) to last [].se to last [].ne to last [].ne-(%g,0)\n",
+-		t, dbrack, dbrack)
+-	if ($3 == "sub")
+-		printf("\" %s\" ljust at last [].se\n", fields(4,NF))
+-}
+-
+-function molecule(	n, type) {
+-	n = $1
+-	if (n == "BP") {
+-		$1 = "\"\" ht 0 wid 0"
+-		type = OTHER
+-	} else {
+-		$1 = atom(n)
+-		type = MOL
+-	}
+-	gsub(/[^A-Za-z0-9]/, "", n)	# for stuff like C(OH3): zap non-alnum
+-	if ($2 == "")
+-		printf "Last: %s: %s with .%s at Last.%s\n", \
+-			n, $0, leave(type,dir+180), leave(last,dir)
+-	else if ($2 == "below")
+-		printf("Last: %s: %s with .n at %s.s\n", n, $1, $3)
+-	else if ($2 == "above")
+-		printf("Last: %s: %s with .s at %s.n\n", n, $1, $3)
+-	else if ($2 == "left" && $3 == "of")
+-		printf("Last: %s: %s with .e at %s.w+(%g,0)\n", n, $1, $4, dew)
+-	else if ($2 == "right" && $3 == "of")
+-		printf("Last: %s: %s with .w at %s.e-(%g,0)\n", n, $1, $4, dew)
+-	else
+-		printf "Last: %s: %s\n", n, $0
+-	last = type
+-	if (lastname != "")
+-		labsave(lastname, last, dir)
+-	labsave(n, last, dir)
+-}
+-
+-function label(	i, v) {
+-	if (substr(labtype[$2], 1, 1) != RING)
+-		error(sprintf("%s is not a ring", $2))
+-	else {
+-		v = substr(labtype[$2], 2, 1)
+-		for (i = 1; i <= v; i++)
+-			printf("\"\\s-3%d\\s0\" at 0.%d<%s.C,%s.V%d>\n", i, v+2, $2, $2, i)
+-	}
+-}
+-
+-function ring(type,	typeint, pt, verts, i) {
+-	pt = 0	# points up by default
+-	if (type ~ /[1-8]$/)
+-		verts = substr(type, length(type), 1)
+-	else if (type ~ /flat/)
+-		verts = 5
+-	else
+-		verts = 6
+-	fused = other = ""
+-	for (i = 1; i <= verts; i++)
+-		put[i] = dbl[i] = ""
+-	nput = aromatic = withat = 0
+-	for (cf = 2; cf <= NF; ) {
+-		if ($cf == "pointing")
+-			pt = cvtdir(0)
+-		else if ($cf == "double" || $cf == "triple")
+-			dblring(verts)
+-		else if ($cf ~ /arom/) {
+-			aromatic++
+-			cf++	# handled later
+-		} else if ($cf == "put") {
+-			putring(verts)
+-			nput++
+-		} else if ($cf ~ /^#/) {
+-			cf = NF+1
+-			break;
+-		} else {
+-			if ($cf == "with" || $cf == "at")
+-				withat = 1
+-			other = other " " $cf
+-			cf++
+-		}
+-	}
+-	typeint = RING verts pt		# RING | verts | dir
+-	if (withat == 0)
+-		fused = joinring(typeint, dir, last)
+-	printf "Last: [\n"
+-	makering(type, pt, verts)
+-	printf "] %s %s\n", fused, other
+-	last = typeint
+-	if (lastname != "")
+-		labsave(lastname, last, dir)
+-}
+-
+-function makering(type, pt, v,       i, a, r) {
+-	if (type ~ /flat/)
+-		v = 6
+-    # vertices
+-	r = ringside / (2 * sin(pi/v))
+-	printf "\tC: 0,0\n"
+-	for (i = 0; i <= v+1; i++) {
+-		a = ((i-1) / v * 360 + pt) / deg
+-		printf "\tV%d: (%g,%g)\n", i, r * sin(a), r * cos(a)
+-	}
+-	if (type ~ /flat/) {
+-		printf "\tV4: V5; V5: V6\n"
+-		v = 5
+-	}
+-    # sides
+-	if (nput > 0) {	# hetero ...
+-		for (i = 1; i <= v; i++) {
+-			c1 = c2 = 0
+-			if (put[i] != "") {
+-				printf("\tV%d: ellipse invis ht %g wid %g at V%d\n",
+-					i, crh, crw, i)
+-				printf("\t%s at V%d\n", put[i], i)
+-				c1 = cr
+-			}
+-			j = i+1
+-			if (j > v)
+-				j = 1
+-			if (put[j] != "")
+-				c2 = cr
+-			printf "\tline from V%d to V%d chop %g chop %g\n", i, j, c1, c2
+-			if (dbl[i] != "") {	# should check i<j
+-				if (type ~ /flat/ && i == 3) {
+-					rat = 0.75; fix = 5
+-				} else {
+-					rat = 0.85; fix = 1.5
+-				}
+-				if (put[i] == "")
+-					c1 = 0
+-				else
+-					c1 = cr/fix
+-				if (put[j] == "")
+-					c2 = 0
+-				else
+-					c2 = cr/fix
+-				printf "\tline from %g<C,V%d> to %g<C,V%d> chop %g chop %g\n",
+-					rat, i, rat, j, c1, c2
+-				if (dbl[i] == "triple")
+-					printf "\tline from %g<C,V%d> to %g<C,V%d> chop %g chop %g\n",
+-						2-rat, i, 2-rat, j, c1, c2
+-			}
+-		}
+-	} else {	# regular
+-		for (i = 1; i <= v; i++) {
+-			j = i+1
+-			if (j > v)
+-				j = 1
+-			printf "\tline from V%d to V%d\n", i, j
+-			if (dbl[i] != "") {	# should check i<j
+-				if (type ~ /flat/ && i == 3) {
+-					rat = 0.75
+-				} else
+-					rat = 0.85
+-				printf "\tline from %g<C,V%d> to %g<C,V%d>\n",
+-					rat, i, rat, j
+-				if (dbl[i] == "triple")
+-					printf "\tline from %g<C,V%d> to %g<C,V%d>\n",
+-						2-rat, i, 2-rat, j
+-			}
+-		}
+-	}
+-	# punt on triple temporarily
+-    # circle
+-	if (type ~ /benz/ || aromatic > 0) {
+-		if (type ~ /flat/)
+-			r *= .4
+-		else
+-			r *= .5
+-		printf "\tcircle rad %g at 0,0\n", r
+-	}
+-}
+-
+-function putring(v) {	# collect "put Mol at n"
+-	cf++
+-	mol = $(cf++)
+-	if ($cf == "at")
+-		cf++
+-	if ($cf >= 1 && $cf <= v) {
+-		m = mol
+-		gsub(/[^A-Za-z0-9]/, "", m)
+-		put[$cf] = m ":" atom(mol)
+-	}
+-	cf++
+-}
+-
+-function joinring(type, dir, last) {	# join a ring to something
+-	if (substr(last, 1, 1) == RING) {	# ring to ring
+-		if (substr(type, 3) == substr(last, 3))	# fails if not 6-sided
+-			return "with .V6 at Last.V2"
+-	}
+-	# if all else fails
+-	return sprintf("with .%s at Last.%s", \
+-		leave(type,dir+180), leave(last,dir))
+-}
+-
+-function leave(last, d,		c, c1) {	# return vertex of last in dir d
+-	if (last == BOND)
+-		return "end"
+-	d = reduce(d)
+-	if (substr(last, 1, 1) == RING)
+-		return ringleave(last, d)
+-	if (last == MOL) {
+-		if (d == 0 || d == 180)
+-			c = "C"
+-		else if (d > 0 && d < 180)
+-			c = "R"
+-		else
+-			c = "L"
+-		if (d in dc)
+-			c1 = dc[d]
+-		else
+-			c1 = corner(d)
+-		return sprintf("%s.%s", c, c1)
+-	}
+-	if (last == OTHER)
+-		return corner(d)
+-	return "c"
+-}
+-
+-function ringleave(last, d,	rd, verts) {	# return vertex of ring in dir d
+-	verts = substr(last, 2, 1)
+-	rd = substr(last, 3)
+-	return sprintf("V%d.%s", int(reduce(d-rd)/(360/verts)) + 1, corner(d))
+-}
+-
+-function corner(dir) {
+-	return dc[reduce(45 * int((dir+22.5)/45))]
+-}
+-
+-function labsave(name, type, dir) {
+-	labtype[name] = type
+-	labdir[name] = dir
+-}
+-
+-function dblring(v,	d, v1, v2) {	# should canonicalize to i,i+1 mod v
+-	d = $cf
+-	for (cf++; $cf ~ /^[1-9]/; cf++) {
+-		v1 = substr($cf,1,1)
+-		v2 = substr($cf,3,1)
+-		if (v2 == v1+1 || v1 == v && v2 == 1)	# e.g., 2,3 or 5,1
+-			dbl[v1] = d
+-		else if (v1 == v2+1 || v2 == v && v1 == 1)	# e.g., 3,2 or 1,5
+-			dbl[v2] = d
+-		else
+-			error(sprintf("weird %s bond in\n\t%s", d, $0))
+-	}
+-}
+-
+-function cvtdir(d) {	# maps "[pointing] somewhere" to degrees
+-	if ($cf == "pointing")
+-		cf++
+-	if ($cf ~ /^[+\-]?[0-9]+/)
+-		return reduce($(cf++))
+-	else if ($cf ~ /left|right|up|down|ne|nw|se|sw/)
+-		return reduce(dc[$(cf++)])
+-	else {
+-		cf++
+-		return d
+-	}
+-}
+-
+-function reduce(d) {	# reduces d to 0 <= d < 360
+-	while (d >= 360)
+-		d -= 360
+-	while (d < 0)
+-		d += 360
+-	return d
+-}
+-
+-function atom(s,    c, i, n, nsub, cloc, nsubc) { # convert CH3 to atom(...)
+-	if (s == "\"\"")
+-		return s
+-	n = length(s)
+-	nsub = nsubc = 0
+-	cloc = index(s, "C")
+-	if (cloc == 0)
+-		cloc = 1
+-	for (i = 1; i <= n; i++)
+-		if (substr(s, i, 1) !~ /[A-Z]/) {
+-			nsub++
+-			if (i < cloc)
+-				nsubc++
+-		}
+-	gsub(/([0-9]+\.[0-9]+)|([0-9]+)/, "\\s-3\\d&\\u\\s+3", s)
+-	if (s ~ /([^0-9]\.)|(\.[^0-9])/)	# centered dot
+-		gsub(/\./, "\\v#-.3m#.\\v#.3m#", s)
+-	return sprintf("atom(\"%s\", %g, %g, %g, %g, %g, %g)",
+-		s, (n-nsub/2)*cwid, textht, (cloc-nsubc/2-0.5)*cwid, crh, crw, dav)
+-}
+-
+-function inline(	i, n, s, s1, os) {
+-	s = $0
+-	os = ""
+-	while ((n = match(s, /!?[A-Z][A-Za-z]*(([0-9]+\.[0-9]+)|([0-9]+))/)) > 0) {
+-		os = os substr(s, 1, n-1)	# prefix
+-		s1 = substr(s, n, RLENGTH)	# molecule
+-		if (substr(s1, 1, 1) == "!") {	# !mol => leave alone
+-			s1 = substr(s1, 2)
+-		} else {
+-			gsub(/([0-9]+\.[0-9]+)|([0-9]+)/, "\\s-3\\d&\\u\\s+3", s1)
+-			if (s1 ~ /([^0-9]\.)|(\.[^0-9])/)	# centered dot
+-				gsub(/\./, "\\v#-.3m#.\\v#.3m#", s1)
+-		}
+-		os = os s1
+-		s = substr(s, n + RLENGTH)	# tail
+-	}
+-	os = os s
+-	print os
+-	return
+-}
+-
+-function shiftfields(n,		i) {	# move $n+1..$NF to $n..$NF-1, zap $NF
+-	for (i = n; i < NF; i++)
+-		$i = $(i+1)
+-	$NF = ""
+-	NF--
+-}
+-
+-function fields(n1, n2,		i, s) {
+-	if (n1 > n2)
+-		return ""
+-	s = ""
+-	for (i = n1; i <= n2; i++) {
+-		if ($i ~ /^#/)
+-			break;
+-		s = s $i " "
+-	}
+-	return s
+-}
+-
+-function set(a, s,     i, n, q) {
+-	n = split(s, q)
+-	for (i = 1; i <= n; i += 2)
+-		a[q[i]] = q[i+1]
+-}
+-
+-function error(s) {
+-	printf "chem\007: error on line %d: %s\n", lineno, s | "cat 1>&2"
+-}
+//GO.SYSIN DD chem.awk
+echo chem.macros 1>&2
+sed 's/.//' >chem.macros <<'//GO.SYSIN DD chem.macros'
+-# macros for chem
+-
+-pi = 3.141592654
+-deg = 57.29578
+-# cr = 0.08		# radius of invis circle at ring vertices (see cr[vh])
+-# crh = 0.16; crw = 0.12 # ht & wid of invis ellipse around atoms at ring vertices
+-# dav = 0.015		# vertical shift up for atoms in atom macro
+-
+-# atom(text, wid, ht, carbon position, crh, crw, dav)
+-define atom { [
+-	T: $1 wid $2 ht $3-2*$7
+-	C: ellipse invis ht $5 wid $6 at T.w + ($4,$7)
+-	L: ellipse invis ht $5 wid $6 at T.w + (cwid/2,$7)
+-	R: ellipse invis ht $5 wid $6 at T.e + (-cwid/2,$7)
+-] }
+-
+-# bond(length, angle in degrees, whatever)
+-define bond {
+-	line $3 by ($1) * sin(($2)/deg), ($1) * cos(($2)/deg)
+-}
+-
+-# fancy bonds:  r, theta, from/at
+-define doublebond {
+-	line $3 invis by ($1) * sin(($2)/deg), ($1) * cos(($2)/deg)
+-	V1: last line.start; V2: last line.end; dx = V2.x-V1.x; dy = V2.y-V1.y
+-	norm = sqrt(dx*dx + dy*dy)
+-	ny = dx * .02 / norm
+-	nx = -dy * .02 / norm
+-	line from V1 + (nx,ny) to V2 + (nx,ny)
+-	line from V1 - (nx,ny) to V2 - (nx,ny)
+-	move to V2
+-}
+-define triplebond {
+-	line $3 invis by ($1) * sin(($2)/deg), ($1) * cos(($2)/deg)
+-	V1: last line.start; V2: last line.end; dx = V2.x-V1.x; dy = V2.y-V1.y
+-	norm = sqrt(dx*dx + dy*dy)
+-	ny = dx * .025 / norm
+-	nx = -dy * .025 / norm
+-	line from V1 + (nx,ny) to V2 + (nx,ny)
+-	line from V1 - (nx,ny) to V2 - (nx,ny)
+-	line from V1 to V2
+-	move to V2
+-}
+-define backbond {
+-	line $3 invis by ($1) * sin(($2)/deg), ($1) * cos(($2)/deg)
+-	V1: last line.start; V2: last line.end; dx = V2.x-V1.x; dy = V2.y-V1.y
+-	norm = sqrt(dx*dx + dy*dy)
+-	n = norm / .025
+-	ny = dx * .02 / norm
+-	nx = -dy * .02 / norm
+-	for i = 1 to n-1 do {
+-		XZ: i/n <V1,V2>
+-		line from XZ + (nx,ny) to XZ - (nx,ny)
+-	}
+-	move to V2
+-}
+-define frontbond {
+-	line $3 invis by ($1) * sin(($2)/deg), ($1) * cos(($2)/deg)
+-	V1: last line.start; V2: last line.end; dx = V2.x-V1.x; dy = V2.y-V1.y
+-	ah = arrowht; aw = arrowwid; ahead = arrowhead
+-	arrowht = sqrt(dx*dx + dy*dy)
+-	arrowwid = 0.05
+-	arrowhead = 7
+-	line <- from V1 to V2
+-	arrowht = ah; arrowwid = aw; arrowhead = ahead
+-}
+//GO.SYSIN DD chem.macros
+echo PS-PEmacros 1>&2
+sed 's/.//' >PS-PEmacros <<'//GO.SYSIN DD PS-PEmacros'
+-.de PS	\" start picture
+-.	\" $1 is height, $2 is width, both in inches
+-.if \\$1>0 .sp .35
+-.in (\\n(.lu-\\$2)/2u
+-.ne \\$1
+-..
+-.de PE	\" end of picture
+-.in
+-.if \\$1>0 .sp .65
+-..
+//GO.SYSIN DD PS-PEmacros
+echo lsd.p 1>&2
+sed 's/.//' >lsd.p <<'//GO.SYSIN DD lsd.p'
+-.cstart
+-# Lysergic acid dethylamide
+-B:	benzene pointing right
+-F:	flatring5 pointing left put N at 5 double 3,4 with .V1 at B.V2
+-	H below F.N
+-R:	ring pointing right with .V4 at B.V6
+-	front bond right from R.V6 ; H
+-R:	ring pointing right with .V2 at R.V6 put N at 1 double 3,4
+-	bond right from R.N ; CH3
+-	back bond -60 from R.V5 ; H
+-	bond up from R.V5 ; CO
+-	bond right ; N(C2H5)2
+-.cend
+//GO.SYSIN DD lsd.p
+echo eth.p 1>&2
+sed 's/.//' >eth.p <<'//GO.SYSIN DD eth.p'
+-.cstart
+-# Ethamivan
+-
+-R:	ring pointing right double 1,2 3,4 5,6
+-	bond left from R ; OH
+-	bond -150 from R ; OCH3
+-	bond right from R ; C
+-	double bond up ; O
+-	bond right from C ; N
+-	bond 45 ; C2H5
+- 	bond 135 from N ; C2H5
+-.cend
+//GO.SYSIN DD eth.p
+echo morphine.p 1>&2
+sed 's/.//' >morphine.p <<'//GO.SYSIN DD morphine.p'
+-.cstart
+-# This is a structure of morphine, for comparison with the one
+-# in the preprint by Broadbent and Norris
+-#
+-R1:	ring6 double 1,2
+-	bond -60 from R1.V6 ; HO
+-R2:	ring6 with .V1 at R1.V3
+-	bond 60 from R2.V2 ; N
+-	bond right from N ; CH3
+-R3:	benzene with .V1 at R2.V5
+-	bond -120 from R3.V5 ; HO
+-# this is the furan ring
+-	bond -135 length .3 from R1.V5 ; O
+-	bond -45 length .3 from R3.V6
+-# this is the odd ring
+-	bond up length .1 from N ; BP
+-B1:	bond up length .35 from R1.V4
+-	bond to BP
+-.cend
+//GO.SYSIN DD morphine.p
+
+--------------------------------
