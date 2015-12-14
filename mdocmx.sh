@@ -728,6 +728,8 @@ function line_nlcont_done() {
       line_nlcont_done()
     else if (mx_stack_cnt)
       mx_check_line()
+    else if (/^[[:space:]]*\.(\\"|[[:space:]]*$)/)
+      next
     print >> mx_fo
   }
 }' "${F}"
