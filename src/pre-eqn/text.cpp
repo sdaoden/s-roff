@@ -58,7 +58,7 @@ struct map entity_table[] = { // FIXME const
   {"*I", "I"},
   {"*k", "&kappa;"},	// ISOgrk3
   {"*K", "K;"},
-  {"*l", "&lamda;"},	// ISOgrk3
+  {"*l", "&lambda;"},	// ISOgrk3
   {"*L", "&Lambda;"},	// ISOgrk3
   {"*m", "&mu;"},	// ISOgrk3
   {"*M", "M"},
