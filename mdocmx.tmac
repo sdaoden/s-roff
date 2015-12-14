@@ -891,7 +891,7 @@
 \%\&\X'tty: mdocmx \$1 \$2'\&\c
 . \}
 . el \{\
-\%\&\fR\X'tty: mdocmx \$1 \$2'\m[blue]@\$2@\m[]\fP\&\c
+\%\&\fR\X'tty: mdocmx \$1 \$2'\m[blue]#\$2#\m[]\fP\&\c
 . \}
 ..
 .
@@ -916,7 +916,7 @@
 .de mx:dump-anchor-html
 . TAG "\$2"
 . if d mx-debug \
-.   HTML <small>@\$2@</small>
+.   HTML <small>#\$2#</small>
 ..
 .
 .de mx:dump-ref-html
@@ -959,7 +959,7 @@
 . el .if '\$1'Ss' .pdfbookmark 2 "\$3"
 .
 . ie d mx-debug \
-.   pdfhref M -N "\$2" -E "@\$2@"
+.   pdfhref M -N "\$2" -E "#\$2#"
 . el \
 .   pdfhref M -N "\$2"
 ..
