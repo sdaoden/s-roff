@@ -17,6 +17,12 @@
 
 #  --  >8  --  8<  --  #
 
+# For heaven's sake add special treatment for SunOS/Solaris
+if [ -d /usr/xpg4/bin ]; then
+  PATH=/usr/xpg4/bin:$PATH
+  export PATH
+fi
+
 #AWK=
 EX_OK=0
 EX_USAGE=64
@@ -53,6 +59,17 @@ synopsis() {
 }
 
 ##
+
+if ( set -C ) >/dev/null 2>&1; then
+  set +C
+else
+  # For heaven's sake auto-redirect on SunOS/Solaris
+  if [ -f /usr/xpg4/bin/sh ]; then
+    exec /usr/xpg4/bin/sh "${0}" ${@+"${@}"}
+  else
+    synopsis 1 'Not a sh(1)ell with "set -C" (for save temporary file creation)'
+  fi
+fi
 
 find_awk || synopsis 1 'Cannot find a usable awk(1) implementation'
 
@@ -118,10 +135,12 @@ i=1
 # RW by user only, avoid overwriting of existing files
 old_umask=`umask`
 umask 077
-set -C
 while [ 1 ]; do
   tmpfile="${tmpdir}/mdocmx-${i}.mx"
-  ( : > "${tmpfile}" ) >/dev/null 2>&1 && break
+  (
+    set -C
+    : > "${tmpfile}"
+  ) >/dev/null 2>&1 && break
   i=`expr ${i} + 1`
   if [ ${i} -gt ${max} ]; then
     echo >&2 'Cannot create a temporary file within '"${tmpdir}"
@@ -277,16 +296,16 @@ function f_a_l() {
 
 function dbg(s) {
   if (VERBOSE > 1)
-    print "DBG@" f_a_l() ": " s >> "/dev/stderr"
+    print "DBG@" f_a_l() ": " s > "/dev/stderr"
 }
 
 function warn(s) {
   if (VERBOSE > 0)
-    print "WARN@" f_a_l() ": mdocmx(7): " s "." >> "/dev/stderr"
+    print "WARN@" f_a_l() ": mdocmx(7): " s "." > "/dev/stderr"
 }
 
 function fatal(e, s) {
-  print "FATAL@" f_a_l() ": mdocmx(7): " s "." >> "/dev/stderr"
+  print "FATAL@" f_a_l() ": mdocmx(7): " s "." > "/dev/stderr"
   exit e
 }
 
