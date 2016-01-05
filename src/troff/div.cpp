@@ -1,6 +1,6 @@
 /*@ Diversions.
  *
- * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+ * Copyright (c) 2014 - 2017 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Copyright (C) 1989 - 1992, 2000 - 2002, 2004
  *    Free Software Foundation, Inc.

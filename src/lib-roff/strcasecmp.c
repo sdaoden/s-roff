@@ -1,6 +1,6 @@
 /*@ strcasecmp.c -- case insensitive string comparator.
  *
- * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+ * Copyright (c) 2014 - 2017 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  *    Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *

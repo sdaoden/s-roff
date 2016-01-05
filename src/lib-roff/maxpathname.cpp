@@ -1,6 +1,6 @@
 /*@ path_name_max(dir) does the same as pathconf(dir, _PC_PATH_MAX).
  *
- * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+ * Copyright (c) 2014 - 2017 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Copyright (C) 2005 Free Software Foundation, Inc.
  *      Written by Werner Lemberg (wl@gnu.org)

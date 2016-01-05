@@ -1,6 +1,6 @@
 /*@ Defines functions implemented within pre-html.cpp.
  *
- * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+ * Copyright (c) 2014 - 2017 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Copyright (C) 2000, 2001 Free Software Foundation, Inc.
  * Written by Gaius Mulley (gaius@glam.ac.uk).

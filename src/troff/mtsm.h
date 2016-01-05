@@ -1,7 +1,7 @@
 /*@ Provides a minimal troff state machine which is necessary to
  *@ emit meta tags for the post-grohtml device driver.
  *
- * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+ * Copyright (c) 2014 - 2017 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Copyright (C) 2003, 2004 Free Software Foundation, Inc.
  *    written by Gaius Mulley (gaius@glam.ac.uk)

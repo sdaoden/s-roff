@@ -1,5 +1,5 @@
 /*@ FIXME Consider to use our own temporary file name creation!
- * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+ * Copyright (c) 2014 - 2017 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
  *      Written by Werner Lemberg (wl@gnu.org)
