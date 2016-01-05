@@ -9,7 +9,7 @@
 # Written by Werner Lemberg <wl@gnu.org>.
 # Public domain.
 #
-# Adapted to S-roff by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+# Adapted to S-roff by Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 
 # print header
 print "% Hyphenation exceptions for US English,\n";

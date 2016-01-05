@@ -1,6 +1,6 @@
 /*@ Determine a canonical name for the current locale's character encoding.
  *
- * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  *    Copyright (C) 2000-2006, 2008 Free Software Foundation, Inc.
  *

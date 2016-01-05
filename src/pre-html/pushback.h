@@ -1,6 +1,6 @@
 /*@ Defines the class and methods implemented within pushback.cpp.
  *
- * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Copyright (C) 2000 - 2004 Free Software Foundation, Inc.
  *      Written by Gaius Mulley (gaius@glam.ac.uk).

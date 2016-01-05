@@ -1,6 +1,6 @@
 /*@ Temporary file management. FIXME consider to use homebrew
  *
- * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Copyright (C) 1989 - 1992, 2000, 2001, 2003
  *    Free Software Foundation, Inc.

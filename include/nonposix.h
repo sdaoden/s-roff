@@ -3,7 +3,7 @@
  *@ the system headers like stdio.h to protect against warnings and error
  *@ messages w.r.t. redefining macros.
  *
- * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Copyright (C) 2000 - 2005
  *    Free Software Foundation, Inc.

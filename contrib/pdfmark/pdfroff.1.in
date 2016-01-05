@@ -2,7 +2,7 @@
 .ig
 @ pdfroff.1.in
 
-Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 
 Copyright (C) 2005 - 2007 Free Software Foundation, Inc.
 written by Keith Marshall <keith.d.marshall@ntlworld.com>
@@ -729,7 +729,7 @@ in the proper sequence,
 .\"
 .
 .SH AUTHOR
-Copyright \(co 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+Copyright \(co 2014 - 2015 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 .br
 Copyright \(co 2005 - 2007 Free Software Foundation, Inc.
 .

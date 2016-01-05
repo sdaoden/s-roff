@@ -2,6 +2,6 @@
 .\"@ Put any local additions and customizations of doc.tmac in here.
 .\"@ See doc.tmac for more on the mdoc semantic markup language.
 .\"
-.\" Adapted to S-roff by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+.\" Adapted to S-roff by Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 
 .\" s-ts-mode

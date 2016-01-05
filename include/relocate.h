@@ -1,6 +1,6 @@
 /*@ Provide relocation for macro and font files. FIXME please
  *
- * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  *  Copyright (C) 2005 - 2006 Free Software Foundation, Inc.
  *
