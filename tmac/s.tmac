@@ -1183,10 +1183,10 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
 .TA
 .hy \\n[HY]
 ..
-.de @RT
-.nr \\n[.ev]:pli 0
-.nr \\n[.ev]:pri 0
-.par@reset
+.als @RT par@finish
+.de par@adjspace
+.sp \\n[\\n[.ev]:PD]u
+.ne \\n[PORPHANS]v+\\n(.Vu
 ..
 .\" This can be redefined by the user.
 .de TA
@@ -1202,8 +1202,7 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
 .nr \\n[.ev]:pli \\$1
 .nr \\n[.ev]:pri \\$2
 .par@reset
-.sp \\n[\\n[.ev]:PD]u
-.ne \\n[PORPHANS]v+\\n(.Vu
+.par@adjspace
 ..
 .de par@finish
 .nr \\n[.ev]:pli 0
@@ -1298,6 +1297,7 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
 .\}
 .el .@error unbalanced \\$0
 .par@reset
+.if '\\$0'QE' .par@adjspace
 ..
 .de @QS
 .br
@@ -1311,6 +1311,7 @@ Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA.
 .nr \\n[.ev]:ri +\\n[QI]
 .nr \\n[.ev]:ai \\n[\\n[.ev]:PI]
 .par@reset
+.par@adjspace
 ..
 .als @QE @RE
 .\" start boxed text
