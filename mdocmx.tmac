@@ -174,6 +174,10 @@
 .     mx:perr "synopsis: .Mx -ix [CATEGORY] KEY"
 .     return
 .   \}
+.   if !d mx:preprocessed \{\
+.     mx:perr ".Mx -ix: not preprocessed by mdocmx(1), ignoring request"
+.     return
+.   \}
 .   ie (\n[.$] == 2) \{\
 .     ds mx#s1 ixsx
 .     ds mx#s2 \$2
@@ -184,7 +188,7 @@
 .   \}
 .   mx:cleanup-string "\*[mx#s2]"
 .   ds mx#s2 \*[mx:cleans]
-.   mx:setup-anchor "\*[mx#s1]" "\*[mx#s2]"
+.   mx:mac-key-find mx__ixsx__ "\*[mx#s1]" "\*[mx#s2]"
 .   rm mx#s2
 .   rm mx#s1
 .   return
@@ -241,7 +245,7 @@
 . if '-anchor-spass'\$1' \{\
 .   mx:check-macname-mapped "\$2"
 .   \" xxx Checking removed once -sx/-ix forms were introduced..
-.   if !d mx#s1 \
+.   if '\*[mx#s1]'' \
 .     ds mx#s1 \$2
 .   nr mx:\*[mx#s1]-no +1
 .   ds mx#s3 mx:\*[mx#s1]-\n[mx:\*[mx#s1]-no]
@@ -249,7 +253,7 @@
 .   mx:cleanup-string "\$3"
 .   \" xxx don't check mx:cleanstop, it's an anchor, not a reference
 .   ds \*[mx#s3]-arg \*[mx:cleans]
-.   if d mx#s2 \
+.   if !'\*[mx#s2]'' \
 .     ds \*[mx#s3]-rel \$4
 .   ds \*[mx#s3]-ref \n[mx:refno]
 .   nr mx:refno +1
@@ -373,7 +377,7 @@
 . mx:check-macname-extended-mapped "\$1"
 . rm mx#s2
 . \" Unless our business, bypass this level
-. if !d mx#s1 \{\
+. if '\*[mx#s1]'' \{\
 .   ds mx:arz\n[mx:ard]
 .   ds mx:arx\n[mx:ard]
 .   return
@@ -490,6 +494,7 @@
 .   \" .Sx extended anchor / reference?
 .   ie d mx:ixsx \{\
 .     mx:mac-key-find "\*[mx:ixsx]" "\*[\*[mx#s1]]"
+.     rm mx:ixsx
 .   \}
 .   el \{\
 .     ds mx:mac-leave-sx
@@ -749,10 +754,16 @@
 .   return
 . \}
 . \" In SYNOPSIS we have to act quite differently
-. mx:check-refok \$1
+. if !'mx__ixsx__'\$1' \
+.   mx:check-refok \$1
 .
 . \" If .Mx stack is not empty, check if we can pop it: define mx#anchor
-. ie     'Sx'\$1' .
+. ie 'mx__ixsx__'\$1' \{\
+.   shift
+.   ds mx#anchor
+. \}
+. el .ie d mx:ixsx    .
+. el .ie 'Sx'\$1' .
 . el .ie 'Xr'\$1' .
 . el .ie 'Sh'\$1' .ds mx#showref
 . el .ie 'Ss'\$1' .ds mx#showref
