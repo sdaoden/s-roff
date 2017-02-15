@@ -4,12 +4,12 @@
 #@ allowing mdoc(7) to create anchors and table of contents.
 #@ Synopsis: mdocmx[.sh] [:-v:] [-t | -T Sh|sh|Ss|ss  [-c]] [FILE]
 #@ -v: increase verbosity
-#@ -t: wether -toc lines shall be expanded to a flat .Sh TOC
-#@ -T: wether -toc lines shall be expanded as specified: only .Sh / .Sh + .Ss
-#@ -c: only with -t or -T: wether compact TOC display shall be generated
+#@ -t: whether -toc lines shall be expanded to a flat .Sh TOC
+#@ -T: whether -toc lines shall be expanded as specified: only .Sh / .Sh + .Ss
+#@ -c: only with -t or -T: whether compact TOC display shall be generated
 #@ Set $AWK environment to force a special awk(1) interpreter.
 #
-# Written 2014 - 2015 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+# Written 2014 - 2017 by Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 # Public Domain
 
 : ${TMPDIR:=/tmp}
@@ -65,7 +65,7 @@ if ( set -C ) >/dev/null 2>&1; then
 else
   # For heaven's sake auto-redirect on SunOS/Solaris
   if [ -f /usr/xpg4/bin/sh ]; then
-    exec /usr/xpg4/bin/sh "${0}" ${@+"${@}"}
+    exec /usr/xpg4/bin/sh "${0}" "${@}"
   else
     synopsis 1 'Not a sh(1)ell with "set -C" (for save temporary file creation)'
   fi
@@ -109,7 +109,7 @@ shift ${OPTIND}
 # pipe case that our END{} handler will generate when we had to perform any
 # preprocessing, and that in turn would result in a dangling temporary file!
 # Thus the only sane option seems to be to always create the temporary file,
-# wether we need it or not, not to exec(1) awk(1) but keep on running the shell
+# whether we need it or not, not to exec(1) awk(1) but keep on running the shell
 # in order to remove the temporary after awk(1) has finished, whichever way.
 
 find_tmpdir() {
@@ -155,7 +155,7 @@ umask ${old_umask}
 APOSTROPHE=\'
 ${AWK} -v VERBOSE=${V} -v TOC="${T}" -v TOCTYPE="${TT}" -v MX_FO="${tmpfile}" \
   -v EX_USAGE="${EX_USAGE}" -v EX_DATAERR="${EX_DATAERR}" \
-'BEGIN {
+'BEGIN{
   # The mdoc macros that support referenceable anchors.
   # .Sh and .Ss also create anchors, but since they do not require .Mx they are
   # treated special and handled directly -- update manual on change!
@@ -188,25 +188,25 @@ ${AWK} -v VERBOSE=${V} -v TOC="${T}" -v TOCTYPE="${TT}" -v MX_FO="${tmpfile}" \
   #  --  >8  --  8<  --  #
 
   i = split(UMACS, savea)
-  for (j = 1; j <= i; ++j) {
+  for(j = 1; j <= i; ++j){
     k = savea[j]
     MACS[k] = k
   }
 
   i = split(UMACS_KEYHOOKS, savea)
-  for (j = 1; j <= i; ++j) {
+  for(j = 1; j <= i; ++j){
     k = savea[j]
     MACS_KEYHOOKS[k] = k
   }
 
   i = split(UCOMMS, savea)
-  for (j = 1; j <= i; ++j) {
+  for(j = 1; j <= i; ++j){
     k = savea[j]
     COMMS[k] = k
   }
 
   i = split(UPUNCTS, savea)
-  for (j = 1; j <= i; ++j) {
+  for(j = 1; j <= i; ++j){
     k = savea[j]
     PUNCTS[k] = k
   }
@@ -235,116 +235,115 @@ ${AWK} -v VERBOSE=${V} -v TOC="${T}" -v TOCTYPE="${TT}" -v MX_FO="${tmpfile}" \
   #ARG, [..]      # Next parsed argument (from arg_parse() helper)
 }
 
-END {
+END{
   # If we were forced to create referenceable anchors, dump the temporary file
   # after writing our table-of-anchors (TAO :)
-  if (mx_fo) {
+  if(mx_fo){
     close(mx_fo)
 
-    if (mx_stack_cnt > 0)
+    if(mx_stack_cnt > 0)
       warn("At end of file: \".Mx\" stack not empty (" mx_stack_cnt " levels)")
 
-    for (i = 1; i <= mx_sh_cnt; ++i)
+    for(i = 1; i <= mx_sh_cnt; ++i)
       printf ".Mx -anchor-spass Sh \"%s\" %d\n", arg_quote(mx_sh[i]), i
-    for (i = 1; i <= mx_ss_cnt; ++i)
+    for(i = 1; i <= mx_ss_cnt; ++i)
       printf ".Mx -anchor-spass Ss \"%s\" %d\n",
         arg_quote(mx_ss[i]), mx_sh_ss[i]
-    for (i = 1; i <= mx_anchors_cnt; ++i)
+    for(i = 1; i <= mx_anchors_cnt; ++i)
       printf ".Mx -anchor-spass %s \"%s\"\n",
         mx_macros[i], arg_quote(mx_keys[i])
 
     # If we are about to produce a TOC, intercept ".Mx -toc" lines and replace
     # them with the desired TOC content
-    if (!TOC) {
-      while (getline < mx_fo)
+    if(!TOC){
+      while(getline < mx_fo)
         print
-    } else {
-      while (getline < mx_fo) {
-        if ($0 ~ /^[[:space:]]*\.[[:space:]]*Mx[[:space:]]+-toc[[:space:]]*/) {
+    }else{
+      while(getline < mx_fo){
+        if($0 ~ /^[[:space:]]*\.[[:space:]]*Mx[[:space:]]+-toc[[:space:]]*/){
           print ".Sh \"\\*[mx-toc-name]\""
-          if (mx_sh_cnt > 0) {
+          if(mx_sh_cnt > 0){
             print ".Bl -inset", TOCTYPE
-            for (i = 1; i <= mx_sh_cnt; ++i) {
+            for(i = 1; i <= mx_sh_cnt; ++i){
               printf ".It Sx \"%s\"\n", arg_quote(mx_sh[i])
-              if (TOC == "Ss")
+              if(TOC == "Ss")
                 toc_print_ss(i)
             }
             print ".El"
           }
           # Rather illegal, but maybe we have seen .Ss yet no .Sh: go!
-          else if (TOC == "Ss" && mx_ss_cnt > 0) {
+          else if(TOC == "Ss" && mx_ss_cnt > 0){
             print ".Bl -tag -compact"
-            for (i = 1; i <= mx_ss_cnt; ++i)
+            for(i = 1; i <= mx_ss_cnt; ++i)
               print ".It Sx \"%s\"\n", arg_quote(mx_ss[i])
             print ".El"
           }
-        } else
+        }else
           print
       }
     }
   }
 }
 
-function f_a_l() {
-  if (!fal) {
+function f_a_l(){
+  if(!fal){
     fal = FILENAME
-    if (!fal || fal == "-")
+    if(!fal || fal == "-")
       fal = "<stdin>"
   }
   return fal ":" NR
 }
 
-function dbg(s) {
-  if (VERBOSE > 1)
+function dbg(s){
+  if(VERBOSE > 1)
     print "DBG@" f_a_l() ": " s > "/dev/stderr"
 }
 
-function warn(s) {
-  if (VERBOSE > 0)
+function warn(s){
+  if(VERBOSE > 0)
     print "WARN@" f_a_l() ": mdocmx(7): " s "." > "/dev/stderr"
 }
 
-function fatal(e, s) {
+function fatal(e, s){
   print "FATAL@" f_a_l() ": mdocmx(7): " s "." > "/dev/stderr"
   exit e
 }
 
 # Dump all .Ss which belong to the .Sh with the index sh_idx, if any
-function toc_print_ss(sh_idx)
-{
+function toc_print_ss(sh_idx){
   tps_any = 0
-  for (tps_i = 1; tps_i <= mx_ss_cnt; ++tps_i) {
+  for(tps_i = 1; tps_i <= mx_ss_cnt; ++tps_i){
     tps_j = mx_sh_ss[tps_i]
-    if (tps_j < sh_idx)
+    if(tps_j < sh_idx)
       continue
-    if (tps_j > sh_idx)
+    if(tps_j > sh_idx)
       break
 
-    if (!tps_any) {
+    if(!tps_any){
       tps_any = 1
       print ".Bl -tag -offset indent -compact"
     }
     printf ".It Sx \"%s\"\n", arg_quote(mx_ss[tps_i])
   }
-  if (tps_any)
+  if(tps_any)
     print ".El"
 }
 
 # Parse the next _roff_ argument from the awk(1) line (in $0).
-# If "no" < 0, reset the parser and return wether the former state would
+# If "no" < 0, reset the parser and return whether the former state would
 # have parsed another argument from the line.
 # If "no" is >0 we start at $(no); if it is 0, iterate to the next argument.
 # Returns ARG.  Only used when "hot"
-function arg_pushback(arg) { ap_pushback = arg }
-function arg_parse(no) {
-  if (no < 0) {
+function arg_pushback(arg){ ap_pushback = arg }
+function arg_parse(no){
+  if(no < 0){
     no = ap_no
     ap_no = 0
     ap_pushback = ""
     return no < NF
   }
-  if (no == 0) {
-    if (ap_pushback) {
+  if(no == 0){
+    if(ap_pushback){
       ARG = ap_pushback
       ap_pushback = ""
       return ARG
@@ -354,38 +353,38 @@ function arg_parse(no) {
   ap_pushback = ""
 
   ARG = ""
-  for (ap_i = 0; no <= NF; ++no) {
+  for(ap_i = 0; no <= NF; ++no){
     ap_j = $(no)
 
     # The good news about quotation mode is that entering it requires
     # a preceeding space: we get it almost for free with awk(1)!
-    if (!ap_i) {
-      if (ap_j ~ /^"/) {
+    if(!ap_i){
+      if(ap_j ~ /^"/){
         ap_i = 1
         ap_j = substr(ap_j, 2)
-      } else {
+      }else{
         ARG = ap_j
         break
       }
-    } else
+    }else
       ARG = ARG " "
 
-    if ((ap_k = index(ap_j, "\"")) != 0) {
-      do {
+    if((ap_k = index(ap_j, "\"")) != 0){
+      do{
         # The bad news on quotation mode are:
         # - "" inside it resolves to a single "
         # - " need not mark EOS, but any " that is not followed by "
         #   ends quotation mode and marks the beginning of the next arg
         # - awk(1) has no goto;
-        if (ap_k == length(ap_j)) {
+        if(ap_k == length(ap_j)){
           ARG = ARG substr(ap_j, 1, ap_k - 1)
           ap_no = no
           ap_i = 0
           return ARG
-        } else if (substr(ap_j, ap_k + 1, 1) == "\"") {
+        }else if(substr(ap_j, ap_k + 1, 1) == "\""){
           ARG = ARG substr(ap_j, 1, ap_k)
           ap_j = substr(ap_j, ap_k + 2)
-        } else {
+        }else{
           ARG = ARG substr(ap_j, 1, ap_k)
           ap_j = substr(ap_j, ap_k + 1)
           $(no) = ap_j
@@ -393,38 +392,38 @@ function arg_parse(no) {
           ap_i = 0
           return ARG
         }
-      } while ((ap_k = index(ap_j, "\"")) > 0)
-    } else
+      }while((ap_k = index(ap_j, "\"")) > 0)
+    }else
       ARG = ARG ap_j
   }
   ap_no = no
   return ARG
 }
 
-function arg_cleanup(arg) {
+function arg_cleanup(arg){
   # Deal with common special glyphs etc.
   # Note: must be in sync with mdocmx(7) macros (mx:cleanup-string)!
   ac_i = match(arg, /([ \t]|\\&|\\%|\\\/|\\c)+$/)
-  if (ac_i)
+  if(ac_i)
     arg = substr(arg, 1, ac_i - 1)
-  while (arg ~ /^[ \t]/)
+  while(arg ~ /^[ \t]/)
     arg = substr(arg, 1)
-  while (arg ~ /^(\\&|\\%)/ && arg !~ /^\\&\\&/)
+  while(arg ~ /^(\\&|\\%)/ && arg !~ /^\\&\\&/)
     arg = substr(arg, 3)
   return arg
 }
 
-function arg_quote(arg) {
+function arg_quote(arg){
   aq_a = arg
   gsub("\"", "\"\"", aq_a)
   return aq_a
 }
 
 # ".Mx -enable" seen
-function mx_enable() {
+function mx_enable(){
   # However, are we running on an already preprocessed document?  Bypass!
-  if (NF > 2) {
-    if ($3 == "-preprocessed") {
+  if(NF > 2){
+    if($3 == "-preprocessed"){
       print
       mx_bypass = 1
       return
@@ -435,7 +434,7 @@ function mx_enable() {
   # mdocml.bsd.lv (mandoc(1)) does not offer any ".if !d NAME" way, so..
   # But even otherwise we need it, since mandoc(1) complains about unknown
   # \*[] strings in quoted strings, and we *may* have a ".Mx -toc" anyway!
-  if (!TOC)
+  if(!TOC)
     printf ".\\\" Uncomment for mandoc(1) compat.:\n.\\\""
   print ".ds mx-toc-name TABLE OF CONTENTS"
   mx_fo = MX_FO
@@ -445,32 +444,32 @@ function mx_enable() {
 }
 
 # Deal with a non-"-enable" ".Mx" request
-function mx_comm() {
+function mx_comm(){
   # No argument: plain push
-  if (NF == 1) {
+  if(NF == 1){
     ++mx_stack_cnt
     dbg(".Mx: [noarg] -> +1, stack size=" mx_stack_cnt)
     return
   }
 
   # ".Mx -disable"
-  if ($2 == "-disable") {
+  if($2 == "-disable"){
     # Nothing to do here (and do not check device arguments)
     return
   }
 
   # ".Mx -ix" / ".Mx -sx" freely definable anchors
-  if ($2 == "-sx")
+  if($2 == "-sx")
     # Nothing to do here (xxx check argument content validity?)
     return
-  else if ($2 == "-ix") {
+  else if($2 == "-ix"){
     mxc_macro = arg_parse(3)
-    if (!mxc_macro)
+    if(!mxc_macro)
       fatal(EX_USAGE, "\".Mx -ix\": synopsis: \".Mx -ix [category] key\"")
-    if (!(mxc_key = arg_parse(0))) {
+    if(!(mxc_key = arg_parse(0))){
       mxc_key = mxc_macro
       mxc_macro = "ixsx"
-    } else if (arg_parse(-1))
+    }else if(arg_parse(-1))
       fatal(EX_DATAERR, "\".Mx -ix\": data after USER KEY is faulty syntax")
     mxc_key = arg_cleanup(mxc_key)
     dbg(".Mx -ix mac<" mxc_macro "> key <" mxc_key ">")
@@ -479,9 +478,9 @@ function mx_comm() {
   }
 
   # ".Mx -toc"
-  if ($2 == "-toc") {
+  if($2 == "-toc"){
     # With TOC creation we surely want the TOC to have an anchor, too!
-    if (!mx_sh_toc++)
+    if(!mx_sh_toc++)
       mx_sh[++mx_sh_cnt] = "\\*[mx-toc-name]"
     else
       warn("\".Mx -toc\": multiple TOCs?  Duplicate anchor avoided")
@@ -490,33 +489,33 @@ function mx_comm() {
 
   # This explicitly specifies the macro to create an anchor for next
   mxc_i = $2
-  if (mxc_i ~ /^\./) {
+  if(mxc_i ~ /^\./){
     warn("\".Mx\": stripping dot prefix from \"" mxc_i "\"")
     mxc_i = substr(mxc_i, 2)
   }
 
   mxc_j = MACS[mxc_i]
-  if (!mxc_j)
+  if(!mxc_j)
     fatal(EX_DATAERR, "\".Mx\": macro \"" mxc_i "\" not supported")
   mx_stack[++mx_stack_cnt] = mxc_i
   dbg(".Mx: for next \"." mxc_i "\", stack size=" mx_stack_cnt)
 
   # Do we also have a fixed key?
-  if (NF == 2)
+  if(NF == 2)
     return
   mx_keystack[mx_stack_cnt] = arg_parse(3)
   dbg("  ... USER KEY given: <" ARG ">")
-  if (arg_parse(-1))
+  if(arg_parse(-1))
     fatal(EX_DATAERR, "\".Mx\": data after USER KEY is faulty syntax")
 }
 
-# mx_stack_cnt is >0, check wether this line will pop the stack
-function mx_check_line() {
+# mx_stack_cnt is >0, check whether this line will pop the stack
+function mx_check_line(){
   # May be line continuation in the middle of nowhere
-  if (!mx_stack_cnt)
+  if(!mx_stack_cnt)
     return
   # Must be a non-comment, non-escaped macro line
-  if ($0 !~ /^[[:space:]]*[.'${APOSTROPHE}'][[:space:]]*[^"#]/)
+  if($0 !~ /^[[:space:]]*[.'${APOSTROPHE}'][[:space:]]*[^"#]/)
     return
 
   # Iterate over all arguments and try to classify them, comparing them against
@@ -524,13 +523,13 @@ function mx_check_line() {
   mcl_mac = ""
   mcl_cont = 0
   mcl_firstmac = 1
-  for (arg_parse(-1); arg_parse(0);) {
+  for(arg_parse(-1); arg_parse(0);){
     # Solely ignore punctuation (xxx are we too stupid here?)
-    if (PUNCTS[ARG])
+    if(PUNCTS[ARG])
       continue
 
     # (xxx Do this at the end of the loop instead, after decrement?)
-    if (mx_stack_cnt == 0) {
+    if(mx_stack_cnt == 0){
       dbg("stack empty, stopping arg processing before <" ARG ">")
       break
     }
@@ -540,19 +539,19 @@ function mx_check_line() {
     # Is this something we consider a macro?  For convenience and documentation
     # of roff stuff do auto-ignore a leading dot of the name in question
     mcl_cont = 0
-    if (mcl_firstmac && ARG ~ /^\./)
+    if(mcl_firstmac && ARG ~ /^\./)
       ARG = substr(ARG, 2)
     mcl_firstmac = 0
     mcl_i = MACS[ARG]
-    if (mcl_i)
+    if(mcl_i)
       mcl_mac = mcl_i
-    else {
-      if (!mcl_mac)
+    else{
+      if(!mcl_mac)
         continue
       # It may be some mdoc command nonetheless, ensure it does not fool our
       # simpleminded processing, and end possible mcl_mac savings
-      if (COMMS[ARG]) {
-        if (mcl_j)
+      if(COMMS[ARG]){
+        if(mcl_j)
           dbg("NO POP due macro (got<" ARG "> want<" mcl_j ">)")
         mcl_mac = ""
         continue
@@ -562,8 +561,8 @@ function mx_check_line() {
     }
 
     # Current command matches the one on the stack, if there is any
-    if (mcl_j) {
-      if (mcl_i != mcl_j) {
+    if(mcl_j){
+      if(mcl_i != mcl_j){
         dbg("NO POP due macro (got<" mcl_i "> want<" mcl_j ">)")
         mcl_mac = ""
         continue
@@ -571,23 +570,23 @@ function mx_check_line() {
     }
 
     # We need the KEY
-    if (!mcl_cont && !arg_parse(0))
+    if(!mcl_cont && !arg_parse(0))
       fatal(EX_DATAERR, "\".Mx\": expected KEY after \"" mcl_mac "\"")
     ARG = arg_cleanup(ARG)
-    if (ARG ~ /^\\&\\&/)
+    if(ARG ~ /^\\&\\&/)
       warn("\".Mx\": KEY starting with \"\\&\\&\" will never match: " ARG)
-    if (MACS_KEYHOOKS[mcl_mac])
+    if(MACS_KEYHOOKS[mcl_mac])
       _mx_check_line_keyhook()
 
-    if (mx_keystack[mx_stack_cnt]) {
+    if(mx_keystack[mx_stack_cnt]){
       mcl_i = mx_keystack[mx_stack_cnt]
-      if (mcl_i != ARG) {
+      if(mcl_i != ARG){
         dbg("NO POP mac<" mcl_mac "> due key (got<" ARG "> want <" mcl_i ">)")
         continue
       }
       delete mx_keystack[mx_stack_cnt]
       mcl_i = "STACK"
-    } else
+    }else
       mcl_i = "USER"
 
     delete mx_stack[mx_stack_cnt--]
@@ -598,18 +597,18 @@ function mx_check_line() {
   }
 }
 
-function _mx_check_line_keyhook() {
+function _mx_check_line_keyhook(){
   # .Fl: arguments may be continued via |, as in ".Fl a | b | c"
-  if (mcl_mac == "Fl") {
+  if(mcl_mac == "Fl"){
     mclpkh_i = ARG
-    for (mclpkh_j = 0;; ++mclpkh_j) {
-      if (!arg_parse(0))
+    for(mclpkh_j = 0;; ++mclpkh_j){
+      if(!arg_parse(0))
         break
-      if (ARG != "|") {
+      if(ARG != "|"){
         arg_pushback(ARG)
         break
       }
-      if (!arg_parse(0)) {
+      if(!arg_parse(0)){
         warn("Premature end of \".Fl\" continuation via \"|\"")
         break
       }
@@ -618,7 +617,7 @@ function _mx_check_line_keyhook() {
       # XXX  .Op Fl T | Fl t Ar \&Sh | sh | \&Ss | ss
       # XXX We are too stupid to recursively process any possible thing,
       # XXX more complicated recursions are simply not supported
-      if (ARG == "Fl") {
+      if(ARG == "Fl"){
         arg_pushback(ARG)
         break
       }
@@ -628,8 +627,8 @@ function _mx_check_line_keyhook() {
     ARG = mclpkh_i
   }
   # .Fn: in ".Fn const char *funcname" all we want is "funcname"
-  else if (mcl_mac == "Fn") {
-    if (ARG ~ /[*&[:space:]]/) {
+  else if(mcl_mac == "Fn"){
+    if(ARG ~ /[*&[:space:]]/){
       mclpkh_i = match(ARG, /[^*&[:space:]]+$/)
       ARG = arg_cleanup(substr(ARG, mclpkh_i))
     }
@@ -637,9 +636,9 @@ function _mx_check_line_keyhook() {
 }
 
 # Add one -anchor-spass macro/key pair
-function anchor_add(macro, key) {
-  for (aa_i = 1; aa_i <= mx_anchors_cnt; ++aa_i)
-    if (mx_macros[aa_i] == macro && mx_keys[aa_i] == key) {
+function anchor_add(macro, key){
+  for(aa_i = 1; aa_i <= mx_anchors_cnt; ++aa_i)
+    if(mx_macros[aa_i] == macro && mx_keys[aa_i] == key){
       warn("\".Mx\": mac<" macro ">: duplicate anchor avoided: " key)
       return
     }
@@ -649,42 +648,42 @@ function anchor_add(macro, key) {
 }
 
 # Handle a .Sh or .Ss
-function sh_ss_comm() {
+function sh_ss_comm(){
   ssc_s = ""
   ssc_i = 0
-  for (arg_parse(-1); arg_parse(0); ++ssc_i) {
-    if (ssc_i < 1)
+  for(arg_parse(-1); arg_parse(0); ++ssc_i){
+    if(ssc_i < 1)
       continue
-    if (ssc_i > 1)
+    if(ssc_i > 1)
       ssc_s = ssc_s " "
     ssc_s = ssc_s ARG
   }
   ssc_s = arg_cleanup(ssc_s)
-  if ($1 ~ /Sh/)
+  if($1 ~ /Sh/)
     mx_sh[++mx_sh_cnt] = ssc_s
-  else {
+  else{
     mx_ss[++mx_ss_cnt] = ssc_s
     mx_sh_ss[mx_ss_cnt] = mx_sh_cnt
   }
 }
 
 # This is our *very* primitive way of dealing with line continuation
-function line_nlcont_add(fun) {
+function line_nlcont_add(fun){
   mx_nlcont = mx_nlcont $0
   mx_nlcont = substr(mx_nlcont, 1, length(mx_nlcont) - 1)
-  if (!mx_nlcontfun)
+  if(!mx_nlcontfun)
     mx_nlcontfun = fun
 }
 
-function line_nlcont_done() {
+function line_nlcont_done(){
   lnd_save = $0
   $0 = mx_nlcont $0
   mx_nlcont = ""
-  if (mx_nlcontfun == NLCONT_SH_SS_COMM)
+  if(mx_nlcontfun == NLCONT_SH_SS_COMM)
     sh_ss_comm()
-  else if (mx_nlcontfun == NLCONT_MX_COMM)
+  else if(mx_nlcontfun == NLCONT_MX_COMM)
     mx_comm()
-  else if (mx_nlcontfun == NLCONT_MX_CHECK_LINE)
+  else if(mx_nlcontfun == NLCONT_MX_CHECK_LINE)
     mx_check_line()
   else
     fatal(EX_DATAERR, "mdocmx(1) implementation error: line_nlcont_done()")
@@ -693,20 +692,20 @@ function line_nlcont_done() {
 }
 
 # .Mx is a line that we care about
-/^[[:space:]]*[.'${APOSTROPHE}'][[:space:]]*M[Xx][[:space:]]*/ {
-  if (mx_bypass)
+/^[[:space:]]*[.'${APOSTROPHE}'][[:space:]]*M[Xx][[:space:]]*/{
+  if(mx_bypass)
     print
-  else if (mx_fo) {
-    if (NF > 1 && $2 == "-enable")
+  else if(mx_fo){
+    if(NF > 1 && $2 == "-enable")
       fatal(EX_USAGE, "\".Mx -enable\" may be used only once")
-    if (mx_nlcont)
+    if(mx_nlcont)
       fatal(EX_DATAERR, "Line continuation too complicated for mdocmx(1)")
-    if ($0 ~ /\\$/)
+    if($0 ~ /\\$/)
       line_nlcont_add(NLCONT_MX_COMM)
     else
       mx_comm()
     print >> mx_fo
-  } else if (NF < 2 || $2 != "-enable")
+  }else if(NF < 2 || $2 != "-enable")
     fatal(EX_USAGE, "\".Mx -enable\" must be the first \".Mx\" command")
   else
     mx_enable()
@@ -715,11 +714,11 @@ function line_nlcont_done() {
 
 # .Sh and .Ss are also lines we care about, but always store the data in
 # main memory, since those commands occur in each mdoc file
-/^[[:space:]]*[.'${APOSTROPHE}'][[:space:]]*S[hs][[:space:]]+/ {
-  if (mx_fo) {
-    if (mx_nlcont)
+/^[[:space:]]*[.'${APOSTROPHE}'][[:space:]]*S[hs][[:space:]]+/{
+  if(mx_fo){
+    if(mx_nlcont)
       fatal(EX_DATAERR, "Line continuation too complicated for mdocmx(1)")
-    if ($0 ~ /\\$/)
+    if($0 ~ /\\$/)
       line_nlcont_add(NLCONT_SH_SS_COMM)
     else
       sh_ss_comm()
@@ -731,23 +730,23 @@ function line_nlcont_done() {
 # All other lines are uninteresting unless mdocmx is -enabled and we have
 # pending anchor creation requests on the stack
 {
-  if (!mx_fo)
+  if(!mx_fo)
     print
-  else {
+  else{
     # TODO No support for any macro END but ..
-    if (/^[[:space:]]*[.'${APOSTROPHE}'][[:space:]]*dei?1?[[:space:]]+/) {
-      if (mx_nlcont)
+    if(/^[[:space:]]*[.'${APOSTROPHE}'][[:space:]]*dei?1?[[:space:]]+/){
+      if(mx_nlcont)
         fatal(EX_DATAERR, "Line continuation too complicated for mdocmx(1)")
       print >> mx_fo
-      while (getline && $0 !~ /^\.\.$/)
+      while(getline && $0 !~ /^\.\.$/)
         print >> mx_fo
-    } else if ($0 ~ /\\$/)
+    }else if($0 ~ /\\$/)
       line_nlcont_add(NLCONT_MX_CHECK_LINE)
-    else if (mx_nlcont)
+    else if(mx_nlcont)
       line_nlcont_done()
-    else if (mx_stack_cnt)
+    else if(mx_stack_cnt)
       mx_check_line()
-    else if (/^[[:space:]]*\.(\\"|[[:space:]]*$)/)
+    else if(/^[[:space:]]*\.(\\"|[[:space:]]*$)/)
       next
     print >> mx_fo
   }
