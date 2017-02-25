@@ -159,7 +159,7 @@ ${AWK} -v VERBOSE=${V} -v TOC="${T}" -v TOCTYPE="${TT}" -v MX_FO="${tmpfile}" \
   # The mdoc macros that support referenceable anchors.
   # .Sh and .Ss also create anchors, but since they do not require .Mx they are
   # treated special and handled directly -- update manual on change!
-  UMACS = "Ar Cm Dv Er Ev Fl Fn Fo Ic In Pa Va Vt"
+  UMACS = "Ar Cd Cm Dv Er Ev Fl Fn Fo Ic In Pa Va Vt"
 
   # Some of those impose special rules for their arguments; mdocmx(1) solves
   # this by outsourcing such desires in argument parse preparation hooks
