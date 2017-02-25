@@ -3,7 +3,7 @@
 .\"@ allowing mdoc(7) to create anchors and table of contents.
 .\"@ Note this file will create warnings for using .\" inside .eo ..  .ec.
 .\"
-.\" Written 2014 - 2015 by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+.\" Written 2014 - 2017 by Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 .\" Public Domain
 .eo
 .
@@ -546,6 +546,7 @@
 . rm mx#s1
 . rm mx#s2
 . ie     'Ar'\$1' .ds mx#s1 Ar
+. el .ie 'Cd'\$1' .ds mx#s1 Cd
 . el .ie 'Cm'\$1' .ds mx#s1 Cm
 . el .ie 'Dv'\$1' .ds mx#s1 Dv
 . el .ie 'Er'\$1' .ds mx#s1 Er
