@@ -55,6 +55,7 @@
 .\" --  >8  --  8<  --
 .
 .\" ds mx:enabled
+.\" mx:anchordump (stream, if -dmx-anchor-dump and \n[.U])
 .\" ds mx:preprocessed
 .\" ds mx:gogogo
 .\" ds mx:istty
@@ -153,6 +154,17 @@
 .   if d mx#s2 .rm mx:gogogo
 .   rm mx#s2
 .   rm mx#s1
+.
+.   if d mx:gogogo \{\
+.     if d mx-anchor-dump \{\
+.       ie \n[.U] \
+.         open mx:anchordump \*[mx-anchor-dump]
+.       el \{\
+.         rm mx-anchor-dump
+.         mx:perr ".Mx: mx-anchor-dump requires unsafe mode (-U)"
+.       \}
+.     \}
+.   \}
 .   return
 . \}
 .
@@ -256,6 +268,8 @@
 .   if !'\*[mx#s2]'' \
 .     ds \*[mx#s3]-rel \$4
 .   ds \*[mx#s3]-ref \n[mx:refno]
+.   if d mx-anchor-dump \
+.     write mx:anchordump \n[mx:refno] \*[mx#s1] \*[mx:cleans]
 .   nr mx:refno +1
 .   \" Anchor is placed when we actually see it
 .   \"rm \*[mx#s3]-anchor

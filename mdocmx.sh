@@ -244,11 +244,14 @@ END{
     if(mx_stack_cnt > 0)
       warn("At end of file: \".Mx\" stack not empty (" mx_stack_cnt " levels)")
 
-    for(i = 1; i <= mx_sh_cnt; ++i)
+    for(i = 1; i <= mx_sh_cnt; ++i){
       printf ".Mx -anchor-spass Sh \"%s\" %d\n", arg_quote(mx_sh[i]), i
-    for(i = 1; i <= mx_ss_cnt; ++i)
-      printf ".Mx -anchor-spass Ss \"%s\" %d\n",
-        arg_quote(mx_ss[i]), mx_sh_ss[i]
+      for(j = 1; j <= mx_ss_cnt; ++j)
+        if(mx_sh_ss[j] == i)
+          printf ".Mx -anchor-spass Ss \"%s\" %d\n",
+            arg_quote(mx_ss[j]), mx_sh_ss[j]
+    }
+
     for(i = 1; i <= mx_anchors_cnt; ++i)
       printf ".Mx -anchor-spass %s \"%s\"\n",
         mx_macros[i], arg_quote(mx_keys[i])
@@ -662,6 +665,8 @@ function sh_ss_comm(){
   if($1 ~ /Sh/)
     mx_sh[++mx_sh_cnt] = ssc_s
   else{
+    if(mx_sh_cnt == 0)
+      fatal(EX_DATAERR, ".Ss at beginning of document not allowed by mdoc(7)")
     mx_ss[++mx_ss_cnt] = ssc_s
     mx_sh_ss[mx_ss_cnt] = mx_sh_cnt
   }
