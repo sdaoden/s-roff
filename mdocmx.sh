@@ -31,6 +31,8 @@ EX_TEMPFAIL=75
 
 V=0 T= TT= F=
 
+( set -o noglob ) >/dev/null 2>&1 && set -o noglob
+
 find_awk() {
   [ -n "${AWK}" ] && return 0
   i=${IFS}
@@ -40,9 +42,16 @@ find_awk() {
   # for i; do -- new in POSIX Issue 7 + TC1
   for i
   do
+    if [ -z "${i}" ] || [ "${i}" = . ]; then
+      if [ -d "${PWD}" ]; then
+        i=${PWD}
+      else
+        i=.
+      fi
+    fi
     for j in n m '' g; do
       AWK="${i}/${j}awk"
-      [ -x "${AWK}" ] && return 0
+      [ -f "${AWK}" ] && [ -x "${AWK}" ] && return 0
     done
   done
   return 1
@@ -64,7 +73,7 @@ if ( set -C ) >/dev/null 2>&1; then
   set +C
 else
   # For heaven's sake auto-redirect on SunOS/Solaris
-  if [ -f /usr/xpg4/bin/sh ]; then
+  if [ -f /usr/xpg4/bin/sh ] && [ -x /usr/xpg4/bin/sh ]; then
     exec /usr/xpg4/bin/sh "${0}" "${@}"
   else
     synopsis 1 'Not a sh(1)ell with "set -C" (for save temporary file creation)'
