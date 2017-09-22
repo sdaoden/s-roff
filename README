@@ -1,20 +1,131 @@
 W e l c o m e  t o  S - r o f f
 ===============================
 
+S-roff is a text processor that formats text.
+It accepts lines of text interspersed with lines of format control
+information and formats the text into a printable, paginated document
+having a user-designed style.
+S-roff offers unusual freedom in document styling: arbitrary style
+headers and footers; arbitrary style footnotes; multiple automatic
+sequence numbering for paragraphs, sections, etc; multiple column
+output; dynamic font and point-size control; arbitrary horizontal and
+vertical local motions at any point; and a family of automatic
+overstriking, bracket construction, and line-drawing functions.
+
+S-roff is a fork of GNU troff, stripped-down to not include any X.org
+related facility, the output devices grolj4 and grolbp as well as most
+contributed packages.  The fork happened on the last commit that is
+still GPL2 licensed (1.19.2-574-gecbf4f1), but almost all changes up to
+and including v1.22.3 are included, as well as further bug reports.
+
 Please refer to the file INSTALL for build and installation remarks,
 and to NEWS for release update information.
 
-XX. Noticable tags
+1. Where?
+2. Repository layout
+3. Noticable tags (in reverse order)
 
+1. Where?
+---------
 
+Our latest release can be downloaded at [1], and the fully cross-
+referenced manual can also be viewed as HTML online[2].
+There are browsable git(1) repositories at sdaoden.eu[3] (use [4] for
+cloning purposes), with mirrors at Sourceforge[5] and repo.or.cz[6].
 
-XX. Noticable tags
-------------------
+  [1] https?://ftp.sdaoden.eu/s-roff-latest.tar.{gz,xz}{,.asc}
+  [2] https?://www.sdaoden.eu/code.html#s-roff
+  [3] https?://git.sdaoden.eu/cgit/s-roff.git
+  [4] https?://git.sdaoden.eu/scm/s-roff.git
+  [5] http://sourceforge.net/projects/s-roff
+  [6] http://repo.or.cz/s-roff.git
 
-. s-roff
-  The last GNU roff commit before the S-roff fork.
-  This is 1.19.2-574-gecbf4f1, which also marks the last commit in
-  a GPL2 licensed tree.
+Commits to the [master], [release/*] and [stable/*] branches are
+posted to [12], and announcements will also be posted to [13], both
+are receive-only mailing-lists.
+
+  [12] https://lists.sdaoden.eu/mailman/listinfo.cgi/s-roff-commit
+  [13] https://lists.sdaoden.eu/mailman/listinfo.cgi/s-announce
+
+2. Repository layout
+--------------------
+
+- [release/*]
+    A new branch within release/ will be created for each new minor
+    version, e.g., [release/v2.0].  History won't be rewritten.
+
+    Once the time for a new release has come a new commit from the
+    development-capable contents prepared in stable/ will be imported
+    and adjusted for the needs of a release tarball, e.g., manual
+    preprocessing, removal of needless development data etc., will be
+    performed.  The remains will be fixated with a signed commit and
+    a signed release tag, vMAJOR.MINOR.UPDATE.ar (.ar for "archive"),
+    and then used to create release tarballs.
+
+- [release/latest] and [release/stable]
+    "Symbolic links" to the latest and stable, respectively, release
+    branches.
+
+- [stable/*]
+    A new branch within stable/ will be created for each new minor
+    version, e.g., [stable/v2.0].  History won't be rewritten.
+
+    These are the de-facto [master] branches for their respective minor
+    release, which extend for the full lifetime of the said.
+    Once the time for a new release has come, the head of such a stable
+    branch will gain a signed commit and a signed stable tag,
+    vMAJOR.MINOR.UPDATE, and then be used as the source for a new branch
+    in release/.
+
+- [stable/latest] and [stable/stable]
+    "Symbolic links" to the latest and stable, respectively, stable
+    branches.
+
+    These are possibly what users should track which want to have the
+    newest non-release bugfixes and stable, backward-compatible commits.
+    See below for examples how to accomplish that.
+
+- [master]
+    Rooted on top of [s-roff].  It gains only stable, but possibly
+    backward-incompatible changes (usually mentioned on the ML), and
+    will be used to create new entries in stable/.  It may gain signed
+    commits for sealing purposes from time to time.
+    History won't be rewritten.
+
+- [next]
+    Rooted on top of [master], this consists of a furious mixture of
+    commits that eventually end up in [master].  Daring users may give
+    this branch a try, but bugs and temporary nonstarters have to be
+    dealt with, then.
+
+- [crawl]
+    Developer chaos (distributed horror backup - don't use!).
+
+To create a full clone of the repository, with all the data and history:
+  $ git clone https://git.sdaoden.eu/scm/s-roff.git
+
+With a newer git(1), and only tracking the latest stable branch:
+  $ git clone --single-branch --branch=stable/latest \
+      https://git.sdaoden.eu/scm/s-roff.git
+
+Or, being selective, also with older git(1)s:
+  $ mkdir s-roff.git
+  $ cd s-roff.git
+  $ git init
+  $ git remote add origin -t 'release/*' -t stable/stable -t master \
+      https://git.sdaoden.eu/scm/s-roff.git
+  $ git fetch -v
+
+And then, assuming the last had been done:
+
+  $ # Show all releases
+  $ git log --no-walk --decorate --oneline --branches='release/*' --
+  $ # Check out the latest release, and verify the signature
+  $ git checkout release/latest
+  $ git log --oneline --show-signature --max-count=1 HEAD
+
+3. Noticable tags (in reverse order)
+------------------------------------
 
 . s-roff-sync.1
   This tag points to the S-roff tree after all the synchronization was
@@ -25,18 +136,25 @@ XX. Noticable tags
   and GNU roff (look in the script head, say "MANUALS=false" to get
   a significantly smaller diff).
 
-  We don't include some changes consciously, but others will come once
+  We do not include some changes consciously, but others will come once
   i have implemented the code myself in a building and running S-roff,
   in order to avoid copyright violations (GPL3 is free, so i hope
   thinking the changes myself is sufficient to avoid violations).
 
-  It wasn't planned that way, so unfortunately [s-roff-sync.1] already
+  It was not planned that way, so unfortunately [s-roff-sync.1] already
   includes the [topic/file_case] branch that encapsulates searchpath::
   stuff into the new file_case class (allowing `.so' to include
   compressed files; in fact allowing *any* ROFF file to be compressed).
   And tmac-mdoc.7.in is mdocmx(7)ified already.
   And some only-style changes exist, like placing class members in the
   implicit private: range before going public: explicitly.
-  Sorry especially for the latter.  It wasn't planned that way.
+  Sorry especially for the latter.  It was not planned that way.
+
+  The script ./s-gnu-diff.sh will be removed after this tag.
+
+. s-roff
+  The last GNU roff commit before the S-roff fork.
+  This is 1.19.2-574-gecbf4f1, which also marks the last commit in
+  a GPL2 licensed tree.
 
 # s-ts-mode
