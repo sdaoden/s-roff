@@ -26,12 +26,7 @@
 
 #include <sys/types.h>
 
-#ifdef _POSIX_VERSION
-# include <sys/wait.h>
-# define PID_T pid_t
-#else
-# define PID_T int
-#endif
+#include <sys/wait.h>
 
 #include <assert.h>
 #include <ctype.h>
@@ -142,8 +137,6 @@
 # define DEBUG_NAME(text) DEBUG_TEXT(text)
 # define DEBUG_FILE(name) DEBUG_NAME(DEBUG_FILE_DIR) "/" name
 #endif
-
-#define INLINE_LEADER_CHAR '\\'
 
 // Don't use colour names here!  Otherwise there is a dependency on
 // a file called `rgb.txt' which maps names to colours.
@@ -372,7 +365,7 @@ class char_block
 public:
   enum { SIZE = 256 };
   char buffer[SIZE];
-  int used;
+  int used; // TODO size_t
   char_block *next;
 
   char_block();
@@ -403,10 +396,16 @@ public:
   int do_html(int argc, char *argv[]);
   int do_image(int argc, char *argv[]);
   void emit_troff_output(int device_format_selector);
-  void write_upto_newline(char_block **t, int *i, int is_html);
-  int can_see(char_block **t, int *i, const char *string);
-  int skip_spaces(char_block **t, int *i);
-  void skip_until_newline(char_block **t, int *i);
+
+
+  // Write the contents of the buffer until a newline is seen.
+  // Check for HTML_IMAGE_INLINE_BEGIN and HTML_IMAGE_INLINE_END; process them
+  // if they are present.
+  static void write_upto_newline(char_block **t, int *i, int is_html);
+
+  static int can_see(char_block **t, int *i, const char *string);
+  static int skip_spaces(char_block **t, int *i);
+  static void skip_until_newline(char_block **t, int *i);
 };
 
 /*
@@ -622,55 +621,58 @@ static void write_start_image(IMAGE_ALIGNMENT pos, int is_html)
     writeString("\\O[1]\\O[3]");
 }
 
-/*
- *  write_upto_newline - Write the contents of the buffer until a newline
- *                       is seen.  Check for HTML_IMAGE_INLINE_BEGIN and
- *                       HTML_IMAGE_INLINE_END; process them if they are
- *                       present.
- */
+rf_static void
+char_buffer::write_upto_newline(char_block **t, int *i, int is_html){
+  enum {a_NONE, a_NL, a_LEADER} ev;
+  char *b;
+  int j, u;
 
-void char_buffer::write_upto_newline(char_block **t, int *i, int is_html)
-{
-  int j = *i;
+  if(*t == NULL)
+    goto jleave;
 
-  if (*t) {
-    while (j < (*t)->used
-	   && (*t)->buffer[j] != '\n'
-	   && (*t)->buffer[j] != INLINE_LEADER_CHAR)
-      j++;
-    if (j < (*t)->used
-	&& (*t)->buffer[j] == '\n')
-      j++;
-    writeNbytes((*t)->buffer + (*i), j - (*i));
-    if ((*t)->buffer[j] == INLINE_LEADER_CHAR) {
-      if (can_see(t, &j, HTML_IMAGE_INLINE_BEGIN))
-	write_start_image(INLINE, is_html);
-      else if (can_see(t, &j, HTML_IMAGE_INLINE_END))
-	write_end_image(is_html);
-      else {
-	if (j < (*t)->used) {
-	  *i = j;
-	  j++;
-	  writeNbytes((*t)->buffer + (*i), j - (*i));
-	}
-      }
+  j = *i;
+  u = (*t)->used;
+  b = (*t)->buffer;
+  ev = a_NONE;
+
+  for(; j < u; ++j){
+    if(b[j] == '\n'){
+      ev = (++j < u && b[j] == HTML_INLINE_LEADER_CHAR) ? a_LEADER : a_NL;
+      break;
+    }else if(b[j] == HTML_INLINE_LEADER_CHAR){
+      ev = a_LEADER;
+      break;
     }
-    if (j == (*t)->used) {
-      *i = 0;
-      *t = (*t)->next;
-      if (*t && (*t)->buffer[j - 1] != '\n')
-	write_upto_newline(t, i, is_html);
-    }
-    else
-      // newline was seen
-      *i = j;
   }
+
+  writeNbytes(&b[*i], j - *i);
+  *i = j;
+
+  if(ev == a_LEADER){
+    if(can_see(t, &j, HTML_IMAGE_INLINE_BEGIN))
+      write_start_image(INLINE, is_html);
+    else if(can_see(t, &j, HTML_IMAGE_INLINE_END))
+      write_end_image(is_html);
+    else if(j < u){
+      ++j;
+      writeNbytes(&b[*i], 1);
+    }
+  }
+
+  // Rotate block if all the buffer was consumed
+  if(j == u){
+    *i = 0;
+    if((*t = (*t)->next) != NULL)
+      write_upto_newline(t, i, is_html);
+  }
+jleave:;
 }
 
 /*
  *  can_see - Return true if we can see string in t->buffer[i] onwards.
  */
 
+rf_static
 int char_buffer::can_see(char_block **t, int *i, const char *str)
 {
   int j = 0;
@@ -701,6 +703,7 @@ int char_buffer::can_see(char_block **t, int *i, const char *str)
  *                Consume spaces also.
  */
 
+rf_static
 int char_buffer::skip_spaces(char_block **t, int *i)
 {
   char_block *s = *t;
@@ -726,6 +729,7 @@ int char_buffer::skip_spaces(char_block **t, int *i)
  *                       The newline is not consumed.
  */
 
+rf_static
 void char_buffer::skip_until_newline(char_block **t, int *i)
 {
   int j = *i;
@@ -1277,7 +1281,7 @@ void print_args(int, char **)
 int char_buffer::run_output_filter(int filter, int argc, char **argv)
 {
   int pipedes[2];
-  PID_T child_pid;
+  pid_t child_pid;
   int status;
 
   print_args(argc, argv);
@@ -1395,13 +1399,13 @@ int char_buffer::run_output_filter(int filter, int argc, char **argv)
   set_redirection(STDIN_FILENO, pipedes[0]);
 
   // if we redirected `stderr', for use by the image post-processor,
-  // then we also need to reinstate its original assignment.
+  // then we also need to reinstantiate its original assignment.
 
   if (filter == IMAGE_OUTPUT_FILTER)
     set_redirection(STDERR_FILENO, saved_stderr);
 
   // Now we redirect the `stdout' stream to the inlet end of the pipe,
-  // and push out the appropiately formatted data to the filter.
+  // and push out the appropriately formatted data to the filter.
 
   set_redirection(STDOUT_FILENO, pipedes[1]);
   emit_troff_output(DEVICE_FORMAT(filter));
@@ -1749,7 +1753,7 @@ int main(int argc, char **argv)
 #endif /* CAPTURE_MODE */
   device = "html";
   if (!font::load_desc())
-    fatal("cannot find dev-html/DESC exiting");
+    fatal("cannot find dev-html/DESC, exiting");
   image_gen = font::image_generator;
   if (image_gen == NULL || (strcmp(image_gen, "") == 0))
     fatal("dev-html/DESC must set the image_generator field, exiting");
