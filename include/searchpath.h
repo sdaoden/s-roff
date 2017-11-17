@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-#include "file_case.h"
+#include "file-case.h"
 
 class search_path
 {

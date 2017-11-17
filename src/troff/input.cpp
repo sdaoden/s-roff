@@ -28,7 +28,7 @@
 #include "su/mem.h"
 
 #include "defs.h"
-#include "file_case.h"
+#include "file-case.h"
 #include "font.h"
 #include "macropath.h"
 #include "nonposix.h"
@@ -6059,9 +6059,9 @@ void do_ps_file(file_case *fcp, const char* filename)
     for (offset = 512; !last_try; offset *= 2) {
       int had_trailer = 0;
       int got_bb = 0;
-      if (offset > 32768 || fcp->seek(-offset, fcp->seek_end) == -1) {
+      if (offset > 32768 || !fcp->seek(-offset, fcp->seek_end)) {
 	last_try = 1;
-	if (fcp->seek(0L, fcp->seek_set) == -1)
+	if (!fcp->seek(0L, fcp->seek_set))
 	  break;
       }
       while (ps_get_line(buf, fcp, filename) != 0) {

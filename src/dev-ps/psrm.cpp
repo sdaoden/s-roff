@@ -27,7 +27,7 @@
 #include "su/cs.h"
 
 #include "driver.h"
-#include "file_case.h"
+#include "file-case.h"
 #include "stringclass.h"
 
 #include "ps.h"
