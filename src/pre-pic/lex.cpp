@@ -1474,7 +1474,7 @@ void do_copy(const char *filename)
 {
   file_case *fcp = file_case::muxer(filename);
   if (fcp == NULL) {
-    lex_error("can't open `%1': %2", filename, strerror(errno));
+    lex_error("can't open `%1': %2", filename, su_err_doc(errno));
     return;
   }
   input_stack::push(new file_input(fcp, filename));
@@ -1729,7 +1729,7 @@ void copy_file_thru(const char *filename, const char *body, const char *until)
 {
   file_case *fcp = file_case::muxer(filename);
   if (fcp == NULL) {
-    lex_error("can't open `%1': %2", filename, strerror(errno));
+    lex_error("can't open `%1': %2", filename, su_err_doc(errno));
     return;
   }
   input *in = new copy_file_thru_input(new simple_file_input(fcp, filename),

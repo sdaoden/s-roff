@@ -48,12 +48,6 @@ NSPC_END(rf)
 int is_prime(unsigned);
 double groff_hypot(double, double);
 
-#ifndef HAVE_STRERROR
-C_DECL_BEGIN
-   char *strerror(int);
-C_DECL_END
-#endif
-
 C_DECL_BEGIN
    const char *i_to_a(int);
    const char *ui_to_a(unsigned int);

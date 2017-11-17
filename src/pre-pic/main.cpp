@@ -316,7 +316,7 @@ do_file(char const *filename)
   if ((fcp = file_case::muxer(filename)) == NULL) {
     assert(strcmp(filename, "-"));
     delete out;
-    fatal("can't open `%1': %2", filename, strerror(errno));
+    fatal("can't open `%1': %2", filename, su_err_doc(errno));
   }
 
   out->set_location(filename, 1);
@@ -469,7 +469,7 @@ void do_whole_file(const char *filename)
   file_case *fcp;
   if ((fcp = file_case::muxer(filename)) == NULL) {
     assert(strcmp(filename, "-"));
-    fatal("can't open `%1': %2", filename, strerror(errno));
+    fatal("can't open `%1': %2", filename, su_err_doc(errno));
   }
 
   lex_init(new file_input(fcp, filename));

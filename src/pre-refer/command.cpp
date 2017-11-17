@@ -164,7 +164,7 @@ void input_stack::push_file(const char *fn)
   file_case *fcp = file_case::muxer(fn);
   if (fcp == NULL) {
     assert(strcmp(fn, "-"));
-    error("can't open `%1': %2", fn, strerror(errno));
+    error("can't open `%1': %2", fn, su_err_doc(errno));
     return;
   }
   if (fn[0] == '-' && fn[1] == '\0')

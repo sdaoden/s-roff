@@ -20,7 +20,10 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "addftinfo-config.h"
+
+#include "su/strsup.h"
 
 #include <assert.h>
 #include <ctype.h>
@@ -31,7 +34,6 @@
 #include "errarg.h"
 #include "error.h"
 #include "guess.h"
-#include "lib.h"
 #include "stringclass.h"
 
 static void usage(FILE *stream);
@@ -114,7 +116,7 @@ int main(int argc, char **argv)
   errno = 0;
   FILE *infp = fopen(font, "r");
   if (infp == 0)
-    fatal("can't open `%1': %2", font, strerror(errno));
+    fatal("can't open `%1': %2", font, su_err_doc(errno));
   convert_font(param, infp, stdout);
   return 0;
 }

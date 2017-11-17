@@ -366,7 +366,7 @@ void resource_manager::supply_resource(resource *r, int rank, FILE *outfp,
         error("can't find `%1'", r->filename);
     } else {
       if ((fcp = include_search_path.open_file_cautious(r->filename)) == NULL)
-        error("can't open `%1': %2", r->filename, strerror(errno));
+        error("can't open `%1': %2", r->filename, su_err_doc(errno));
     }
     if (fcp == NULL) {
       su_free(r->filename);

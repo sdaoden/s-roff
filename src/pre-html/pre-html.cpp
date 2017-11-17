@@ -210,7 +210,7 @@ static int do_file(const char *filename);
 
 void sys_fatal(const char *s)
 {
-  fatal("%1: %2", s, strerror(errno));
+  fatal("%1: %2", s, su_err_doc(errno));
 }
 
 /*
@@ -1323,7 +1323,7 @@ int char_buffer::run_output_filter(int filter, int argc, char **argv)
     // If we get to here then the `exec...' request for the output filter
     // failed.  Diagnose it and bail out.
 
-    error("couldn't exec %1: %2", argv[0], strerror(errno), ((char *)0));
+    error("couldn't exec %1: %2", argv[0], su_err_doc(errno), NULL);
     fflush(stderr);	// just in case error() didn't
     exit(1);
   }
@@ -1387,7 +1387,7 @@ int char_buffer::run_output_filter(int filter, int argc, char **argv)
   if ((child_pid = spawnvp(_P_NOWAIT, argv[0], argv)) < 0) {
     // Should the spawn request fail we issue a diagnostic and bail out.
 
-    error("cannot spawn %1: %2", argv[0], strerror(errno), ((char *)0));
+    error("cannot spawn %1: %2", argv[0], su_err_doc(errno), NULL);
     exit(1);
   }
 
@@ -1792,7 +1792,7 @@ static int do_file(const char *filename)
   fcp = file_case::muxer(filename);
   if (fcp == NULL) {
     assert(strcmp(filename, "-"));
-    error("can't open `%1': %2", filename, strerror(errno));
+    error("can't open `%1': %2", filename, su_err_doc(errno));
     return 0;
   }
 

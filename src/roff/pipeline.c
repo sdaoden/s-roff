@@ -276,7 +276,7 @@ int run_pipeline(int ncommands, char ***commands, int no_pipe)
     }
     if ((pid = spawnvp(_P_NOWAIT, commands[i][0], commands[i])) < 0) {
       error("couldn't exec %1: %2",
-	    commands[i][0], strerror(errno), (char *)0);
+	    commands[i][0], su_err_doc(errno), (char *)0);
       fflush(stderr);			/* just in case error() doesn't */
       _exit(EXEC_FAILED_EXIT_STATUS);
     }
@@ -389,7 +389,7 @@ int run_pipeline(int ncommands, char ***commands, int no_pipe)
     }
     else if (exit_status < 0) {
       error("couldn't exec %1: %2",
-	    commands[i][0], strerror(errno), (char *)0);
+	    commands[i][0], su_err_doc(errno), (char *)0);
       fflush(stderr);			/* just in case error() doesn't */
       ret |= 4;
     }
@@ -455,7 +455,7 @@ int run_pipeline(int ncommands, char ***commands, int no_pipe)
       }
       execvp(commands[i][0], commands[i]);
       error("couldn't exec %1: %2",
-	    commands[i][0], strerror(errno), (char *)0);
+	    commands[i][0], su_err_doc(errno), (char *)0);
       fflush(stderr);			/* just in case error() doesn't */
       _exit(EXEC_FAILED_EXIT_STATUS);
     }
@@ -531,7 +531,7 @@ int run_pipeline(int ncommands, char ***commands, int no_pipe)
 
 static void sys_fatal(const char *s)
 {
-  c_fatal("%1: %2", s, strerror(errno), (char *)0);
+  c_fatal("%1: %2", s, su_err_doc(errno), (char *)0);
 }
 
 static const char *xstrsignal(int n)

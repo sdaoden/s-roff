@@ -996,7 +996,7 @@ do_file(const char *filename)
   file_case *fcp;
   if ((fcp = file_case::muxer(filename, fcp->mux_need_binary)) == NULL) {
     assert(strcmp(filename, "-"));
-    error("can't open `%1': %2", filename, strerror(errno));
+    error("can't open `%1': %2", filename, su_err_doc(errno));
     return 0;
   }
 

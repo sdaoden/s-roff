@@ -21,6 +21,7 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "indxbib-config.h"
 
 #include "su/io.h"
@@ -39,7 +40,6 @@
 #include "defs.h"
 #include "errarg.h"
 #include "error.h"
-#include "lib.h"
 #include "nonposix.h"
 #include "posix.h"
 #include "stringclass.h"
@@ -243,12 +243,12 @@ int main(int argc, char **argv)
   _catch_fatal_signals();
   int fd = rf_mkstemp(temp_index_file, FAL0);
   if (fd < 0)
-    fatal("can't create temporary index file: %1", strerror(errno));
+    fatal("can't create temporary index file: %1", su_err_doc(errno));
   indxfp = fdopen(fd, FOPEN_WB);
   if (indxfp == 0)
     fatal("fdopen failed");
   if (fseek(indxfp, sizeof(index_header), 0) < 0)
-    fatal("can't seek past index header: %1", strerror(errno));
+    fatal("can't seek past index header: %1", su_err_doc(errno));
   int failed = 0;
   if (foption) {
     FILE *fp = stdin;
@@ -256,7 +256,7 @@ int main(int argc, char **argv)
       errno = 0;
       fp = fopen(foption, "r");
       if (!fp)
-	fatal("can't open `%1': %2", foption, strerror(errno));
+	fatal("can't open `%1': %2", foption, su_err_doc(errno));
     }
     string path;
     int lineno = 1;
@@ -287,7 +287,7 @@ int main(int argc, char **argv)
       failed = 1;
   write_hash_table();
   if (fclose(indxfp) < 0)
-    fatal("error closing temporary index file: %1", strerror(errno));
+    fatal("error closing temporary index file: %1", su_err_doc(errno));
   char *index_file = new char[strlen(base_name) + sizeof(INDEX_SUFFIX)];
   strcpy(index_file, base_name);
   strcat(index_file, INDEX_SUFFIX);
@@ -310,18 +310,18 @@ int main(int argc, char **argv)
       *dot = '_';
     if (rename(temp_index_file, index_file) < 0)
 # endif
-    fatal("can't rename temporary index file: %1", strerror(errno));
+    fatal("can't rename temporary index file: %1", su_err_doc(errno));
   }
 #else /* HAVE_RENAME */
   _ignore_fatal_signals();
   if (unlink(index_file) < 0) {
     if (errno != ENOENT)
-      fatal("can't unlink `%1': %2", index_file, strerror(errno));
+      fatal("can't unlink `%1': %2", index_file, su_err_doc(errno));
   }
   if (link(temp_index_file, index_file) < 0)
-    fatal("can't link temporary index file: %1", strerror(errno));
+    fatal("can't link temporary index file: %1", su_err_doc(errno));
   if (unlink(temp_index_file) < 0)
-    fatal("can't unlink temporary index file: %1", strerror(errno));
+    fatal("can't unlink temporary index file: %1", su_err_doc(errno));
 #endif /* HAVE_RENAME */
 
   su_free(temp_index_file);
@@ -390,7 +390,7 @@ static void read_common_words_file()
   errno = 0;
   FILE *fp = fopen(common_words_file, "r");
   if (!fp)
-    fatal("can't open `%1': %2", common_words_file, strerror(errno));
+    fatal("can't open `%1': %2", common_words_file, su_err_doc(errno));
   common_words_table = new word_list * [hash_table_size];
   for (int i = 0; i < hash_table_size; i++)
     common_words_table[i] = 0;
@@ -427,7 +427,7 @@ static int do_whole_file(const char *filename)
   errno = 0;
   FILE *fp = fopen(filename, "r");
   if (!fp) {
-    error("can't open `%1': %2", filename, strerror(errno));
+    error("can't open `%1': %2", filename, su_err_doc(errno));
     return 0;
   }
   int count = 0;
@@ -464,7 +464,7 @@ static int do_file(const char *filename)
   // byte counts to be consistent with fseek.
   FILE *fp = fopen(filename, FOPEN_RB);
   if (fp == 0) {
-    error("can't open `%1': %2", filename, strerror(errno));
+    error("can't open `%1': %2", filename, su_err_doc(errno));
     return 0;
   }
   int filename_index = filenames.length();
@@ -762,7 +762,7 @@ static void write_hash_table()
   }
   fwrite_or_die(filenames.contents(), 1, filenames.length(), indxfp);
   if (fseek(indxfp, 0, 0) < 0)
-    fatal("error seeking on index file: %1", strerror(errno));
+    fatal("error seeking on index file: %1", su_err_doc(errno));
   index_header h;
   h.magic = INDEX_MAGIC;
   h.version = INDEX_VERSION;
@@ -779,7 +779,7 @@ static void write_hash_table()
 static void fwrite_or_die(const void *ptr, int size, int nitems, FILE *fp)
 {
   if (fwrite(ptr, size, nitems, fp) != (size_t)nitems)
-    fatal("fwrite failed: %1", strerror(errno));
+    fatal("fwrite failed: %1", su_err_doc(errno));
 }
 
 void fatal_error_exit()

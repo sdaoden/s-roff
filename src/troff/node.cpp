@@ -1572,7 +1572,7 @@ void troff_output_file::really_copy_file(hunits x, vunits y,
       put(char(c));
     delete fcp;
   } else
-    error("can't open `%1': %2", filename, strerror(errno));
+    error("can't open `%1': %2", filename, su_err_doc(errno));
 
   force_motion = 1;
   current_size = 0;
@@ -1660,7 +1660,7 @@ real_output_file::real_output_file()
       piped = 1;
       return;
     }
-    error("pipe open failed: %1", strerror(errno));
+    error("pipe open failed: %1", su_err_doc(errno));
   }
   piped = 0;
 #endif /* not POPEN_MISSING */

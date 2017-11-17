@@ -20,7 +20,10 @@
  * Foundation, 51 Franklin St - Fifth Floor, Boston, MA 02110-1301, USA. */
 
 #include "config.h"
+#include "lib.h"
 #include "eqn-config.h"
+
+#include "su/strsup.h"
 
 #include <ctype.h>
 
@@ -409,7 +412,7 @@ int main(int argc, char **argv)
     if (name == NULL)
       name = "-";
     if (fcp == NULL)
-      fatal("can't open `%1': %2", name, strerror(errno));
+      fatal("can't open `%1': %2", name, su_err_doc(errno));
     do_file(fcp, name);
     delete fcp;
   } while (optind < argc);

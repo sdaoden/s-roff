@@ -122,7 +122,7 @@ index_search_item::~index_search_item()
     su_free(buffer);
   if (map_addr) {
     if (unmap(map_addr, map_len) < 0)
-      error("unmap: %1", strerror(errno));
+      error("unmap: %1", su_err_doc(errno));
   }
   while (out_of_date_files) {
     search_item *tem = out_of_date_files;
@@ -156,7 +156,7 @@ int index_search_item::load(int fd)
   unused(&fd_closer);
   struct stat sb;
   if (fstat(fd, &sb) < 0) {
-    error("can't fstat `%1': %2", name, strerror(errno));
+    error("can't fstat `%1': %2", name, su_err_doc(errno));
     return 0;
   }
   if (!S_ISREG(sb.st_mode)) {
@@ -186,7 +186,7 @@ int index_search_item::load(int fd)
 	return 0;
       }
       if (nread < 0) {
-	error("read error on `%1': %2", name, strerror(errno));
+	error("read error on `%1': %2", name, su_err_doc(errno));
 	return 0;
       }
       bytes_to_read -= nread;
@@ -366,12 +366,12 @@ int index_search_item_iterator::get_tag(int tagno,
   const char *filename = indx->munge_filename(indx->pool + tp->filename_index);
   int fd = open(filename, O_RDONLY | O_BINARY);
   if (fd < 0) {
-    error("can't open `%1': %2", filename, strerror(errno));
+    error("can't open `%1': %2", filename, su_err_doc(errno));
     return 0;
   }
   struct stat sb;
   if (fstat(fd, &sb) < 0) {
-    error("can't fstat: %1", strerror(errno));
+    error("can't fstat: %1", su_err_doc(errno));
     close(fd);
     return 0;
   }
@@ -389,13 +389,13 @@ int index_search_item_iterator::get_tag(int tagno,
     return 0;
   }
   if (tp->start != 0 && fseek(fp, long(tp->start), 0) < 0)
-    error("can't seek on `%1': %2", filename, strerror(errno));
+    error("can't seek on `%1': %2", filename, su_err_doc(errno));
   else {
     int length = tp->length;
     int err = 0;
     if (length == 0) {
       if (fstat(fileno(fp), &sb) < 0) {
-	error("can't stat `%1': %2", filename, strerror(errno));
+	error("can't stat `%1': %2", filename, su_err_doc(errno));
 	err = 1;
       }
       else if (!S_ISREG(sb.st_mode)) {
@@ -412,7 +412,7 @@ int index_search_item_iterator::get_tag(int tagno,
 	buf = su_talloc(char, buflen);
       }
       if (fread(buf + 1, 1, length, fp) != (size_t)length)
-	error("fread on `%1' failed: %2", filename, strerror(errno));
+	error("fread on `%1' failed: %2", filename, su_err_doc(errno));
       else {
 	buf[0] = '\n';
 	// Remove the CR characters from CRLF pairs.
@@ -570,7 +570,7 @@ void index_search_item::read_common_words_file()
   errno = 0;
   FILE *fp = fopen(common_words_file, "r");
   if (!fp) {
-    error("can't open `%1': %2", common_words_file, strerror(errno));
+    error("can't open `%1': %2", common_words_file, su_err_doc(errno));
     return;
   }
   common_words_table_size = 2*header.common + 1;
@@ -632,11 +632,11 @@ void index_search_item::check_files()
     const char *path = munge_filename(ptr);
     struct stat sb;
     if (stat(path, &sb) < 0)
-      error("can't stat `%1': %2", path, strerror(errno));
+      error("can't stat `%1': %2", path, su_err_doc(errno));
     else if (sb.st_mtime > mtime) {
       int fd = open(path, O_RDONLY | O_BINARY);
       if (fd < 0)
-	error("can't open `%1': %2", path, strerror(errno));
+	error("can't open `%1': %2", path, su_err_doc(errno));
       else
 	add_out_of_date_file(fd, path, filename_id + (ptr - pool));
     }

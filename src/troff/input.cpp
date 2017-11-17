@@ -803,7 +803,7 @@ void next_file()
     if (fcp != NULL)
       input_stack::next_file(fcp, nm.contents());
     else
-      error("can't open `%1': %2", nm.contents(), strerror(errno));
+      error("can't open `%1': %2", nm.contents(), su_err_doc(errno));
   }
   tok.next();
 }
@@ -5928,7 +5928,7 @@ void source()
     if (fcp != NULL)
       input_stack::push(new file_iterator(fcp, nm.contents()));
     else
-      error("can't open `%1': %2", nm.contents(), strerror(errno));
+      error("can't open `%1': %2", nm.contents(), su_err_doc(errno));
     tok.next();
   }
 }
@@ -6176,7 +6176,7 @@ void ps_bbox_request()
       do_ps_file(fcp, nm.contents());
       delete fcp;
     } else
-      error("can't open `%1': %2", nm.contents(), strerror(errno));
+      error("can't open `%1': %2", nm.contents(), su_err_doc(errno));
     tok.next();
   }
 }
@@ -6396,7 +6396,7 @@ void do_open(int append)
 	error("can't open `%1' for %2: %3",
 	      filename.contents(),
 	      append ? "appending" : "writing",
-	      strerror(errno));
+	      su_err_doc(errno));
 	fp = (FILE *)stream_dictionary.remove(stream);
       }
       else
@@ -7203,7 +7203,7 @@ void transparent_file()
     file_case *fcp = include_search_path
         .open_file_cautious(filename.contents());
     if (fcp == NULL)
-      error("can't open `%1': %2", filename.contents(), strerror(errno));
+      error("can't open `%1': %2", filename.contents(), su_err_doc(errno));
     else {
       int bol = 1;
       for (;;) {
@@ -7387,7 +7387,7 @@ static void process_input_file(const char *name)
   file_case *fcp;
   if ((fcp = include_search_path.open_file_cautious(name)) == NULL) {
     assert(strcmp(name, "-"));
-    fatal("can't open `%1': %2", name, strerror(errno));
+    fatal("can't open `%1': %2", name, su_err_doc(errno));
    }
   input_stack::push(new file_iterator(fcp, name));
   tok.next();

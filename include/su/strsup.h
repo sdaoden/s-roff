@@ -36,6 +36,9 @@ C_DECL_BEGIN
 #define su_strstr strstr
 #define su_strtok strtok
 
+/* Return string describing C error number eno */
+c_decl char const *su_err_doc(si32 eno);
+
 /* String comparison, byte-based, case-insensitive */
 c_decl si32 su_strcasecmp(char const *cp1, char const *cp2);
 c_decl si32 su_strncasecmp(char const *cp1, char const *cp2, uiz n);
