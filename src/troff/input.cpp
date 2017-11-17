@@ -7356,19 +7356,19 @@ void macro_source()
     if ((fcp = mac_path->open_file(nm.contents())) == NULL) {
       const char *fn = nm.contents();
 
-      if (strncasecmp(fn, MACRO_PREFIX, sizeof(MACRO_PREFIX) - 1) == 0) {
-        char *s = new char[strlen(fn) + sizeof(MACRO_POSTFIX)];
-        strcpy(s, fn + sizeof(MACRO_PREFIX) - 1);
-        strcat(s, MACRO_POSTFIX);
+      if (su_strncasecmp(fn, MACRO_PREFIX, sizeof(MACRO_PREFIX) - 1) == 0) {
+        /* TODO cstring */
+        char *s = su_talloc(char, su_strlen(fn) + sizeof(MACRO_POSTFIX));
+        su_stpcpy(su_stpcpy(s, fn + sizeof(MACRO_PREFIX) - 1), MACRO_POSTFIX);
         fcp = mac_path->open_file(s, fcp->fc_take_path);
       }
 
-      if (fcp == NULL) {
-        if (strncasecmp(fn + strlen(fn) - sizeof(MACRO_POSTFIX) + 1,
+      if (fcp == NULL) { /* TODO cstring */
+        if (su_strncasecmp(fn + su_strlen(fn) - sizeof(MACRO_POSTFIX) + 1,
             MACRO_POSTFIX, sizeof(MACRO_POSTFIX) - 1) == 0) {
-          char *s = new char[strlen(fn) + sizeof(MACRO_PREFIX)];
-          strcpy(s, MACRO_PREFIX);
-          strncat(s, fn, strlen(fn) - sizeof(MACRO_POSTFIX) + 1);
+          char *s = su_talloc(char, su_strlen(fn) + sizeof(MACRO_PREFIX));
+          char *e = su_stpcpy(s, MACRO_PREFIX);
+          su_strncat(e, fn, su_strlen(fn) - sizeof(MACRO_POSTFIX) + 1);
           fcp = mac_path->open_file(s, fcp->fc_take_path);
         }
       }

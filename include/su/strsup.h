@@ -24,15 +24,21 @@
 #include <su/code-in.h>
 C_DECL_BEGIN
 
+#define su_strcat strcat
 #define su_strcpy strcpy
 #define su_strchr strchr
 #define su_strcmp strcmp
 #define su_strlen strlen
+#define su_strncat strncat
 #define su_strncmp strncmp
 #define su_strncpy strncpy
 #define su_strrchr strrchr
 #define su_strstr strstr
 #define su_strtok strtok
+
+/* String comparison, byte-based, case-insensitive */
+c_decl si32 su_strcasecmp(char const *cp1, char const *cp2);
+c_decl si32 su_strncasecmp(char const *cp1, char const *cp2, uiz n);
 
 /* Duplicate string into su_talloc()ated duplicate.
  * Return dup or NIL if input was NIL */

@@ -767,7 +767,7 @@ again:
   else {
     int i;
     for (i = 0; i < NUM_PAPERSIZES; i++)
-      if (strcasecmp(papersizes[i].name, pp) == 0) {
+      if (su_strcasecmp(papersizes[i].name, pp) == 0) {
 	if (length)
 	  *length = papersizes[i].length;
 	if (width)
