@@ -35,7 +35,7 @@
 #include <time.h>
 
 #include "driver.h"
-#include "file_case.h"
+#include "file-case.h"
 #include "nonposix.h"
 #include "paper.h"
 #include "stringclass.h"

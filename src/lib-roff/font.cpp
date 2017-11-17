@@ -30,7 +30,7 @@
 
 #include "errarg.h"
 #include "error.h"
-#include "file_case.h"
+#include "file-case.h"
 #include "font.h"
 #include "paper.h"
 #include "searchpath.h"

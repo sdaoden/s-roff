@@ -28,7 +28,7 @@
 
 #include <math.h>
 
-#include "file_case.h"
+#include "file-case.h"
 #include "font.h"
 #include "macropath.h"
 #include "stringclass.h"
