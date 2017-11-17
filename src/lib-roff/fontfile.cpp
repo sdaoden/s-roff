@@ -32,7 +32,7 @@
 
 #include "defs.h"
 #include "device.h"
-#include "file_case.h"
+#include "file-case.h"
 #include "font.h"
 #include "searchpath.h"
 

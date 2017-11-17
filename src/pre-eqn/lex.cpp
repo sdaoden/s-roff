@@ -29,7 +29,7 @@
 
 #include "eqn.h"
 #include "eqn_tab.h"
-#include "file_case.h"
+#include "file-case.h"
 #include "ptable.h"
 #include "stringclass.h"
 

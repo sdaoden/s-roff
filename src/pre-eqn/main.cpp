@@ -25,7 +25,7 @@
 
 #include "eqn.h"
 #include "device.h"
-#include "file_case.h"
+#include "file-case.h"
 #include "htmlhint.h"
 #include "macropath.h"
 #include "pbox.h"

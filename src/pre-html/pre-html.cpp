@@ -43,7 +43,7 @@
 #include "device.h"
 #include "errarg.h"
 #include "error.h"
-#include "file_case.h"
+#include "file-case.h"
 #include "font.h"
 #include "nonposix.h"
 #include "paper.h"

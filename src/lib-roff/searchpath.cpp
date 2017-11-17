@@ -29,7 +29,7 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include "file_case.h"
+#include "file-case.h"
 #include "nonposix.h"
 #include "searchpath.h"
 

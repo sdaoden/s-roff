@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-#include "file_case.h"
+#include "file-case.h"
 
 // A function of this type can be registered to define the semantics of
 // arbitrary commands in a font DESC file.
