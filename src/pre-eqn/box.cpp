@@ -21,7 +21,10 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "eqn-config.h"
+
+#include "su/strsup.h"
 
 #include "eqn.h"
 #include "pbox.h"
@@ -209,20 +212,20 @@ const char *get_gbfont()
 
 void set_gfont(const char *s)
 {
-  a_delete gfont;
-  gfont = strsave(s);
+  su_free(gfont);
+  gfont = su_strdup(s);
 }
 
 void set_grfont(const char *s)
 {
-  a_delete grfont;
-  grfont = strsave(s);
+  su_free(grfont);
+  grfont = su_strdup(s);
 }
 
 void set_gbfont(const char *s)
 {
-  a_delete gbfont;
-  gbfont = strsave(s);
+  su_free(gbfont);
+  gbfont = su_strdup(s);
 }
 
 void start_string()
@@ -301,7 +304,7 @@ void box::top_level()
     if (gsize > 0) {
       char buf[INT_DIGITS + 1];
       sprintf(buf, "%d", gsize);
-      b = new size_box(strsave(buf), b);
+      b = new size_box(su_strdup(buf), b);
     }
     current_roman_font = get_grfont();
     // This catches tabs used within \Z (which aren't allowed).

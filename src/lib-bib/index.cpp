@@ -22,6 +22,8 @@
 #include "config.h"
 #include "lib.h"
 
+#include "su/strsup.h"
+
 #include <stdlib.h>
 #include <errno.h>
 
@@ -61,7 +63,7 @@ class index_search_item
   char *pool;
   char *key_buffer;
   char *filename_buffer;
-  int filename_buflen;
+  uiz filename_buflen;
   char **common_words_table;
   int common_words_table_size;
   const char *ignore_fields;
@@ -108,16 +110,16 @@ public:
 
 
 index_search_item::index_search_item(const char *filename, int fid)
-: search_item(filename, fid), out_of_date_files(0), buffer(0), map_addr(0),
-  map_len(0), key_buffer(0), filename_buffer(0), filename_buflen(0),
-  common_words_table(0)
+: search_item(filename, fid), out_of_date_files(0), buffer(NULL), map_addr(0),
+  map_len(0), key_buffer(NULL), filename_buffer(NULL), filename_buflen(0),
+  common_words_table(NULL)
 {
 }
 
 index_search_item::~index_search_item()
 {
-  if (buffer)
-    free(buffer);
+  if(buffer != NULL)
+    su_free(buffer);
   if (map_addr) {
     if (unmap(map_addr, map_len) < 0)
       error("unmap: %1", strerror(errno));
@@ -127,12 +129,12 @@ index_search_item::~index_search_item()
     out_of_date_files = out_of_date_files->next;
     delete tem;
   }
-  a_delete filename_buffer;
-  a_delete key_buffer;
+  su_free(filename_buffer);
+  su_free(key_buffer);
   if (common_words_table) {
     for (int i = 0; i < common_words_table_size; i++)
-      a_delete common_words_table[i];
-    a_delete common_words_table;
+      su_free(common_words_table[i]);
+    su_free(common_words_table);
   }
 }
 
@@ -276,14 +278,14 @@ search_item_iterator *index_search_item::make_search_item_iterator(
 
 search_item *make_index_search_item(const char *filename, int fid)
 {
-  char *index_filename = new char[strlen(filename) + sizeof(INDEX_SUFFIX)];
-  strcpy(index_filename, filename);
-  strcat(index_filename, INDEX_SUFFIX);
+  char *index_filename = su_talloc(char,
+      strlen(filename) + sizeof(INDEX_SUFFIX));
+  su_stpcpy(su_stpcpy(index_filename, filename), INDEX_SUFFIX);
   int fd = open(index_filename, O_RDONLY | O_BINARY);
   if (fd < 0)
     return 0;
   index_search_item *item = new index_search_item(index_filename, fid);
-  a_delete index_filename;
+  su_free(index_filename);
   if (!item->load(fd)) {
     close(fd);
     delete item;
@@ -302,9 +304,9 @@ search_item *make_index_search_item(const char *filename, int fid)
 index_search_item_iterator::index_search_item_iterator(index_search_item *ind,
 						       const char *q)
 : indx(ind), out_of_date_files_iter(0), next_out_of_date_file(0), temp_list(0),
-  buf(0), buflen(0),
+  buf(NULL), buflen(0),
   searcher(q, strlen(q), ind->ignore_fields, ind->header.truncate),
-  query(strsave(q))
+  query(su_strdup(q))
 {
   found_list = indx->search(q, strlen(q), &temp_list);
   if (!found_list) {
@@ -317,8 +319,8 @@ index_search_item_iterator::index_search_item_iterator(index_search_item *ind,
 index_search_item_iterator::~index_search_item_iterator()
 {
   a_delete temp_list;
-  a_delete buf;
-  a_delete query;
+  su_free(buf);
+  su_free(query);
   delete out_of_date_files_iter;
 }
 
@@ -405,9 +407,9 @@ int index_search_item_iterator::get_tag(int tagno,
     }
     if (!err) {
       if (length + 2 > buflen) {
-	a_delete buf;
+	su_free(buf);
 	buflen = length + 2;
-	buf = new char[buflen];
+	buf = su_talloc(char, buflen);
       }
       if (fread(buf + 1, 1, length, fp) != (size_t)length)
 	error("fread on `%1' failed: %2", filename, strerror(errno));
@@ -446,16 +448,16 @@ const char *index_search_item::munge_filename(const char *filename)
   const char *cwd = pool;
   int need_slash = (cwd[0] != 0
 		    && strchr(DIR_SEPS, strchr(cwd, '\0')[-1]) == 0);
-  int len = strlen(cwd) + strlen(filename) + need_slash + 1;
+  uiz len = strlen(cwd) + strlen(filename) + need_slash +1;
   if (len > filename_buflen) {
-    a_delete filename_buffer;
+    su_free(filename_buffer);
     filename_buflen = len;
-    filename_buffer = new char[len];
+    filename_buffer = su_talloc(char, len);
   }
-  strcpy(filename_buffer, cwd);
-  if (need_slash)
-    strcat(filename_buffer, "/");
-  strcat(filename_buffer, filename);
+  char *cp = su_stpcpy(filename_buffer, cwd);
+  if(need_slash)
+    *cp++ = '/';
+  cp = su_stpcpy(filename_buffer, filename);
   return filename_buffer;
 }
 

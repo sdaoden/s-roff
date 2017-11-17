@@ -45,7 +45,6 @@ NSPC_USE(su)
 NSPC_END(rf)
 #endif
 
-char *strsave(const char *s);
 int is_prime(unsigned);
 double groff_hypot(double, double);
 

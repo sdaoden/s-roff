@@ -23,6 +23,8 @@
 #include "config.h"
 #include "lib.h"
 
+#include "su/strsup.h"
+
 #include <assert.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -75,15 +77,26 @@ public:
 character_indexer::character_indexer()
 : next_index(0)
 {
-  int i;
-  for (i = 0; i < 256; i++)
+  size_t i;
+
+  for (i = 0; i < NELEM(ascii_glyph); i++)
     ascii_glyph[i] = UNDEFINED_GLYPH;
-  for (i = 0; i < NSMALL; i++)
+  for (i = 0; i < NELEM(small_number_glyph); i++)
     small_number_glyph[i] = UNDEFINED_GLYPH;
 }
 
 character_indexer::~character_indexer()
 {
+  size_t i;
+
+  for (i = 0; i < NELEM(ascii_glyph); i++)
+    if(ascii_glyph[i] != UNDEFINED_GLYPH){
+      su_free(ascii_glyph[i].name);
+      su_del(ascii_glyph[i]);
+    }
+  for (i = 0; i < NELEM(small_number_glyph); i++)
+    if(small_number_glyph[i] != UNDEFINED_GLYPH)
+      su_del(small_number_glyph[i]);
 }
 
 glyph *character_indexer::ascii_char_glyph(unsigned char c)
@@ -92,10 +105,10 @@ glyph *character_indexer::ascii_char_glyph(unsigned char c)
     char buf[4+3+1];
     memcpy(buf, "char", 4);
     strcpy(buf + 4, i_to_a(c));
-    charinfo *ci = new charinfo;
+    charinfo *ci = su_new(charinfo);
     ci->index = next_index++;
     ci->number = -1;
-    ci->name = strsave(buf);
+    ci->name = su_strdup(buf);
     ascii_glyph[c] = ci;
   }
   return ascii_glyph[c];
@@ -125,7 +138,7 @@ inline glyph *character_indexer::numbered_char_glyph(int n)
 {
   if (n >= 0 && n < NSMALL) {
     if (small_number_glyph[n] == UNDEFINED_GLYPH) {
-      charinfo *ci = new charinfo;
+      charinfo *ci = su_new(charinfo);
       ci->index = next_index++;
       ci->number = n;
       ci->name = NULL;

@@ -23,7 +23,8 @@
 #include "config.h"
 #include "indxbib-config.h"
 
-#includ "su/io.h"
+#include "su/io.h"
+#include "su/strsup.h"
 
 #include <sys/types.h>
 
@@ -88,7 +89,7 @@ char *key_buffer;
 FILE *indxfp;
 int ntags = 0;
 string filenames;
-char *temp_index_file = 0;
+char *temp_index_file = NULL;
 
 const char *ignore_fields = "XYZ";
 const char *common_words_file = COMMON_WORDS_FILE;
@@ -198,7 +199,7 @@ int main(int argc, char **argv)
   if (!directory) {
     char *path = get_cwd();
     store_filename(path);
-    a_delete path;
+    su_free(path);
   }
   else
     store_filename(directory);
@@ -219,10 +220,10 @@ int main(int argc, char **argv)
   }
   size_t name_max;
   if (p) {
-    char *dir = strsave(base_name);
+    char *dir = su_strdup(base_name);
     dir[p - base_name] = '\0';
     name_max = su_file_name_max(dir);
-    a_delete dir;
+    su_free(dir);
   }
   else
     name_max = su_file_name_max(".");
@@ -231,12 +232,13 @@ int main(int argc, char **argv)
     fatal("`%1.%2' is too long for a filename", filename, INDEX_SUFFIX);
   if (p) {
     p++;
-    temp_index_file = new char[p - base_name + sizeof(TEMP_INDEX_TEMPLATE)];
+    temp_index_file = su_talloc(char,
+        p - base_name + sizeof(TEMP_INDEX_TEMPLATE));
     memcpy(temp_index_file, base_name, p - base_name);
     strcpy(temp_index_file + (p - base_name), TEMP_INDEX_TEMPLATE);
   }
   else {
-    temp_index_file = strsave(TEMP_INDEX_TEMPLATE);
+    temp_index_file = su_strdup(TEMP_INDEX_TEMPLATE);
   }
   _catch_fatal_signals();
   int fd = rf_mkstemp(temp_index_file, FAL0);
@@ -321,7 +323,9 @@ int main(int argc, char **argv)
   if (unlink(temp_index_file) < 0)
     fatal("can't unlink temporary index file: %1", strerror(errno));
 #endif /* HAVE_RENAME */
-  temp_index_file = 0;
+
+  su_free(temp_index_file);
+  temp_index_file = NULL;
   return failed;
 }
 
@@ -350,22 +354,22 @@ static void check_integer_arg(char opt, const char *arg, int min, int *res)
   }
 }
 
-static char *get_cwd()
+static char *get_cwd() /* FIXME -> lib-roff!  (and DO take it from S-nail!) */
 {
   char *buf;
-  int size = 12;
+  size_t size = 12;
 
   for (;;) {
-    buf = new char[size];
+    buf = su_talloc(char, size);
     if (getcwd(buf, size))
       break;
     if (errno != ERANGE)
-      fatal("cannot get current working directory: %1", strerror(errno));
-    a_delete buf;
-    if (size == INT_MAX)
-      fatal("current working directory longer than INT_MAX");
-    if (size > INT_MAX/2)
-      size = INT_MAX;
+      fatal("cannot get current working directory: %1", su_err_doc(errno));
+    su_free(buf);
+    if (size == UI32_MAX)
+      fatal("current working directory longer than UI32_MAX");
+    if (size > UI32_MAX/2)
+      size = UI32_MAX;
     else
       size *= 2;
   }

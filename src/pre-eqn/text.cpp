@@ -21,7 +21,10 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "eqn-config.h"
+
+#include "su/strsup.h"
 
 #include <ctype.h>
 
@@ -564,7 +567,7 @@ void box::set_spacing_type(char *type)
     error("unrecognised type `%1'", type);
   else
     spacing_type = t;
-  a_delete type;
+  su_free(type);
 }
 
 char_box::char_box(unsigned char cc)
@@ -653,13 +656,13 @@ void char_box::debug_print()
 
 special_char_box::special_char_box(const char *t)
 {
-  s = strsave(t);
+  s = su_strdup(t);
   spacing_type = get_special_char_spacing_type(s);
 }
 
 special_char_box::~special_char_box()
 {
-  a_delete s;
+  su_free(s);
 }
 
 void special_char_box::output()
@@ -711,7 +714,7 @@ void set_char_type(const char *type, char *ch)
   int ft = lookup_font_type(type);
   if (st < 0 && ft < 0) {
     error("bad character type `%1'", type);
-    a_delete ch;
+    su_free(ch);
     return;
   }
   box *b = split_text(ch);
@@ -889,7 +892,7 @@ box *split_text(char *text)
 	    lex_error("bad escape");
 	  else {
 	    ++s;
-	    char *buf = new char[s - escape_start + 1];
+	    char *buf = su_talloc(char, s - escape_start + 1);
 	    memcpy(buf, escape_start, s - escape_start);
 	    buf[s - escape_start] = '\0';
 	    b = new quoted_text_box(buf);
@@ -923,12 +926,12 @@ box *split_text(char *text)
 	  buf[0] = '\\';
 	  buf[1] = c;
 	  buf[2] = '\0';
-	  b = new quoted_text_box(strsave(buf));
+	  b = new quoted_text_box(su_strdup(buf));
 	  break;
 	}
       default:
 	lex_error("unquoted escape");
-	b = new quoted_text_box(strsave(s - 2));
+	b = new quoted_text_box(su_strdup(s - 2));
 	s = strchr(s, '\0');
 	break;
       }
@@ -955,7 +958,7 @@ box *split_text(char *text)
 	fb = b;
     }
   }
-  a_delete text;
+  su_free(text);
   if (lb != 0)
     return lb;
   else if (fb != 0)

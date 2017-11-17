@@ -20,7 +20,10 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "troff-config.h"
+
+#include "su/strsup.h"
 
 #include <sys/wait.h>
 
@@ -4121,13 +4124,8 @@ void suppress_node::put(troff_output_file *out, const char *s)
  */
 
 static char last_position = 0;
-static const char *last_image_filename = 0;
+static char *last_image_filename;
 static int last_image_id = 0;
-
-inline int min(int a, int b)
-{
-  return a < b ? a : b;
-}
 
 /*
  *  tprint - if (is_on == 2)
@@ -4154,10 +4152,8 @@ void suppress_node::tprint(troff_output_file *out)
   if (is_on == 2) {
     // remember position and filename
     last_position = position;
-    char *tem = (char *)last_image_filename;
-    last_image_filename = strsave(filename.contents());
-    if (tem)
-      a_delete tem;
+    su_free(last_image_filename);
+    last_image_filename = su_strdup(filename.contents());
     last_image_id = image_id;
     // printf("start of image and page = %d\n", current_page);
   }

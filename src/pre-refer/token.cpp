@@ -20,7 +20,10 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "refer-config.h"
+
+#include "su/strsup.h"
 
 #include "refer.h"
 #include "token.h"
@@ -199,22 +202,22 @@ static void init_ascii()
     char buf[2];
     buf[0] = *p;
     buf[1] = '\0';
-    store_token(strsave(buf), TOKEN_LOWER);
-    buf[0] = cmupper(buf[0]);
-    store_token(strsave(buf), TOKEN_UPPER);
+    store_token(su_strdup(buf), TOKEN_LOWER);
+    buf[0] = su_toupper(buf[0]);
+    store_token(su_strdup(buf), TOKEN_UPPER);
   }
   for (p = "0123456789"; *p; p++) {
     char buf[2];
     buf[0] = *p;
     buf[1] = '\0';
-    const char *s = strsave(buf);
+    const char *s = su_strdup(buf);
     store_token(s, TOKEN_OTHER, s);
   }
   for (p = ".,:;?!"; *p; p++) {
     char buf[2];
     buf[0] = *p;
     buf[1] = '\0';
-    store_token(strsave(buf), TOKEN_PUNCT);
+    store_token(su_strdup(buf), TOKEN_PUNCT);
   }
   store_token("-", TOKEN_HYPHEN);
 }
@@ -235,7 +238,7 @@ static void init_letter(unsigned char uc_code, unsigned char lc_code,
   char ubuf[2];
   ubuf[0] = uc_code;
   ubuf[1] = 0;
-  store_letter(strsave(lbuf), strsave(ubuf), sort_key);
+  store_letter(su_strdup(lbuf), su_strdup(ubuf), sort_key);
 }
 
 static void init_latin1()
@@ -285,17 +288,17 @@ static void init_two_char_letter(char l1, char l2, char u1, char u2,
   buf[2] = l1;
   buf[3] = l2;
   buf[4] = '\0';
-  const char *p = strsave(buf);
+  const char *p = su_strdup(buf);
   buf[2] = u1;
   buf[3] = u2;
-  store_letter(p, strsave(buf), sk);
+  store_letter(p, su_strdup(buf), sk);
   buf[1] = '[';
   buf[4] = ']';
   buf[5] = '\0';
-  p = strsave(buf);
+  p = su_strdup(buf);
   buf[2] = l1;
   buf[3] = l2;
-  store_letter(strsave(buf), p, sk);
+  store_letter(su_strdup(buf), p, sk);
 }
 
 static void init_special_chars()
@@ -338,12 +341,12 @@ static void init_strings()
   for (const char *p = "'`^^,:~v_o./;"; *p; p++) {
     buf[2] = *p;
     buf[3] = '\0';
-    store_token(strsave(buf), TOKEN_ACCENT);
+    store_token(su_strdup(buf), TOKEN_ACCENT);
     buf[2] = '[';
     buf[3] = *p;
     buf[4] = ']';
     buf[5] = '\0';
-    store_token(strsave(buf), TOKEN_ACCENT);
+    store_token(su_strdup(buf), TOKEN_ACCENT);
   }
 
   // -ms special letters

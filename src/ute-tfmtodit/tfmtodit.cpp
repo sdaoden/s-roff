@@ -51,7 +51,10 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "tfmtodit-config.h"
+
+#include "su/strsup.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -61,7 +64,6 @@
 #include "cset.h"
 #include "errarg.h"
 #include "error.h"
-#include "lib.h"
 #include "nonposix.h"
 
 struct char_info_word {
@@ -293,20 +295,20 @@ int tfm::load(const char *file)
   }
   int lf = (c1 << 8) + c2;
   int toread = lf*4 - 2;
-  unsigned char *buf = new unsigned char[toread];
+  unsigned char *buf = su_talloc(uc, toread);
   if (fread(buf, 1, toread, fp) != (size_t)toread) {
     if (feof(fp))
       error("unexpected end of file on `%1'", file);
     else
       error("error on file `%1'", file);
-    a_delete buf;
+    su_free(buf);
     fclose(fp);
     return 0;
   }
   fclose(fp);
   if (lf < 6) {
     error("bad tfm file `%1': impossibly short", file);
-    a_delete buf;
+    su_free(buf);
     return 0;
   }
   unsigned char *ptr = buf;
@@ -323,12 +325,12 @@ int tfm::load(const char *file)
   np = read2(ptr);
   if (6 + lh + (ec - bc + 1) + nw + nh + nd + ni + nl + nk + ne + np != lf) {
     error("bad tfm file `%1': lengths do not sum", file);
-    a_delete buf;
+    su_free(buf);
     return 0;
   }
   if (lh < 2) {
     error("bad tfm file `%1': header too short", file);
-    a_delete buf;
+    su_free(buf);
     return 0;
   }
   char_info = new char_info_word[ec - bc + 1];
@@ -373,7 +375,7 @@ int tfm::load(const char *file)
   for (i = 0; i < np; i++)
     param[i] = read4(ptr);
   assert(ptr == buf + lf*4 - 2);
-  a_delete buf;
+  su_free(buf);
   return 1;
 }
 
@@ -600,10 +602,15 @@ public:
   char_list *next;
 
   char_list(const char *, char_list * = 0);
+  ~char_list(void);
 };
 
-char_list::char_list(const char *s, char_list *p) : ch(strsave(s)), next(p)
+char_list::char_list(const char *s, char_list *p) : ch(su_strdup(s)), next(p)
 {
+}
+
+char_list::~char_list(void){
+  su_free(ch);
 }
 
 int read_map(const char *file, char_list **table)
@@ -768,7 +775,7 @@ int main(int argc, char **argv)
   printf("name %s\n", font_file);
   if (special_flag)
     fputs("special\n", stdout);
-  char *internal_name = strsave(argv[optind]);
+  char *internal_name = su_strdup(argv[optind]);
   int len = strlen(internal_name);
   if (len > 4 && strcmp(internal_name + len - 4, ".tfm") == 0)
     internal_name[len - 4] = '\0';
@@ -785,6 +792,7 @@ int main(int argc, char **argv)
       sep++;
     }
   printf("internalname %s\n", s ? s + 1 : internal_name);
+  su_free(internal_name);
   int n;
   if (t.get_param(2, &n)) {
     if (n > 0)

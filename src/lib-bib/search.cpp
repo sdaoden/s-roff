@@ -23,6 +23,8 @@
 #include "config.h"
 #include "lib.h"
 
+#include "su/strsup.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -82,7 +84,7 @@ int search_list::nfiles() const
 }
 
 search_list_iterator::search_list_iterator(search_list *p, const char *q)
-: list(p), ptr(p->list), iter(0), query(strsave(q)),
+: list(p), ptr(p->list), iter(0), query(su_strdup(q)),
   searcher(q, strlen(q), linear_ignore_fields, linear_truncate_len)
 {
   list->niterators += 1;
@@ -91,7 +93,7 @@ search_list_iterator::search_list_iterator(search_list *p, const char *q)
 search_list_iterator::~search_list_iterator()
 {
   list->niterators -= 1;
-  a_delete query;
+  su_free(query);
   delete iter;
 }
 
@@ -110,13 +112,13 @@ int search_list_iterator::next(const char **pp, int *lenp, reference_id *ridp)
 }
 
 search_item::search_item(const char *nm, int fid)
-: name(strsave(nm)), filename_id(fid), next(0)
+: name(su_strdup(nm)), filename_id(fid), next(0)
 {
 }
 
 search_item::~search_item()
 {
-  a_delete name;
+  su_free(name);
 }
 
 int search_item::is_named(const char *nm) const

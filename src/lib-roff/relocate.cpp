@@ -24,6 +24,7 @@
 #include "lib.h"
 
 #include "su/io.h"
+#include "su/strsup.h"
 
 #include <errno.h>
 #include <stdlib.h>
@@ -102,28 +103,24 @@ char *searchpath(const char *name, const char *pathp)
   }
   // Secondly, try the current directory.
   // Now search along PATHP.
-  size_t namelen = strlen(name);
-  char *p = (char *)pathp;
+  size_t namelen = su_strlen(name);
+  char *p = UNCONST(pathp);
   for (;;) {
-    char *end = strchr(p, PATH_SEP_CHAR);
+    char *end = su_strchr(p, PATH_SEP_CHAR);
     if (!end)
-      end = strchr(p, '\0');
-    int need_slash = end > p && strchr(DIR_SEPS, end[-1]) == 0;
-    path = new char[end - p + need_slash + namelen + 1];
-    memcpy(path, p, end - p);
+      end = su_strchr(p, '\0');
+    int need_slash = end > p && su_strchr(DIR_SEPS, end[-1]) == 0;
+    path = su_talloc(char, end - p + need_slash + namelen + 1);
+    su_memcpy(path, p, end - p);
     if (need_slash)
       path[end - p] = '/';
-    strcpy(path + (end - p) + need_slash, name);
-#if DEBUG
-    fprintf(stderr, "searchpath: trying `%s'\n", path);
-#endif
+    su_strcpy(path + (end - p) + need_slash, name);
+    DBG( fprintf(stderr, "searchpath: trying `%s'\n", path); )
     if (!access(path, F_OK)) {
-#if DEBUG
-      fprintf(stderr, "searchpath: found `%s'\n", name);
-#endif
+      DBG( fprintf(stderr, "searchpath: found `%s'\n", name); )
       return path;
     }
-    a_delete path;
+    su_free(path);
     if (*end == '\0')
       break;
     p = end + 1;
@@ -135,20 +132,19 @@ char *searchpath(const char *name, const char *pathp)
 char *searchpathext(const char *name, const char *pathext, const char *pathp)
 {
   char *found = 0;
-  char *tmpathext = strsave(pathext);	// strtok modifies this string,
+  char *tmpathext = su_strdup(pathext); // strtok modifies this string,
 					// so make a copy
-  char *ext = strtok(tmpathext, PATH_SEP);
+  char *ext = su_strtok(tmpathext, PATH_SEP);
   while (ext) {
-    char *namex = new char[strlen(name) + strlen(ext) + 1];
-    strcpy(namex, name);
-    strcat(namex, ext);
+    char *namex = su_talloc(char, strlen(name) + su_strlen(ext) +1);
+    su_stpcpy(su_stpcpy(namex, name), ext);
     found = searchpath(namex, pathp);
-    a_delete namex;
+    su_free(namex);
     if (found)
        break;
-    ext = strtok(0, PATH_SEP);
+    ext = su_strtok(0, PATH_SEP);
   }
-  a_delete tmpathext;
+  su_free(tmpathext);
   return found;
 }
 
@@ -183,12 +179,11 @@ void set_current_prefix()
 #else /* !_WIN32 */
   char const *ep = getenv("PATH");
   curr_prefix = searchpath(program_name, ep);
-  if (!curr_prefix && !strchr(program_name, '.')) {	// try with extensions
-    pathextstr = strsave(getenv("PATHEXT"));
-    if (!pathextstr)
-      pathextstr = strsave(PATH_EXT);
+  if (!curr_prefix && !su_strchr(program_name, '.')) { // try with extensions
+    if((pathextstr = su_strdup(getenv("PATHEXT"))) == NULL)
+      pathextstr = su_strdup(PATH_EXT);
     curr_prefix = searchpathext(program_name, pathextstr, ep);
-    a_delete pathextstr;
+    su_free(pathextstr);
   }
   if (!curr_prefix)
     return;
@@ -217,13 +212,13 @@ char *relocatep(const char *path)
 #endif
   if (!curr_prefix)
     set_current_prefix();
-  if (strncmp(INSTALLPATH, path, INSTALLPATHLEN))
-    return strsave(path);
+  if (su_strncmp(INSTALLPATH, path, INSTALLPATHLEN))
+    return su_strdup(path);
   char *relative_path = (char *)path + INSTALLPATHLEN;
   size_t relative_path_len = strlen(relative_path);
-  char *relocated_path = new char[curr_prefix_len + relative_path_len + 1];
-  strcpy(relocated_path, curr_prefix);
-  strcat(relocated_path, relative_path);
+  char *relocated_path =
+      su_talloc(char, curr_prefix_len + relative_path_len +1);
+  su_stpcpy(su_stpcpy(relocated_path, curr_prefix), relative_path);
 #if DEBUG
   fprintf(stderr, "relocated_path: %s\n", relocated_path);
 #endif /* DEBUG */
@@ -238,7 +233,7 @@ char *relocate(const char *path)
   if (access(path, F_OK))
     p = relocatep(path);
   else
-    p = strsave(path);
+    p = su_strdup(path);
 #if DEBUG
   fprintf (stderr, "relocate: %s\n", p);
 #endif
