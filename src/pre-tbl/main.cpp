@@ -365,16 +365,6 @@ options::options()
   delim[0] = delim[1] = '\0';
 }
 
-// Return non-zero if p and q are the same ignoring case.
-
-int strieq(const char *p, const char *q)
-{
-  for (; cmlower(*p) == cmlower(*q); p++, q++)
-    if (*p == '\0')
-      return 1;
-  return 0;
-}
-
 // return 0 if we should give up in this table
 
 options *process_options(table_input &in)
@@ -437,7 +427,7 @@ options *process_options(table_input &in)
       if (arg)
 	error("argument without option");
     }
-    else if (strieq(p, "tab")) {
+    else if (!su_strcasecmp(p, "tab")) {
       if (!arg)
 	error("`tab' option requires argument in parentheses");
       else {
@@ -447,7 +437,7 @@ options *process_options(table_input &in)
 	  opt->tab_char = arg[0];
       }
     }
-    else if (strieq(p, "linesize")) {
+    else if (!su_strcasecmp(p, "linesize")) {
       if (!arg)
 	error("`linesize' option requires argument in parentheses");
       else {
@@ -459,7 +449,7 @@ options *process_options(table_input &in)
 	}
       }
     }
-    else if (strieq(p, "delim")) {
+    else if (!su_strcasecmp(p, "delim")) {
       if (!arg)
 	error("`delim' option requires argument in parentheses");
       else if (arg[0] == '\0' || arg[1] == '\0' || arg[2] != '\0')
@@ -469,46 +459,47 @@ options *process_options(table_input &in)
 	opt->delim[1] = arg[1];
       }
     }
-    else if (strieq(p, "center") || strieq(p, "centre")) {
+    else if (!su_strcasecmp(p, "center") || !su_strcasecmp(p, "centre")) {
       if (arg)
 	error("`center' option does not take an argument");
       opt->flags |= table::CENTER;
     }
-    else if (strieq(p, "expand")) {
+    else if (!su_strcasecmp(p, "expand")) {
       if (arg)
 	error("`expand' option does not take an argument");
       opt->flags |= table::EXPAND;
     }
-    else if (strieq(p, "box") || strieq(p, "frame")) {
+    else if (!su_strcasecmp(p, "box") || !su_strcasecmp(p, "frame")) {
       if (arg)
 	error("`box' option does not take an argument");
       opt->flags |= table::BOX;
     }
-    else if (strieq(p, "doublebox") || strieq(p, "doubleframe")) {
+    else if (!su_strcasecmp(p, "doublebox") ||
+        !su_strcasecmp(p, "doubleframe")) {
       if (arg)
 	error("`doublebox' option does not take an argument");
       opt->flags |= table::DOUBLEBOX;
     }
-    else if (strieq(p, "allbox")) {
+    else if (!su_strcasecmp(p, "allbox")) {
       if (arg)
 	error("`allbox' option does not take an argument");
       opt->flags |= table::ALLBOX;
     }
-    else if (strieq(p, "nokeep")) {
+    else if (su_strcasecmp(p, "nokeep")) {
       if (arg)
 	error("`nokeep' option does not take an argument");
       opt->flags |= table::NOKEEP;
     }
-    else if (strieq(p, "nospaces")) {
+    else if (su_strcasecmp(p, "nospaces")) {
       if (arg)
 	error("`nospaces' option does not take an argument");
       opt->flags |= table::NOSPACES;
-    } else if (strieq(p, "nowarn")) { // TODO if(arg)goto jerr; anywhere here
+    } else if (su_strcasecmp(p, "nowarn")) { // TODO if(arg)goto jerr;
       if (arg)
         error("`nowarn' option does not take an argument");
       opt->flags |= table::NOWARN;
     }
-    else if (strieq(p, "decimalpoint")) {
+    else if (!su_strcasecmp(p, "decimalpoint")) {
       if (!arg)
 	error("`decimalpoint' option requires argument in parentheses");
       else {
@@ -518,7 +509,7 @@ options *process_options(table_input &in)
 	  opt->decimal_point_char = arg[0];
       }
     }
-    else if (strieq(p, "experimental")) {
+    else if (!su_strcasecmp(p, "experimental")) {
       opt->flags |= table::EXPERIMENTAL;
     }
     else {

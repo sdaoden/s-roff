@@ -104,7 +104,7 @@ void token_info::sortify(const char *start, const char *end, string &result)
   else if (type == TOKEN_UPPER || type == TOKEN_LOWER) {
     for (; start < end; start++)
       if (csalpha(*start))
-	result += cmlower(*start);
+	result += su_tolower(*start);
   }
 }
 
@@ -131,7 +131,7 @@ void token_info::lower_case(const char *start, const char *end,
     result += other_case;
   else {
     while (start < end)
-      result += cmlower(*start++);
+      result += su_tolower(*start++);
   }
 }
 
@@ -146,7 +146,7 @@ void token_info::upper_case(const char *start, const char *end,
     result += other_case;
   else {
     while (start < end)
-      result += cmupper(*start++);
+      result += su_toupper(*start++);
   }
 }
 
@@ -307,13 +307,13 @@ static void init_special_chars()
   for (p = "':^`~"; *p; p++)
     for (const char *q = "aeiouy"; *q; q++) {
       // Use a variable to work around bug in gcc 2.0
-      char c = cmupper(*q);
+      char c = su_toupper(*q);
       init_two_char_letter(*p, *q, *p, c);
     }
   for (p = "/l/o~n,coeaeij"; *p; p += 2) {
     // Use variables to work around bug in gcc 2.0
-    char c0 = cmupper(p[0]);
-    char c1 = cmupper(p[1]);
+    char c0 = su_toupper(p[0]);
+    char c1 = su_toupper(p[1]);
     init_two_char_letter(p[0], p[1], c0, c1);
   }
   init_two_char_letter('v', 's', 'v', 'S', "s");
