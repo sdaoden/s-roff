@@ -19,7 +19,7 @@
 .\"	@(#)me.7	6.4 (Berkeley) 4/13/90
 .\"
 .\" Modified for groff by jjc@jclark.com
-.\" Modified for S-roff by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+.\" Modified for S-roff by Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 .hc %
 .TH @U_ROFF@_ME @MAN7EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .UC 3

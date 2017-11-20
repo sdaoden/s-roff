@@ -22,7 +22,7 @@
 % It has been made suitable for groff by expanding all macros to real
 % characters in latin-2 encoding.
 %
-% Adapted to S-roff by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+% Adapted to S-roff by Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 %
 \patterns{
 .a2

@@ -3,7 +3,7 @@
  *@ `make_printer' for the device-dependent tasks.  Then the methods of class
  *@ `printer' are called automatically by `do_file()' in `input.cpp'.
  *
- * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ * Copyright (c) 2014 - 2017 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Copyright (C) 1989 - 1992, 2001 - 2004, 2006
  *    Free Software Foundation, Inc.

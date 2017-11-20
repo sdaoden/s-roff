@@ -2,7 +2,7 @@
 %@ (Mathamatical Institute of Czechoslovak Acadamy of Science)
 %@ Prague, April 1, 1991
 %
-% Adapted to S-roff by Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+% Adapted to S-roff by Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 
 \hyphenation{
   koe-fi-ci-ent

@@ -1,5 +1,5 @@
 /*@
- * Copyright (c) 2014 - 2015 Steffen (Daode) Nurpmeso <sdaoden@users.sf.net>.
+ * Copyright (c) 2014 - 2017 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Copyright (C) 2005, 2006, 2008
  *    Free Software Foundation, Inc.
