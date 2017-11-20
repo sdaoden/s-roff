@@ -7,12 +7,12 @@ mode=cx
 dpi=300
 
 for f in $fonts; do
-    for s in $sizes; do
-	virmf "&cm \\mode=$mode; mag=$s/10; batchmode; input $f" >/dev/null
-	mag=`expr $s \* $dpi / 10`
-	gftopk $f.${mag}gf >/dev/null
-	rm $f.${mag}gf
-    done
+   for s in $sizes; do
+      virmf "&cm \\mode=$mode; mag=$s/10; batchmode; input $f" >/dev/null
+      mag=`expr $s \* $dpi / 10`
+      gftopk $f.${mag}gf >/dev/null
+      rm $f.${mag}gf
+   done
 done
 
 # s-sh-mode
