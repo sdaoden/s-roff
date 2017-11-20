@@ -3,7 +3,7 @@
 .\"@ When used other than with -Tps, -Tdvi, -Thtml, or -Txhtml it draws a box
 .\"@ around where the picture would go.
 .\"@ Synopsis:
-.\"@  .PSPIC [-L|-R|-C|-I <indent>] <file> [<width> [<height>]]
+.\"@  .PSPIC [-L|-R|-C|-I <indent>] [-N] <file> [<width> [<height>]]
 .\"
 .\" Adapted to S-roff by Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 .
@@ -43,6 +43,14 @@
 .      \}
 .    \}
 .  \}
+.  \" No vertical space
+.  ie '\\$1'-N' \{\
+.    nr ps-vspace 0v
+.    shift
+.  \}
+.  el \{\
+.   nr ps-vspace 1v
+. \}
 .
 .  br
 .
@@ -83,7 +91,7 @@
 .    \}
 .
 .    \" reserve vertical space for image
-.    ne (\\n[ps-desht]u + 1v)
+.    ne (\\n[ps-desht]u + \\n[ps-vspace]u)
 .
 .    \" compute image offset w.r.t. the current left margin
 .    if (\\n[ps-offset-mode] == 0) \

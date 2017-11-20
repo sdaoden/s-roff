@@ -2355,13 +2355,13 @@ Three-part title.
 .REQ .tm "anything"
 Print
 .I anything
-on stdout.
+on standard error output.
 .
 .TPx
 .REQ .tm1 "anything"
 Print
 .I anything
-on stdout, allowing leading whitespace if
+on standard error output, allowing leading whitespace if
 .I anything
 starts with
 \&\f[CB]\[dq]\f[]

@@ -111,11 +111,12 @@ void pile_box::output()
     case RIGHT_ALIGN:
       av = "right";
       break;
+    default:
+      assert(0);
+      // FALLTHRU (pacify compiler)
     case CENTER_ALIGN:
       av = "center";
       break;
-    default:
-      assert(0);
     }
     printf("<mtable columnalign='%s'>", av);
     for (int i = 0; i < col.len; i++) {
@@ -254,11 +255,12 @@ void matrix_box::output()
 	case RIGHT_ALIGN:
 	  av = "right";
 	  break;
+	default:
+	  assert(0);
+    // FALLTHRU (pacify compiler)
 	case CENTER_ALIGN:
 	  av = "center";
 	  break;
-	default:
-	  assert(0);
 	}
 	printf("<mtd columnalign='%s'>", av);
 	p[j]->p[i]->output();
