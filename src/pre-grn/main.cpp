@@ -67,9 +67,11 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "grn-config.h"
 
-#include <ctype.h>
+#include "su/strsup.h"
+
 #include <stdlib.h>
 
 #include "errarg.h"
@@ -78,7 +80,6 @@
 #include "device.h"
 #include "file_case.h"
 #include "font.h"
-#include "lib.h"
 #include "macropath.h"
 #include "searchpath.h"
 
@@ -708,7 +709,7 @@ interpret(char *line)
   sscanf(line, "%80s%80s", &str1[0], &str2[0]);
   for (chr = &str1[0]; *chr; chr++)	/* convert command to */
     if (isupper(*chr))
-      *chr = tolower(*chr);	/* lower case */
+      *chr = su_tolower(*chr);	/* lower case */
 
   switch (str1[0]) {
 

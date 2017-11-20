@@ -30,7 +30,6 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include "cmap.h"
 #include "cset.h"
 #include "errarg.h"
 #include "error.h"

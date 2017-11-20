@@ -21,7 +21,10 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "refer-config.h"
+
+#include "su/strsup.h"
 
 #include "refid.h"
 
@@ -341,7 +344,7 @@ void sortify_title(const char *s, int len, string &key)
       if (first_word_len == strlen(a)) {
 	unsigned int j;
 	for (j = 0; j < first_word_len; j++)
-	  if (a[j] != cmlower(s[j]))
+	  if (a[j] != su_tolower(s[j]))
 	    break;
 	if (j >= first_word_len) {
 	  s = ptr;
@@ -963,7 +966,7 @@ static int find_month(const char *start, const char *end)
 	const char *q = months[i];
 	const char *p = start;
 	for (; p < ptr; p++, q++)
-	  if (cmlower(*p) != *q)
+	  if (su_tolower(*p) != *q)
 	    break;
 	if (p >= ptr)
 	  return i;

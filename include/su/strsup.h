@@ -50,6 +50,12 @@ c_decl si32 su_strncasecmp(char const *cp1, char const *cp2, uiz n);
  * Return dup or NIL if input was NIL */
 c_decl char *su_strdup(char const *cp);
 
+/* Map to lower/upper or return unchanged */
+#define su_tolower(C) su__tolower(C) /* FIXME su_library_init()+inline */
+#define su_toupper(C) su__toupper(C) /* FIXME su_library_init()+inline */
+c_decl si32 su__tolower(si32 c);
+c_decl si32 su__toupper(si32 c);
+
 C_DECL_END
 #include <su/code-ou.h>
 #endif /* su_STRSUP_H */
