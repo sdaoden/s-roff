@@ -23,13 +23,13 @@
 #define _REFER_H
 
 #include "config.h"
+#include "lib.h"
 #include "refer-config.h"
 
 #include <stdlib.h>
 #include <assert.h>
 #include <errno.h>
 
-#include "cmap.h"
 #include "cset.h"
 #include "defs.h"
 #include "errarg.h"

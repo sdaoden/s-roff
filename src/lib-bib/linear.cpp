@@ -30,7 +30,6 @@
 #include <stdlib.h>
 
 #include "cset.h"
-#include "cmap.h"
 #include "errarg.h"
 #include "error.h"
 #include "nonposix.h"
@@ -69,11 +68,11 @@ map_init::map_init()
 {
   int i;
   for (i = 0; i < 256; i++)
-    map[i] = csalnum(i) ? cmlower(i) : '\0';
+    map[i] = csalnum(i) ? su_tolower(i) : '\0';
   for (i = 0; i < 256; i++) {
     if (cslower(i)) {
       inv_map[i][0] = i;
-      inv_map[i][1] = cmupper(i);
+      inv_map[i][1] = su_toupper(i);
       inv_map[i][2] = '\0';
     }
     else if (csdigit(i)) {

@@ -398,7 +398,7 @@ static void articles_command(int argc, argument *argv)
   }
   int len = articles.length();
   for (i = 0; i < len; i++)
-    articles[i] = cmlower(articles[i]);
+    articles[i] = su_tolower(articles[i]);
 }
 
 static void database_command(int argc, argument *argv)

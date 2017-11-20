@@ -3575,7 +3575,7 @@ public:
 inline
 temp_iterator::temp_iterator(const char *s, int len)
 {
-  base = su_talloc(rf_uc, len);
+  base = su_talloc(uc, len);
   su_memcpy(base, s, len);
   ptr = base;
   eptr = base + len;
@@ -6562,7 +6562,7 @@ static void init_charset_table()
     charset_table[i] = get_charinfo(symbol(buf));
     charset_table[i]->set_ascii_code(i);
     if (csalpha(i))
-      charset_table[i]->set_hyphenation_code(cmlower(i));
+      charset_table[i]->set_hyphenation_code(su_tolower(i));
   }
   charset_table['.']->set_flags(charinfo::ENDS_SENTENCE);
   charset_table['?']->set_flags(charinfo::ENDS_SENTENCE);
@@ -6590,7 +6590,7 @@ static void init_charset_table()
 static void init_hpf_code_table()
 {
   for (unsigned char i = 0; i <= UCHAR_MAX; ++i)
-    hpf_code_table[i] = cmlower(i);
+    hpf_code_table[i] = su_tolower(i);
 }
 
 static void do_translate(int translate_transparent, int translate_input)

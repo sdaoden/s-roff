@@ -35,7 +35,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "cmap.h"
 #include "cset.h"
 #include "defs.h"
 #include "errarg.h"
@@ -404,7 +403,7 @@ static void read_common_words_file()
       break;
     do {
       if (key_len < truncate_len)
-	key_buffer[key_len++] = cmlower(c);
+	key_buffer[key_len++] = su_tolower(c);
       c = getc(fp);
     } while (c != EOF && csalnum(c));
     if (key_len >= shortest_len) {
@@ -704,7 +703,7 @@ static int store_key(char *s, int len)
   for (int i = 0; i < len; i++)
     if (!csdigit(s[i])) {
       is_number = 0;
-      s[i] = cmlower(s[i]);
+      s[i] = su_tolower(s[i]);
     }
   if (is_number && !(len == 4 && s[0] == '1' && s[1] == '9'))
     return 0;

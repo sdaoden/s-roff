@@ -28,7 +28,6 @@
 #include <errno.h>
 
 #include "cset.h"
-#include "cmap.h"
 #include "defs.h"
 #include "errarg.h"
 #include "error.h"
@@ -480,7 +479,7 @@ const int *index_search_item::search1(const char **pp, const char *end)
     if (csdigit(start[i]))
       key_buffer[i] = start[i];
     else {
-      key_buffer[i] = cmlower(start[i]);
+      key_buffer[i] = su_tolower(start[i]);
       is_number = 0;
     }
   if (is_number && !(len == 4 && start[0] == '1' && start[1] == '9'))
@@ -589,7 +588,7 @@ void index_search_item::read_common_words_file()
       break;
     do {
       if (key_len < header.truncate)
-	key_buffer[key_len++] = cmlower(c);
+	key_buffer[key_len++] = su_tolower(c);
       c = getc(fp);
     } while (c != EOF && csalnum(c));
     if (key_len >= header.shortest) {

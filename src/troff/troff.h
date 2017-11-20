@@ -33,7 +33,6 @@
 #include <time.h>
 
 #include "cset.h"
-#include "cmap.h"
 #include "color.h"
 #include "device.h"
 #include "errarg.h"
