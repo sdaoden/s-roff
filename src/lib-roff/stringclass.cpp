@@ -1,4 +1,4 @@
-/*@
+/*@ FIXME bad, use sfsys one!  no NUL termination by default!!
  * Copyright (c) 2014 - 2017 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Copyright (C) 1989, 1990, 1991, 1992, 2001, 2002
@@ -47,7 +47,7 @@ static void sfree(char *ptr, int)
 
 static char *sfree_alloc(char *ptr, int oldsz, int len, int *sizep)
 {
-  if (oldsz >= len) {
+  if (oldsz > len) {
     *sizep = oldsz;
     return ptr;
   }
@@ -62,7 +62,7 @@ static char *sfree_alloc(char *ptr, int oldsz, int len, int *sizep)
 
 static char *srealloc(char *ptr, int oldsz, int oldlen, int newlen, int *sizep)
 {
-  if (oldsz >= newlen) {
+  if (oldsz > newlen) {
     *sizep = oldsz;
     return ptr;
   }
@@ -158,7 +158,8 @@ string &string::operator=(char c)
   return *this;
 }
 
-void string::move(string &s)
+string &
+string::move(string &s)
 {
   sfree(ptr, sz);
   ptr = s.ptr;
@@ -167,9 +168,10 @@ void string::move(string &s)
   s.ptr = 0;
   s.len = 0;
   s.sz = 0;
+  return *this;
 }
 
-void string::grow1()
+string &string::grow1(void)
 {
   ptr = srealloc(ptr, sz, len, len + 1, &sz);
 }
@@ -199,7 +201,8 @@ string &string::operator+=(const string &s)
   return *this;
 }
 
-void string::append(const char *p, int n)
+string &
+string::append(const char *p, int n)
 {
   if (n > 0) {
     int newlen = len + n;
@@ -208,6 +211,7 @@ void string::append(const char *p, int n)
     memcpy(ptr + len, p, n);
     len = newlen;
   }
+  return *this;
 }
 
 string::string(const char *s1, int n1, const char *s2, int n2)
@@ -258,17 +262,27 @@ int operator>(const string &s1, const string &s2)
 	  : s1.len != 0 && memcmp(s1.ptr, s2.ptr, s1.len) > 0);
 }
 
-void string::set_length(int i)
+string &
+string::set_length(int i)
 {
   assert(i >= 0);
   if (i > sz)
     ptr = srealloc(ptr, sz, len, i, &sz);
   len = i;
+  return *this;
 }
 
-void string::clear()
-{
-  len = 0;
+char const *
+string::cp(void) /*const TODO MUTABLE */{
+  rf_NYD_IN;
+  if(sz == 0){
+    set_length(8); /* TODO */
+    len = 0;
+  }
+
+  ptr[len] = '\0';
+  rf_NYD_OU;
+  return ptr;
 }
 
 int string::search(char c) const

@@ -4240,9 +4240,8 @@ void html_printer::draw(int code, int *p, int np, const environment *env)
   case 'F':
     // fill with color env->fill
     if (background != NULL)
-      delete background;
-    background = new color;
-    *background = *env->fill;
+      rf_del(background);
+    background = rf_new(color)(*env->fill);
     break;
 
   default:
@@ -4880,15 +4879,16 @@ font *html_printer::make_font(const char *nm)
 
 void html_printer::do_body (void)
 {
-  if (background == NULL)
+  if (background == NULL || background->scheme() == color::scheme_default)
     fputs("<body>\n\n", stdout);
   else {
-    unsigned int r, g, b;
     char buf[6+1];
+    color c(*background);
 
-    background->get_rgb(&r, &g, &b);
+    c.convert_to_scheme(color::scheme_rgb);
     // we have to scale 0..0xFFFF to 0..0xFF
-    sprintf(buf, "%.2X%.2X%.2X", r/0x101, g/0x101, b/0x101);
+    sprintf(buf, "%.2X%.2X%.2X",
+      c.red()/0x101, c.green()/0x101, c.blue()/0x101);
 
     fputs("<body bgcolor=\"#", stdout);
     fputs(buf, stdout);
@@ -5456,8 +5456,7 @@ int main(int argc, char **argv)
       break;
     case 'b':
       // set background color to white
-      default_background = new color;
-      default_background->set_gray(color::MAX_COLOR_VAL);
+      (default_background = rf_new(color))->assign_gray(color::max_val);
       break;
     case 'd':
       /* handled by pre-html */

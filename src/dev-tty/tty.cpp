@@ -23,14 +23,14 @@
 #include "config.h"
 #include "tty-config.h"
 
+#include "su/cstr.h"
+
 #include "device.h"
 #include "driver.h"
 #include "ptable.h"
 
-typedef signed char schar;
-
-declare_ptable(schar) /* TODO */
-implement_ptable(schar) /* TODO */
+declare_ptable(rf_sc) /* TODO */
+implement_ptable(rf_sc) /* TODO */
 
 #define putstring(s) fputs(s, stdout)
 
@@ -137,8 +137,8 @@ public:
   int hpos;
   unsigned int code;
   unsigned char mode;
-  schar back_color_idx;
-  schar fore_color_idx;
+  rf_sc back_color_idx;
+  rf_sc fore_color_idx;
   void *operator new(size_t);
   void operator delete(void *);
   inline int draw_mode() { return mode & (VDRAW_MODE|HDRAW_MODE); }
@@ -178,21 +178,21 @@ class tty_printer
   int nlines;
   int cached_v;
   int cached_vpos;
-  schar curr_fore_idx;
-  schar curr_back_idx;
+  rf_sc curr_fore_idx;
+  rf_sc curr_back_idx;
   int is_underline;
   int is_bold;
   int cu_flag;
-  PTABLE(schar) tty_colors;
+  PTABLE(rf_sc) tty_colors;
   void make_underline(int);
   void make_bold(output_character, int);
-  schar color_to_idx(color *);
-  void add_char(output_character, int, int, int, color *, color *,
-		unsigned char);
+  rf_sc color_to_idx(color_symbol *);
+  void add_char(output_character, int, int, int, color_symbol *,
+    color_symbol *, unsigned char);
   char *make_rgb_string(unsigned int, unsigned int, unsigned int);
-  int tty_color(unsigned int, unsigned int, unsigned int, schar *,
-		schar = DEFAULT_COLOR_IDX);
-  void line(int, int, int, int, color *, color *);
+  int tty_color(unsigned int, unsigned int, unsigned int, rf_sc *,
+		rf_sc = DEFAULT_COLOR_IDX);
+  void line(int, int, int, int, color_symbol *, color_symbol *);
   void draw_line(int *, int, const environment *);
   void draw_polygon(int *, int, const environment *);
 
@@ -205,7 +205,7 @@ public:
   void change_color(const environment * const);
   void change_fill_color(const environment * const);
   void put_char(output_character);
-  void put_color(schar, int);
+  void put_color(rf_sc, int);
   void begin_page(int) { }
   void end_page(int);
   font *make_font(const char *);
@@ -235,14 +235,14 @@ char *tty_printer::make_rgb_string(unsigned int r,
 
 int tty_printer::tty_color(unsigned int r,
 			   unsigned int g,
-			   unsigned int b, schar *idx, schar value)
+			   unsigned int b, rf_sc *idx, rf_sc value)
 {
   int unknown_color = 0;
   char *s = make_rgb_string(r, g, b);
-  schar *i = tty_colors.lookup(s);
+  rf_sc *i = tty_colors.lookup(s);
   if (!i) {
     unknown_color = 1;
-    i = new schar[1];
+    i = new rf_sc[1];
     *i = value;
     tty_colors.define(s, i);
   }
@@ -258,20 +258,18 @@ tty_printer::tty_printer(void)
     hline_char = 0x2500;
     vline_char = 0x2502;
   }
-  schar dummy;
+  rf_sc dummy;
   // black, white
   (void)tty_color(0, 0, 0, &dummy, 0);
-  (void)tty_color(color::MAX_COLOR_VAL,
-		  color::MAX_COLOR_VAL,
-		  color::MAX_COLOR_VAL, &dummy, 7);
+  (void)tty_color(color::max_val, color::max_val, color::max_val, &dummy, 7);
   // red, green, blue
-  (void)tty_color(color::MAX_COLOR_VAL, 0, 0, &dummy, 1);
-  (void)tty_color(0, color::MAX_COLOR_VAL, 0, &dummy, 2);
-  (void)tty_color(0, 0, color::MAX_COLOR_VAL, &dummy, 4);
+  (void)tty_color(color::max_val, 0, 0, &dummy, 1);
+  (void)tty_color(0, color::max_val, 0, &dummy, 2);
+  (void)tty_color(0, 0, color::max_val, &dummy, 4);
   // yellow, magenta, cyan
-  (void)tty_color(color::MAX_COLOR_VAL, color::MAX_COLOR_VAL, 0, &dummy, 3);
-  (void)tty_color(color::MAX_COLOR_VAL, 0, color::MAX_COLOR_VAL, &dummy, 5);
-  (void)tty_color(0, color::MAX_COLOR_VAL, color::MAX_COLOR_VAL, &dummy, 6);
+  (void)tty_color(color::max_val, color::max_val, 0, &dummy, 3);
+  (void)tty_color(color::max_val, 0, color::max_val, &dummy, 5);
+  (void)tty_color(0, color::max_val, color::max_val, &dummy, 6);
   nlines = 66;
   lines = new tty_glyph *[nlines];
   for (int i = 0; i < nlines; i++)
@@ -329,17 +327,16 @@ void tty_printer::make_bold(output_character c, int w)
   }
 }
 
-schar tty_printer::color_to_idx(color *col)
+rf_sc tty_printer::color_to_idx(color_symbol *col) // TODO col const
 {
-  if (col->is_default())
+  if (col->scheme() == col->scheme_default)
     return DEFAULT_COLOR_IDX;
-  unsigned int r, g, b;
-  col->get_rgb(&r, &g, &b);
-  schar idx;
-  if (tty_color(r, g, b, &idx)) {
-    char *s = col->print_color();
-    error("Unknown color (%1) mapped to default", s);
-    a_delete s;
+  rf_sc idx;
+  if (tty_color(col->red(), col->green(), col->blue(), &idx)) {
+    cstr cs;
+
+    (void)col->to_cstr(*&cs);
+    error("Unknown color (%1) mapped to default", cs.cp());
   }
   return idx;
 }
@@ -357,7 +354,7 @@ void tty_printer::set_char(glyph *g, font *f, const environment *env,
 
 void tty_printer::add_char(output_character c, int w,
 			   int h, int v,
-			   color *fore, color *back,
+			   color_symbol *fore, color_symbol *back,
 			   unsigned char mode)
 {
 #if 0
@@ -523,7 +520,7 @@ void tty_printer::draw_line(int *p, int np, const environment *env)
 }
 
 void tty_printer::line(int hpos, int vpos, int dx, int dy,
-		       color *col, color *fill)
+		       color_symbol *col, color_symbol *fill)
 {
   if (dx == 0) {
     // vertical line
@@ -606,7 +603,7 @@ void tty_printer::put_char(output_character wc)
     putchar(wc);
 }
 
-void tty_printer::put_color(schar color_index, int back)
+void tty_printer::put_color(rf_sc color_index, int back)
 {
   if (color_index == DEFAULT_COLOR_IDX) {
     putstring(SGR_DEFAULT);

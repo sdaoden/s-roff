@@ -36,8 +36,8 @@ int symbol::table_size = 0;
 char *symbol::block = 0;
 int symbol::block_size = 0;
 
-const symbol NULL_SYMBOL;
-const symbol EMPTY_SYMBOL("");
+static su_u8 a_symbol_specials_buf[3][sizeof symbol];
+su_private su_static symbol *symbol::s_specials[3];
 
 #ifdef BLOCK_SIZE
 # undef BLOCK_SIZE
@@ -51,6 +51,16 @@ static const unsigned int table_sizes[] = { /* su_prime_next()!!! FIXME */
   160001, 500009, 1000003, 1500007, 2000003, 0
 };
 const double FULL_MAX = 0.3;	// don't let the table get more than this full
+
+STA symbol const &
+symbol::s_specials_create(u32 i){
+   NYD2_IN;
+   s_specials[0] = su_NEW_HEAP(symbol, a_symbol_default_buf[0])("default");
+   s_specials[1] = su_NEW_HEAP(symbol, a_symbol_default_buf[1]);
+   s_specials[2] = su_NEW_HEAP(symbol, a_symbol_default_buf[2])("");
+   NYD2_OU;
+   return *s_specials[i];
+}
 
 symbol::symbol(const char *p, int how)
 {
@@ -98,7 +108,7 @@ symbol::symbol(const char *p, int how)
 	 pp >= old_table;
 	 --pp) {
 	   symbol temp(*pp, 1); /* insert it into the new table */
-	   unused(&temp);
+	   su_UNUSED(&temp);
 	 }
     a_delete old_table;
     for (pp = table + hc % table_size;
@@ -123,7 +133,7 @@ symbol::symbol(const char *p, int how)
   }
 }
 
-symbol concat(symbol s1, symbol s2)
+symbol concat(symbol const &s1, symbol const &s2)
 {
   char *buf = su_TALLOC(char, su_cs_len(s1.contents()) +
       su_cs_len(s2.contents()) +1);

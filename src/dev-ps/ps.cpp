@@ -370,7 +370,7 @@ ps_output &ps_output::put_symbol(const char *s)
 ps_output &ps_output::put_color(unsigned int c)
 {
   char buf[128];
-  sprintf(buf, "%.3g", double(c) / color::MAX_COLOR_VAL);
+  sprintf(buf, "%.3g", double(c) / color::max_val);
   int len = strlen(buf);
   if (col > 0 && col + len + need_space > max_line_length) {
     putc('\n', fp);
@@ -541,7 +541,7 @@ class ps_printer
   int sbuf_space_code;
   int sbuf_kern;
   style sbuf_style;
-  color sbuf_color;		// the current PS color
+  color_symbol sbuf_color;		// the current PS color
   style output_style;
   subencoding *subencodings;
   int output_hpos;
@@ -579,7 +579,7 @@ class ps_printer
   void encode_subfont(subencoding *);
   void define_encoding(const char *, int);
   void reencode_font(ps_font *);
-  void set_color(color *, int = 0);
+  void set_color(color_symbol *, int = 0);
 
   const char *media_name();
   int media_width();
@@ -921,38 +921,35 @@ void ps_printer::set_style(const style &sty)
   defined_styles[ndefined_styles++] = sty;
 }
 
-void ps_printer::set_color(color *col, int fill)
+void ps_printer::set_color(color_symbol *col, int fill) // TODO col const
 {
   sbuf_color = *col;
-  unsigned int components[4];
   char s[3];
-  color_scheme cs = col->get_components(components);
   s[0] = fill ? 'F' : 'C';
-  s[2] = 0;
-  switch (cs) {
-  case DEFAULT:			// black
+  s[2] = '\0';
+  color *c;
+  switch((c = col)->scheme()){
+  case color::scheme_default: // Black
     out.put_symbol("0");
     s[1] = 'g';
     break;
-  case RGB:
-    out.put_color(Red)
-       .put_color(Green)
-       .put_color(Blue);
+  case color::scheme_rgb:
+    out.put_color(c->red()).put_color(c->green()).put_color(c->blue());
     s[1] = 'r';
     break;
-  case CMY:
-    col->get_cmyk(&Cyan, &Magenta, &Yellow, &Black);
-    // fall through
-  case CMYK:
-    out.put_color(Cyan)
-       .put_color(Magenta)
-       .put_color(Yellow)
-       .put_color(Black);
+  case color::scheme_cmy:{ // TODO convert RGB and do not set cmyk_flag=1??
+    color c2(*c);
+    c2.convert_to_scheme(color::scheme_cmyk);
+    c = &c2;
+    // FALLTHRY
+  case color::scheme_cmyk:
+    out.put_color(c->cyan()).put_color(c->magenta())
+    .put_color(c->yellow()).put_color(c->black());
     s[1] = 'k';
     cmyk_flag = 1;
-    break;
-  case GRAY:
-    out.put_color(Gray);
+  } break;
+  case color::scheme_gray:
+    out.put_color(c->gray());
     s[1] = 'g';
     break;
   }
@@ -1350,14 +1347,14 @@ void ps_printer::begin_page(int n)
 
   out.put_symbol("BP")
      .simple_comment("EndPageSetup");
-  if (sbuf_color != default_color)
+  if (sbuf_color != color_symbol::get_default())
     set_color(&sbuf_color);
 }
 
 void ps_printer::end_page(int)
 {
   flush_sbuf();
-  set_color(&default_color);
+  set_color(*color_symbol::get_default());
   out.put_symbol("EP");
   if (invis_count != 0) {
     error("missing `endinvis' command");

@@ -112,8 +112,8 @@ public:
 
   virtual node *merge_glyph_node(glyph_node *);
   virtual tfont *get_tfont();
-  virtual color *get_glyph_color();
-  virtual color *get_fill_color();
+  virtual color_symbol *get_glyph_color();
+  virtual color_symbol *get_fill_color();
   virtual void tprint(troff_output_file *);
   virtual void zero_width_tprint(troff_output_file *);
 
@@ -183,12 +183,12 @@ protected:
   hunits n;
   char set;
   char was_escape_colon;
-  color *col;			/* for grotty */
+  color_symbol *col;			/* for grotty */
 
-  space_node(hunits, int, int, color *, statem *, int, node * = 0);
+  space_node(hunits, int, int, color_symbol *, statem *, int, node * = 0);
 
 public:
-  space_node(hunits, color *, node * = 0);
+  space_node(hunits, color_symbol *, node * = 0);
 #if 0
   ~space_node();
   void *operator new(size_t);
@@ -232,11 +232,11 @@ protected:
   width_list *orig_width;
   unsigned char unformat;
 
-  word_space_node(hunits, int, color *, width_list *, int, statem *, int,
-		  node * = 0);
+  word_space_node(hunits, int, color_symbol *, width_list *, int, statem *,
+    int, node * = 0);
 
 public:
-  word_space_node(hunits, color *, width_list *, node * = 0);
+  word_space_node(hunits, color_symbol *, width_list *, node * = 0);
   ~word_space_node();
   node *copy();
   int reread(int *);
@@ -253,10 +253,11 @@ public:
 class unbreakable_space_node
 : public word_space_node
 {
-  unbreakable_space_node(hunits, int, color *, statem *, int, node * = 0);
+  unbreakable_space_node(hunits, int, color_symbol *, statem *, int,
+    node * = 0);
 
 public:
-  unbreakable_space_node(hunits, color *, node * = 0);
+  unbreakable_space_node(hunits, color_symbol *, node * = 0);
   node *copy();
   int reread(int *);
   void tprint(troff_output_file *);
@@ -349,18 +350,19 @@ protected:
   hunits n;
   unsigned char was_tab;
   unsigned char unformat;
-  color *col;			/* for grotty */
+  color_symbol *col;			/* for grotty */
 
 public:
-  hmotion_node(hunits i, color *c, node *nxt = 0)
+  hmotion_node(hunits i, color_symbol *c, node *nxt = 0)
     : node(nxt), n(i), was_tab(0), unformat(0), col(c) {}
-  hmotion_node(hunits i, color *c, statem *s, int divlevel, node *nxt = 0)
+  hmotion_node(hunits i, color_symbol *c, statem *s, int divlevel,
+      node *nxt = 0)
     : node(nxt, s, divlevel), n(i), was_tab(0), unformat(0), col(c) {}
-  hmotion_node(hunits i, int flag1, int flag2, color *c, statem *s,
+  hmotion_node(hunits i, int flag1, int flag2, color_symbol *c, statem *s,
 	       int divlevel, node *nxt = 0)
     : node(nxt, s, divlevel), n(i), was_tab(flag1), unformat(flag2),
       col(c) {}
-  hmotion_node(hunits i, int flag1, int flag2, color *c, node *nxt = 0)
+  hmotion_node(hunits i, int flag1, int flag2, color_symbol *c, node *nxt = 0)
     : node(nxt), n(i), was_tab(flag1), unformat(flag2), col(c) {}
   node *copy();
   int reread(int *);
@@ -382,8 +384,8 @@ class space_char_hmotion_node
 : public hmotion_node
 {
 public:
-  space_char_hmotion_node(hunits, color *, node * = 0);
-  space_char_hmotion_node(hunits, color *, statem *, int, node * = 0);
+  space_char_hmotion_node(hunits, color_symbol *, node * = 0);
+  space_char_hmotion_node(hunits, color_symbol *, statem *, int, node * = 0);
   node *copy();
   void ascii_print(ascii_output_file *);
   void asciify(macro *);
@@ -401,11 +403,11 @@ class vmotion_node
 : public node
 {
   vunits n;
-  color *col;			/* for grotty */
+  color_symbol *col;			/* for grotty */
 
 public:
-  vmotion_node(vunits, color *);
-  vmotion_node(vunits, color *, statem *, int);
+  vmotion_node(vunits, color_symbol *);
+  vmotion_node(vunits, color_symbol *, statem *, int);
   void tprint(troff_output_file *);
   node *copy();
   vunits vertical_width();
@@ -585,8 +587,8 @@ class special_node
 {
   macro mac;
   tfont *tf;
-  color *gcol;
-  color *fcol;
+  color_symbol *gcol;
+  color_symbol *fcol;
   int no_init_string;
 
   void tprint_start(troff_output_file *);
@@ -595,8 +597,8 @@ class special_node
 
 public:
   special_node(const macro &, int = 0);
-  special_node(const macro &, tfont *, color *, color *, statem *, int,
-	       int = 0);
+  special_node(const macro &, tfont *, color_symbol *, color_symbol *,
+    statem *, int, int = 0);
   node *copy();
   void tprint(troff_output_file *);
   int same(node *);
@@ -665,14 +667,15 @@ class draw_node
 {
   int npoints;
   font_size sz;
-  color *gcol;
-  color *fcol;
+  color_symbol *gcol;
+  color_symbol *fcol;
   char code;
   hvpair *point;
 
 public:
-  draw_node(char, hvpair *, int, font_size, color *, color *);
-  draw_node(char, hvpair *, int, font_size, color *, color *, statem *, int);
+  draw_node(char, hvpair *, int, font_size, color_symbol *, color_symbol *);
+  draw_node(char, hvpair *, int, font_size, color_symbol *, color_symbol *,
+    statem *, int);
   ~draw_node();
   hunits width();
   vunits vertical_width();
@@ -701,7 +704,8 @@ inline hyphen_list::hyphen_list(unsigned char code, hyphen_list *p)
 }
 
 extern void read_desc();
-extern int mount_font(int, symbol, symbol = NULL_SYMBOL);
+extern int mount_font(int, symbol const &,
+            symbol const &=symbol::get_null());
 extern int check_font(symbol, symbol);
 extern int check_style(symbol);
 extern void mount_style(int, symbol);

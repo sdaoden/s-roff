@@ -53,7 +53,7 @@ static int vertical_position_traps_flag = 1;
 static vunits truncated_space;
 static vunits needed_space;
 
-diversion::diversion(symbol s)
+diversion::diversion(symbol const &s)
 : prev(0), nm(s), vertical_position(V0), high_water_mark(V0),
   any_chars_added(0), no_space_mode(0), needs_push(0), saved_seen_break(0),
   saved_seen_space(0), saved_seen_eol(0), saved_suppress_next_eol(0),
@@ -515,7 +515,7 @@ void top_level_diversion::remove_trap(symbol nam)
 {
   for (trap *p = page_trap_list; p; p = p->next)
     if (p->nm == nam) {
-      p->nm = NULL_SYMBOL;
+      p->nm = symbol::get_null();
       return;
     }
 }
@@ -524,7 +524,7 @@ void top_level_diversion::remove_trap_at(vunits pos)
 {
   for (trap *p = page_trap_list; p; p = p->next)
     if (p->position == pos) {
-      p->nm = NULL_SYMBOL;
+      p->nm = symbol::get_null();
       return;
     }
 }
@@ -862,7 +862,7 @@ void macro_diversion::set_diversion_trap(symbol s, vunits n)
 
 void macro_diversion::clear_diversion_trap()
 {
-  diversion_trap = NULL_SYMBOL;
+  diversion_trap = symbol::get_null();
 }
 
 void top_level_diversion::set_diversion_trap(symbol, vunits)
