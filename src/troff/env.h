@@ -278,10 +278,10 @@ class environment
 #ifdef WIDOW_CONTROL
   int widow_control;
 #endif /* WIDOW_CONTROL */
-  color *glyph_color;
-  color *prev_glyph_color;
-  color *fill_color;
-  color *prev_fill_color;
+  color_symbol *glyph_color;
+  color_symbol *prev_glyph_color;
+  color_symbol *fill_color;
+  color_symbol *prev_fill_color;
 
   tab_type distance_to_next_tab(hunits *);
   tab_type distance_to_next_tab(hunits *distance, hunits *leftpos);
@@ -369,12 +369,12 @@ public:
   int get_center_lines();
   int get_right_justify_lines();
   int get_prev_line_interrupted() { return prev_line_interrupted; }
-  color *get_fill_color();
-  color *get_glyph_color();
-  color *get_prev_glyph_color();
-  color *get_prev_fill_color();
-  void set_glyph_color(color *c);
-  void set_fill_color(color *c);
+  color_symbol *get_fill_color();
+  color_symbol *get_glyph_color();
+  color_symbol *get_prev_glyph_color();
+  color_symbol *get_prev_fill_color();
+  void set_glyph_color(color_symbol *c);
+  void set_fill_color(color_symbol *c);
   node *make_char_node(charinfo *);
   node *extract_output_line();
   void width_registers();

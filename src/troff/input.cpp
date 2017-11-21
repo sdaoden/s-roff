@@ -213,7 +213,7 @@ private: // FIXME (almost) abstract virtuals in private:?? ok, but.. ??
   virtual int nargs() { return 0; }
   virtual input_iterator *get_arg(int) { return 0; }
   virtual arg_list *get_arg_list() { return 0; }
-  virtual symbol get_macro_name() { return NULL_SYMBOL; }
+  virtual symbol get_macro_name() { return sumbol::get_null(); }
   virtual int space_follows_arg(int) { return 0; }
   virtual int get_break_flag() { return 0; }
   virtual int get_location(int, const char **, int *) { return 0; }
@@ -642,7 +642,7 @@ symbol input_stack::get_macro_name()
   for (p = top; p != 0; p = p->next)
     if (p->has_args())
       return p->get_macro_name();
-  return NULL_SYMBOL;
+  return symbol::get_null();
 }
 
 int input_stack::space_follows_arg(int i)
@@ -872,7 +872,7 @@ static symbol read_long_escape_name(read_mode mode)
     if (c == 0) {
       if (buf != abuf)
         su_FREE(buf);
-      return NULL_SYMBOL;
+      return symbol::get_null();
     }
     have_char = 1;
     if (mode == WITH_ARGS && c == ' ')
@@ -902,7 +902,7 @@ static symbol read_long_escape_name(read_mode mode)
     if (i == 0) {
       if (mode != ALLOW_EMPTY)
 	copy_mode_error("empty escape name");
-      return EMPTY_SYMBOL;
+      return symbol::get_empty();
     }
     return symbol(abuf);
   }
@@ -917,7 +917,7 @@ static symbol read_escape_name(read_mode mode)
 {
   char c = get_char_for_escape_name();
   if (c == 0)
-    return NULL_SYMBOL;
+    return symbol::get_null();
   if (c == '(')
     return read_two_char_escape_name();
   if (c == '[' && !compatible_flag)
@@ -934,7 +934,7 @@ static symbol read_increment_and_escape_name(int *incp)
   switch (c) {
   case 0:
     *incp = 0;
-    return NULL_SYMBOL;
+    return symbol::get_null();
   case '(':
     *incp = 0;
     return read_two_char_escape_name();
@@ -1195,6 +1195,9 @@ int non_interpreted_char_node::interpret(macro *mac)
   return 1;
 }
 
+static color_symbol *lookup_color(symbol nm);
+static color_symbol *a_input_color(color::scheme scheme, char end=NIL);
+static color::component a_input_color__comp(char const *scheme_desc, char comp);
 static void do_width();
 static node *do_non_interpreted();
 static node *do_special();
@@ -1203,15 +1206,86 @@ static void do_register();
 
 dictionary color_dictionary(501);
 
-static color *lookup_color(symbol nm)
-{
-  assert(!nm.is_null());
-  if (nm == default_symbol)
-    return &default_color;
-  color *c = (color *)color_dictionary.lookup(nm);
-  if (c == 0)
+static color_symbol *
+lookup_color(symbol nm){
+  color_symbol *rv;
+  NYD_IN;
+  ASSERT(!nm.is_null());
+
+  if(nm == symbol::get_default())
+    rv = &color_symbol::get_default();
+  else if((rv = S(color_symbol*,color_dictionary.lookup(nm))) == NIL)
     warning(WARN_COLOR, "color `%1' not defined", nm.contents());
-  return c;
+  NYD_OU;
+  return rv;
+}
+
+static color_symbol *
+a_input_color(color::scheme scheme, char end){
+  char const *scheme_desc, *s;
+  color_symbol *rv;
+  NYD_IN;
+
+  rv = NIL;
+  scheme_desc = color::scheme_desc[scheme];
+
+  symbol component = do_get_long_name(0, end);
+  if(component.is_null()){
+    warning(WARN_COLOR, "missing %1 value%2",
+      scheme_desc,
+      (color::scheme_component_counts[scheme] > 1 ? "s" : ""));
+    goto jleave;
+  }
+  s = component.contents();
+
+  rv = su_NEW(color_symbol);
+  if(*s == '#'){
+    if(!rv->read_scheme(scheme, s)){
+      warning(WARN_COLOR, "expecting %1 definition not: %2", scheme_desc, s);
+      su_DEL(rv);
+      rv = NIL;
+      goto jleave;
+    }
+  }else{
+    if(end == '\0')
+      input_stack::push(make_temp_iterator(" "));
+    input_stack::push(make_temp_iterator(s));
+    tok.next();
+
+    ui8 imax = color::scheme_component_counts[scheme];
+    color::component comps[color::scheme_max];
+    for(u8 i = 0; i < imax; ++i){
+      ASSERT(scheme_desc[i] != '\0');
+      comps[i] = a_input_color__comp(scheme_desc, scheme_desc[i]);
+    }
+    rv = &rv->assign_scheme(scheme, comps);
+  }
+jleave:
+  NYD_OU;
+  return rv;
+}
+
+static color::component
+a_input_color__comp(char const *scheme_desc, char comp){
+  units val;
+  NYD2_IN;
+
+  if(!get_number(&val, 'f')){
+    warning(WARN_COLOR, "%1: %2 definition set to 0", scheme_desc, comp);
+    tok.next();
+    val = 0;
+  }else if(val < 0){ // TODO unsigned cast sufficient. consequences?
+    warning(WARN_RANGE, "%1: %2 cannot be negative: set to 0",
+      scheme_desc, comp);
+    val = 0;
+  }else if(UICMP(32, color::max_val, <, val)){
+    val = color::max_val;
+    warning(WARN_RANGE, "%1: %2 cannot be greater than %3",
+      scheme_desc, comp, S(ui32,val));
+  }
+jleave:
+  NYD2_OU;
+  return S(color::component,val);
 }
 
 void do_glyph_color(symbol nm)
@@ -1221,11 +1295,11 @@ void do_glyph_color(symbol nm)
   if (nm.is_empty())
     curenv->set_glyph_color(curenv->get_prev_glyph_color());
   else {
-    color *tem = lookup_color(nm);
+    color_symbol *tem = lookup_color(nm);
     if (tem)
       curenv->set_glyph_color(tem);
     else
-      (void)color_dictionary.lookup(nm, new color(nm));
+      (void)color_dictionary.lookup(nm, su_NEW(color_symbol(nm));
   }
 }
 
@@ -1236,147 +1310,12 @@ void do_fill_color(symbol nm)
   if (nm.is_empty())
     curenv->set_fill_color(curenv->get_prev_fill_color());
   else {
-    color *tem = lookup_color(nm);
+    color_symbol *tem = lookup_color(nm);
     if (tem)
       curenv->set_fill_color(tem);
     else
       (void)color_dictionary.lookup(nm, su_NEW(color_symbol)(nm));
   }
-}
-
-static unsigned int get_color_element(const char *scheme, const char *col)
-{
-  units val;
-  if (!get_number(&val, 'f')) {
-    warning(WARN_COLOR, "%1 in %2 definition set to 0", col, scheme);
-    tok.next();
-    return 0;
-  }
-  if (val < 0) {
-    warning(WARN_RANGE, "%1 cannot be negative: set to 0", col);
-    return 0;
-  }
-  if (val > color::MAX_COLOR_VAL+1) {
-    warning(WARN_RANGE, "%1 cannot be greater than 1", col);
-    // we change 0x10000 to 0xffff
-    return color::MAX_COLOR_VAL;
-  }
-  return (unsigned int)val;
-}
-
-static color *read_rgb(char end = 0)
-{
-  symbol component = do_get_long_name(0, end);
-  if (component.is_null()) {
-    warning(WARN_COLOR, "missing rgb color values");
-    return 0;
-  }
-  const char *s = component.contents();
-  color *col = new color;
-  if (*s == '#') {
-    if (!col->read_rgb(s)) {
-      warning(WARN_COLOR, "expecting rgb color definition not `%1'", s);
-      delete col;
-      return 0;
-    }
-  }
-  else {
-    if (!end)
-      input_stack::push(make_temp_iterator(" "));
-    input_stack::push(make_temp_iterator(s));
-    tok.next();
-    unsigned int r = get_color_element("rgb color", "red component");
-    unsigned int g = get_color_element("rgb color", "green component");
-    unsigned int b = get_color_element("rgb color", "blue component");
-    col->set_rgb(r, g, b);
-  }
-  return col;
-}
-
-static color *read_cmy(char end = 0)
-{
-  symbol component = do_get_long_name(0, end);
-  if (component.is_null()) {
-    warning(WARN_COLOR, "missing cmy color values");
-    return 0;
-  }
-  const char *s = component.contents();
-  color *col = new color;
-  if (*s == '#') {
-    if (!col->read_cmy(s)) {
-      warning(WARN_COLOR, "expecting cmy color definition not `%1'", s);
-      delete col;
-      return 0;
-    }
-  }
-  else {
-    if (!end)
-      input_stack::push(make_temp_iterator(" "));
-    input_stack::push(make_temp_iterator(s));
-    tok.next();
-    unsigned int c = get_color_element("cmy color", "cyan component");
-    unsigned int m = get_color_element("cmy color", "magenta component");
-    unsigned int y = get_color_element("cmy color", "yellow component");
-    col->set_cmy(c, m, y);
-  }
-  return col;
-}
-
-static color *read_cmyk(char end = 0)
-{
-  symbol component = do_get_long_name(0, end);
-  if (component.is_null()) {
-    warning(WARN_COLOR, "missing cmyk color values");
-    return 0;
-  }
-  const char *s = component.contents();
-  color *col = new color;
-  if (*s == '#') {
-    if (!col->read_cmyk(s)) {
-      warning(WARN_COLOR, "`expecting a cmyk color definition not `%1'", s);
-      delete col;
-      return 0;
-    }
-  }
-  else {
-    if (!end)
-      input_stack::push(make_temp_iterator(" "));
-    input_stack::push(make_temp_iterator(s));
-    tok.next();
-    unsigned int c = get_color_element("cmyk color", "cyan component");
-    unsigned int m = get_color_element("cmyk color", "magenta component");
-    unsigned int y = get_color_element("cmyk color", "yellow component");
-    unsigned int k = get_color_element("cmyk color", "black component");
-    col->set_cmyk(c, m, y, k);
-  }
-  return col;
-}
-
-static color *read_gray(char end = 0)
-{
-  symbol component = do_get_long_name(0, end);
-  if (component.is_null()) {
-    warning(WARN_COLOR, "missing gray values");
-    return 0;
-  }
-  const char *s = component.contents();
-  color *col = new color;
-  if (*s == '#') {
-    if (!col->read_gray(s)) {
-      warning(WARN_COLOR, "`expecting a gray definition not `%1'", s);
-      delete col;
-      return 0;
-    }
-  }
-  else {
-    if (!end)
-      input_stack::push(make_temp_iterator("\n"));
-    input_stack::push(make_temp_iterator(s));
-    tok.next();
-    unsigned int g = get_color_element("gray", "gray value");
-    col->set_gray(g);
-  }
-  return col;
 }
 
 static void activate_color()
@@ -1396,7 +1335,7 @@ static void define_color()
     skip_line();
     return;
   }
-  if (color_name == default_symbol) {
+  if (color_name == symbol::get_default()) {
     warning(WARN_COLOR, "default color can't be redefined");
     skip_line();
     return;
@@ -1406,28 +1345,26 @@ static void define_color()
     skip_line();
     return;
   }
-  color *col;
-  if (strcmp(style.contents(), "rgb") == 0)
-    col = read_rgb();
-  else if (strcmp(style.contents(), "cmyk") == 0)
-    col = read_cmyk();
-  else if (strcmp(style.contents(), "gray") == 0)
-    col = read_gray();
-  else if (strcmp(style.contents(), "grey") == 0)
-    col = read_gray();
-  else if (strcmp(style.contents(), "cmy") == 0)
-    col = read_cmy();
-  else {
-    warning(WARN_COLOR,
-	    "unknown color space `%1'; use rgb, cmyk, gray or cmy",
-	    style.contents());
-    skip_line();
-    return;
+
+  color_symbol *c = NULL;
+  for(ui32 i = color::scheme_default + 1; i <= color::scheme_max; ++i){
+    if(!su_cs_cmp(style.contents(), color::scheme_names[i])){
+      c = a_input_color(S(color::scheme,i));
+      break;
+    }
   }
-  if (col) {
-    col->nm = color_name;
-    (void)color_dictionary.lookup(color_name, col);
+  if(c == NIL){
+    if(!su_cs_cmp(style.content(), "grey"))
+      c = a_input_color(color::scheme_gray);
+    else{
+      warning(WARN_COLOR,
+        "unknown color space, use cmy, cmyk, rgb or gray (grey): %1",
+        style.contents());
+      skip_line();
+      return;
+    }
   }
+  color_dictionary.lookup(color_name, c);
   skip_line();
 }
 
@@ -2489,7 +2426,7 @@ symbol get_name(int required)
     }
     else {
       empty_name_warning(required);
-      return NULL_SYMBOL;
+      return symbol::get_null();
     }
   }
   else
@@ -2531,7 +2468,7 @@ static symbol do_get_long_name(int required, char end)
   }
   if (i == 0) {
     empty_name_warning(required);
-    return NULL_SYMBOL;
+    return symbol::get_null();
   }
   if (end && buf[i] == end)
     buf[i+1] = '\0';
@@ -3432,7 +3369,8 @@ protected:
   string_iterator();
 
 public:
-  string_iterator(const macro &, const char * = 0, symbol = NULL_SYMBOL);
+  string_iterator(const macro &, const char * = 0,
+    symbol const &=symbol::get_null());
   int fill(node **);
   int peek();
   int get_location(int, const char **, int *);
@@ -3443,7 +3381,7 @@ public:
   int is_diversion();
 };
 
-string_iterator::string_iterator(const macro &m, const char *p, symbol s)
+string_iterator::string_iterator(const macro &m, const char *p, symbol const &s)
 : input_iterator(m.is_a_diversion), mac(m), how_invoked(p), newline_flag(0),
   lineno(1), nm(s)
 {
@@ -4052,7 +3990,7 @@ static symbol composite_glyph_name(symbol nm)
     gn = check_unicode_name(nm.contents());
     if (!gn) {
       error("invalid base glyph `%1' in composite glyph name", nm.contents());
-      return EMPTY_SYMBOL;
+      return symbol::get_empty();
     }
   }
   const char *gn_decomposed = decompose_unicode(gn);
@@ -4074,7 +4012,7 @@ static symbol composite_glyph_name(symbol nm)
       if (!u) {
 	error("invalid component `%1' in composite glyph name",
 	      gl.contents());
-	return EMPTY_SYMBOL;
+	return symbol::get_empty();
       }
     }
     const char *decomposed = decompose_unicode(u);
@@ -4129,7 +4067,7 @@ int unpostpone_traps()
   postpone_traps_flag = 0;
   if (!postponed_trap.is_null()) {
     spring_trap(postponed_trap);
-    postponed_trap = NULL_SYMBOL;
+    postponed_trap = symbol::get_null();
     return 1;
   }
   else
@@ -5135,11 +5073,11 @@ static symbol get_delim_name()
   start.next();
   if (start.eof()) {
     error("end of input at start of delimited name");
-    return NULL_SYMBOL;
+    return symbol::get_null();
   }
   if (start.newline()) {
     error("can't delimit name with a newline");
-    return NULL_SYMBOL;
+    return symbol::get_null();
   }
   int start_level = input_stack::get_level();
   char abuf[ABUF_SIZE];
@@ -5167,8 +5105,8 @@ static symbol get_delim_name()
     if ((buf[i] = tok.ch()) == 0) {
       error("missing delimiter (got %1)", tok.description());
       if (buf != abuf)
-	su_FREE(buf);
-      return NULL_SYMBOL;
+        su_FREE(buf);
+      return symbol::get_null();
     }
     i++;
   }
@@ -5176,7 +5114,7 @@ static symbol get_delim_name()
   if (buf == abuf) {
     if (i == 0) {
       error("empty delimited name");
-      return NULL_SYMBOL;
+      return symbol::get_null();
     }
     else
       return symbol(buf);
@@ -5713,7 +5651,7 @@ int do_if_request()
       skip_alternative();
       return 0;
     }
-    result = (nm == default_symbol
+    result = (nm == symbol::get_default()
 	      || color_dictionary.lookup(nm) != 0);
   }
   else if (c == 'c') {
@@ -7306,7 +7244,7 @@ static file_case *open_mac_file(const char *mac)
 
   file_case *fcp;
   if ((fcp = mac_path->open_file(s, fcp->fc_take_path)) == NULL) {
-    s = su_mem_TALLOC(char, su_cs_len(mac) + sizeof(MACRO_PREFIX));
+    s = su_TALLOC(char, su_cs_len(mac) + sizeof(MACRO_PREFIX));
     su_cs_pcopy(su_cs_pcopy(s, MACRO_PREFIX), mac);
     fcp = mac_path->open_file(s, fcp->fc_take_path);
   }
@@ -8098,27 +8036,28 @@ static void read_color_draw_node(token &start)
   }
   unsigned char scheme = tok.ch();
   tok.next();
-  color *col = 0;
+  color_symbol *c = NULL;
   char end = start.ch();
-  switch (scheme) {
+  switch(scheme){
   case 'c':
-    col = read_cmy(end);
+    c = a_input_color(color::scheme_cmy, end);
     break;
   case 'd':
-    col = &default_color;
+    c = &color_symbol::get_default();
     break;
   case 'g':
-    col = read_gray(end);
+    c = a_input_color(color::scheme_gray, end);
     break;
   case 'k':
-    col = read_cmyk(end);
+    c = a_input_color(color::scheme_cmyk, end);
     break;
   case 'r':
-    col = read_rgb(end);
+    c = a_input_color(color::scheme_rgb, end);
     break;
   }
-  if (col)
-    curenv->set_fill_color(col);
+  if(c != NULL)
+    curenv->set_fill_color(c);
+
   while (tok != start) {
     if (tok.newline() || tok.eof()) {
       warning(WARN_DELIM, "missing closing delimiter");

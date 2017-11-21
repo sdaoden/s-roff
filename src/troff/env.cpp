@@ -587,27 +587,27 @@ void environment::set_char_slant(int n)
   char_slant = n;
 }
 
-color *environment::get_prev_glyph_color()
+color_symbol *environment::get_prev_glyph_color()
 {
   return prev_glyph_color;
 }
 
-color *environment::get_glyph_color()
+color_symbol *environment::get_glyph_color()
 {
   return glyph_color;
 }
 
-color *environment::get_prev_fill_color()
+color_symbol *environment::get_prev_fill_color()
 {
   return prev_fill_color;
 }
 
-color *environment::get_fill_color()
+color_symbol *environment::get_fill_color()
 {
   return fill_color;
 }
 
-void environment::set_glyph_color(color *c)
+void environment::set_glyph_color(color_symbol *c)
 {
   if (interrupted)
     return;
@@ -615,7 +615,7 @@ void environment::set_glyph_color(color *c)
   curenv->glyph_color = c;
 }
 
-void environment::set_fill_color(color *c)
+void environment::set_fill_color(color_symbol *c)
 {
   if (interrupted)
     return;
@@ -688,10 +688,10 @@ environment::environment(symbol nm)
 #ifdef WIDOW_CONTROL
   widow_control(0),
 #endif /* WIDOW_CONTROL */
-  glyph_color(&default_color),
-  prev_glyph_color(&default_color),
-  fill_color(&default_color),
-  prev_fill_color(&default_color),
+  glyph_color(&color_symbol::get_default()),
+  prev_glyph_color(&color_symbol::get_default()),
+  fill_color(&color_symbol::get_default()),
+  prev_fill_color(&color_symbol::get_default()),
   seen_space(0),
   seen_eol(0),
   suppress_next_eol(0),
@@ -871,7 +871,7 @@ void environment::copy(const environment *e)
   hyphenation_space = e->hyphenation_space;
   hyphenation_margin = e->hyphenation_margin;
   composite = 0;
-  glyph_color= e->glyph_color;
+  glyph_color = e->glyph_color;
   prev_glyph_color = e->prev_glyph_color;
   fill_color = e->fill_color;
   prev_fill_color = e->prev_fill_color;

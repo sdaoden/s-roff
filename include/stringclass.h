@@ -47,7 +47,7 @@ class string
   int sz;
 
   string(const char *, int, const char *, int);	// for use by operator+
-  void grow1();
+  string &grow1(void);
 
 public:
   string();
@@ -65,7 +65,7 @@ public:
   string &operator+=(const string &);
   string &operator+=(const char *);
   string &operator+=(char);
-  void append(const char *, int);
+  string &append(const char *, int);
 
   int length() const;
   int empty() const;
@@ -76,13 +76,33 @@ public:
   char &operator[](int);
   char operator[](int) const;
 
-  void set_length(int i);
+  string &set_length(int i);
+  char *data(void){
+    return ptr;
+  }
+  char const *cp(void) /*const*/; /* always valid terminated pointer */
   const char *contents() const;
   int search(char) const;
   char *extract() const;
-  void remove_spaces();
-  void clear();
-  void move(string &);
+  string &remove_spaces();
+  string &clear(void){ /* TODO should release mem -> truncate()! */
+    len = 0;
+    return *this;
+  }
+  string &truncate(rf_uiz newlen=0){
+    rf_ASSERT(newlen <= rf_S(rf_ui32,length())); /* TODO rf_uiz/32 */
+    len = newlen;
+    return *this;
+  }
+  string &move(string &);
+  string &reserve(rf_uiz i, rf_bool setlen=TRU1){
+    int xlen = len; /* TODO int -> rf_uiz/32 */
+    set_length(i + len);
+    if(!setlen)
+      len = xlen;
+    return *this;
+  }
+
 
   friend string operator+(const string &, const string &);
   friend string operator+(const string &, const char *);

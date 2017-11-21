@@ -130,9 +130,6 @@ typedef int EnvInt;
 // integer arguments of groff_out commands, must be >= 32 bits
 typedef int IntArg;
 
-// color components of groff_out color commands, must be >= 32 bits
-typedef unsigned int ColorArg;
-
 // Array for IntArg values.
 class IntArray
 {
@@ -233,9 +230,6 @@ FILE *current_file = 0;		// current input stream for parser
 //         _not_ the page number in the printout (can be set with `p').
 int npages = 0;
 
-const ColorArg
-COLORARG_MAX = (ColorArg) 65536U; // == 0xFFFF + 1 == 0x10000
-
 const IntArg
 INTARG_MAX = (IntArg) 0x7FFFFFFF; // maximal signed 32 bits number
 
@@ -252,12 +246,12 @@ envp_size = sizeof(environment *);
  **********************************************************************/
 
 // utility functions
-ColorArg color_from_Df_command(IntArg);
+rf_ui32 color_from_Df_command(IntArg);
 				// transform old color into new
 void delete_current_env(void);	// delete global var current_env
 void fatal_command(char);	// abort for invalid command
 inline Char get_char(void);	// read next character from input stream
-ColorArg get_color_arg(void);	// read in argument for new color cmds
+color::compui get_color_arg(void); // read in argument for new color cmds
 IntArray *get_D_fixed_args(const size_t);
 				// read in fixed number of integer
 				// arguments
@@ -345,8 +339,8 @@ EnvStack::push(environment *e)
       data[i] = old_data[i];
     free(old_data);
   }
-  e_copy->col = new color;
-  e_copy->fill = new color;
+  e_copy->col = rf_new(color);
+  e_copy->fill = rf_new(color);
   *e_copy->col = *e->col;
   *e_copy->fill = *e->fill;
   e_copy->fontno = e->fontno;
@@ -453,10 +447,12 @@ StringBuf::reset(void)
    The Df command is obsoleted by command DFg, but kept for
    compatibility.
 */
-ColorArg
-color_from_Df_command(IntArg Df_gray)
+rf_ui32
+color_from_Df_command(IntArg Df_gray) // TODO look in practive -> color::compui
 {
-  return ColorArg((1000-Df_gray) * COLORARG_MAX / 1000); // scaling
+  // scaling
+  return rf_S(rf_ui32,(1000 - Df_gray) *
+    (rf_S(rf_ui32,color::max_val) + 1) / 1000);
 }
 
 /* delete_current_env():
@@ -466,8 +462,8 @@ color_from_Df_command(IntArg Df_gray)
 */
 void delete_current_env(void)
 {
-  delete current_env->col;
-  delete current_env->fill;
+  rf_del(current_env->col);
+  rf_del(current_env->fill);
   delete current_env;
   current_env = 0;
 }
@@ -497,15 +493,15 @@ get_char(void)
 
    Return: The retrieved color argument.
 */
-ColorArg
+color::compui
 get_color_arg(void)
 {
   IntArg x = get_integer_arg();
-  if (x < 0 || x > (IntArg)COLORARG_MAX) {
+  if (x < 0 || x > color::max_val) {
     error("color component argument out of range");
     x = 0;
   }
-  return (ColorArg) x;
+  return rf_S(color::compui,x);
 }
 
 /* get_D_fixed_args():
@@ -1050,43 +1046,36 @@ unget_char(const Char c)
         been initialized before.
 */
 void
-parse_color_command(color *col)
-{
-  ColorArg gray = 0;
-  ColorArg red = 0, green = 0, blue = 0;
-  ColorArg cyan = 0, magenta = 0, yellow = 0, black = 0;
-  Char subcmd = next_arg_begin();
-  switch((int) subcmd) {
+parse_color_command(color *col){
+  color::compui comps[color::scheme_max];
+  color::scheme s;
+
+  switch(Char subcmd = next_arg_begin()){
   case 'c':			// DFc or mc: CMY
-    cyan = get_color_arg();
-    magenta = get_color_arg();
-    yellow = get_color_arg();
-    col->set_cmy(cyan, magenta, yellow);
+    s = color::scheme_cmy;
     break;
   case 'd':			// DFd or md: set default color
-    col->set_default();
+    s = color::scheme_default;
     break;
   case 'g':			// DFg or mg: gray
-    gray = get_color_arg();
-    col->set_gray(gray);
+    s = color::scheme_gray;
     break;
   case 'k':			// DFk or mk: CMYK
-    cyan = get_color_arg();
-    magenta = get_color_arg();
-    yellow = get_color_arg();
-    black = get_color_arg();
-    col->set_cmyk(cyan, magenta, yellow, black);
+    s = color::scheme_cmyk;
     break;
   case 'r':			// DFr or mr: RGB
-    red = get_color_arg();
-    green = get_color_arg();
-    blue = get_color_arg();
-    col->set_rgb(red, green, blue);
+    s = color::scheme_rgb;
     break;
   default:
-    error("invalid color scheme `%1'", (int) subcmd);
-    break;
-  } // end of color subcommands
+    error("invalid color scheme: %1", (int)subcmd);
+    goto jleave;
+  }
+
+  for(rf_ui8 m = color::scheme_component_counts[s], i = 0; i < m; ++i)
+    comps[i] = get_color_arg();
+
+  col->assign_scheme(s, comps);
+jleave:;
 }
 
 /* parse_D_command():
@@ -1155,13 +1144,13 @@ parse_D_command()
       IntArg arg = get_integer_arg();
       if ((arg >= 0) && (arg <= 1000)) {
 	// convert arg and treat it like DFg
-	ColorArg gray = color_from_Df_command(arg);
-        current_env->fill->set_gray(gray);
+	rf_ui32 gray = color_from_Df_command(arg);
+        current_env->fill->assign_gray(gray);
       }
       else {
 	// set fill color to the same value as the current outline color
-	delete current_env->fill;
-	current_env->fill = new color(current_env->col);
+	rf_del(current_env->fill);
+	current_env->fill = rf_new(color(current_env->col));
       }
       pr->change_fill_color(current_env);
       // skip unused `vertical' component (\D'...' always emits pairs)
@@ -1358,8 +1347,8 @@ do_file(const char *filename)
   if (current_env != 0)
     delete_current_env();
   current_env = new environment;
-  current_env->col = new color;
-  current_env->fill = new color;
+  current_env->col = rf_new(color);
+  current_env->fill = rf_new(color);
   current_env->fontno = -1;
   current_env->height = 0;
   current_env->hpos = -1;

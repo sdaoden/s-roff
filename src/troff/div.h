@@ -58,7 +58,7 @@ public:
   state_set modified_tag;
   vunits marked_place;
 
-  diversion(symbol s = NULL_SYMBOL);
+  diversion(symbol const &s = symbol::get_null());
   virtual ~diversion();
   virtual void output(node *nd, int retain_size, vunits vs, vunits post_vs,
 		      hunits width) = 0;
