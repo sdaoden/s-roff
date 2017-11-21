@@ -86,7 +86,7 @@ void html_text::dump_stack_element (tag_definition *p)
   case BIG_TAG:    fprintf(stderr, "<BIG>"); break;
   case BREAK_TAG:  fprintf(stderr, "<BREAK>"); break;
   case COLOR_TAG:  {
-    if (p->col.is_default())
+    if (p->col.scheme() == p->col.scheme_default)
       fprintf(stderr, "<COLOR (default)>");
     else {
       unsigned int r, g, b;
@@ -202,16 +202,15 @@ void html_text::issue_tag (const char *tagname, const char *arg,
 
 void html_text::issue_color_begin (color *c)
 {
-  unsigned int r, g, b;
-  char buf[6+1];
+  char buf[6 +1];
 
   out->put_string("<font color=\"#");
-  if (c->is_default())
-    sprintf(buf, "000000");
+  if (c->scheme() == c->scheme_default)
+    snprintf(buf, sizeof buf, "000000");
   else {
-    c->get_rgb(&r, &g, &b);
     // we have to scale 0..0xFFFF to 0..0xFF
-    sprintf(buf, "%.2X%.2X%.2X", r/0x101, g/0x101, b/0x101);
+    snprintf(buf, sizeof buf, "%.2X%.2X%.2X",
+      c->red()/0x101, c->green()/0x101, c->blue()/0x101);
   }
   out->put_string(buf);
   out->put_string("\">");

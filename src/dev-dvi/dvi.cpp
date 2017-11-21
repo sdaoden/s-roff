@@ -120,7 +120,7 @@ class dvi_printer
   output_font output_font_table[FONTS_MAX];
   font *cur_font;
   int cur_point_size;
-  color cur_color;
+  color_symbol cur_color;
   int pushed;
   int pushed_h;
   int pushed_v;
@@ -131,7 +131,7 @@ class dvi_printer
   void define_font(int);
   void set_font(int);
   void possibly_begin_line();
-  void set_color(color *);
+  void set_color(color_symbol *);
 
 protected:
   enum {
@@ -302,35 +302,35 @@ int scale(int x, int z)
   return sw;
 }
 
-void dvi_printer::set_color(color *col)
+void dvi_printer::set_color(color_symbol *col) // TODO const; uses FP calc!?!?
 {
   cur_color = *col;
+
   char buf[256];
-  unsigned int components[4];
-  color_scheme cs = col->get_components(components);
-  switch (cs) {
-  case DEFAULT:
+  switch(col->scheme()){
+  case color::scheme_default: // Black
     sprintf(buf, "color gray 0");
     break;
-  case RGB:
+  case color::scheme_rgb:
     sprintf(buf, "color rgb %.3g %.3g %.3g",
-		 double(Red) / color::MAX_COLOR_VAL,
-		 double(Green) / color::MAX_COLOR_VAL,
-		 double(Blue) / color::MAX_COLOR_VAL);
+		  double(col->red()) / color::max_val,
+		  double(col->green()) / color::max_val,
+		  double(col->blue()) / color::max_val);
     break;
-  case CMY:
-    col->get_cmyk(&Cyan, &Magenta, &Yellow, &Black);
-    // fall through
-  case CMYK:
+  case color::scheme_cmy:{
+    color c(*col);
+    c.convert_to_scheme(color::scheme_cmyk);
+    col = &c;
+    // FALLTHRU
+  case color::scheme_cmyk:
     sprintf(buf, "color cmyk %.3g %.3g %.3g %.3g",
-		 double(Cyan) / color::MAX_COLOR_VAL,
-		 double(Magenta) / color::MAX_COLOR_VAL,
-		 double(Yellow) / color::MAX_COLOR_VAL,
-		 double(Black) / color::MAX_COLOR_VAL);
-    break;
+		 double(col->cyan()) / color::max_val,
+		 double(col->magenta()) / color::max_val,
+		 double(col->yellow()) / color::max_val,
+		 double(col->black()) / color::max_val);
+  } break;
   case GRAY:
-    sprintf(buf, "color gray %.3g",
-		 double(Gray) / color::MAX_COLOR_VAL);
+    sprintf(buf, "color gray %.3g", double(col->gray()) / color::max_val);
     break;
   }
   do_special(buf);
@@ -518,13 +518,13 @@ void dvi_printer::begin_page(int i)
       do_special(buf);
     }
   }
-  if (cur_color != default_color)
+  if (cur_color != *color_symbol::get_default())
     set_color(&cur_color);
 }
 
 void dvi_printer::end_page(int)
 {
-  set_color(&default_color);
+  set_color(color_symbol::get_default());
   if (pushed)
     end_of_line();
   out1(eop);
@@ -685,14 +685,14 @@ void draw_dvi_printer::set_line_thickness(const environment *env)
 void draw_dvi_printer::fill_next(const environment *env)
 {
   unsigned int g;
-  if (env->fill->is_default())
+  if (env->fill->scheme() == env->fill->scheme_default)
     g = 0;
   else {
     // currently, only BW support
-    env->fill->get_gray(&g);
+    g = env->fill->gray();
   }
   char buf[256];
-  sprintf(buf, "sh %.3g", 1 - double(g)/color::MAX_COLOR_VAL);
+  sprintf(buf, "sh %.3g", 1 - double(g)/color::max_val);
   do_special(buf);
 }
 
