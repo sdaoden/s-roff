@@ -39,6 +39,9 @@ C_DECL_BEGIN
 /* Return string describing C error number eno */
 c_decl char const *su_err_doc(si32 eno);
 
+/* Copy src to dst, return pointer to NUL in dst */
+c_decl char *su_stpcpy(char *dst, char const *src);
+
 /* String comparison, byte-based, case-insensitive */
 c_decl si32 su_strcasecmp(char const *cp1, char const *cp2);
 c_decl si32 su_strncasecmp(char const *cp1, char const *cp2, uiz n);
