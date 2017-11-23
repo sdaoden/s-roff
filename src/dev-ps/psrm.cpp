@@ -419,7 +419,7 @@ static int ps_get_line(string &buf, file_case *fcp)
   int c = fcp->get_c();
   if (c == EOF)
     return 0;
-  current_lineno++;
+  rf_current_lineno_inc();
   while (c != '\r' && c != '\n' && c != EOF) {
     if (!valid_input_table[c])
       error("invalid input character code %1", int(c));
@@ -759,7 +759,7 @@ void skip_possible_newline(file_case *fcp, FILE *outfp)
 {
   int c = fcp->get_c();
   if (c == '\r') {
-    current_lineno++;
+    rf_current_lineno_inc();
     if (outfp)
       putc(c, outfp);
     int cc = fcp->get_c();
@@ -773,7 +773,7 @@ void skip_possible_newline(file_case *fcp, FILE *outfp)
     }
   }
   else if (c == '\n') {
-    current_lineno++;
+    rf_current_lineno_inc();
     if (outfp)
       putc(c, outfp);
   }
@@ -836,14 +836,14 @@ int resource_manager::do_begin_data(const char *ptr, int, file_case *fcp,
 	int cc = fcp->get_c();
 	if (cc != '\n') {
 	  linecount++;
-	  current_lineno++;
+	  rf_current_lineno_inc();
 	}
 	if (cc != EOF)
 	  fcp->unget_c(cc);
       }
       else if (c == '\n') {
 	linecount++;
-	current_lineno++;
+	rf_current_lineno_inc();
       }
     } while ((unit == Bytes ? bytecount : linecount) < numberof);
   }
@@ -882,12 +882,12 @@ int resource_manager::do_begin_binary(const char *ptr, int, file_case *fcp,
     if (c == '\r') {
       int cc = fcp->get_c();
       if (cc != '\n')
-	current_lineno++;
+	rf_current_lineno_inc();
       if (cc != EOF)
         fcp->unget_c(cc);
     }
     else if (c == '\n')
-      current_lineno++;
+      rf_current_lineno_inc();
   }
   skip_possible_newline(fcp, outfp);
   string buf;
@@ -983,15 +983,12 @@ void resource_manager::process_file(int rank, file_case *fcp, FILE *outfp)
 
   const int NCOMMENTS = sizeof(comment_table)/sizeof(comment_table[0]);
   string buf;
-  int saved_lineno = current_lineno;
-  const char *saved_filename = current_filename;
-  current_filename = fcp->path();
-  current_lineno = 0;
-  if (!ps_get_line(buf, fcp)) {
-    current_filename = saved_filename;
-    current_lineno = saved_lineno;
-    return;
-  }
+  int saved_lineno = rf_current_lineno();
+  char *saved_filename = su_strdup(rf_current_filename());
+  rf_current_filename_set(cp->path());
+  rf_current_lineno_set(0);
+  if (!ps_get_line(buf, fcp))
+    goto jleave;
   if ((size_t)buf.length() < sizeof(PS_MAGIC)
       || memcmp(buf.contents(), PS_MAGIC, sizeof(PS_MAGIC) - 1) != 0) {
     if (outfp) {
@@ -1066,8 +1063,11 @@ void resource_manager::process_file(int rank, file_case *fcp, FILE *outfp)
 	fputs(buf.contents(), outfp);
     }
   }
-  current_filename = saved_filename;
-  current_lineno = saved_lineno;
+
+jleave:
+    rf_current_filename_set(saved_filename);
+    rf_current_lineno_set(saved_lineno);
+    rf_free(saved_filename);
 }
 
 void resource_manager::read_download_file()

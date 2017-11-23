@@ -70,7 +70,7 @@ public:
 top_input::top_input(file_case *fcp) : _fcp(fcp), bol(1), eof(0)
 {
   push_back[0] = push_back[1] = push_back[2] = EOF;
-  start_lineno = current_lineno;
+  start_lineno = rf_current_lineno();
 }
 
 int top_input::get()
@@ -141,14 +141,14 @@ int top_input::get()
   }
   if (c == '\n') {
     bol = 1;
-    current_lineno++;
+    rf_current_lineno_inc();
     return '\n';
   }
   bol = 0;
   if (c == EOF) {
     eof = 1;
     error("end of file before .PE or .PF");
-    error_with_file_and_line(current_filename, start_lineno - 1,
+    error_with_file_and_line(rf_current_filename(), start_lineno - 1,
 			     ".PS was here");
   }
   return c;
@@ -224,8 +224,8 @@ int top_input::peek()
 
 int top_input::get_location(const char **filenamep, int *linenop)
 {
-  *filenamep = current_filename;
-  *linenop = current_lineno;
+  *filenamep = rf_current_filename();
+  *linenop = rf_current_lineno();
   return 1;
 }
 
@@ -251,26 +251,27 @@ void do_picture(file_case *fcp)
       } while (c != EOF && c != '\n');
     }
     if (c == '\n')
-      current_lineno++;
+      rf_current_lineno_inc();
     if (filename.length() == 0)
       error("missing filename after `<'");
     else {
       filename += '\0';
-      const char *old_filename = current_filename;
-      int old_lineno = current_lineno;
+      char *old_filename = su_strdup(rf_current_filename());
+      int old_lineno = rf_current_lineno();
       // filenames must be permanent
       do_file(su_strdup(filename.contents()));
-      current_filename = old_filename;
-      current_lineno = old_lineno;
+      rf_current_filename_set(old_filename);
+      rf_current_lineno_set(old_lineno);
+      su_free(old_filename);
     }
-    out->set_location(current_filename, current_lineno);
+    out->set_location(rf_current_filename(), rf_current_lineno());
   }
   else {
-    out->set_location(current_filename, current_lineno);
+    out->set_location(rf_current_filename(), rf_current_lineno());
     string start_line;
     while (c != EOF) {
       if (c == '\n') {
-	current_lineno++;
+	rf_current_lineno_inc();
 	break;
       }
       start_line += c;
@@ -304,8 +305,8 @@ void do_picture(file_case *fcp)
     while ((c = fcp->get_c()) != EOF && c != '\n')
       ;
     if (c == '\n')
-      current_lineno++;
-    out->set_location(current_filename, current_lineno);
+      rf_current_lineno_inc();
+    out->set_location(rf_current_filename(), rf_current_lineno());
   }
 }
 
@@ -320,8 +321,7 @@ do_file(char const *filename)
   }
 
   out->set_location(filename, 1);
-  current_filename = filename;
-  current_lineno = 1;
+  rf_current_filename_set(filename);
   enum { START, MIDDLE, HAD_DOT, HAD_P, HAD_PS, HAD_l, HAD_lf } state = START;
   for (;;) {
     int c = fcp->get_c();
@@ -338,7 +338,7 @@ do_file(char const *filename)
       else {
 	putchar(c);
 	if (c == '\n') {
-	  current_lineno++;
+	  rf_current_lineno_inc();
 	  state = START;
 	}
 	else
@@ -348,7 +348,7 @@ do_file(char const *filename)
     case MIDDLE:
       putchar(c);
       if (c == '\n') {
-	current_lineno++;
+	rf_current_lineno_inc();
 	state = START;
       }
       break;
@@ -361,7 +361,7 @@ do_file(char const *filename)
 	putchar('.');
 	putchar(c);
 	if (c == '\n') {
-	  current_lineno++;
+	  rf_current_lineno_inc();
 	  state = START;
 	}
 	else
@@ -376,7 +376,7 @@ do_file(char const *filename)
 	putchar('P');
 	putchar(c);
 	if (c == '\n') {
-	  current_lineno++;
+	  rf_current_lineno_inc();
 	  state = START;
 	}
 	else
@@ -403,7 +403,7 @@ do_file(char const *filename)
 	putchar('l');
 	putchar(c);
 	if (c == '\n') {
-	  current_lineno++;
+	  rf_current_lineno_inc();
 	  state = START;
 	}
 	else
@@ -416,7 +416,7 @@ do_file(char const *filename)
 	while (c != EOF) {
 	  line += c;
 	  if (c == '\n') {
-	    current_lineno++;
+	    rf_current_lineno_inc();
 	    break;
 	  }
 	  c = fcp->get_c();
@@ -484,47 +484,20 @@ void do_whole_file(const char *filename)
 
 void usage(FILE *stream)
 {
-  fprintf(stream, "Synopsis: %s [ -nvCSU ] [ filename ... ]\n", program_name);
+  fprintf(stream, "Synopsis: %s [ -nvCSU ] [ filename ... ]\n",
+    rf_current_program());
 #ifdef TEX_SUPPORT
-  fprintf(stream, "       %s -t [ -cvzCSU ] [ filename ... ]\n", program_name);
+  fprintf(stream, "       %s -t [ -cvzCSU ] [ filename ... ]\n",
+    rf_current_program());
 #endif
 #ifdef FIG_SUPPORT
-  fprintf(stream, "       %s -f [ -v ] [ filename ]\n", program_name);
+  fprintf(stream, "       %s -f [ -v ] [ filename ]\n", rf_current_program());
 #endif
 }
-
-#if defined(__MSDOS__) || defined(__EMX__) /* FIXME */
-static char *fix_program_name(char *arg, char *dflt) /* FIXME: if, then lib! */
-{
-  if (!arg)
-    return dflt;
-  char *prog = strchr(arg, '\0');
-  for (;;) {
-    if (prog == arg)
-      break;
-    --prog;
-    if (strchr("\\/:", *prog)) {
-      prog++;
-      break;
-    }
-  }
-  char *ext = strchr(prog, '.');
-  if (ext)
-    *ext = '\0';
-  for (char *p = prog; *p; p++)
-    if ('A' <= *p && *p <= 'Z')
-      *p = 'a' + (*p - 'A');
-  return prog;
-}
-#endif /* __MSDOS__ || __EMX__ */
 
 int main(int argc, char **argv)
 {
-  setlocale(LC_NUMERIC, "C");
-#if defined(__MSDOS__) || defined(__EMX__)
-  argv[0] = fix_program_name(argv[0], "pic");
-#endif /* __MSDOS__ || __EMX__ */
-  program_name = argv[0];
+  rf_current_program_set(argv[0]);
   static char stderr_buf[BUFSIZ];
   setbuf(stderr, stderr_buf);
   int opt;

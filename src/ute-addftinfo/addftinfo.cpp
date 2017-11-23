@@ -59,7 +59,7 @@ static struct {
 
 int main(int argc, char **argv)
 {
-  program_name = argv[0];
+  rf_current_program_set(argv[0]);
   int i;
   for (i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "-v") || !strcmp(argv[i],"--version"))
@@ -125,7 +125,7 @@ static void usage(FILE *stream)
 {
   fprintf(stream, "Synopsis: %s [-v] [-param value] ... "
 		  "resolution unitwidth font\n",
-	  program_name);
+	  rf_current_program());
 }
 static void usage()
 {

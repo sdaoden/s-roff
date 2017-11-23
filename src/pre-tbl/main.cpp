@@ -58,7 +58,7 @@ void table_input::unget(char c)
   assert(c != '\0');
   unget_stack += c;
   if (c == '\n')
-    current_lineno--;
+    rf_current_lineno_dec();
 }
 
 int table_input::get()
@@ -68,7 +68,7 @@ int table_input::get()
     unsigned char c = unget_stack[len - 1];
     unget_stack.set_length(len - 1);
     if (c == '\n')
-      current_lineno++;
+      rf_current_lineno_inc();
     return c;
   }
   int c;
@@ -114,7 +114,7 @@ int table_input::get()
       }
       else {
 	if (c == '\n')
-	  current_lineno++;
+	  rf_current_lineno_inc();
 	else {
 	  state = MIDDLE;
 	  if (c == '\0') {
@@ -148,7 +148,7 @@ int table_input::get()
       else {
 	if (c == '\n') {
 	  state = START;
-	  current_lineno++;
+	  rf_current_lineno_inc();
 	}
 	else if (c == '\0') {
 	  error("invalid input character code 0");
@@ -199,7 +199,7 @@ void process_input_file(file_case *fcp)
 	state = HAD_DOT;
       else {
 	if (c == '\n')
-	  current_lineno++;
+	  rf_current_lineno_inc();
 	else
 	  state = MIDDLE;
 	putchar(c);
@@ -207,7 +207,7 @@ void process_input_file(file_case *fcp)
       break;
     case MIDDLE:
       if (c == '\n') {
-	current_lineno++;
+	rf_current_lineno_inc();
 	state = START;
       }
       putchar(c);
@@ -221,7 +221,7 @@ void process_input_file(file_case *fcp)
 	putchar('.');
 	putchar(c);
 	if (c == '\n') {
-	  current_lineno++;
+	  rf_current_lineno_inc();
 	  state = START;
 	}
 	else
@@ -236,7 +236,7 @@ void process_input_file(file_case *fcp)
 	putchar('T');
 	putchar(c);
 	if (c == '\n') {
-	  current_lineno++;
+	  rf_current_lineno_inc();
 	  state = START;
 	}
 	else
@@ -257,11 +257,11 @@ void process_input_file(file_case *fcp)
 	  c = fcp->get_c();
 	}
 	putchar('\n');
-	current_lineno++;
+	rf_current_lineno_inc();
 	{
 	  table_input input(fcp);
 	  process_table(input);
-	  set_troff_location(current_filename, current_lineno);
+	  set_troff_location(rf_current_filename(), rf_current_lineno());
 	  if (input.ended()) {
 	    fputs(".TE", stdout);
 	    while ((c = fcp->get_c()) != '\n') {
@@ -272,7 +272,7 @@ void process_input_file(file_case *fcp)
 	      putchar(c);
 	    }
 	    putchar('\n');
-	    current_lineno++;
+	    rf_current_lineno_inc();
 	  }
 	}
 	state = START;
@@ -291,7 +291,7 @@ void process_input_file(file_case *fcp)
 	putchar('l');
 	putchar(c);
 	if (c == '\n') {
-	  current_lineno++;
+	  rf_current_lineno_inc();
 	  state = START;
 	}
 	else
@@ -304,7 +304,7 @@ void process_input_file(file_case *fcp)
 	while (c != EOF) {
 	  line += c;
 	  if (c == '\n') {
-	    current_lineno++;
+	    rf_current_lineno_inc();
 	    break;
 	  }
 	  c = fcp->get_c();
@@ -1310,8 +1310,8 @@ table *process_data(table_input &in, format *f, options *opt)
 	    break;
 	  for (cnt = 0; cnt < ncolumns; cnt++)
 	    tbl->add_entry(current_row, cnt, input_entry,
-			   f->entry[format_index] + cnt, current_filename,
-			   current_lineno);
+			   f->entry[format_index] + cnt, rf_current_filename(),
+			   rf_current_lineno());
 	  tbl->add_vlines(current_row, f->vline[format_index]);
 	  format_index++;
 	  current_row++;
@@ -1321,7 +1321,7 @@ table *process_data(table_input &in, format *f, options *opt)
 	int row_comment = 0;
 	for (;;) {
 	  if (c == tab_char || c == '\n') {
-	    int ln = current_lineno;
+	    int ln = rf_current_lineno();
 	    if (c == '\n')
 	      --ln;
 	    if ((opt->flags & table::NOSPACES))
@@ -1329,7 +1329,7 @@ table *process_data(table_input &in, format *f, options *opt)
 	    while (col < ncolumns
 		   && line_format[col].type == FORMAT_SPAN) {
 	      tbl->add_entry(current_row, col, "", &line_format[col],
-			     current_filename, ln);
+			     rf_current_filename(), ln);
 	      col++;
 	    }
 	    if (c == '\n' && input_entry.length() == 2
@@ -1457,7 +1457,7 @@ table *process_data(table_input &in, format *f, options *opt)
 	    }
 	    else
 	      tbl->add_entry(current_row, col, input_entry,
-			     &line_format[col], current_filename, ln);
+			     &line_format[col], rf_current_filename(), ln);
 	    col++;
 	    if (c == '\n')
 	      break;
@@ -1474,7 +1474,7 @@ table *process_data(table_input &in, format *f, options *opt)
 	input_entry = "";
 	for (; col < ncolumns; col++)
 	  tbl->add_entry(current_row, col, input_entry, &line_format[col],
-			 current_filename, current_lineno - 1);
+			 rf_current_filename(), rf_current_lineno() - 1);
 	tbl->add_vlines(current_row, f->vline[format_index]);
 	current_row++;
 	format_index++;
@@ -1483,7 +1483,7 @@ table *process_data(table_input &in, format *f, options *opt)
     case TROFF_INPUT_LINE:
       {
 	string line;
-	int ln = current_lineno;
+	int ln = rf_current_lineno();
 	for (;;) {
 	  line += c;
 	  if (c == '\n')
@@ -1493,7 +1493,7 @@ table *process_data(table_input &in, format *f, options *opt)
 	    break;
 	  }
 	}
-	tbl->add_text_line(current_row, line, current_filename, ln);
+	tbl->add_text_line(current_row, line, rf_current_filename(), ln);
 	if (line.length() >= 4
 	    && line[0] == '.' && line[1] == 'T' && line[2] == '&') {
 	  format *newf = process_format(in, opt, f);
@@ -1571,12 +1571,12 @@ void process_table(table_input &in)
 
 static void usage(FILE *stream)
 {
-  fprintf(stream, "Synopsis: %s [ -vC ] [ files... ]\n", program_name);
+  fprintf(stream, "Synopsis: %s [ -vC ] [ files... ]\n", rf_current_program());
 }
 
 int main(int argc, char **argv)
 {
-  program_name = argv[0];
+  rf_current_program_set(argv[0]);
   static char stderr_buf[BUFSIZ];
   setbuf(stderr, stderr_buf);
   int opt;
@@ -1616,16 +1616,17 @@ int main(int argc, char **argv)
 
   file_case *fcp;
   do /*while (optind < argc)*/ {
-    if ((current_filename = argv[optind++]) == NULL)
-      current_filename = "-";
-    fcp = file_case::muxer(current_filename);
+    char const *fname = argv[optind++];
+    if(fname == NULL)
+      fname = "-";
+    rf_current_filename_set(fname);
+    fcp = file_case::muxer(fname);
     if (fcp == NULL) {
-      assert(strcmp(current_filename, "-"));
-      fatal("can't open `%1': %2", current_filename, su_err_doc(errno));
+      ASSERT(su_strcmp(fcp, "-"));
+      fatal("can't open `%1': %2", rf_current_filename(), su_err_doc(errno));
     }
 
-    current_lineno = 1;
-    printf(".lf 1 %s\n", current_filename);
+    printf(".lf 1 %s\n", rf_current_filename());
     process_input_file(fcp);
 
     delete fcp;

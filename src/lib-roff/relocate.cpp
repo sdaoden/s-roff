@@ -44,8 +44,6 @@
 # define DEBUG 0
 #endif
 
-extern "C" const char *program_name; // FIXME
-
 // The prefix (parent directory) corresponding to the binary.
 char *curr_prefix = 0;
 size_t curr_prefix_len = 0;
@@ -178,8 +176,8 @@ void set_current_prefix()
 # endif /* DEBUG */
 #else /* !_WIN32 */
   char const *ep = getenv("PATH");
-  curr_prefix = searchpath(program_name, ep);
-  if (!curr_prefix && !su_strchr(program_name, '.')) { // try with extensions
+  curr_prefix = searchpath(rf_current_program(), ep);
+  if (!curr_prefix && !su_strchr(rf_current_program(), '.')) { // try extensions
     if((pathextstr = su_strdup(getenv("PATHEXT"))) == NULL)
       pathextstr = su_strdup(PATH_EXT);
     curr_prefix = searchpathext(program_name, pathextstr, ep);

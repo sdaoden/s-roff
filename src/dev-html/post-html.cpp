@@ -5438,7 +5438,7 @@ void html_printer::handle_valid_flag (int needs_para)
 
 int main(int argc, char **argv)
 {
-  program_name = argv[0];
+  rf_current_program_set(argv[0]);
   static char stderr_buf[BUFSIZ];
   setbuf(stderr, stderr_buf);
   int c;
@@ -5553,7 +5553,7 @@ static void usage(FILE *stream)
   fprintf(stream,
     "Synopsis: %s [-vbelnhVy] [-D dir] "
       "[-I image_stem] [-F dir] [-x x] [files ...]\n",
-	  program_name);
+	  rf_current_program());
 }
 
 // s-it2-mode

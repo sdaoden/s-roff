@@ -213,13 +213,6 @@ public:
                           external variables
  **********************************************************************/
 
-// exported as extern by error.h (called from driver.h)
-// needed for error messages (see ../lib-roff/error.cpp)
-const char *current_filename = 0; // printable name of the current file
-				  // printable name of current source file
-const char *current_source_filename = 0;
-int current_lineno = 0;		  // current line number of printout
-
 // exported as extern by device.h;
 const char *device = 0;		  // cancel former init with literal
 
@@ -285,10 +278,6 @@ Char next_command(void);	// go to next command, evt. diff. line
 inline bool odd(const int);	// test if integer is odd
 void position_to_end_of_args(const IntArray * const);
 				// positioning after drawing
-void remember_filename(const char *);
-				// set global current_filename
-void remember_source_filename(const char *);
-				// set global current_source_filename
 void send_draw(const Char, const IntArray * const);
 				// call pr->draw
 void skip_line(void);		// unconditionally skip to next line
@@ -620,7 +609,7 @@ get_extended_arg(void)
   Char c = next_arg_begin();
   while ((int) c != EOF) {
     if ((int) c == '\n') {
-      current_lineno++;
+      rf_current_lineno_inc();
       c = get_char();
       if ((int) c == '+')
 	buf.append((Char) '\n');
@@ -833,7 +822,7 @@ next_command(void)
     case '\t':
       break;
     case '\n':
-      current_lineno++;
+      rf_current_lineno_inc();
       break;
     case '#':			// comment
       skip_line();
@@ -878,56 +867,6 @@ position_to_end_of_args(const IntArray * const args)
     current_env->vpos += (*args)[i];
 }
 
-/* remember_filename():
-   Set global variable current_filename.
-
-   The actual filename is stored in current_filename.  This is used by
-   the postprocessors, expecting the name "<standard input>" for stdin.
-
-   filename: In-out-parameter; is changed to the new value also.
-*/
-void
-remember_filename(const char *filename)
-{
-  char *fname;
-  if (strcmp(filename, "-") == 0)
-    fname = (char *)"<standard input>";
-  else
-    fname = (char *)filename;
-  size_t len = strlen(fname) + 1;
-  if (current_filename != 0)
-    free((char *)current_filename);
-  current_filename = (const char *)malloc(len);
-  if (current_filename == 0)
-    fatal("can't malloc space for filename");
-  strncpy((char *)current_filename, (char *)fname, len);
-}
-
-/* remember_source_filename():
-   Set global variable current_source_filename.
-
-   The actual filename is stored in current_filename.  This is used by
-   the postprocessors, expecting the name "<standard input>" for stdin.
-
-   filename: In-out-parameter; is changed to the new value also.
-*/
-void
-remember_source_filename(const char *filename)
-{
-  char *fname;
-  if (strcmp(filename, "-") == 0)
-    fname = (char *)"<standard input>";
-  else
-    fname = (char *)filename;
-  size_t len = strlen(fname) + 1;
-  if (current_source_filename != 0)
-    free((char *)current_source_filename);
-  current_source_filename = (const char *)malloc(len);
-  if (current_source_filename == 0)
-    fatal("can't malloc space for filename");
-  strncpy((char *)current_source_filename, (char *)fname, len);
-}
-
 /* send_draw():
    Call draw method of printer class.
 
@@ -945,7 +884,7 @@ send_draw(const Char subcmd, const IntArray * const args)
    Go to next line within the input queue.
 
    Skip the rest of the current line, including the newline character.
-   The global variable current_lineno is adjusted.
+   The global variable rf_current_lineno is adjusted.
    No errors are raised.
 */
 void
@@ -954,7 +893,7 @@ skip_line(void)
   Char c = get_char();
   while (1) {
     if (c == '\n') {
-      current_lineno++;
+      rf_current_lineno_inc();
       break;
     }
     if (c == EOF)
@@ -982,7 +921,7 @@ skip_line_checked(void)
     skip_line();
     break;
   case '\n':
-    current_lineno++;
+    rf_current_lineno_inc();
     break;
   case EOF:
     break;
@@ -1005,9 +944,9 @@ skip_line_fatal(void)
 {
   bool ok = skip_line_checked();
   if (!ok) {
-    current_lineno--;
+    rf_current_lineno_dec();
     error("too many arguments");
-    current_lineno++;
+    rf_current_lineno_inc();
   }
 }
 
@@ -1022,9 +961,9 @@ skip_line_warn(void)
 {
   bool ok = skip_line_checked();
   if (!ok) {
-    current_lineno--;
+    rf_current_lineno_dec();
     warning("too many arguments on current line");
-    current_lineno++;
+    rf_current_lineno_inc();
   }
 }
 
@@ -1064,7 +1003,7 @@ skip_line_x(void)
    Go to the end of the current line.
 
    Skip the rest of the current line, excluding the newline character.
-   The global variable current_lineno is not changed.
+   The global variable rf_current_lineno is not changed.
    No errors are raised.
 */
 void
@@ -1313,7 +1252,7 @@ parse_x_command(void)
       if (str_arg == 0)
 	warning("empty argument for `x F' command");
       else {
-	remember_source_filename(str_arg);
+	rf_current_source_filename_set(str_arg);
 	a_delete str_arg;
       }
       break;
@@ -1400,7 +1339,7 @@ do_file(const char *filename)
 
   // setup of global variables
   npages = 0;
-  current_lineno = 1;
+  rf_current_lineno_set(1);
   // `pr' is initialized after the prologue.
   // `device' is set by the 1st prologue command.
 
@@ -1414,7 +1353,7 @@ do_file(const char *filename)
       return;
     }
   }
-  remember_filename(filename);
+  rf_current_filename_set(filename);
 
   if (current_env != 0)
     delete_current_env();
@@ -1575,7 +1514,7 @@ do_file(const char *filename)
     case 'F':			// F: obsolete, replaced by `x F'
       {
 	char *str_arg = get_extended_arg();
-	remember_source_filename(str_arg);
+	rf_current_source_filename_set(str_arg);
 	a_delete str_arg;
 	break;
       }

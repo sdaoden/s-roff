@@ -30,8 +30,6 @@
 #include "nonposix.h"
 #include "posix.h"
 
-extern "C" const char *program_name; // FIXME
-
 static void ewrite(const char *s)
 {
   write(2, s, strlen(s));
@@ -48,8 +46,8 @@ void *operator new(size_t size)
   char *p = (char *)malloc(unsigned(size));
 #endif /* not COOKIE_BUG */
   if (p == 0) {
-    if (program_name) {
-      ewrite(program_name);
+    if (rf_current_program() != NULL) { /* FIXME always */
+      ewrite(rf_current_program());
       ewrite(": ");
     }
     ewrite("out of memory\n");

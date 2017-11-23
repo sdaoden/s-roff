@@ -22,6 +22,7 @@
  */
 
 #include "config.h"
+#include "lib.h"
 
 #include <ctype.h>
 #include <limits.h>
@@ -38,7 +39,8 @@
  */
 
 #ifndef  REPORT_ERROR
-# define REPORT_ERROR(WHY)  fprintf(stderr, "%s:%s\n", program_name, WHY)
+# define REPORT_ERROR(WHY) \
+  fprintf(stderr, "%s:%s\n",rf_current_program(), WHY)
 #endif
 #ifndef  QUOTE_ARG_MALLOC_ERROR
 # define QUOTE_ARG_MALLOC_ERROR   "malloc: Buffer allocation failed"
@@ -46,8 +48,6 @@
 #ifndef  QUOTE_ARG_REALLOC_ERROR
 # define QUOTE_ARG_REALLOC_ERROR  "realloc: Buffer resize failed"
 #endif
-
-extern char *program_name;	/* FIXME main program must define this */
 
 static int
 needs_quoting(const char *string)

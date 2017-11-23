@@ -701,7 +701,7 @@ static void usage(FILE *stream);
 
 int main(int argc, char **argv)
 {
-  program_name = argv[0];
+  rf_current_program_set(argv[0]);
   int special_flag = 0;
   int skewchar = -1;
   int opt;
@@ -888,7 +888,7 @@ static void usage(FILE *stream)
 {
   fprintf(stream,
     "Synopsis: %s [-sv] [-g gf_file] [-k skewchar] tfm_file map_file font\n",
-	  program_name);
+	  rf_current_program());
 }
 
 // s-it2-mode

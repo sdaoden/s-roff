@@ -34,17 +34,15 @@
 
 #define HEX_DIGITS      "0123456789abcdef"
 
-static char *program_name;
-
 static void error(const char *s)
 {
-  fprintf(stderr, "%s: %s\n", program_name, s);
+  fprintf(stderr, "%s: %s\n", rf_current_program(), s);
   exit(2);
 }
 
 static void usage(FILE *stream)
 {
-  fprintf(stream, "Synopsis: %s [-v] [pfb_file]\n", program_name);
+  fprintf(stream, "Synopsis: %s [-v] [pfb_file]\n", rf_curren_program());
 }
 
 static void get_text(int n)
@@ -167,7 +165,7 @@ int main(int argc, char **argv)
     { NULL, 0, 0, 0 }
   };
 
-  program_name = argv[0];
+  rf_current_program_set(argv[0]);
 
   while ((opt = getopt_long(argc, argv, "v", long_options, NULL)) != EOF) {
     switch (opt) {
