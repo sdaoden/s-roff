@@ -1733,7 +1733,7 @@ static int makeTempFiles(void)
 
 int main(int argc, char **argv)
 {
-  program_name = argv[0];
+  rf_current_program_set(argv[0]);
   int i;
   int found = 0;
   int ok = 1;
@@ -1788,7 +1788,7 @@ static int do_file(const char *filename)
 {
   file_case *fcp;
 
-  current_filename = filename;
+  rf_current_filename_set(filename);
   fcp = file_case::muxer(filename);
   if (fcp == NULL) {
     assert(strcmp(filename, "-"));
@@ -1801,7 +1801,7 @@ static int do_file(const char *filename)
   }
 
   delete fcp;
-  current_filename = NULL;
+  rf_current_filename_clear();
   return 1;
 }
 

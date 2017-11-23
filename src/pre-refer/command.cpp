@@ -420,8 +420,8 @@ static void no_default_database_command(int, argument *)
 static void bibliography_command(int argc, argument *argv)
 {
   have_bibliography = 1;
-  const char *saved_filename = current_filename;
-  int saved_lineno = current_lineno;
+  char *saved_filename = su_strdup(rf_current_filename());
+  int saved_lineno = rf_current_lineno();
   int saved_label_in_text = label_in_text;
   label_in_text = 0;
   if (!accumulate)
@@ -432,8 +432,9 @@ static void bibliography_command(int argc, argument *argv)
     output_references();
   else
     fputs(".]>\n", stdout);
-  current_filename = saved_filename;
-  current_lineno = saved_lineno;
+  rf_current_filename_set(saved_filename);
+  rf_current_lineno_set(saved_lineno);
+  su_free(saved_filename);
   label_in_text = saved_label_in_text;
 }
 

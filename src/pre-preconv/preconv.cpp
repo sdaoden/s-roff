@@ -1082,13 +1082,13 @@ usage(FILE *stream)
 		  "-v           print version number\n"
 		  "\n"
 		  "The default encoding is `%s'.\n",
-		  program_name, default_encoding);
+		  rf_current_program(), default_encoding);
 }
 
 int
 main(int argc, char **argv)
 {
-  program_name = argv[0];
+  rf_current_program_set(argv[0]);
   // Determine the default encoding.  This must be done before
   // getopt() is called since the usage message shows the default
   // encoding.
@@ -1101,7 +1101,6 @@ main(int argc, char **argv)
     default_encoding[MAX_VAR_LEN - 1] = 0;
   }
 
-  program_name = argv[0];
   int opt;
   static const struct option long_options[] = {
     { "help", no_argument, 0, 'h' },

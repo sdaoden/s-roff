@@ -65,7 +65,7 @@ int read_line(file_case *fcp, string *p)
     if (c == '\n')
       break;
   }
-  current_lineno++;
+  rf_current_lineno_inc();
   return p->length() > 0;
 }
 
@@ -75,8 +75,8 @@ void do_file(file_case *fcp, const char *filename)
   string str;
   if (output_format == troff)
     printf(".lf 1 %s\n", filename);
-  current_filename = filename;
-  current_lineno = 0;
+  rf_current_filename_set(filename);
+  rf_current_lineno_set(0);
   while (read_line(fcp, &linebuf)) {
     if (linebuf.length() >= 4
 	&& linebuf[0] == '.' && linebuf[1] == 'l' && linebuf[2] == 'f'
@@ -84,7 +84,7 @@ void do_file(file_case *fcp, const char *filename)
       put_string(linebuf, stdout);
       linebuf += '\0';
       if (interpret_lf_args(linebuf.contents() + 3))
-	current_lineno--;
+	rf_current_lineno_dec();
     }
     else if (linebuf.length() >= 4
 	     && linebuf[0] == '.'
@@ -93,7 +93,7 @@ void do_file(file_case *fcp, const char *filename)
 	     && (linebuf[3] == ' ' || linebuf[3] == '\n'
 		 || compatible_flag)) {
       put_string(linebuf, stdout);
-      int start_lineno = current_lineno + 1;
+      int start_lineno = rf_current_lineno() + 1;
       str.clear();
       for (;;) {
 	if (!read_line(fcp, &linebuf))
@@ -112,7 +112,7 @@ void do_file(file_case *fcp, const char *filename)
       }
       str += '\0';
       start_string();
-      init_lex(str.contents(), current_filename, start_lineno);
+      init_lex(str.contents(), rf_current_filename(), start_lineno);
       non_empty_flag = 0;
       inline_flag = 0;
       yyparse();
@@ -121,12 +121,12 @@ void do_file(file_case *fcp, const char *filename)
         if (output_format == mathml)
           putchar('\n');
         else {
-          printf(".lf %d\n", current_lineno - 1);
+          printf(".lf %d\n", rf_current_lineno() - 1);
           output_string();
         }
       }
       if (output_format == troff)
-	printf(".lf %d\n", current_lineno);
+	printf(".lf %d\n", rf_current_lineno());
       put_string(linebuf, stdout);
     }
     else if (start_delim != '\0' && linebuf.search(start_delim) >= 0
@@ -135,8 +135,8 @@ void do_file(file_case *fcp, const char *filename)
     else
       put_string(linebuf, stdout);
   }
-  current_filename = 0;
-  current_lineno = 0;
+  rf_current_filename_clear();
+  rf_current_lineno_set(0);
 }
 
 // Handle an inline equation.  Return 1 if it was an inline equation,
@@ -162,7 +162,7 @@ static int inline_equation(file_case *fcp, string &linebuf, string &str)
       do_text(ptr);
       break;
     }
-    int start_lineno = current_lineno;
+    int start_lineno = rf_current_lineno();
     *start = '\0';
     do_text(ptr);
     ptr = start + 1;
@@ -188,7 +188,7 @@ static int inline_equation(file_case *fcp, string &linebuf, string &str)
       html_begin_suppress();
       printf("\n");
     }
-    init_lex(str.contents(), current_filename, start_lineno);
+    init_lex(str.contents(), rf_current_filename(), start_lineno);
     yyparse();
     if (output_format == troff && html) {
       printf(".as1 %s ", LINE_STRING);
@@ -213,10 +213,10 @@ static int inline_equation(file_case *fcp, string &linebuf, string &str)
   }
   restore_compatibility();
   if (output_format == troff)
-    printf(".lf %d\n", current_lineno);
+    printf(".lf %d\n", rf_current_lineno());
   output_string();
   if (output_format == troff)
-    printf(".lf %d\n", current_lineno + 1);
+    printf(".lf %d\n", rf_current_lineno() + 1);
   return 1;
 }
 
@@ -271,12 +271,12 @@ void usage(FILE *stream)
 {
   fprintf(stream,
     "Synopsis: %s [ -rvDCNR ] -dxx -fn -sn -pn -mn -Mdir -Ts [ files ... ]\n",
-    program_name);
+    rf_current_program());
 }
 
 int main(int argc, char **argv)
 {
-  program_name = argv[0];
+  rf_current_program_set(argv[0]);
   static char stderr_buf[BUFSIZ];
   setbuf(stderr, stderr_buf);
   int opt;
@@ -385,11 +385,11 @@ int main(int argc, char **argv)
 	   ".if !'\\*(.T'html' "	// the html device uses `-Tps' to render
 				  // equations as images
 	   ".tm warning: %s should have been given a `-T\\*(.T' option\n",
-	   device, program_name);
+	   device, rf_current_program());
     printf(".if '\\*(.T'html' "
 	   ".if !'%s'ps' "
 	   ".tm warning: %s should have been given a `-Tps' option\n",
-	   device, program_name);
+	   device, rf_current_program());
     printf(".if '\\*(.T'html' "
       ".if !'%s'ps' "
       ".tm warning: (it is advisable to invoke " L_ROFF

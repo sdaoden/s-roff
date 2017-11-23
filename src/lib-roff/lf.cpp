@@ -27,9 +27,6 @@
 #include "cset.h"
 #include "stringclass.h"
 
-extern void change_filename(const char *); // FIXME
-extern void change_lineno(int);
-
 int interpret_lf_args(const char *p)
 {
   while (*p == ' ')
@@ -46,7 +43,7 @@ int interpret_lf_args(const char *p)
   while (*p == ' ')
     p++;
   if (*p == '\0' || *p == '\n')  {
-    change_lineno(ln);
+    rf_current_lineno_set(ln);
     return 1;
   }
   const char *q;
@@ -60,7 +57,7 @@ int interpret_lf_args(const char *p)
   if (*q != '\n' && *q != '\0')
     return 0;
   tem += '\0';
-  change_filename(tem.contents());
+  rf_current_filename_set(tem.contents());
   change_lineno(ln);
   return 1;
 }

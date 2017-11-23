@@ -101,7 +101,7 @@ void help();
 
 int main(int argc, char **argv)
 {
-  program_name = argv[0];
+  rf_current_program_set(argv[0]);
   static char stderr_buf[BUFSIZ];
   setbuf(stderr, stderr_buf);
   string Pargs, Largs, Fargs;
@@ -690,7 +690,7 @@ void synopsis(FILE *stream)
 "Synopsis: %s [-abceghiklpstvzCENRSUVXZ] [-Fdir] [-mname] [-Tdev] [-ffam]\n"
 "       [-wname] [-Wname] [-Mdir] [-dcs] [-rcn] [-nnum] [-olist] [-Parg]\n"
 "       [-Darg] [-Karg] [-Larg] [-Idir] [files...]\n",
-	  program_name);
+	  rf_current_program());
 }
 
 void help()
@@ -744,7 +744,7 @@ void help()
 void usage(FILE *stream)
 {
   synopsis(stream);
-  fprintf(stream, "%s -h gives more help\n", program_name);
+  fprintf(stream, "%s -h gives more help\n", rf_current_program());
 }
 
 extern "C" {

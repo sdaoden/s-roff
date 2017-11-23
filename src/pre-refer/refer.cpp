@@ -117,7 +117,7 @@ static void possibly_load_default_database();
 
 int main(int argc, char **argv)
 {
-  program_name = argv[0];
+  rf_current_program_set(argv[0]);
   static char stderr_buf[BUFSIZ];
   setbuf(stderr, stderr_buf);
   outfp = stdout;
@@ -400,7 +400,7 @@ static void usage(FILE *stream)
   fprintf(stream,
 "Synopsis: %s [-benvCPRS] [-aN] [-cXYZ] [-fN] [-iXYZ] [-kX] [-lM,N] [-p file]\n"
 "       [-sXYZ] [-tN] [-BL.M] [files ...]\n",
-	  program_name);
+	  rf_current_program());
 }
 
 static void possibly_load_default_database()
@@ -435,10 +435,9 @@ static void do_file(const char *filename)
     return;
   }
 
-  current_filename = filename;
+  rf_current_filename_set(filename);
   fprintf(outfp, ".lf 1 %s\n", filename);
   string line;
-  current_lineno = 0;
   for (;;) {
     line.clear();
     for (;;) {
@@ -459,9 +458,9 @@ static void do_file(const char *filename)
     int len = line.length();
     if (len == 0)
       break;
-    current_lineno++;
+    rf_current_lineno_inc();
     if (len >= 2 && line[0] == '.' && line[1] == '[') {
-      int start_lineno = current_lineno;
+      int start_lineno = rf_current_lineno();
       int start_of_line = 1;
       string str;
       string post;
@@ -469,12 +468,12 @@ static void do_file(const char *filename)
       for (;;) {
 	int c = fcp->get_c();
 	if (c == EOF) {
-	  error_with_file_and_line(current_filename, start_lineno,
+	  error_with_file_and_line(rf_current_filename(), start_lineno,
 				   "missing `.]' line");
 	  break;
 	}
 	if (start_of_line)
-	  current_lineno++;
+	  rf_current_lineno_inc();
 	if (start_of_line && c == '.') {
 	  int d = fcp->get_c();
 	  if (d == ']') {
@@ -540,7 +539,7 @@ static void do_file(const char *filename)
       pending_lf_lines += line;
       line += '\0';
       if (interpret_lf_args(line.contents() + 3))
-	current_lineno--;
+	rf_current_lineno_dec();
     }
     else if (recognize_R1_R2
 	     && len >= 4
@@ -548,11 +547,11 @@ static void do_file(const char *filename)
 	     && (compatible_flag || line[3] == '\n' || line[3] == ' ')) {
       line.clear();
       int start_of_line = 1;
-      int start_lineno = current_lineno;
+      int start_lineno = rf_current_lineno();
       for (;;) {
 	int c = fcp->get_c();
 	if (c != EOF && start_of_line)
-	  current_lineno++;
+	  rf_current_lineno_inc();
 	if (start_of_line && c == '.') {
     c = fcp->get_c();
     if (c == 'R') {
@@ -578,7 +577,7 @@ static void do_file(const char *filename)
 	    line += '.';
 	}
 	if (c == EOF) {
-	  error_with_file_and_line(current_filename, start_lineno,
+	  error_with_file_and_line(rf_current_filename(), start_lineno,
 				   "missing `.R2' line");
 	  break;
 	}
@@ -594,7 +593,7 @@ static void do_file(const char *filename)
 	output_references();
       else
 	nreferences = 0;
-      process_commands(line, current_filename, start_lineno + 1);
+      process_commands(line, rf_current_filename(), start_lineno + 1);
       need_syncing = 1;
     }
     else {
@@ -646,7 +645,7 @@ static void output_pending_line()
   if (!accumulate)
     immediately_output_references();
   if (need_syncing) {
-    fprintf(outfp, ".lf %d %s\n", current_lineno, current_filename);
+    fprintf(outfp, ".lf %d %s\n", rf_current_lineno(), rf_current_filename());
     need_syncing = 0;
   }
 }
@@ -1107,8 +1106,8 @@ void do_bib(const char *filename)
       error("can't open `%1': %2", filename, su_err_doc(errno));
       return;
     }
-    current_filename = filename;
   }
+  rf_current_filename_set(filename);
   enum {
     START, MIDDLE, BODY, BODY_START, BODY_BLANK, BODY_DOT
     } state = START;
@@ -1183,7 +1182,7 @@ void do_bib(const char *filename)
       assert(0);
     }
     if (c == '\n')
-      current_lineno++;
+      rf_current_lineno_inc();
   }
   switch (state) {
   case START:

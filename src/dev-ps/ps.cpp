@@ -1790,8 +1790,7 @@ static void usage(FILE *stream);
 
 int main(int argc, char **argv)
 {
-  setlocale(LC_NUMERIC, "C"); /* FIXME */
-  program_name = argv[0];
+  rf_current_program_set(argv[0]);
   string env;
   static char stderr_buf[BUFSIZ];
   setbuf(stderr, stderr_buf);
@@ -1880,7 +1879,7 @@ static void usage(FILE *stream)
   fprintf(stream,
 "Synopsis: %s [-glmv] [-b n] [-c n] [-w n] [-I dir] [-P prologue]\n"
 "       [-F dir] [files ...]\n",
-    program_name);
+    rf_current_program());
 }
 
 // s-it2-mode

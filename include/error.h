@@ -55,11 +55,5 @@ extern void warning(const char *,
 		    const errarg &arg2 = empty_errarg,
 		    const errarg &arg3 = empty_errarg);
 
-
-extern "C" const char *program_name; /* FIXME (and all around us) */
-extern int current_lineno;
-extern const char *current_filename;
-extern const char *current_source_filename;
-
 #endif // _ERROR_H
 // s-it2-mode
