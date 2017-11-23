@@ -50,7 +50,7 @@ int do_file(const char *);
 void usage(FILE *stream)
 {
   fprintf(stream, "Synopsis: %s [ -Crtv ] [ -I dir ] [ files ]\n",
-    program_name);
+    rf_current_program());
 }
 
 int main(int argc, char **argv)
@@ -106,9 +106,10 @@ void set_location()
 {
   if (!raw_flag) {
     if (!tex_flag)
-      printf(".lf %d %s\n", current_lineno, current_filename);
+      printf(".lf %d %s\n", rf_current_lineno(), rf_current_filename());
     else
-      printf("%% file %s, line %d\n", current_filename, current_lineno);
+      printf("%% file %s, line %d\n",
+        rf_current_filename(), rf_current_lineno());
   }
 }
 
@@ -140,16 +141,18 @@ void do_so(const char *line)
       filename += char(*q);
   if (success && filename.length() > 0) {
     filename += '\0';
-    const char *fn = current_filename;
-    int ln = current_lineno;
-    current_lineno--;
+    char *fn = su_strdup(rf_current_filename());
+    int ln = rf_current_lineno();
+    rf_current_lineno_dec();
     if (do_file(filename.contents())) {
-      current_filename = fn;
-      current_lineno = ln;
+      rf_current_filename_set(fn);
+      rf_current_lineno_set(ln);
+      su_free(fn);
       set_location();
       return;
     }
-    current_lineno++;
+    su_free(fn);
+    rf_current_lineno_inc();
   }
   fputs(".so", stdout);
   fputs(line, stdout);
@@ -167,8 +170,7 @@ int do_file(const char *filename)
     goto jleave;
   }
 
-  current_filename = fcp->path();
-  current_lineno = 1;
+  rf_current_filename_set(fcp->path());
   set_location();
   for (;;) {
     int c = fcp->get_c();
@@ -181,7 +183,7 @@ int do_file(const char *filename)
       else {
 	putchar(c);
 	if (c == '\n') {
-	  current_lineno++;
+	  rf_current_lineno_inc();
 	  state = START;
 	}
 	else
@@ -191,7 +193,7 @@ int do_file(const char *filename)
     case MIDDLE:
       putchar(c);
       if (c == '\n') {
-	current_lineno++;
+	rf_current_lineno_inc();
 	state = START;
       }
       break;
@@ -204,7 +206,7 @@ int do_file(const char *filename)
 	putchar('.');
 	putchar(c);
 	if (c == '\n') {
-	  current_lineno++;
+	  rf_current_lineno_inc();
 	  state = START;
 	}
 	else
@@ -219,7 +221,7 @@ int do_file(const char *filename)
 	putchar('s');
 	putchar(c);
 	if (c == '\n') {
-	  current_lineno++;
+	  rf_current_lineno_inc();
 	  state = START;
 	}
 	else
@@ -231,7 +233,7 @@ int do_file(const char *filename)
 	string line;
 	for (; c != EOF && c != '\n'; c = fcp->get_c())
 	  line += c;
-	current_lineno++;
+	rf_current_lineno_inc();
 	line += '\n';
 	line += '\0';
 	do_so(line.contents());
@@ -251,7 +253,7 @@ int do_file(const char *filename)
 	putchar('l');
 	putchar(c);
 	if (c == '\n') {
-	  current_lineno++;
+	  rf_current_lineno_inc();
 	  state = START;
 	}
 	else
@@ -263,7 +265,7 @@ int do_file(const char *filename)
 	string line;
 	for (; c != EOF && c != '\n'; c = fcp->get_c())
 	  line += c;
-	current_lineno++;
+	rf_current_lineno_inc();
 	line += '\n';
 	line += '\0';
 	interpret_lf_args(line.contents());
@@ -305,7 +307,7 @@ int do_file(const char *filename)
   }
 
   delete fcp;
-  current_filename = 0;
+  rf_current_filename_clear();
   rv = 1;
 jleave:
   return rv;

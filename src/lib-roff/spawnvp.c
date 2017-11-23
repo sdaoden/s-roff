@@ -21,6 +21,7 @@
  */
 
 #include "config.h"
+#include "lib.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,7 +30,7 @@
 # include <process.h>
 #endif
 
-#if defined(__MSDOS__) \
+#if defined(__MSDOS__) /* FIXME rf_OS_XZZ !! */\
     || (defined(_WIN32) && !defined(_UWIN) && !defined(__CYGWIN__)) \
     || defined(__EMX__)
 # define SPAWN_FUNCTION_WRAPPERS  1
@@ -40,13 +41,12 @@
 # include "nonposix.h"
 
 # ifndef  REPORT_ERROR
-#  define REPORT_ERROR(WHY)       fprintf(stderr, "%s:%s\n", program_name, WHY)
+#  define REPORT_ERROR(WHY) \
+  fprintf(stderr, "%s:%s\n", rf_current_program(), WHY)
 # endif
 # ifndef  ARGV_MALLOC_ERROR
 #  define ARGV_MALLOC_ERROR       "malloc: Allocation for 'argv' failed"
 # endif
-
-extern char *program_name; // FIXME
 
 extern char *quote_arg(char *string); // FIXME
 extern void purge_quoted_args(char **argv);

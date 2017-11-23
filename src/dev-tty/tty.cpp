@@ -845,7 +845,7 @@ static void update_options()
 
 int main(int argc, char **argv)
 {
-  program_name = argv[0];
+  rf_current_program_set(argv[0]);
   static char stderr_buf[BUFSIZ];
   if (getenv(U_ROFF_NO_SGR))
     old_drawing_scheme = 1;
@@ -936,7 +936,7 @@ int main(int argc, char **argv)
 static void usage(FILE *stream)
 {
   fprintf(stream, "Synopsis: %s [-bBcdfhioruUv] [-F dir] [files ...]\n",
-	  program_name);
+	  rf_current_program());
 }
 
 // s-it2-mode

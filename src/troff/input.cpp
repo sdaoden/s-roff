@@ -57,8 +57,6 @@
 // initial size of buffer for reading names; expanded as necessary
 #define ABUF_SIZE 16
 
-extern "C" const char *program_name;
-
 #ifdef COLUMN
 void init_column_requests();
 #endif /* COLUMN */
@@ -7490,7 +7488,7 @@ void usage(FILE *stream, const char *prog)
 
 int main(int argc, char **argv)
 {
-  program_name = argv[0];
+  rf_current_program_set(argv[0]);
   static char stderr_buf[BUFSIZ];
   setbuf(stderr, stderr_buf);
   int c;
@@ -8226,8 +8224,8 @@ static void do_error(error_type type,
     filename = 0;
   if (filename)
     errprint("%1:%2: ", filename, lineno);
-  else if (program_name)
-    fprintf(stderr, "%s: ", program_name);
+  else if (rf_current_program() != NULL) /* TODO always!? */
+    fprintf(stderr, "%s: ", rf_current_program());
   switch (type) {
   case FATAL:
     fputs("fatal error: ", stderr);

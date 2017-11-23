@@ -308,7 +308,7 @@ void troff_output::finish_picture()
   printf(".br\n");
   printf(".nr " EQN_NO_EXTRA_SPACE_REG " 0\n");
   // this is a little gross
-  set_location(current_filename, current_lineno);
+  set_location(rf_current_filename(), rf_current_lineno());
   fputs(flyback_flag ? ".PF\n" : ".PE\n", stdout);
 }
 

@@ -121,7 +121,7 @@ static void   _ignore_fatal_signals(void);
 
 int main(int argc, char **argv)
 {
-  program_name = argv[0];
+  rf_current_program_set(argv[0]);
   static char stderr_buf[BUFSIZ];
   setbuf(stderr, stderr_buf);
 
@@ -334,7 +334,7 @@ static void usage(FILE *stream)
   fprintf(stream,
 "Synopsis: %s [-vw] [-c file] [-d dir] [-f file] [-h n] [-i XYZ] [-k n]\n"
 "       [-l n] [-n n] [-o base] [-t n] [files...]\n",
-	  program_name);
+	  rf_current_program());
 }
 
 static void check_integer_arg(char opt, const char *arg, int min, int *res)

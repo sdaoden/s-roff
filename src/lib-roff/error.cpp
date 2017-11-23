@@ -42,8 +42,8 @@ static void do_error_with_file_and_line(const char *filename,
 					const errarg &arg3)
 {
   int need_space = 0;
-  if (program_name) {
-    fprintf(stderr, "%s:", program_name);
+  if (rf_current_program() != NULL) { /* FIXME always */
+    fprintf(stderr, "%s:", rf_current_program());
     need_space = 1;
   }
   if (lineno >= 0 && filename != 0) {
@@ -82,8 +82,9 @@ static void do_error(error_type type,
 		     const errarg &arg2,
 		     const errarg &arg3)
 {
-  do_error_with_file_and_line(current_filename, current_source_filename,
-			      current_lineno, type, format, arg1, arg2, arg3);
+  do_error_with_file_and_line(rf_current_filename(),
+      rf_current_source_filename(), rf_current_lineno(),
+      type, format, arg1, arg2, arg3);
 }
 
 void error(const char *format,

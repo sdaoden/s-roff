@@ -45,6 +45,38 @@ NSPC_USE(su)
 NSPC_END(rf)
 #endif
 
+/* Prototypes and externals {{{ */
+C_DECL_BEGIN
+
+c_decl char *rf__curnam_filename;
+c_decl char const *rf__curname_program;
+c_decl int rf__curnam_lineno;
+c_decl char *rf__curnam_source_filename;
+
+/* Current file name */
+#define rf_current_filename() rf__curnam_filename
+c_decl void rf_current_filename_set(char const *newf);
+c_decl void rf_current_filename_clear(void);
+
+/* Current line number */
+#define rf_current_lineno() rf__curnam_lineno
+#define rf_current_lineno_set(NEWL) do{rf__curnam_lineno = NEWL;}while(0)
+#define rf_current_lineno_inc() do{++rf__curnam_lineno;}while(0)
+#define rf_current_lineno_dec() do{--rf__curnam_lineno;}while(0)
+
+/* Current program executing.  Once initialized, the program does not change
+ * during the entire program run.  Note argv0 is not copied! */
+#define rf_current_program() rf__curnam_program
+c_decl void rf_current_program_set(char const *argv0);
+
+/* Current source filename */
+#define rf_current_source_filename() rf__curnam_source_filename
+c_decl void rf_current_source_filename_set(char const *newf);
+c_decl void rf_current_source_filename_clear(void);
+
+C_DECL_END
+/* Prototypes and externals }}} */
+
 int is_prime(unsigned);
 double groff_hypot(double, double);
 

@@ -905,8 +905,7 @@ static void usage(FILE *stream);
 
 int main(int argc, char **argv)
 {
-  setlocale(LC_NUMERIC, "C"); // FIXME this is the default, noone else sets it!?
-  program_name = argv[0];
+  rf_current_program_set(argv[0]);
   static char stderr_buf[BUFSIZ];
   setbuf(stderr, stderr_buf);
   int c;
@@ -972,7 +971,7 @@ int main(int argc, char **argv)
 static void usage(FILE *stream)
 {
   fprintf(stream, "Synopsis: %s [-dv] [-F dir] [-w n] [files ...]\n",
-	  program_name);
+	  rf_current_program());
 }
 
 // s-it2-mode

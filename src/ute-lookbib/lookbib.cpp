@@ -41,12 +41,12 @@ static void usage(FILE *stream)
 {
   fprintf(stream,
     "Synopsis: %s [-v] [-i XYZ] [-t N] database ...\n",
-	  program_name);
+	  rf_current_program());
 }
 
 int main(int argc, char **argv)
 {
-  program_name = argv[0];
+  rf_current_program_set(argv[0]);
   static char stderr_buf[BUFSIZ];
   setbuf(stderr, stderr_buf);
   int opt;

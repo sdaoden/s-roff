@@ -209,7 +209,7 @@ usage(FILE *stream)
 {
   fprintf(stream,
 	  "Synopsis: %s [ -vCs ] [ -M dir ] [ -F dir ] [ -T dev ] [ file ]\n",
-	  program_name);
+	  rf_current_program());
 }
 
 /*----------------------------------------------------------------------------*
@@ -230,7 +230,7 @@ main(int argc,
   size_t filecnt = 0;
   char *fileargs[50], c;
 
-  program_name = argv[0];
+  rf_current_program_set(argv[0]);
   setlocale(LC_NUMERIC, "C"); /* TODO ? */
 
   while (--argc > 0) {
