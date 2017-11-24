@@ -23,6 +23,7 @@
 #define _TROFF_H
 
 #include "config.h"
+#include "lib.h"
 #include "troff-config.h"
 
 #include <assert.h>
@@ -32,12 +33,10 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "cset.h"
 #include "color.h"
 #include "device.h"
 #include "errarg.h"
 #include "error.h"
-#include "lib.h"
 #include "searchpath.h"
 
 typedef int units;

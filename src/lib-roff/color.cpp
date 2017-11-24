@@ -22,6 +22,8 @@
 #include "config.h"
 #include "lib.h"
 
+#include "su/strsup.h"
+
 #include <assert.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -32,7 +34,6 @@
 #endif
 
 #include "color.h"
-#include "cset.h"
 #include "errarg.h"
 #include "error.h"
 
@@ -189,10 +190,10 @@ static int atoh(unsigned int *result,
 {
   size_t i = 0;
   unsigned int val = 0;
-  while ((i < length) && csxdigit(s[i])) {
-    if (csdigit(s[i]))
+  while ((i < length) && su_isxdigit(s[i])) {
+    if (su_isdigit(s[i]))
       val = val*0x10 + (s[i]-'0');
-    else if (csupper(s[i]))
+    else if (su_isupper(s[i]))
       val = val*0x10 + (s[i]-'A') + 10;
     else
       val = val*0x10 + (s[i]-'a') + 10;

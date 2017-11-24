@@ -84,7 +84,7 @@ reference::reference(const char *start, int len, reference_id *ridp)
 	ptr++;
       string &f = temp_fields[(unsigned char)ptr[1]];
       ptr += 2;
-      while (ptr < end && csspace(*ptr))
+      while (ptr < end && su_isspace(*ptr))
 	ptr++;
       for (;;) {
 	for (;;) {
@@ -119,7 +119,7 @@ reference::reference(const char *start, int len, reference_id *ridp)
 	    ptr++;
 	  // strip trailing white space
 	  const char *q = ptr;
-	  while (q > p && q[-1] != '\n' && csspace(q[-1]))
+	  while (q > p && q[-1] != '\n' && su_isspace(q[-1]))
 	    q--;
 	  while (p < q)
 	    f += *p++;
@@ -439,7 +439,7 @@ void reference::compute_sort_key()
       n = INT_MAX;
       sf++;
     }
-    else if (csdigit(*sf)) {
+    else if (su_isdigit(*sf)) {
       char *ptr;
       long l = strtol(sf, &ptr, 10);
       if (l == 0 && ptr == sf)
@@ -815,14 +815,14 @@ void reference::output(FILE *fp)
   for (int i = 0; i < 256; i++)
     if (field_index[i] != NULL_FIELD_INDEX && i != annotation_field) {
       string &f = field[field_index[i]];
-      if (!csdigit(i)) {
+      if (!su_isdigit(i)) {
 	int j = reverse_fields.search(i);
 	if (j >= 0) {
 	  int n;
 	  int len = reverse_fields.length();
-	  if (++j < len && csdigit(reverse_fields[j])) {
+	  if (++j < len && su_isdigit(reverse_fields[j])) {
 	    n = reverse_fields[j] - '0';
-	    for (++j; j < len && csdigit(reverse_fields[j]); j++)
+	    for (++j; j < len && su_isdigit(reverse_fields[j]); j++)
 	      // should check for overflow
 	      n = n*10 + reverse_fields[j] - '0';
 	  }
@@ -894,12 +894,12 @@ void reference::print_sort_key_comment(FILE *fp)
 const char *find_year(const char *start, const char *end, const char **endp)
 {
   for (;;) {
-    while (start < end && !csdigit(*start))
+    while (start < end && !su_isdigit(*start))
       start++;
     const char *ptr = start;
     if (start == end)
       break;
-    while (ptr < end && csdigit(*ptr))
+    while (ptr < end && su_isdigit(*ptr))
       ptr++;
     if (ptr - start == 4 || ptr - start == 3
 	|| (ptr - start == 2
@@ -916,12 +916,12 @@ static const char *find_day(const char *start, const char *end,
 			    const char **endp)
 {
   for (;;) {
-    while (start < end && !csdigit(*start))
+    while (start < end && !su_isdigit(*start))
       start++;
     const char *ptr = start;
     if (start == end)
       break;
-    while (ptr < end && csdigit(*ptr))
+    while (ptr < end && su_isdigit(*ptr))
       ptr++;
     if ((ptr - start == 1 && start[0] != '0')
 	|| (ptr - start == 2 &&
@@ -954,12 +954,12 @@ static int find_month(const char *start, const char *end)
     "december",
   };
   for (;;) {
-    while (start < end && !csalpha(*start))
+    while (start < end && !su_isalpha(*start))
       start++;
     const char *ptr = start;
     if (start == end)
       break;
-    while (ptr < end && csalpha(*ptr))
+    while (ptr < end && su_isalpha(*ptr))
       ptr++;
     if (ptr - start >= 3) {
       for (unsigned int i = 0; i < sizeof(months)/sizeof(months[0]); i++) {

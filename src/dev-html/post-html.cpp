@@ -35,7 +35,6 @@
 #include <string.h>
 #include <time.h>
 
-#include "cset.h"
 #include "driver.h"
 #include "stringclass.h"
 
@@ -844,9 +843,9 @@ int text_glob::get_arg (void)
   if (strncmp("devtag:", text_string, strlen("devtag:")) == 0) {
     const char *p = text_string;
 
-    while ((*p != (char)0) && (!isspace(*p)))
+    while ((*p != (char)0) && (!su_isspace(*p)))
       p++;
-    while ((*p != (char)0) && (isspace(*p)))
+    while ((*p != (char)0) && (su_isspace(*p)))
       p++;
     if (*p == (char)0)
       return -1;
@@ -865,15 +864,15 @@ int text_glob::get_tab_args (char *align)
     const char *p = text_string;
 
     // firstly the alignment C|R|L
-    while ((*p != (char)0) && (!isspace(*p)))
+    while ((*p != (char)0) && (!su_isspace(*p)))
       p++;
-    while ((*p != (char)0) && (isspace(*p)))
+    while ((*p != (char)0) && (su_isspace(*p)))
       p++;
     *align = *p;
     // now the int value
-    while ((*p != (char)0) && (!isspace(*p)))
+    while ((*p != (char)0) && (!su_isspace(*p)))
       p++;
-    while ((*p != (char)0) && (isspace(*p)))
+    while ((*p != (char)0) && (su_isspace(*p)))
       p++;
     if (*p == (char)0)
       return -1;
@@ -3122,7 +3121,7 @@ void html_printer::do_tab_te (void)
 void html_printer::do_tab (char *s)
 {
   if (table) {
-    while (isspace(*s))
+    while (su_isspace(*s))
       s++;
     s++;
     int col = table->find_column(atoi(s) + pageoffset + get_troff_indent());

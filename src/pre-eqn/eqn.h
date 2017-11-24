@@ -21,6 +21,7 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "eqn-config.h"
 
 #include <assert.h>
@@ -29,8 +30,6 @@
 
 #include "errarg.h"
 #include "error.h"
-#include "cset.h"
-#include "lib.h"
 
 #include "box.h"
 

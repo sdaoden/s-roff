@@ -2031,7 +2031,7 @@ void token::next()
 	    break;
 	  const char *p;
 	  for (p = s.contents(); *p != '\0'; p++)
-	    if (!csdigit(*p))
+	    if (!su_isdigit(*p))
 	      break;
 	  if (*p || s.is_empty())
 	    curenv->set_font(s);
@@ -4380,7 +4380,7 @@ static void interpolate_arg(symbol nm)
   const char *s = nm.contents();
   if (!s || *s == '\0')
     copy_mode_error("missing argument name");
-  else if (s[1] == 0 && csdigit(s[0]))
+  else if (s[1] == 0 && su_isdigit(s[0]))
     input_stack::push(input_stack::get_arg(s[0] - '0'));
   else if (s[0] == '*' && s[1] == '\0') {
     int limit = input_stack::nargs();
@@ -4441,7 +4441,7 @@ static void interpolate_arg(symbol nm)
   }
   else {
     const char *p;
-    for (p = s; *p && csdigit(*p); p++)
+    for (p = s; *p && su_isdigit(*p); p++)
       ;
     if (*p)
       copy_mode_error("bad argument name `%1'", s);
@@ -5050,13 +5050,13 @@ static int read_size(int *x)
 	c = tok.ch();
       }
     }
-    if (!csdigit(c))
+    if (!su_isdigit(c))
       bad = 1;
     else {
       val = c - '0';
       tok.next();
       c = tok.ch();
-      if (!csdigit(c))
+      if (!su_isdigit(c))
 	bad = 1;
       else {
 	val = val*10 + (c - '0');
@@ -5064,12 +5064,12 @@ static int read_size(int *x)
       }
     }
   }
-  else if (csdigit(c)) {
+  else if (su_isdigit(c)) {
     val = c - '0';
     if (!inc && c != '0' && c < '4') {
       tok.next();
       c = tok.ch();
-      if (!csdigit(c))
+      if (!su_isdigit(c))
 	bad = 1;
       else
 	val = val*10 + (c - '0');
@@ -6285,7 +6285,7 @@ const char *input_char_description(int c)
     sprintf(buf, "magic character code %d", c);
     return buf;
   }
-  if (csprint(c)) {
+  if (su_isprint(c)) {
     buf[0] = '`';
     buf[1] = c;
     buf[2] = '\'';
@@ -6561,7 +6561,7 @@ static void init_charset_table()
     strcpy(buf + 4, i_to_a(i));
     charset_table[i] = get_charinfo(symbol(buf));
     charset_table[i]->set_ascii_code(i);
-    if (csalpha(i))
+    if (su_isalpha(i))
       charset_table[i]->set_hyphenation_code(su_tolower(i));
   }
   charset_table['.']->set_flags(charinfo::ENDS_SENTENCE);
@@ -6687,7 +6687,7 @@ void hyphenation_code()
       error("hyphenation code must be ordinary character");
       break;
     }
-    if (csdigit(c)) {
+    if (su_isdigit(c)) {
       error("hyphenation code cannot be digit");
       break;
     }
@@ -7263,11 +7263,11 @@ static void parse_output_page_list(char *p)
     int i;
     if (*p == '-')
       i = 1;
-    else if (csdigit(*p)) {
+    else if (su_isdigit(*p)) {
       i = 0;
       do
 	i = i*10 + *p++ - '0';
-      while (csdigit(*p));
+      while (su_isdigit(*p));
     }
     else
       break;
@@ -7275,10 +7275,10 @@ static void parse_output_page_list(char *p)
     if (*p == '-') {
       p++;
       j = 0;
-      if (csdigit(*p)) {
+      if (su_isdigit(*p)) {
 	do
 	  j = j*10 + *p++ - '0';
-	while (csdigit(*p));
+	while (su_isdigit(*p));
       }
     }
     else

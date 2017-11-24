@@ -23,6 +23,7 @@
 #define _TABLE_H
 
 #include "config.h"
+#include "lib.h"
 #include "tbl-config.h"
 
 #include <assert.h>
@@ -30,10 +31,8 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include "cset.h"
 #include "errarg.h"
 #include "error.h"
-#include "lib.h"
 #include "stringclass.h"
 
 struct inc_number {

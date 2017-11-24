@@ -29,7 +29,6 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include "cset.h"
 #include "errarg.h"
 #include "error.h"
 #include "nonposix.h"
@@ -53,7 +52,7 @@ public:
 
 typedef unsigned char uchar;
 
-static uchar map[256];
+static uchar map[256]; /* TODO magic constants etc */
 static uchar inv_map[256][3];
 
 class map_init // FIXME static initializer ctor
@@ -68,14 +67,14 @@ map_init::map_init()
 {
   int i;
   for (i = 0; i < 256; i++)
-    map[i] = csalnum(i) ? su_tolower(i) : '\0';
+    map[i] = su_isalnum(i) ? su_tolower(i) : '\0';
   for (i = 0; i < 256; i++) {
-    if (cslower(i)) {
+    if (su_islower(i)) {
       inv_map[i][0] = i;
       inv_map[i][1] = su_toupper(i);
       inv_map[i][2] = '\0';
     }
-    else if (csdigit(i)) {
+    else if (su_isdigit(i)) {
       inv_map[i][0] = i;
       inv_map[i][1] = 0;
     }

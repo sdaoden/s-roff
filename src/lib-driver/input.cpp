@@ -644,9 +644,9 @@ get_integer_arg(void)
     buf.append(c);
     c = get_char();
   }
-  if (!isdigit((int) c))
+  if (!su_isdigit((int) c))
     error("integer argument expected");
-  while (isdigit((int) c)) {
+  while (su_isdigit((int) c)) {
     buf.append(c);
     c = get_char();
   }
@@ -690,14 +690,14 @@ get_possibly_integer_args()
       c = get_char();
     if (c == '-') {
       Char c1 = get_char();
-      if (isdigit((int) c1)) {
+      if (su_isdigit((int) c1)) {
 	buf.append(c);
 	c = c1;
       }
       else
 	unget_char(c1);
     }
-    while (isdigit((int) c)) {
+    while (su_isdigit((int) c)) {
       buf.append(c);
       c = get_char();
     }
@@ -1463,7 +1463,7 @@ do_file(const char *filename)
 	Char c = next_arg_begin();
 	if (npages <= 0)
 	  fatal_command(command);
-	if (!isdigit((int) c)) {
+	if (!su_isdigit((int) c)) {
 	  error("digit expected");
 	  c = 0;
 	}

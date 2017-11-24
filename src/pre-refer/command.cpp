@@ -33,7 +33,12 @@
 #include "command.h"
 #include "refer.h"
 
-cset cs_field_name = csalpha;
+static boole a_isfield(ui8 c);
+
+static inline boole
+a_isfield(ui8 c){
+  return su_isalpha(c);
+}
 
 class input_item
 {
@@ -733,7 +738,7 @@ static int check_args(const char *types, const char *name,
     case 'f':
       {
 	for (const char *ptr = argv->s; *ptr != '\0'; ptr++)
-	  if (!cs_field_name(*ptr)) {
+	  if (!a_isfield(*ptr)) {
 	    input_stack::error("argument %1 for command `%2' must be a list of fields",
 			     argno + 1, name);
 	    return 0;
@@ -742,7 +747,7 @@ static int check_args(const char *types, const char *name,
       }
     case 'F':
       if (argv->s[0] == '\0' || argv->s[1] != '\0'
-	  || !cs_field_name(argv->s[0])) {
+	  || !a_isfield(argv->s[0])) {
 	input_stack::error("argument %1 for command `%2' must be a field name",
 			   argno + 1, name);
 	return 0;
