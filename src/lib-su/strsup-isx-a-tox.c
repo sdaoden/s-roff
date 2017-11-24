@@ -24,6 +24,7 @@
 #include "su/code-in.h"
 
 static boole a_ssiat_is_init;
+static ui16 a_ssiat_types[UI8_MAX + 1];
 static ui8 a_ssiat_tolower[UI8_MAX + 1];
 static ui8 a_ssiat_toupper[UI8_MAX + 1];
 
@@ -32,21 +33,65 @@ static void a_ssiat_init(void); /* FIXME su_library_init() -> .. */
 
 static void
 a_ssiat_init(void){
+   /* FIXME a_ssiat_type_init(void): <> su_library_init()!
+    * FIXME then inline all the ctype things
+    * FIXME This actually requires/assumes ASCII (original had isascii() first)
+    * FIXME therefore all the ctype stuff can very well be compile-time
+    * FIXME constant just as is for S-mailx, maybe care for EBCDIC here too
+    * FIXME Thus, built-in EBCDIC and ASCII and allow choosing which to use! */
    ui8 i;
    NYD_IN;
 
    i = 0;
-   do
-      a_ssiat_tolower[i] = S(ui8,tolower(i));
-   while(i++ != UI8_MAX);
+   do{
+      ui16 c;
 
-   i = 0;
-   do
-      a_ssiat_toupper[i] = S(ui8,toupper(i));
-   while(i++ != UI8_MAX);
+      c = cclass_none;
+      if(isalnum(i))
+         c |= su_cclass_alnum;
+      if(isalpha(i))
+         c |= su_cclass_alpha;
+      if(iscntrl(i))
+         c |= su_cclass_cntrl;
+      if(isdigit(i))
+         c |= su_cclass_digit;
+      if(isgraph(i))
+         c |= su_cclass_graph;
+      if(islower(i))
+         c |= su_cclass_lower;
+      if(isprint(i))
+         c |= su_cclass_print;
+      if(ispunct(i))
+         c |= su_cclass_punct;
+      if(isspace(i))
+         c |= su_cclass_space;
+      if(isupper(i))
+         c |= su_cclass_upper;
+      if(isxdigit(i))
+         c |= su_cclass_xdigit;
+      a_ssup_types[i] = c;
+
+      a_ssiat_toupper[i] = (c & su_cclass_lower) ? S(ui8,toupper(i)) : i;
+      a_ssiat_tolower[i] = (c & su_cclass_upper) ? S(ui8,tolower(i)) : i;
+   }while(i++ != UI8_MAX);
 
    a_ssiat_is_init = TRU1;
    NYD_OU;
+}
+
+boole
+su__isclass(si32 c, enum su_cclass cclass){ /* FIXME su_library_init() */
+   boole rv;
+   ui32 u;
+   NYD2_IN;
+
+   if(UNLIKELY(!a_ssiat_isinit))
+      a_ssiat_init();
+
+   u = c;
+   rv = (LIKELY(u <= UI8_MAX) && (a_ssiat_types[u] & cclass) != 0);
+   NYD2_OU;
+   return rv;
 }
 
 si32

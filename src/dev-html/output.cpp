@@ -25,6 +25,7 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "html-config.h"
 
 #include <time.h>
@@ -33,7 +34,6 @@
 # include <unistd.h>
 #endif
 
-#include "cset.h"
 #include "driver.h"
 #include "stringclass.h"
 

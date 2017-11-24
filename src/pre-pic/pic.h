@@ -23,6 +23,7 @@
 #define _PIC_H
 
 #include "config.h"
+#include "lib.h"
 #include "pic-config.h"
 
 #include <errno.h>
@@ -30,11 +31,9 @@
 #include <stdlib.h>
 
 #include "assert.h"
-#include "cset.h"
 #include "errarg.h"
 #include "error.h"
-#include "file_case.h"
-#include "lib.h"
+#include "file-case.h"
 #include "output.h"
 #include "position.h"
 #include "stringclass.h"

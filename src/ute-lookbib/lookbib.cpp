@@ -29,7 +29,6 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include "cset.h"
 #include "errarg.h"
 #include "error.h"
 #include "nonposix.h"
@@ -112,7 +111,7 @@ int main(int argc, char **argv)
     if (!fgets(line, sizeof(line), stdin))
       break;
     char *ptr = line;
-    while (csspace(*ptr))
+    while (su_isspace(*ptr))
       ptr++;
     if (*ptr == '\0')
       continue;

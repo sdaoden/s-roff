@@ -22,7 +22,10 @@
 
 %{
 #include "config.h"
+#include "lib.h"
 #include "refer-config.h"
+
+#include "su/strsup.h"
 
 #include "refid.h"
 
@@ -474,17 +477,17 @@ static char lowercase_array[] = { // FIXME const
 
 int yylex()
 {
-  while (spec_ptr < spec_end && csspace(*spec_ptr))
+  while (spec_ptr < spec_end && su_isspace(*spec_ptr))
     spec_ptr++;
   spec_cur = spec_ptr;
   if (spec_ptr >= spec_end)
     return 0;
   unsigned char c = *spec_ptr++;
-  if (csalpha(c)) {
+  if (su_isalpha(c)) {
     yylval.num = c;
     return TOKEN_LETTER;
   }
-  if (csdigit(c)) {
+  if (su_isdigit(c)) {
     yylval.num = c - '0';
     return TOKEN_DIGIT;
   }

@@ -30,11 +30,9 @@
 #include <assert.h>
 #include <errno.h>
 
-#include "cset.h"
 #include "defs.h"
 #include "errarg.h"
 #include "error.h"
-#include "lib.h"
 #include "stringclass.h"
 
 unsigned hash_string(const char *, int);

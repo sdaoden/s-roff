@@ -710,7 +710,7 @@ int char_buffer::skip_spaces(char_block **t, int *i)
   int k = *i;
 
   while (s) {
-    while (k < s->used && isspace(s->buffer[k]))
+    while (k < s->used && su_isspace(s->buffer[k]))
       k++;
     if (k == s->used) {
       k = 0;

@@ -26,11 +26,8 @@
 #include "su/strsup.h"
 
 #include <assert.h>
-#include <ctype.h>
 #include <math.h>
-#include <stdlib.h>
 
-#include "cset.h"
 #include "errarg.h"
 #include "error.h"
 #include "file_case.h"
@@ -138,7 +135,7 @@ int text_file::next()
     buf[i] = '\0';
     lineno++;
     char *ptr = buf;
-    while (csspace(*ptr))
+    while (su_isspace(*ptr))
       ptr++;
     if (*ptr != 0 && (!skip_comments || *ptr != '#'))
       return 1;
@@ -733,10 +730,10 @@ static char *trim_arg(char *p)
 {
   if (!p)
     return 0;
-  while (csspace(*p))
+  while (su_isspace(*p))
     p++;
   char *q = strchr(p, '\0');
-  while (q > p && csspace(q[-1]))
+  while (q > p && su_isspace(q[-1]))
     q--;
   *q = '\0';
   return p;
@@ -751,7 +748,7 @@ int font::scan_papersize(const char *p,
   int test_file = 1;
   char line[255];
 again:
-  if (csdigit(*pp)) {
+  if (su_isdigit(*pp)) {
     if (sscanf(pp, "%lf%1[ipPc],%lf%1[ipPc]", &l, lu, &w, wu) == 4
 	&& l > 0 && w > 0
 	&& unit_scale(&l, lu[0]) && unit_scale(&w, wu[0])) {

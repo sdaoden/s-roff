@@ -21,7 +21,10 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "troff-config.h"
+
+#include "su/strsup.h"
 
 #include "stringclass.h"
 
@@ -520,7 +523,7 @@ static int parse_term(units *v, int scale_indicator,
       *v += c - '0';
       tok.next();
       c = tok.ch();
-    } while (csdigit(c));
+    } while (su_isdigit(c));
     break;
   case '/':
   case '*':
@@ -543,7 +546,7 @@ static int parse_term(units *v, int scale_indicator,
     tok.next();
     for (;;) {
       c = tok.ch();
-      if (!csdigit(c))
+      if (!su_isdigit(c))
 	break;
       // we may multiply the divisor by 254 later on
       if (divisor <= INT_MAX/2540 && *v <= (INT_MAX - 9)/10) {

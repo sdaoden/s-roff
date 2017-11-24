@@ -35,7 +35,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "cset.h"
 #include "defs.h"
 #include "errarg.h"
 #include "error.h"
@@ -397,7 +396,7 @@ static void read_common_words_file()
   int key_len = 0;
   for (;;) {
     int c = getc(fp);
-    while (c != EOF && !csalnum(c))
+    while (c != EOF && !su_isalnum(c))
       c = getc(fp);
     if (c == EOF)
       break;
@@ -405,7 +404,7 @@ static void read_common_words_file()
       if (key_len < truncate_len)
 	key_buffer[key_len++] = su_tolower(c);
       c = getc(fp);
-    } while (c != EOF && csalnum(c));
+    } while (c != EOF && su_isalnum(c));
     if (key_len >= shortest_len) {
       int h = hash(key_buffer, key_len) % hash_table_size;
       common_words_table[h] = new word_list(key_buffer, key_len,
@@ -433,11 +432,11 @@ static int do_whole_file(const char *filename)
   int key_len = 0;
   int c;
   while ((c = getc(fp)) != EOF) {
-    if (csalnum(c)) {
+    if (su_isalnum(c)) {
       key_len = 1;
       key_buffer[0] = c;
       while ((c = getc(fp)) != EOF) {
-	if (!csalnum(c))
+	if (!su_isalnum(c))
 	  break;
 	if (key_len < truncate_len)
 	  key_buffer[key_len++] = c;
@@ -521,7 +520,7 @@ static int do_file(const char *filename)
       space_count = 0;
       if (c == '%')
 	state = PERCENT;
-      else if (csalnum(c)) {
+      else if (su_isalnum(c)) {
 	state = KEY;
 	key_buffer[0] = c;
 	key_len = 1;
@@ -551,7 +550,7 @@ static int do_file(const char *filename)
 	break;
       default:
 	space_count = 0;
-	if (csalnum(c)) {
+	if (su_isalnum(c)) {
 	  state = KEY;
 	  key_buffer[0] = c;
 	  key_len = 1;
@@ -598,7 +597,7 @@ static int do_file(const char *filename)
       }
       break;
     case KEY:
-      if (csalnum(c)) {
+      if (su_isalnum(c)) {
 	if (key_len < truncate_len)
 	  key_buffer[key_len++] = c;
 	else
@@ -614,7 +613,7 @@ static int do_file(const char *filename)
       }
       break;
     case DISCARD:
-      if (!csalnum(c)) {
+      if (!su_isalnum(c)) {
 	possibly_store_key(key_buffer, key_len);
 	key_len = 0;
 	if (c == '\n')
@@ -624,7 +623,7 @@ static int do_file(const char *filename)
       }
       break;
     case MIDDLE:
-      if (csalnum(c)) {
+      if (su_isalnum(c)) {
 	state = KEY;
 	key_buffer[0] = c;
 	key_len = 1;
@@ -701,7 +700,7 @@ static int store_key(char *s, int len)
     return 0;
   int is_number = 1;
   for (int i = 0; i < len; i++)
-    if (!csdigit(s[i])) {
+    if (!su_isdigit(s[i])) {
       is_number = 0;
       s[i] = su_tolower(s[i]);
     }

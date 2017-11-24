@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "html-config.h"
 
-#include "cset.h"
 #include "driver.h"
 #include "stringclass.h"
 

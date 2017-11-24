@@ -103,7 +103,7 @@ void token_info::sortify(const char *start, const char *end, string &result)
     result += sort_key;
   else if (type == TOKEN_UPPER || type == TOKEN_LOWER) {
     for (; start < end; start++)
-      if (csalpha(*start))
+      if (su_isalpha(*start))
 	result += su_tolower(*start);
   }
 }
@@ -115,7 +115,7 @@ int token_info::sortify_non_empty(const char *start, const char *end) const
   if (type != TOKEN_UPPER && type != TOKEN_LOWER)
     return 0;
   for (; start < end; start++)
-    if (csalpha(*start))
+    if (su_isalpha(*start))
       return 1;
   return 0;
 }

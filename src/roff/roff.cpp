@@ -32,7 +32,6 @@
 #include <signal.h>
 #include <stdlib.h>
 
-#include "cset.h"
 #include "defs.h"
 #include "device.h"
 #include "errarg.h"
@@ -450,7 +449,7 @@ void handle_unknown_desc_command(const char *command, const char *arg,
 			       "`prepro' command requires an argument");
     else {
       for (const char *p = arg; *p; p++)
-	if (csspace(*p)) {
+	if (su_isspace(*p)) {
 	  error_with_file_and_line(filename, lineno,
 				   "invalid `prepro' argument `%1'"
 				   ": program name required", arg);
@@ -465,7 +464,7 @@ void handle_unknown_desc_command(const char *command, const char *arg,
 			       "`postpro' command requires an argument");
     else {
       for (const char *p = arg; *p; p++)
-	if (csspace(*p)) {
+	if (su_isspace(*p)) {
 	  error_with_file_and_line(filename, lineno,
 				   "invalid `postpro' argument `%1'"
 				   ": program name required", arg);

@@ -145,7 +145,7 @@ int main(int argc, char **argv)
 	  annotation_field = 'X';
 	  annotation_macro = "AP";
 	}
-	else if (csalnum(opt[0]) && opt[1] == '.' && opt[2] != '\0') {
+	else if (su_isalnum(opt[0]) && opt[1] == '.' && opt[2] != '\0') {
 	  annotation_field = opt[0];
 	  annotation_macro = opt + 2;
 	}
@@ -192,7 +192,7 @@ int main(int argc, char **argv)
 	  }
 	  const char *ptr;
 	  for (ptr = num; *ptr; ptr++)
-	    if (!csdigit(*ptr)) {
+	    if (!su_isdigit(*ptr)) {
 	      error("bad character `%1' in argument to -f option", *ptr);
 	      break;
 	    }
@@ -222,7 +222,7 @@ int main(int argc, char **argv)
       case 'k':
 	{
 	  char buf[5];
-	  if (csalpha(*++opt))
+	  if (su_isalpha(*++opt))
 	    buf[0] = *opt++;
 	  else {
 	    if (*opt != '\0')
@@ -241,7 +241,7 @@ int main(int argc, char **argv)
 	{
 	  const char *ptr;
 	  for (ptr = ++opt; *ptr; ptr++)
-	    if (!csdigit(*ptr)) {
+	    if (!su_isdigit(*ptr)) {
 	      error("argument to `a' option not a number");
 	      break;
 	    }
@@ -419,9 +419,9 @@ static int is_list(const string &str)
 {
   const char *start = str.contents();
   const char *end = start + str.length();
-  while (end > start && csspace(end[-1]))
+  while (end > start && su_isspace(end[-1]))
     end--;
-  while (start < end && csspace(*start))
+  while (start < end && su_isspace(*start))
     start++;
   return end - start == 6 && memcmp(start, "$LIST$", 6) == 0;
 }
@@ -994,7 +994,7 @@ void output_references()
 static reference *find_reference(const char *query, int query_len)
 {
   // This is so that error messages look better.
-  while (query_len > 0 && csspace(query[query_len - 1]))
+  while (query_len > 0 && su_isspace(query[query_len - 1]))
     query_len--;
   string str;
   for (int i = 0; i < query_len; i++)
@@ -1047,7 +1047,7 @@ static reference *make_reference(const string &str, unsigned *flagsp)
       *flagsp |= FORCE_LEFT_BRACKET;
     else if (*start == ']')
       *flagsp |= FORCE_RIGHT_BRACKET;
-    else if (!csspace(*start))
+    else if (!su_isspace(*start))
       break;
   }
   if (start >= end) {
@@ -1089,7 +1089,7 @@ static void trim_blanks(string &str)
 {
   const char *start = str.contents();
   const char *end = start + str.length();
-  while (end > start && end[-1] != '\n' && csspace(end[-1]))
+  while (end > start && end[-1] != '\n' && su_isspace(end[-1]))
     --end;
   str.set_length(end - start);
 }
@@ -1145,7 +1145,7 @@ void do_bib(const char *filename)
       }
       else if (c == '.')
 	state = BODY_DOT;
-      else if (csspace(c)) {
+      else if (su_isspace(c)) {
 	state = BODY_BLANK;
 	body += c;
       }
@@ -1160,7 +1160,7 @@ void do_bib(const char *filename)
 	do_ref(body);
 	state = START;
       }
-      else if (csspace(c))
+      else if (su_isspace(c))
 	body += c;
       else {
 	body += c;
