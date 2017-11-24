@@ -22,22 +22,21 @@
 #include "config.h"
 #include "lib.h"
 
-#include <ctype.h>
+#include "su/strsup.h"
 
-#include "cset.h"
 #include "stringclass.h"
 
 int interpret_lf_args(const char *p)
 {
   while (*p == ' ')
     p++;
-  if (!csdigit(*p))
+  if (!su_isdigit(*p))
     return 0;
   int ln = 0;
   do {
-    ln *= 10;
+    ln *= 10; /* TODO inline atoi */
     ln += *p++ - '0';
-  } while (csdigit(*p));
+  } while (su_isdigit(*p));
   if (*p != ' ' && *p != '\n' && *p != '\0')
     return 0;
   while (*p == ' ')
@@ -51,7 +50,7 @@ int interpret_lf_args(const char *p)
        *q != '\0' && *q != ' ' && *q != '\n' && *q != '\\';
        q++)
     ;
-  string tem(p, q - p);
+  string tem(p, q - p); /* FIXME false usage (of new cstring) */
   while (*q == ' ')
     q++;
   if (*q != '\n' && *q != '\0')

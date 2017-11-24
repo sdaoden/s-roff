@@ -21,7 +21,11 @@
 
 #include "config.h"
 #include "pic-config.h"
-#ifdef TEX_SUPPORT
+#ifdef TEX_SUPPORT /* TODO */
+
+#include "lib.h"
+
+#include "su/strsup.h"
 
 #include "common.h"
 #include "pic.h"
@@ -423,9 +427,9 @@ tpic_output::tpic_output()
 void tpic_output::command(const char *s, const char *filename, int lineno)
 {
   assert(s[0] == '.');
-  if (s[1] == 'p' && s[2] == 's' && (s[3] == '\0' || !csalpha(s[3]))) {
+  if (s[1] == 'p' && s[2] == 's' && (s[3] == '\0' || !su_isalpha(s[3]))) {
     const char *p = s + 3;
-    while (csspace(*p))
+    while (su_isspace(*p))
       p++;
     if (*p == '\0') {
       int temp = default_pen_size;

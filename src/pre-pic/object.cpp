@@ -973,7 +973,7 @@ static void adjust_objectless_places(PTABLE(place) *tbl, const position &a)
   const char *key;
   place *pl;
   while (iter.next(&key, &pl))
-    if (key && csupper(key[0]) && pl->obj == 0) {
+    if (key && su_isupper(key[0]) && pl->obj == 0) {
       pl->x += a.x;
       pl->y += a.y;
     }

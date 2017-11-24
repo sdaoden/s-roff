@@ -401,17 +401,17 @@ options *process_options(table_input &in)
     return opt;
   char *p = &line[0];
   for (;;) {
-    while (!csalpha(*p) && *p != '\0')
+    while (!su_isalpha(*p) && *p != '\0')
       p++;
     if (*p == '\0')
       break;
     char *q = p;
-    while (csalpha(*q))
+    while (su_isalpha(*q))
       q++;
     char *arg = 0;
     if (*q != '(' && *q != '\0')
       *q++ = '\0';
-    while (csspace(*q))
+    while (su_isspace(*q))
       q++;
     if (*q == '(') {
       *q++ = '\0';
@@ -872,7 +872,7 @@ format *process_format(table_input &in, options *opt,
 	  do {
 	    w = w*10 + (c - '0');
 	    c = in.get();
-	  } while (c != EOF && csdigit(c));
+	  } while (c != EOF && su_isdigit(c));
 	  list->separation = w;
 	}
 	break;
@@ -920,7 +920,7 @@ format *process_format(table_input &in, options *opt,
 	  list->font = c;
 	  char cc = c;
 	  c = in.get();
-	  if (!csdigit(cc)
+	  if (!su_isdigit(cc)
 	      && c != EOF && c != ' ' && c != '\t' && c != '.' && c != '\n') {
 	    list->font += char(c);
 	    c = in.get();
@@ -959,7 +959,7 @@ format *process_format(table_input &in, options *opt,
 	  list->macro = c;
 	  char cc = c;
 	  c = in.get();
-	  if (!csdigit(cc)
+	  if (!su_isdigit(cc)
 	      && c != EOF && c != ' ' && c != '\t' && c != '.' && c != '\n') {
 	    list->macro += char(c);
 	    c = in.get();
@@ -975,7 +975,7 @@ format *process_format(table_input &in, options *opt,
 	  list->point_size.inc = (c == '+' ? 1 : -1);
 	  c = in.get();
 	}
-	if (c == EOF || !csdigit(c)) {
+	if (c == EOF || !su_isdigit(c)) {
 	  error("`p' modifier must be followed by number");
 	  list->point_size.inc = 0;
 	}
@@ -984,7 +984,7 @@ format *process_format(table_input &in, options *opt,
 	    list->point_size.val *= 10;
 	    list->point_size.val += c - '0';
 	    c = in.get();
-	  } while (c != EOF && csdigit(c));
+	  } while (c != EOF && su_isdigit(c));
 	}
 	if (list->point_size.val > MAX_POINT_SIZE
 	    || list->point_size.val < -MAX_POINT_SIZE) {
@@ -1012,7 +1012,7 @@ format *process_format(table_input &in, options *opt,
 	  list->vertical_spacing.inc = (c == '+' ? 1 : -1);
 	  c = in.get();
 	}
-	if (c == EOF || !csdigit(c)) {
+	if (c == EOF || !su_isdigit(c)) {
 	  error("`v' modifier must be followed by number");
 	  list->vertical_spacing.inc = 0;
 	}
@@ -1021,7 +1021,7 @@ format *process_format(table_input &in, options *opt,
 	    list->vertical_spacing.val *= 10;
 	    list->vertical_spacing.val += c - '0';
 	    c = in.get();
-	  } while (c != EOF && csdigit(c));
+	  } while (c != EOF && su_isdigit(c));
 	}
 	if (list->vertical_spacing.val > MAX_VERTICAL_SPACING
 	    || list->vertical_spacing.val < -MAX_VERTICAL_SPACING) {
@@ -1056,13 +1056,13 @@ format *process_format(table_input &in, options *opt,
 	  }
 	  else
 	    list->width = "";
-	  if (c == EOF || !csdigit(c))
+	  if (c == EOF || !su_isdigit(c))
 	    error("bad argument for `w' modifier");
 	  else {
 	    do {
 	      list->width += char(c);
 	      c = in.get();
-	    } while (c != EOF && csdigit(c));
+	    } while (c != EOF && su_isdigit(c));
 	  }
 	}
 	// `w' and `x' are mutually exclusive
@@ -1254,7 +1254,7 @@ table *process_data(table_input &in, format *f, options *opt)
       break;
     if (c == '.') {
       int d = in.get();
-      if (d != EOF && csdigit(d)) {
+      if (d != EOF && su_isdigit(d)) {
 	in.unget(d);
 	type = DATA_INPUT_LINE;
       }

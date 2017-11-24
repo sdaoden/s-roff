@@ -708,11 +708,10 @@ interpret(char *line)
   str2[0] = '\0';
   sscanf(line, "%80s%80s", &str1[0], &str2[0]);
   for (chr = &str1[0]; *chr; chr++)	/* convert command to */
-    if (isupper(*chr))
+    if (su_isupper(*chr))
       *chr = su_tolower(*chr);	/* lower case */
 
   switch (str1[0]) {
-
   case '1':
   case '2':			/* font sizes */
   case '3':
@@ -762,7 +761,7 @@ interpret(char *line)
     break;
 
   case 'l':			/* l */
-    if (isdigit(str1[1])) {	/* set stipple index */
+    if (su_isdigit(str1[1])) {	/* set stipple index */
       int idx = atoi(str1 + 1), val;
 
       if (idx < 0 || idx > NSTIPPLES) {

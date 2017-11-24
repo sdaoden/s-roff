@@ -26,8 +26,6 @@
 
 #include "su/strsup.h"
 
-#include <ctype.h>
-
 #include "eqn.h"
 #include "pbox.h"
 #include "ptable.h"
@@ -539,8 +537,8 @@ void init_char_table()
   char_table['>'].spacing_type = s_relation;
   char_table['<'].spacing_type = s_relation;
   char_table['*'].spacing_type = s_binary;
-  for (int i = 0; i < 256; i++)
-    if (csalpha(i))
+  for (ui8 i = 0; i < NELEM(char_table); ++i)
+    if (su_isalpha(i))
       char_table[i].font_type = LETTER_TYPE;
 }
 
@@ -604,7 +602,7 @@ void char_box::output()
       fputs("\\fP", stdout);
   }
   else if (output_format == mathml) {
-    if (isdigit(c))
+    if (su_isdigit(c))
       printf("<mn>");
     else if (char_table[c].spacing_type)
       printf("<mo>");
@@ -618,7 +616,7 @@ void char_box::output()
       printf("&amp;");
     else
       putchar(c);
-    if (isdigit(c))
+    if (su_isdigit(c))
       printf("</mn>");
     else if (char_table[c].spacing_type)
       printf("</mo>");

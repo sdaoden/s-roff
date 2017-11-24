@@ -4988,7 +4988,7 @@ node *make_glyph_node(charinfo *s, environment *env, int no_error_message = 0)
       if (!no_error_message && s->first_time_not_found()) {
 	unsigned char input_code = s->get_ascii_code();
 	if (input_code != 0) {
-	  if (csgraph(input_code))
+	  if (su_isgraph(input_code))
 	    warning(WARN_CHAR, "can't find character `%1'", input_code);
 	  else
 	    warning(WARN_CHAR, "can't find character with input code %1",

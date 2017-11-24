@@ -175,11 +175,11 @@ char *process_body(const char *body)
   char *s = su_strdup(body);
   int j = 0;
   for (int i = 0; s[i] != '\0'; i++)
-    if (s[i] == '$' && csdigit(s[i + 1])) {
+    if (s[i] == '$' && su_isdigit(s[i + 1])) {
       int n = 0;
       int start = i;
       i++;
-      while (csdigit(s[i]))
+      while (su_isdigit(s[i]))
 	if (n > MAX_ARG)
 	  i++;
 	else
@@ -973,7 +973,7 @@ int get_token(int lookup_flag)
 	  n += c - '0';
 	  context_buffer += char(c);
 	  c = input_stack::peek_char();
-	  if (c == EOF || !csdigit(c))
+	  if (c == EOF || !su_isdigit(c))
 	    break;
 	  c = input_stack::get_char();
 	}
@@ -984,7 +984,7 @@ int get_token(int lookup_flag)
 	    token_double += c - '0';
 	    context_buffer += char(c);
 	    c = input_stack::peek_char();
-	    if (c == EOF || !csdigit(c))
+	    if (c == EOF || !su_isdigit(c))
 	      break;
 	    c = input_stack::get_char();
 	  }
@@ -1011,7 +1011,7 @@ int get_token(int lookup_flag)
 	  double factor = 1.0;
 	  for (;;) {
 	    c = input_stack::peek_char();
-	    if (c == EOF || !csdigit(c))
+	    if (c == EOF || !su_isdigit(c))
 	      break;
 	    input_stack::get_char();
 	    context_buffer += char(c);
@@ -1039,7 +1039,7 @@ int get_token(int lookup_flag)
 	    sign = c;
 	    input_stack::get_char();
 	    c = input_stack::peek_char();
-	    if (c == EOF || !csdigit(c)) {
+	    if (c == EOF || !su_isdigit(c)) {
 	      input_stack::push_back(sign);
 	      input_stack::push_back(echar);
 	      return NUMBER;
@@ -1048,7 +1048,7 @@ int get_token(int lookup_flag)
 	    context_buffer += char(sign);
 	  }
 	  else {
-	    if (c == EOF || !csdigit(c)) {
+	    if (c == EOF || !su_isdigit(c)) {
 	      input_stack::push_back(echar);
 	      return NUMBER;
 	    }
@@ -1059,7 +1059,7 @@ int get_token(int lookup_flag)
 	  n = c - '0';
 	  for (;;) {
 	    c = input_stack::peek_char();
-	    if (c == EOF || !csdigit(c))
+	    if (c == EOF || !su_isdigit(c))
 	      break;
 	    input_stack::get_char();
 	    context_buffer += char(c);
@@ -1142,7 +1142,7 @@ int get_token(int lookup_flag)
     case '.':
       {
 	c = input_stack::peek_char();
-	if (c != EOF && csdigit(c)) {
+	if (c != EOF && su_isdigit(c)) {
 	  n = 0;
 	  token_double = 0.0;
 	  context_buffer = '.';
@@ -1225,12 +1225,12 @@ int get_token(int lookup_flag)
       context_buffer = "|";
       return '|';
     default:
-      if (c != EOF && csalpha(c)) {
+      if (c != EOF && su_isalpha(c)) {
 	token_buffer.clear();
 	token_buffer = c;
 	for (;;) {
 	  c = input_stack::peek_char();
-	  if (c == EOF || (!csalnum(c) && c != '_'))
+	  if (c == EOF || (!su_isalnum(c) && c != '_'))
 	    break;
 	  input_stack::get_char();
 	  token_buffer += char(c);
@@ -1257,7 +1257,7 @@ int get_token(int lookup_flag)
 	}
 	if (!def) {
 	  context_buffer = token_buffer;
-	  if (csupper(token_buffer[0]))
+	  if (su_isupper(token_buffer[0]))
 	    return LABEL;
 	  else
 	    return VARIABLE;
@@ -1757,13 +1757,13 @@ char *get_thru_arg()
     input_stack::get_char();
     c = input_stack::peek_char();
   }
-  if (c != EOF && csalpha(c)) {
+  if (c != EOF && su_isalpha(c)) {
     // looks like a macro
     input_stack::get_char();
     token_buffer = c;
     for (;;) {
       c = input_stack::peek_char();
-      if (c == EOF || (!csalnum(c) && c != '_'))
+      if (c == EOF || (!su_isalnum(c) && c != '_'))
 	break;
       input_stack::get_char();
       token_buffer += char(c);

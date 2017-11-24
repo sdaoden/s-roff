@@ -20,7 +20,10 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "troff-config.h"
+
+#include "su/strsup.h"
 
 #include <math.h>
 
@@ -1213,7 +1216,7 @@ void font_change()
   }
   else {
     for (const char *p = s.contents(); p != 0 && *p != 0; p++)
-      if (!csdigit(*p)) {
+      if (!su_isdigit(*p)) {
 	is_number = 0;
 	break;
       }
@@ -3886,7 +3889,7 @@ void hyphen_trie::read_patterns_file(const char *name, int append,
 	  c = fcp->get_c();
 	} while (c != EOF && c != '\n');
       }
-      if (c == EOF || !csspace(c))
+      if (c == EOF || !su_isspace(c))
 	break;
       c = hpf_getc(fcp);
     }
@@ -3904,19 +3907,19 @@ void hyphen_trie::read_patterns_file(const char *name, int append,
     num[0] = 0;
     if (!(c == '{' || c == '}')) {	// skip braces at line start
       do {				// scan patterns
-	if (csdigit(c))
+	if (su_isdigit(c))
 	  num[i] = c - '0';
 	else {
 	  buf[i++] = c;
 	  num[i] = 0;
 	}
 	c = hpf_getc(fcp);
-      } while (i < WORD_MAX && c != EOF && !csspace(c)
+      } while (i < WORD_MAX && c != EOF && !su_isspace(c)
 	       && c != '%' && c != '{' && c != '}');
     }
     if (!traditional) {
       if (i >= 9 && !strncmp(buf + i - 9, "\\patterns", 9)) {
-	while (csspace(c))
+	while (su_isspace(c))
 	  c = hpf_getc(fcp);
 	if (c == '{') {
 	  if (have_patterns || have_hyphenation)
@@ -3931,7 +3934,7 @@ void hyphen_trie::read_patterns_file(const char *name, int append,
 	}
       }
       else if (i >= 12 && !strncmp(buf + i - 12, "\\hyphenation", 12)) {
-	while (csspace(c))
+	while (su_isspace(c))
 	  c = hpf_getc(fcp);
 	if (c == '{') {
 	  if (have_patterns || have_hyphenation)

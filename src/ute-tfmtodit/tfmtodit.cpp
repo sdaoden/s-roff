@@ -61,7 +61,6 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include "cset.h"
 #include "errarg.h"
 #include "error.h"
 #include "nonposix.h"
@@ -628,7 +627,7 @@ int read_map(const char *file, char_list **table)
   while (fgets(buf, int(sizeof(buf)), fp)) {
     lineno++;
     char *ptr = buf;
-    while (csspace(*ptr))
+    while (su_isspace(*ptr))
       ptr++;
     if (*ptr == '\0' || *ptr == '#')
       continue;

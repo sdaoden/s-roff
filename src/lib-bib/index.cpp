@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#include "cset.h"
 #include "defs.h"
 #include "errarg.h"
 #include "error.h"
@@ -462,12 +461,12 @@ const char *index_search_item::munge_filename(const char *filename)
 
 const int *index_search_item::search1(const char **pp, const char *end)
 {
-  while (*pp < end && !csalnum(**pp))
+  while (*pp < end && !su_isalnum(**pp))
     *pp += 1;
   if (*pp >= end)
     return 0;
   const char *start = *pp;
-  while (*pp < end && csalnum(**pp))
+  while (*pp < end && su_isalnum(**pp))
     *pp += 1;
   int len = *pp - start;
   if (len < header.shortest)
@@ -476,7 +475,7 @@ const int *index_search_item::search1(const char **pp, const char *end)
     len = header.truncate;
   int is_number = 1;
   for (int i = 0; i < len; i++)
-    if (csdigit(start[i]))
+    if (su_isdigit(start[i]))
       key_buffer[i] = start[i];
     else {
       key_buffer[i] = su_tolower(start[i]);
@@ -582,7 +581,7 @@ void index_search_item::read_common_words_file()
   int key_len = 0;
   for (;;) {
     int c = getc(fp);
-    while (c != EOF && !csalnum(c))
+    while (c != EOF && !su_isalnum(c))
       c = getc(fp);
     if (c == EOF)
       break;
@@ -590,7 +589,7 @@ void index_search_item::read_common_words_file()
       if (key_len < header.truncate)
 	key_buffer[key_len++] = su_tolower(c);
       c = getc(fp);
-    } while (c != EOF && csalnum(c));
+    } while (c != EOF && su_isalnum(c));
     if (key_len >= header.shortest) {
       int h = hash(key_buffer, key_len) % common_words_table_size;
       while (common_words_table[h]) {

@@ -22,11 +22,11 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "html-config.h"
 
 #include <ctype.h>
 
-#include "cset.h"
 #include "driver.h"
 #include "stringclass.h"
 
@@ -85,24 +85,24 @@ int tabs::compatible (const char *s)
     return false;  // no tab stops defined
 
   // move over tag name
-  while ((*s != (char)0) && !isspace(*s))
+  while ((*s != (char)0) && !su_isspace(*s))
     s++;
 
   while (*s != (char)0 && last != NULL) {
     // move over white space
-    while ((*s != (char)0) && isspace(*s))
+    while ((*s != (char)0) && su_isspace(*s))
       s++;
     // collect alignment
     align = *s;
     // move over alignment
     s++;
     // move over white space
-    while ((*s != (char)0) && isspace(*s))
+    while ((*s != '\0') && su_isspace(*s))
       s++;
     // collect tab position
     total = atoi(s);
     // move over tab position
-    while ((*s != (char)0) && !isspace(*s))
+    while ((*s != (char)0) && !su_isspace(*s))
       s++;
     if (last->alignment != align || last->position != total)
       return false;
@@ -125,24 +125,24 @@ void tabs::init (const char *s)
   clear(); // remove any tab stops
 
   // move over tag name
-  while ((*s != (char)0) && !isspace(*s))
+  while ((*s != (char)0) && !su_isspace(*s))
     s++;
 
   while (*s != (char)0) {
     // move over white space
-    while ((*s != (char)0) && isspace(*s))
+    while ((*s != (char)0) && su_isspace(*s))
       s++;
     // collect alignment
     align = *s;
     // move over alignment
     s++;
     // move over white space
-    while ((*s != (char)0) && isspace(*s))
+    while ((*s != (char)0) && su_isspace(*s))
       s++;
     // collect tab position
     total = atoi(s);
     // move over tab position
-    while ((*s != (char)0) && !isspace(*s))
+    while ((*s != (char)0) && !su_isspace(*s))
       s++;
     if (last == NULL) {
       tab = new tab_position;

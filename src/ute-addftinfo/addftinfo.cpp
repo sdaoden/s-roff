@@ -30,7 +30,6 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include "cset.h"
 #include "errarg.h"
 #include "error.h"
 #include "guess.h"
@@ -164,11 +163,11 @@ static void convert_font(const font_params &param, FILE *infp, FILE *outfp)
     s += '\0';
     string name;
     const char *p = s.contents();
-    while (csspace(*p))
+    while (su_isspace(*p))
       p++;
-    while (*p != '\0' && !csspace(*p))
+    while (*p != '\0' && !su_isspace(*p))
       name += *p++;
-    while (csspace(*p))
+    while (su_isspace(*p))
       p++;
     for (const char *q = s.contents(); q < p; q++)
       putc(*q, outfp);

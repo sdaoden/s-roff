@@ -33,7 +33,6 @@
 
 #include <time.h>
 
-#include "cset.h"
 #include "driver.h"
 #include "file_case.h"
 #include "nonposix.h"
@@ -82,7 +81,7 @@ double radians(double d)
 // PostScript file using \nnn, so we really want the character to be
 // less than 0200.
 
-inline int is_ascii(char c)
+inline int is_ascii(char c) /* FIXME rf_cclass + EBCDIC? -> TOASCII ! */
 {
   return (unsigned char)c < 0200;
 }
@@ -205,7 +204,7 @@ ps_output &ps_output::put_string(const char *s, int n)
   int i;
   for (i = 0; i < n; i++) {
     char c = s[i];
-    if (is_ascii(c) && csprint(c)) {
+    if (is_ascii(c) && su_isprint(c)) {
       if (c == '(' || c == ')' || c == '\\')
 	len += 2;
       else
@@ -249,7 +248,7 @@ ps_output &ps_output::put_string(const char *s, int n)
     col++;
     for (i = 0; i < n; i++) {
       char c = s[i];
-      if (is_ascii(c) && csprint(c)) {
+      if (is_ascii(c) && su_isprint(c)) {
 	if (c == '(' || c == ')' || c == '\\')
 	  len = 2;
 	else
@@ -795,7 +794,7 @@ void ps_printer::define_encoding(const char *encoding, int encoding_index)
   char buf[BUFFER_SIZE];
   for (int lineno = 1; fcp->get_line(buf, BUFFER_SIZE) != NULL; ++lineno) {
     char *p = buf;
-    while (csspace(*p))
+    while (su_isspace(*p))
       p++;
     if (*p != '#' && *p != '\0' && (p = strtok(buf, WS)) != 0) {
       size_t j;
@@ -1594,7 +1593,7 @@ static int check_line_lengths(const char *p)
 
 void ps_printer::_do_exec(char *arg, const environment *env)
 {
-  while (csspace(*arg))
+  while (su_isspace(*arg))
     arg++;
   if (*arg == '\0') {
     error("missing argument to X exec command");
@@ -1619,7 +1618,7 @@ void ps_printer::_do_exec(char *arg, const environment *env)
 
 void ps_printer::_do_file(char *arg, const environment *env)
 {
-  while (csspace(*arg))
+  while (su_isspace(*arg))
     arg++;
   if (*arg == '\0') {
     error("missing argument to X file command");
@@ -1645,7 +1644,7 @@ void ps_printer::_do_file(char *arg, const environment *env)
 
 void ps_printer::_do_def(char *arg, const environment *)
 {
-  while (csspace(*arg))
+  while (su_isspace(*arg))
     arg++;
   if (!check_line_lengths(arg))
     warning("lines in X def command should"
@@ -1671,7 +1670,7 @@ void ps_printer::_do_mdef(char *arg, const environment *)
     return;
   }
   arg = p;
-  while (csspace(*arg))
+  while (su_isspace(*arg))
     arg++;
   if (!check_line_lengths(arg))
     warning("lines in X mdef command should"
@@ -1701,7 +1700,7 @@ void ps_printer::_do_import(char *arg, const environment *env)
     parms[nparms++] = int(n);
     p = end;
   }
-  if (csalpha(*p) && (p[1] == '\0' || p[1] == ' ' || p[1] == '\n')) {
+  if (su_isalpha(*p) && (p[1] == '\0' || p[1] == ' ' || p[1] == '\n')) {
     error("scaling indicators not allowed in arguments for X import command");
     return;
   }

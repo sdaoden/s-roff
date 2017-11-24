@@ -26,7 +26,6 @@
 
 #include "su/strsup.h"
 
-#include "cset.h"
 #include "driver.h"
 #include "file_case.h"
 #include "stringclass.h"
@@ -45,7 +44,7 @@ cset white_space("\n\r \t\f");
 string an_empty_string;
 
 char valid_input_table[256]= {
-#ifndef IS_EBCDIC_HOST
+#ifndef IS_EBCDIC_HOST /* FIXME */
   0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0,
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -1067,7 +1066,7 @@ void resource_manager::process_file(int rank, file_case *fcp, FILE *outfp)
 jleave:
     rf_current_filename_set(saved_filename);
     rf_current_lineno_set(saved_lineno);
-    rf_free(saved_filename);
+    su_free(saved_filename);
 }
 
 void resource_manager::read_download_file()
