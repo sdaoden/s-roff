@@ -114,7 +114,7 @@ The following command-line options are understood:
 Prepare output for printer
 .IR dev .
 The default device is
-.BR @DEVICE@ .
+.BR @VAL_DEVICE@ .
 See
 .BR @L_ROFF@ (@MAN1EXT@)
 for acceptable devices.

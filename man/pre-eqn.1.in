@@ -168,7 +168,7 @@ MathML markup rather than troff commands, and
 .B eqnrc
 is not loaded at all.
 The default output device is
-.BR @DEVICE@ .
+.BR @VAL_DEVICE@ .
 .
 .TP
 .BI \-M dir

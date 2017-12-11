@@ -370,7 +370,7 @@ Unicode character set in \%UTF-8 encoding.
 .
 .IP
 The default device is
-.BR @DEVICE@ .
+.BR @VAL_DEVICE@ .
 .
 .TP
 .B \-U
@@ -817,7 +817,7 @@ command in the device description file; see
 .
 .P
 The default device is
-.BR @DEVICE@ .
+.BR @VAL_DEVICE@ .
 .
 .\"
 .SS Postprocessors
@@ -1016,7 +1016,7 @@ commands use temporary files.
 .EnvVar @U_ROFF@_TYPESETTER
 Preset the default device.
 If this is not set the
-.B @DEVICE@
+.B @VAL_DEVICE@
 device is used as default.
 This device name is overwritten by the option
 .BR \-T .

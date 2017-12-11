@@ -34,7 +34,6 @@
 #include <time.h>
 
 #include "color.h"
-#include "device.h"
 #include "errarg.h"
 #include "error.h"
 #include "searchpath.h"

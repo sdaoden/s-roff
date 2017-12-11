@@ -77,7 +77,6 @@
 #include "errarg.h"
 #include "error.h"
 #include "defs.h"
-#include "device.h"
 #include "file-case.h"
 #include "font.h"
 #include "macropath.h"
@@ -256,7 +255,7 @@ main(int argc,
 	break;
 
       case 'T':		/* final output typesetter name */
-	device = operand(&argc, &argv);
+	rf_current_device_set(operand(&argc, &argv));
 	break;
 
       case 'M':		/* set library directory */

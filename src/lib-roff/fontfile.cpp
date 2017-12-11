@@ -31,7 +31,6 @@
 #include "su/mem.h"
 
 #include "defs.h"
-#include "device.h"
 #include "file-case.h"
 #include "font.h"
 #include "searchpath.h"
@@ -72,7 +71,7 @@ file_case *font::open_file(const char *name, uint32_t flags)
   assert(!(flags & ~file_case::mux_mask));
 
   // TODO font::open_file: use stringclass once that uses C memory!
-  char const *db = device;
+  char const *db = rf_current_device();
   uz dl = su_cs_len(dev);
   uz nl = su_cs_len(name);
   char *filename = su_TALLOC(char, nl + dl + sizeof("dev-/"));
