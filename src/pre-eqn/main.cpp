@@ -24,7 +24,6 @@
 #include "eqn-config.h"
 
 #include "eqn.h"
-#include "device.h"
 #include "file-case.h"
 #include "htmlhint.h"
 #include "macropath.h"
@@ -314,23 +313,23 @@ int main(int argc, char **argv)
     case 'f':
       set_gfont(optarg);
       break;
-    case 'T':
-      device = optarg;
-      if (strcmp(device, "ps:html") == 0) {
-	device = "ps";
-	html = 1;
+    case 'T':{
+      char const *cp;
+
+      if(!strcmp(cp = optarg, "ps:html")){
+        cp = "ps";
+        html = 1;
+      }else if(!strcmp(cp, "MathML")){
+        output_format = mathml;
+        load_startup_file = 0;
+      }else if(!strcmp(cp, "mathml:xhtml"){
+        cp = "MathML";
+        output_format = mathml;
+        load_startup_file = 0;
+        xhtml = 1;
       }
-      else if (strcmp(device, "MathML") == 0) {
-	output_format = mathml;
-	load_startup_file = 0;
-      }
-      else if (strcmp(device, "mathml:xhtml") == 0) {
-	device = "MathML";
-	output_format = mathml;
-	load_startup_file = 0;
-	xhtml = 1;
-      }
-      break;
+      rf_current_device_set(cp);
+    } break;
     case 's':
       if (!set_gsize(optarg))
 	error("invalid size `%1'", optarg);
@@ -374,23 +373,23 @@ int main(int argc, char **argv)
     default:
       assert(0);
     }
-  init_table(device);
+  init_table(rf_current_device());
   init_char_table();
   if (output_format == troff) {
     printf(".if !'\\*(.T'%s' "
 	   ".if !'\\*(.T'html' "	// the html device uses `-Tps' to render
 				  // equations as images
 	   ".tm warning: %s should have been given a `-T\\*(.T' option\n",
-	   device, rf_current_program());
+	   rf_current_device(), rf_current_program());
     printf(".if '\\*(.T'html' "
 	   ".if !'%s'ps' "
 	   ".tm warning: %s should have been given a `-Tps' option\n",
-	   device, rf_current_program());
+	   rf_current_device(), rf_current_program());
     printf(".if '\\*(.T'html' "
       ".if !'%s'ps' "
       ".tm warning: (it is advisable to invoke " L_ROFF
         " via: " L_ROFF " -Thtml -e)\n",
-      device);
+      rf_current_device());
   }
 
   file_case *fcp;

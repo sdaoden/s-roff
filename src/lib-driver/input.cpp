@@ -113,7 +113,6 @@
 #undef USE_ENV_STACK
 
 #include "driver.h"
-#include "device.h"
 
 #include <ctype.h>
 #include <errno.h>
@@ -209,9 +208,6 @@ public:
 /**********************************************************************
                           external variables
  **********************************************************************/
-
-// exported as extern by device.h;
-const char *device = 0;		  // cancel former init with literal
 
 printer *pr;
 
@@ -1336,7 +1332,7 @@ do_file(const char *filename)
     current_file = stdin;
   else {
     errno = 0;
-    current_file = fopen(filename, "r");
+    current_file = fopen(filename, "r");// TODO file_case!
     if (errno != 0 || current_file == 0) {
       error("can't open file `%1'", filename);
       return;
@@ -1373,12 +1369,12 @@ do_file(const char *filename)
     a_delete str_arg;
     char *tmp_dev = get_string_arg();
     if (pr == 0) {		// note: `pr' initialized after prologue
-      device = tmp_dev;
+      rf_current_device_set(tmp_dev);
       if (!font::load_desc())
 	fatal("couldn't load DESC file, can't continue");
     }
     else {
-      if (device == 0 || strcmp(device, tmp_dev) != 0)
+      if (strcmp(rf_current_device(), tmp_dev))
 	fatal("all files must use the same device");
       a_delete tmp_dev;
     }

@@ -34,7 +34,6 @@
 #include <stdlib.h>
 
 #include "defs.h"
-#include "device.h"
 #include "errarg.h"
 #include "error.h"
 #include "font.h"
@@ -240,13 +239,13 @@ int main(int argc, char **argv)
 	Pargs += 'x';
 	Pargs += '\0';
 	is_xhtml = 1;
-	device = "html";
+	rf_current_device_set("html");
 	break;
       }
       if (strcmp(optarg, "html") == 0)
 	// force soelim to aid the html preprocessor
 	commands[IDX_SOELIM].set_name(command_prefix, "soelim");
-      device = optarg;
+      rf_current_device_set(optarg);
       break;
     case 'F':
       font::command_line_font_dir(optarg);
@@ -301,9 +300,10 @@ int main(int argc, char **argv)
   }
   font::set_unknown_desc_command_handler(handle_unknown_desc_command);
   if (!font::load_desc())
-    fatal("invalid device `%1'", device);
+    fatal("invalid device `%1'", rf_current_device());
   if (!postdriver)
-    fatal("no `postpro' command in DESC file for device `%1'", device);
+    fatal("no `postpro' command in DESC file for device `%1'",
+      rf_current_device());
   if (predriver && !zflag) {
     commands[IDX_TROFF].insert_arg(commands[IDX_TROFF].get_name());
     commands[IDX_TROFF].set_name(predriver);
@@ -334,8 +334,8 @@ int main(int argc, char **argv)
     commands[IDX_POST].set_name(0);
     commands[IDX_SPOOL].set_name(0);
   }
-  commands[IDX_TROFF].append_arg("-T", device);
-  if (strcmp(device, "html") == 0) {
+  commands[IDX_TROFF].append_arg("-T", rf_current_device());
+  if (!strcmp(rf_current_device(), "html")) {
     if (is_xhtml) {
       if (oflag)
 	fatal("`-o' option is invalid with device `xhtml'");
@@ -352,9 +352,9 @@ int main(int argc, char **argv)
     }
   }
   else
-    commands[IDX_EQN].append_arg("-T", device);
+    commands[IDX_EQN].append_arg("-T", rf_current_device());
 
-  commands[IDX_GRN].append_arg("-T", device);
+  commands[IDX_GRN].append_arg("-T", rf_current_device());
 
   int first_index;
   for (first_index = 0; first_index < IDX_TROFF; ++first_index)
