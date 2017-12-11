@@ -40,7 +40,6 @@
 #include <stdlib.h>
 
 #include "defs.h"
-#include "device.h"
 #include "errarg.h"
 #include "error.h"
 #include "file-case.h"
@@ -1185,7 +1184,7 @@ static void alterDeviceTo(int argc, char *argv[], int toImage)
     while (i < argc) {
       if ((strcmp(argv[i], "-Thtml") == 0) ||
 	  (strcmp(argv[i], "-Txhtml") == 0))
-	argv[i] = (char *)IMAGE_DEVICE;
+	argv[i] = rf_UNCONST(IMAGE_DEVICE);
       i++;
     }
   } else {
@@ -1751,7 +1750,7 @@ int main(int argc, char **argv)
   }
   exit(1);
 #endif /* CAPTURE_MODE */
-  device = "html";
+  rf_current_device_set("html");
   if (!font::load_desc())
     fatal("cannot find dev-html/DESC, exiting");
   image_gen = font::image_generator;

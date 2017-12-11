@@ -1,4 +1,4 @@
-/*@ (Current) Program and file names / line numbers.
+/*@ (Current) Program, device and file names / line numbers.
  *
  * Copyright (c) 2017 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
@@ -14,19 +14,19 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#define su_FILE "lib_roff_current_name"
+#define su_FILE "lib_roff__current_name"
+#define rf_SOURCE
+#define rf_SOURCE_LIB_ROFF_CURRENT_NAME
 
 #include "config.h"
 #include "lib.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
+#include "su/mem.h"
 
 #include "su/code-in.h"
 
-char const *rf__curnam_filename;
-char const *rf__curname_program;
-int rf__curnam_lineno;
-char const *rf__curnam_source_filename;
+struct rf_current_ctx rf__current;
 
 static void a_curnam_set(char const **cpp, char const *ncp);
 static void a_curnam_clear(char const **cpp);
@@ -40,10 +40,10 @@ a_curnam_set(char **cpp, char const *ncp){
    if(*cpp == NIL)
       goto jdup;
 
-   if(su_c_cmp(*cpp, f)){
-      su_mem_free(UNCONST(*cpp));
+   if(su_cs_cmp(*cpp, f)){
+      su_FREE(UNCONST(*cpp));
 jdup:
-      *cpp = su_c_dup(f);
+      *cpp = su_cs_dup(f);
    }
    NYD2_OU;
 }
@@ -52,26 +52,36 @@ static void
 a_curnam_clear(char **cpp){
    NYD2_IN;
    if(*cpp != NIL){
-      su_mem_free(UNCONST(*cpp));
+      su_FREE(UNCONST(*cpp));
       *cpp = NIL;
    }
    NYD2_OU;
 }
 
+char const *
+rf_current_device_set(char const *name){
+   NYD_IN;
+   if(name == NULL && (name = getenv(U_ROFF_TYPESETTER)) == NULL)
+      name = VAL_DEVICE;
+   rf__current.curc_device = name;
+   NYD_OU;
+   return rf__current.curc_device;
+}
+
 void
 rf_current_filename_set(char const *f){
    NYD_IN;
-   ASSERT_RET(f != NIL);
-   a_current_set(&rf__curnam_filename, f);
-   rf__curnam_lineno = 1;
+   ASSERT_NYD_RET(f != NIL);
+   a_curnam_set(&rf__current.curc_filename, f);
+   rf__current.curc_lineno = 1;
    NYD_OU;
 }
 
 void
 rf_current_filename_clear(void){
    NYD_IN;
-   a_curnam_clear(&rf__curnam_filename);
-   rf__curnam_lineno = 0;
+   a_curnam_clear(&rf__current.curc_filename);
+   rf__current.curc_lineno = 0;
    NYD_OU;
 }
 
@@ -81,15 +91,15 @@ rf_current_program_set(char const *argv0){
    char const *prog;
 #endif
    NYD_IN;
-   ASSERT_RET(argv0 != NIL);
+   ASSERT_NYD_RET(argv0 != NIL, );
 
 #if su_OS_EMX || su_OS_MSDOS
-   prog = su_strchr(argv0, '\0');
+   prog = su_cs_find_c(argv0, '\0');
    for(;;){
       if(prog == argv0)
          break;
       --prog;
-      if(su_strchr("\\/:", *prog)){
+      if(su_cs_find_c("\\/:", *prog)){
          ++prog;
          break;
       }
@@ -97,22 +107,22 @@ rf_current_program_set(char const *argv0){
    argv0 = prog;
 #endif /* EMX || MSDOS */
 
-   rf__curnam_program = argv0;
+   rf__current.curc_program = argv0;
    NYD_OU;
 }
 
 void
 rf_current_source_filename_set(char const *f){
    NYD_IN;
-   ASSERT_RET(f != NIL);
-   a_current_set(&rf__curnam_source_filename, f);
+   ASSERT_NYD_RET(f != NIL);
+   a_curnam_set(&rf__current.curc_source_filename, f);
    NYD_OU;
 }
 
 void
 rf_current_source_filename_clear(void){
    NYD_IN;
-   a_curnam_clear(&rf__curnam_source_filename);
+   a_curnam_clear(&rf__current.curc_source_filename);
    NYD_OU;
 }
 

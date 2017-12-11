@@ -25,7 +25,6 @@
 
 #include "su/cstr.h"
 
-#include "device.h"
 #include "driver.h"
 #include "ptable.h"
 

@@ -7476,9 +7476,8 @@ int main(int argc, char **argv)
       include_search_path.command_line_dir(optarg);
       break;
     case 'T':
-      device = optarg;
       tflag = 1;
-      is_html = !su_cs_cmp(device, "html");
+      is_html = !su_cs_cmp(rf_current_device_set(optarg), "html"); // TODO
       break;
     case 'C':
       compatible_flag = 1;
@@ -7572,7 +7571,7 @@ int main(int argc, char **argv)
     }
   if (unsafe_flag)
     mac_path = &macro_path;
-  set_string(".T", device);
+  set_string(".T", rf_current_device());
   init_charset_table();
   init_hpf_code_table();
   if (!font::load_desc())

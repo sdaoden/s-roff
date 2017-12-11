@@ -49,29 +49,46 @@ NSPC_END(rf)
 /* Prototypes and externals {{{ */
 C_DECL_BEGIN
 
-c_decl char *rf__curnam_filename;
-c_decl char const *rf__curname_program;
-c_decl int rf__curnam_lineno;
-c_decl char *rf__curnam_source_filename;
+struct rf_current_ctx{
+   char const *curc_device;
+   char const *curc_filename;
+   char const *curc_program;
+   char const *curc_source_filename;
+   si32 curc_lineno; // -> TODO ui32 uiz!
+#if su_64BIT
+   ui8 curc__pad[4];
+#endif
+};
+
+c_decl struct rf_current_ctx rf__current;
+
+/* The target device.  Sample devices are "ps" (for Postscript),
+ * "html" or "ascii"/"latin1"/"utf8" for TTY.  Give name==NULL for a
+ * default initialization (performed automatically if former used first).
+ * For convenience the latter returns the (final) device name.
+ * Note name is not copied! */
+#define rf_current_device() (rf__current.curc_device == NULL \
+   ? rf_current_device_set(NULL) : rf__current.curc_device)
+c_decl char const *rf_current_device_set(char const *name);
 
 /* Current file name */
-#define rf_current_filename() rf__curnam_filename
+#define rf_current_filename() rf__current.curc_filename
 c_decl void rf_current_filename_set(char const *newf);
 c_decl void rf_current_filename_clear(void);
 
 /* Current line number */
-#define rf_current_lineno() rf__curnam_lineno
-#define rf_current_lineno_set(NEWL) do{rf__curnam_lineno = NEWL;}while(0)
-#define rf_current_lineno_inc() do{++rf__curnam_lineno;}while(0)
-#define rf_current_lineno_dec() do{--rf__curnam_lineno;}while(0)
+#define rf_current_lineno() rf__current.curc_lineno
+#define rf_current_lineno_set(NEWL) do{rf__current.curc_lineno = NEWL;}while(0)
+#define rf_current_lineno_inc() do{++rf__current.curc_lineno;}while(0)
+#define rf_current_lineno_dec() do{--rf__current.curc_lineno;}while(0)
 
 /* Current program executing.  Once initialized, the program does not change
  * during the entire program run.  Note argv0 is not copied! */
-#define rf_current_program() rf__curnam_program
+#define rf_current_program() rf__current.curc_program
 c_decl void rf_current_program_set(char const *argv0);
 
 /* Current source filename */
-#define rf_current_source_filename() rf__curnam_source_filename
+#define rf_current_source_filename() rf__current.curc_source_filename
 c_decl void rf_current_source_filename_set(char const *newf);
 c_decl void rf_current_source_filename_clear(void);
 
