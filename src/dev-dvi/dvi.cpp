@@ -24,8 +24,10 @@
 #include "config.h"
 #include "dvi-config.h"
 
-#include "driver.h"
+#include "lib.h"
 #include "nonposix.h"
+
+#include "device.h"
 #include "paper.h"
 
 static int linewidth = DEFAULT_LINEWIDTH;
@@ -169,9 +171,9 @@ protected:
 public:
   dvi_printer();
   ~dvi_printer();
-  font *make_font(const char *);
-  void begin_page(int);
-  void end_page(int);
+  font *font_make(const char *);
+  OVW void page_begin(int);
+  OVW void page_end(int);
   void set_char(glyph *, font *, const environment *, int, const char *);
   void special(char *, const environment *, char);
   void end_of_line();
@@ -189,7 +191,7 @@ public:
   draw_dvi_printer();
   ~draw_dvi_printer();
   void draw(int code, int *p, int np, const environment *env);
-  void end_page(int);
+  OVW void page_end(int);
 };
 
 dvi_printer::dvi_printer()
@@ -490,7 +492,8 @@ void dvi_printer::postamble()
     out1(filler);
 }
 
-void dvi_printer::begin_page(int i)
+OVW void
+dvi_printer::page_begin(int i)
 {
   page_count++;
   int tem = byte_count;
@@ -522,7 +525,8 @@ void dvi_printer::begin_page(int i)
     set_color(&cur_color);
 }
 
-void dvi_printer::end_page(int)
+OVW void
+dvi_printer::page_end(int)
 {
   set_color(color_symbol::get_default());
   if (pushed)
@@ -531,9 +535,10 @@ void dvi_printer::end_page(int)
   cur_font = 0;
 }
 
-void draw_dvi_printer::end_page(int len)
+OVW void
+draw_dvi_printer::page_end(int len)
 {
-  dvi_printer::end_page(len);
+  dvi_printer::page_end(len);
   output_pen_size = -1;
 }
 
@@ -888,17 +893,22 @@ void draw_dvi_printer::draw(int code, int *p, int np, const environment *env)
   }
 }
 
-font *dvi_printer::make_font(const char *nm)
+font *dvi_printer::font_make(const char *nm)
 {
   return dvi_font::load_dvi_font(nm);
 }
 
-printer *make_printer()
-{
-  if (draw_flag)
-    return new draw_dvi_printer;
+printer *
+device_make_printer(void){
+  printer *rv;
+  rf_NYD_IN;
+
+  if(draw_flag)
+    rv = rf_new(draw_dvi_printer);
   else
-    return new dvi_printer;
+    rv = rf_new(dvi_printer);
+  rf_NYD_OU;
+  return rv;
 }
 
 static void usage(FILE *stream);
@@ -960,10 +970,10 @@ int main(int argc, char **argv)
     }
   SET_BINARY(fileno(stdout));
   if (optind >= argc)
-    do_file("-");
+    device_process_file("-");
   else {
     for (int i = optind; i < argc; i++)
-      do_file(argv[i]);
+      device_process_file(argv[i]);
   }
   return 0;
 }

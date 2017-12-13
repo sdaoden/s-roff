@@ -144,7 +144,7 @@ Don't use the @L_ROFF@ extensions to the troff drawing commands.
 You should use this if you are using a postprocessor that doesn't support
 these extensions.
 The extensions are described in
-.BR @L_ROFF@-out (@MAN5EXT@).
+.BR @L_ROFF@-intofor (@MAN5EXT@).
 The
 .B \-n
 option also causes
@@ -1076,7 +1076,7 @@ macros.
 .SH "SEE ALSO"
 .
 .BR @L_TROFF@ (@MAN1EXT@),
-.BR @L_ROFF@-out (@MAN5EXT@),
+.BR @L_ROFF@-intofor (@MAN5EXT@),
 .BR tex (1),
 .BR gs (1),
 .BR ps2eps (1),

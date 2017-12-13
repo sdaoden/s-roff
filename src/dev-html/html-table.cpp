@@ -27,7 +27,7 @@
 
 #include "su/cs.h"
 
-#include "driver.h"
+#include "device.h"
 #include "stringclass.h"
 
 #include "html.h"
