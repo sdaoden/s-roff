@@ -136,7 +136,7 @@ The actual implementation of
 The @L_ROFF@ program and pointers to all documentation around @T_ROFF@.
 .
 .TP
-.BR @L_ROFF@-out (@MAN5EXT@)
+.BR @L_ROFF@-intofor (@MAN5EXT@)
 The @T_ROFF@ version of the intermediate output language, the basis for
 multi-devicing.
 .

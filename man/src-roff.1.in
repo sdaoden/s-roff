@@ -306,7 +306,7 @@ generates the
 .I intermediate
 .IR output ;
 see
-.BR \%@L_ROFF@-out (@MAN5EXT@).
+.BR \%@L_ROFF@-intofor (@MAN5EXT@).
 Then
 .B @L_ROFF@
 calls a postprocessor to convert
@@ -406,7 +406,7 @@ This will cause
 .B @L_TROFF@
 output to appear on standard output,
 replacing the usual postprocessor output; see
-.BR \%@L_ROFF@-out (@MAN5EXT@).
+.BR \%@L_ROFF@-intofor (@MAN5EXT@).
 .
 .\"
 .SS Transparent Options
@@ -755,7 +755,7 @@ the current locale.
 The formatter program generates
 .IR "intermediate output" ;
 see
-.BR \%@L_ROFF@-out (@MAN7EXT@).
+.BR \%@L_ROFF@-intofor (@MAN5EXT@).
 .
 .\"
 .SS Devices
@@ -1185,7 +1185,7 @@ Roff formatter programs:
 .
 .TP
 The intermediate output language:
-.BR \%@L_ROFF@-out (@MAN7EXT@).
+.BR \%@L_ROFF@-intofor (@MAN5EXT@).
 .
 .TP
 Postprocessors for the output devices:

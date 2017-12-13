@@ -195,7 +195,8 @@ public:
 			// device dependent information about the given
 			// glyph.  Return NULL if there is no special
 			// information.
-  const char *get_name();	// Return the name of this font.
+  char const *name(void) const {return m_name;}
+WAS: const char *get_name();	// Return the name of this font.
   const char *get_internal_name();	// Return the `internalname'
 			// attribute of this font.  Return NULL if it has
 			// none.
@@ -208,7 +209,7 @@ public:
 			// arg1).  Return the name of the size (in arg2),
 			// and the length and width (in arg3 and arg4).
 			// Return 1 in case of success, 0 otherwise.
-  static font *load_font(const char *, int * = 0, int = 0);	// Load the
+  static font *load_font(cstr const &name WAS char *, int * = 0, int = 0);	// Load the
 			// font description file with the given name (arg1)
 			// and return it as a `font' class.  If arg2 points
 			// to an integer variable, set it to 1 if the file
