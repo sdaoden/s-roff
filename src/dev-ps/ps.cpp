@@ -34,7 +34,7 @@
 
 #include <time.h>
 
-#include "driver.h"
+#include "device.h"
 #include "file-case.h"
 #include "nonposix.h"
 #include "paper.h"
@@ -566,19 +566,19 @@ class ps_printer
   int set_encoding_index(ps_font *);
   subencoding *set_subencoding(font *, glyph *, unsigned char *);
   char *get_subfont(subencoding *, const char *);
-  void _do_exec(char *, const environment *);
-  void _do_import(char *, const environment *);
-  void _do_def(char *, const environment *);
-  void _do_mdef(char *, const environment *);
-  void _do_file(char *, const environment *);
-  void _do_invis(char *, const environment *);
-  void _do_endinvis(char *, const environment *);
-  void set_line_thickness_and_color(const environment *);
-  void fill_path(const environment *);
+  void _do_exec(char *, device::context const *);
+  void _do_import(char *, device::context const *);
+  void _do_def(char *, device::context const *);
+  void _do_mdef(char *, device::context const *);
+  void _do_file(char *, device::context const *);
+  void _do_invis(char *, device::context const *);
+  void _do_endinvis(char *, device::context const *);
+  void set_line_thickness_and_color(device::context const *);
+  void fill_path(device::context const *);
   void encode_fonts();
   void encode_subfont(subencoding *);
   void define_encoding(const char *, int);
-  void reencode_font(ps_font *);
+  void reencode_font(ps_font const *);
   void set_color(color_symbol *, int = 0);
 
   const char *media_name();
@@ -589,12 +589,12 @@ class ps_printer
 public:
   ps_printer(double);
   ~ps_printer();
-  void set_char(glyph *, font *, const environment *, int, const char *);
-  void draw(int, int *, int, const environment *);
-  void begin_page(int);
-  void end_page(int);
-  void special(char *, const environment *, char);
-  font *make_font(const char *);
+  void set_char(glyph *, font *, device::context const *, int, const char *);
+  void draw(int, int *, int, device::context const *);
+  OVW void page_begin(int);
+  OVW void page_end(int);
+  void special(char *, device::context const *, char);
+  font *font_make(const char *);
   void end_of_line();
 };
 
@@ -641,20 +641,31 @@ ps_printer::ps_printer(double pl)
   equalise_spaces = font::res >= 72000;
 }
 
-int ps_printer::set_encoding_index(ps_font *f)
-{
-  if (f->encoding_index >= 0)
-    return f->encoding_index;
-  for (font_pointer_list *p = font_list; p; p = p->next)
-    if (p->p != f) {
-      char *encoding = ((ps_font *)p->p)->encoding;
-      int encoding_index = ((ps_font *)p->p)->encoding_index;
-      if (encoding != NULL && encoding_index >= 0
-	  && !su_cs_cmp(f->encoding, encoding)) {
-	return f->encoding_index = encoding_index;
+int
+ps_printer::set_encoding_index(ps_font *f){
+  int rv;
+  NYD_IN;
+
+  if(f->encoding_index >= 0)
+    rv = f->encoding_index;
+  else{
+    for(uz i = 0; i < font_array().count(); ++i){ // XXX parray<T> view!
+      char const *encoding;
+      ps_font const *psfp;
+
+      psfp = S(ps_font const*,font_array().at(i));//FIXME R(,)
+      encoding = psfp->encoding;
+      rv = psfp->encoding_index;
+      if(encoding != NIL && rv >= 0 && !su_cs_cmp(f->encoding, encoding)){
+        f->encoding_index = rv;
+        goto jleave;
       }
     }
-  return f->encoding_index = next_encoding_index++;
+    f->encoding_index = rv = next_encoding_index++;
+  }
+jleave:
+  NYD_OU;
+  return rv;
 }
 
 subencoding *ps_printer::set_subencoding(font *f, glyph *g,
@@ -687,14 +698,14 @@ char *ps_printer::get_subfont(subencoding *sub, const char *stem)
   return sub->subfont;
 }
 
-void ps_printer::set_char(glyph *g, font *f, const environment *env, int w,
+void ps_printer::set_char(glyph *g, font *f, device::context const *dcp, int w,
 			  const char *)
 {
   if (g == space_glyph || invis_count > 0)
     return;
   unsigned char code;
   subencoding *sub = set_subencoding(f, g, &code);
-  style sty(f, sub, env->size, env->height, env->slant);
+  style sty(f, sub, dcp->size(), dcp->height(), dcp->slant());
   if (sty.slant != 0) {
     if (sty.slant > 80 || sty.slant < -80) {
       error("silly slant `%1' degrees", sty.slant);
@@ -704,28 +715,28 @@ void ps_printer::set_char(glyph *g, font *f, const environment *env, int w,
   if (sbuf_len > 0) {
     if (sbuf_len < SBUF_SIZE
 	&& sty == sbuf_style
-	&& sbuf_vpos == env->vpos
-	&& sbuf_color == *env->col) {
-      if (sbuf_end_hpos == env->hpos) {
+	&& sbuf_vpos == dcp->vpos()
+	&& sbuf_color == dcp->outline_color()) {
+      if (sbuf_end_hpos == dcp->hpos()) {
 	sbuf[sbuf_len++] = code;
 	sbuf_end_hpos += w + sbuf_kern;
 	return;
       }
       if (sbuf_len == 1 && sbuf_kern == 0) {
-	sbuf_kern = env->hpos - sbuf_end_hpos;
-	sbuf_end_hpos = env->hpos + sbuf_kern + w;
+	sbuf_kern = dcp->hpos() - sbuf_end_hpos;
+	sbuf_end_hpos = dcp->hpos() + sbuf_kern + w;
 	sbuf[sbuf_len++] = code;
 	return;
       }
-      /* If sbuf_end_hpos - sbuf_kern == env->hpos, we are better off
+      /* If sbuf_end_hpos - sbuf_kern == dcp->hpos(), we are better off
 	 starting a new string. */
-      if (sbuf_len < SBUF_SIZE - 1 && env->hpos >= sbuf_end_hpos
-	  && (sbuf_kern == 0 || sbuf_end_hpos - sbuf_kern != env->hpos)) {
+      if (sbuf_len < SBUF_SIZE - 1 && dcp->hpos() >= sbuf_end_hpos
+	  && (sbuf_kern == 0 || sbuf_end_hpos - sbuf_kern != dcp->hpos())) {
 	if (sbuf_space_code < 0) {
 	  if (f->contains(space_glyph) && !sub) {
 	    sbuf_space_code = f->get_code(space_glyph);
-	    sbuf_space_width = env->hpos - sbuf_end_hpos;
-	    sbuf_end_hpos = env->hpos + w + sbuf_kern;
+	    sbuf_space_width = dcp->hpos() - sbuf_end_hpos;
+	    sbuf_end_hpos = dcp->hpos() + w + sbuf_kern;
 	    sbuf[sbuf_len++] = sbuf_space_code;
 	    sbuf[sbuf_len++] = code;
 	    sbuf_space_count++;
@@ -733,9 +744,9 @@ void ps_printer::set_char(glyph *g, font *f, const environment *env, int w,
 	  }
 	}
 	else {
-	  int diff = env->hpos - sbuf_end_hpos - sbuf_space_width;
+	  int diff = dcp->hpos() - sbuf_end_hpos - sbuf_space_width;
 	  if (diff == 0 || (equalise_spaces && (diff == 1 || diff == -1))) {
-	    sbuf_end_hpos = env->hpos + w + sbuf_kern;
+	    sbuf_end_hpos = dcp->hpos() + w + sbuf_kern;
 	    sbuf[sbuf_len++] = sbuf_space_code;
 	    sbuf[sbuf_len++] = code;
 	    sbuf_space_count++;
@@ -752,16 +763,16 @@ void ps_printer::set_char(glyph *g, font *f, const environment *env, int w,
   }
   sbuf_len = 1;
   sbuf[0] = code;
-  sbuf_end_hpos = env->hpos + w;
-  sbuf_start_hpos = env->hpos;
-  sbuf_vpos = env->vpos;
+  sbuf_end_hpos = dcp->hpos() + w;
+  sbuf_start_hpos = dcp->hpos();
+  sbuf_vpos = dcp->vpos();
   sbuf_style = sty;
   sbuf_space_code = -1;
   sbuf_space_width = 0;
   sbuf_space_count = sbuf_space_diff_count = 0;
   sbuf_kern = 0;
-  if (sbuf_color != *env->col)
-    set_color(env->col);
+  if (sbuf_color != dcp->outline_color())
+    set_color(dcp->outline_color());
 }
 
 static char *make_encoding_name(int encoding_index)
@@ -824,7 +835,7 @@ void ps_printer::define_encoding(const char *encoding, int encoding_index)
   delete fcp;
 }
 
-void ps_printer::reencode_font(ps_font *f)
+void ps_printer::reencode_font(ps_font const *f)
 {
   out.put_literal_symbol(f->reencoded_name)
      .put_symbol(make_encoding_name(f->encoding_index))
@@ -836,18 +847,21 @@ void ps_printer::encode_fonts()
 {
   if (next_encoding_index == 0)
     return;
-  char *done_encoding = su_TALLOC(char, next_encoding_index);
-  for (int i = 0; i < next_encoding_index; i++)
-    done_encoding[i] = 0;
-  for (font_pointer_list *f = font_list; f; f = f->next) {
-    int encoding_index = ((ps_font *)f->p)->encoding_index;
+  //TODO vbitset! for done_encoding
+  char *done_encoding = su_TCALLOC(char, next_encoding_index);
+  for(uz i = 0; i < font_array().count(); ++i){ // XXX parray<t>::view
+    int encoding_index;
+    ps_font const *psfp;
+
+    psfp = S(ps_font const*,font_array().at(i));//XXX R(,)
+    encoding_index = psfp->encoding_index;
     if (encoding_index >= 0) {
       assert(encoding_index < next_encoding_index);
       if (!done_encoding[encoding_index]) {
-	done_encoding[encoding_index] = 1;
-	define_encoding(((ps_font *)f->p)->encoding, encoding_index);
+        done_encoding[encoding_index] = 1;
+        define_encoding(psfp->encoding, encoding_index);
       }
-      reencode_font((ps_font *)f->p);
+      reencode_font(psfp);
     }
   }
   su_FREE(done_encoding);
@@ -921,14 +935,14 @@ void ps_printer::set_style(const style &sty)
   defined_styles[ndefined_styles++] = sty;
 }
 
-void ps_printer::set_color(color_symbol *col, int fill) // TODO col const
+void ps_printer::set_color(color_symbol &col, int fill) // TODO col const
 {
-  sbuf_color = *col;
+  sbuf_color = col;
   char s[3];
   s[0] = fill ? 'F' : 'C';
   s[2] = '\0';
   color *c;
-  switch((c = col)->scheme()){
+  switch((c = &col)->scheme()){
   case color::scheme_default: // Black
     out.put_symbol("0");
     s[1] = 'g';
@@ -1053,15 +1067,15 @@ void ps_printer::flush_sbuf()
   sbuf_len = 0;
 }
 
-void ps_printer::set_line_thickness_and_color(const environment *env)
+void ps_printer::set_line_thickness_and_color(device::context const *dcp)
 {
   if (line_thickness < 0) {
-    if (output_draw_point_size != env->size) {
+    if (output_draw_point_size != dcp->size()) {
       // we ought to check for overflow here
-      int lw = ((font::res/(72*font::sizescale))*linewidth*env->size)/1000;
+      int lw = ((font::res/(72*font::sizescale))*linewidth*dcp->size())/1000;
       out.put_fix_number(lw)
 	 .put_symbol("LW");
-      output_draw_point_size = env->size;
+      output_draw_point_size = dcp->size();
       output_line_thickness = -1;
     }
   }
@@ -1073,19 +1087,19 @@ void ps_printer::set_line_thickness_and_color(const environment *env)
       output_draw_point_size = -1;
     }
   }
-  if (sbuf_color != *env->col)
-    set_color(env->col);
+  if (sbuf_color != dcp->outline_color())
+    set_color(dcp->outline_color());
 }
 
-void ps_printer::fill_path(const environment *env)
+void ps_printer::fill_path(device::context const *dcp)
 {
-  if (sbuf_color == *env->fill)
+  if (sbuf_color == dcp->fill_color())
     out.put_symbol("FL");
   else
-    set_color(env->fill, 1);
+    set_color(dcp->fill_color(), 1);
 }
 
-void ps_printer::draw(int code, int *p, int np, const environment *env)
+void ps_printer::draw(int code, int *p, int np, device::context const *dcp)
 {
   if (invis_count > 0)
     return;
@@ -1101,14 +1115,14 @@ void ps_printer::draw(int code, int *p, int np, const environment *env)
       error("1 argument required for circle");
       break;
     }
-    out.put_fix_number(env->hpos + p[0]/2)
-       .put_fix_number(env->vpos)
+    out.put_fix_number(dcp->hpos() + p[0]/2)
+       .put_fix_number(dcp->vpos())
        .put_fix_number(p[0]/2)
        .put_symbol("DC");
     if (fill_flag)
-      fill_path(env);
+      fill_path(dcp);
     else {
-      set_line_thickness_and_color(env);
+      set_line_thickness_and_color(dcp);
       out.put_symbol("ST");
     }
     break;
@@ -1117,11 +1131,11 @@ void ps_printer::draw(int code, int *p, int np, const environment *env)
       error("2 arguments required for line");
       break;
     }
-    set_line_thickness_and_color(env);
-    out.put_fix_number(p[0] + env->hpos)
-       .put_fix_number(p[1] + env->vpos)
-       .put_fix_number(env->hpos)
-       .put_fix_number(env->vpos)
+    set_line_thickness_and_color(dcp);
+    out.put_fix_number(p[0] + dcp->hpos())
+       .put_fix_number(p[1] + dcp->vpos())
+       .put_fix_number(dcp->hpos())
+       .put_fix_number(dcp->vpos())
        .put_symbol("DL");
     break;
   case 'E':
@@ -1134,13 +1148,13 @@ void ps_printer::draw(int code, int *p, int np, const environment *env)
     }
     out.put_fix_number(p[0])
        .put_fix_number(p[1])
-       .put_fix_number(env->hpos + p[0]/2)
-       .put_fix_number(env->vpos)
+       .put_fix_number(dcp->hpos() + p[0]/2)
+       .put_fix_number(dcp->vpos())
        .put_symbol("DE");
     if (fill_flag)
-      fill_path(env);
+      fill_path(dcp);
     else {
-      set_line_thickness_and_color(env);
+      set_line_thickness_and_color(dcp);
       out.put_symbol("ST");
     }
     break;
@@ -1157,8 +1171,8 @@ void ps_printer::draw(int code, int *p, int np, const environment *env)
 	error("no arguments for polygon");
 	break;
       }
-      out.put_fix_number(env->hpos)
-	 .put_fix_number(env->vpos)
+      out.put_fix_number(dcp->hpos())
+	 .put_fix_number(dcp->vpos())
 	 .put_symbol("MT");
       for (int i = 0; i < np; i += 2)
 	out.put_fix_number(p[i])
@@ -1166,9 +1180,9 @@ void ps_printer::draw(int code, int *p, int np, const environment *env)
 	   .put_symbol("RL");
       out.put_symbol("CL");
       if (fill_flag)
-	fill_path(env);
+	fill_path(dcp);
       else {
-	set_line_thickness_and_color(env);
+	set_line_thickness_and_color(dcp);
 	out.put_symbol("ST");
       }
       break;
@@ -1183,8 +1197,8 @@ void ps_printer::draw(int code, int *p, int np, const environment *env)
 	error("no arguments for spline");
 	break;
       }
-      out.put_fix_number(env->hpos)
-	 .put_fix_number(env->vpos)
+      out.put_fix_number(dcp->hpos())
+	 .put_fix_number(dcp->vpos())
 	 .put_symbol("MT");
       out.put_fix_number(p[0]/2)
 	 .put_fix_number(p[1]/2)
@@ -1206,7 +1220,7 @@ void ps_printer::draw(int code, int *p, int np, const environment *env)
       out.put_fix_number(p[np - 2] - p[np - 2]/2)
 	 .put_fix_number(p[np - 1] - p[np - 1]/2)
 	 .put_symbol("RL");
-      set_line_thickness_and_color(env);
+      set_line_thickness_and_color(dcp);
       out.put_symbol("ST");
     }
     break;
@@ -1216,20 +1230,20 @@ void ps_printer::draw(int code, int *p, int np, const environment *env)
 	error("4 arguments required for arc");
 	break;
       }
-      set_line_thickness_and_color(env);
+      set_line_thickness_and_color(dcp);
       double c[2];
       if (adjust_arc_center(p, c))
-	out.put_fix_number(env->hpos + int(c[0]))
-	   .put_fix_number(env->vpos + int(c[1]))
+	out.put_fix_number(dcp->hpos() + si32(c[0]))
+	   .put_fix_number(dcp->vpos() + si32(c[1]))
 	   .put_fix_number(int(sqrt(c[0]*c[0] + c[1]*c[1])))
 	   .put_float(degrees(atan2(-c[1], -c[0])))
 	   .put_float(degrees(atan2(p[1] + p[3] - c[1], p[0] + p[2] - c[0])))
 	   .put_symbol("DA");
       else
-	out.put_fix_number(p[0] + p[2] + env->hpos)
-	   .put_fix_number(p[1] + p[3] + env->vpos)
-	   .put_fix_number(env->hpos)
-	   .put_fix_number(env->vpos)
+	out.put_fix_number(p[0] + p[2] + dcp->hpos())
+	   .put_fix_number(p[1] + p[3] + dcp->vpos())
+	   .put_fix_number(dcp->hpos())
+	   .put_fix_number(dcp->vpos())
 	   .put_symbol("DL");
     }
     break;
@@ -1323,7 +1337,8 @@ void ps_printer::media_set()
   }
 }
 
-void ps_printer::begin_page(int n)
+OVW void
+ps_printer::page_begin(int n)
 {
   out.begin_comment("Page:")
      .comment_arg(i_to_a(n));
@@ -1348,13 +1363,14 @@ void ps_printer::begin_page(int n)
   out.put_symbol("BP")
      .simple_comment("EndPageSetup");
   if (sbuf_color != color_symbol::get_default())
-    set_color(&sbuf_color);
+    set_color(sbuf_color);
 }
 
-void ps_printer::end_page(int)
+OVW void
+ps_printer::page_end(int)
 {
   flush_sbuf();
-  set_color(*color_symbol::get_default());
+  set_color(color_symbol::get_default());
   out.put_symbol("EP");
   if (invis_count != 0) {
     error("missing `endinvis' command");
@@ -1362,7 +1378,7 @@ void ps_printer::end_page(int)
   }
 }
 
-font *ps_printer::make_font(const char *nm)
+font *ps_printer::font_make(const char *nm)
 {
   return ps_font::load_ps_font(nm);
 }
@@ -1397,9 +1413,10 @@ ps_printer::~ps_printer()
     t = time(0);
     fputs(ctime(&t), out.get_file());
   }
-  for (font_pointer_list *f = font_list; f; f = f->next) {
-    ps_font *psf = (ps_font *)(f->p);
-    rm.need_font(psf->get_internal_name());
+
+  for(uiz i = 0; i < font_array().count(); ++i){//XXX View
+    ps_font const *psfp = S(ps_font const*,font_array().at(i));//XXX R(,)
+    rm.need_font(psfp->get_internal_name());
   }
   rm.print_header_comments(out);
   out.begin_comment("Pages:")
@@ -1520,12 +1537,12 @@ ps_printer::~ps_printer()
   fclose(tempfp);
 }
 
-void ps_printer::special(char *arg, const environment *env, char type)
+void ps_printer::special(char *arg, device::context const *dcp, char type)
 {
   if (type != 'p')
     return;
 
-  typedef void (ps_printer::*SPECIAL_PROCP)(char *, const environment *);
+  typedef void (ps_printer::*SPECIAL_PROCP)(char *, device::context const *);
   static struct {
     char const    name[15];
     uint8_t       needs_flush;
@@ -1564,7 +1581,7 @@ void ps_printer::special(char *arg, const environment *env, char type)
     if (!strncmp(command, proc_table[i].name, PTR2SIZE(p - command))) {
       if (proc_table[i].needs_flush)
         flush_sbuf();
-      (this->*(proc_table[i].proc))(p, env);
+      (this->*(proc_table[i].proc))(p, dcp);
       return;
     }
   error("X command `%1' not recognised", command);
@@ -1589,7 +1606,7 @@ static int check_line_lengths(const char *p)
   return 1;
 }
 
-void ps_printer::_do_exec(char *arg, const environment *env)
+void ps_printer::_do_exec(char *arg, device::context const *dcp)
 {
   while (su_cisspace(*arg))
     arg++;
@@ -1600,8 +1617,8 @@ void ps_printer::_do_exec(char *arg, const environment *env)
   if (!check_line_lengths(arg))
     warning("lines in X exec command should"
 	    " not be more than 255 characters long");
-  out.put_fix_number(env->hpos)
-     .put_fix_number(env->vpos)
+  out.put_fix_number(dcp->hpos())
+     .put_fix_number(dcp->vpos())
      .put_symbol("EBEGIN")
      .special(arg)
      .put_symbol("EEND");
@@ -1614,7 +1631,7 @@ void ps_printer::_do_exec(char *arg, const environment *env)
     ndefs = 1;
 }
 
-void ps_printer::_do_file(char *arg, const environment *env)
+void ps_printer::_do_file(char *arg, device::context const *dcp)
 {
   while (su_cisspace(*arg))
     arg++;
@@ -1626,8 +1643,8 @@ void ps_printer::_do_file(char *arg, const environment *env)
   do {
     ++arg;
   } while (*arg != '\0' && *arg != ' ' && *arg != '\n');
-  out.put_fix_number(env->hpos)
-     .put_fix_number(env->vpos)
+  out.put_fix_number(dcp->hpos())
+     .put_fix_number(dcp->vpos())
      .put_symbol("EBEGIN");
   rm.import_file(filename, out);
   out.put_symbol("EEND");
@@ -1640,7 +1657,7 @@ void ps_printer::_do_file(char *arg, const environment *env)
     ndefs = 1;
 }
 
-void ps_printer::_do_def(char *arg, const environment *)
+void ps_printer::_do_def(char *arg, device::context const *)
 {
   while (su_cisspace(*arg))
     arg++;
@@ -1655,7 +1672,7 @@ void ps_printer::_do_def(char *arg, const environment *)
 
 // Like def, but the first argument says how many definitions it contains.
 
-void ps_printer::_do_mdef(char *arg, const environment *)
+void ps_printer::_do_mdef(char *arg, device::context const *)
 {
   char *p;
   int n = (int)strtol(arg, &p, 10);
@@ -1679,7 +1696,7 @@ void ps_printer::_do_mdef(char *arg, const environment *)
   ndefs += n;
 }
 
-void ps_printer::_do_import(char *arg, const environment *env)
+void ps_printer::_do_import(char *arg, device::context const *dcp)
 {
   while (*arg == ' ' || *arg == '\n')
     arg++;
@@ -1748,7 +1765,7 @@ void ps_printer::_do_import(char *arg, const environment *env)
       old_ht = -old_ht;
     desired_height = int(desired_width*(double(old_ht)/double(old_wid)) + .5);
   }
-  if (env->vpos - desired_height < 0)
+  if (dcp->vpos() - desired_height < 0)
     warning("top of imported graphic is above the top of the page");
   out.put_number(llx)
      .put_number(lly)
@@ -1756,8 +1773,8 @@ void ps_printer::_do_import(char *arg, const environment *env)
      .put_number(urx - llx)
      .put_fix_number(-desired_height)
      .put_number(ury - lly)
-     .put_fix_number(env->hpos)
-     .put_fix_number(env->vpos)
+     .put_fix_number(dcp->hpos())
+     .put_fix_number(dcp->vpos())
      .put_symbol("PBEGIN");
   rm.import_file(arg, out);
   // do this here just in case application defines PEND
@@ -1765,12 +1782,12 @@ void ps_printer::_do_import(char *arg, const environment *env)
      .put_symbol("PEND");
 }
 
-void ps_printer::do_invis(char *, const environment *)
+void ps_printer::do_invis(char *, device::context const *)
 {
   invis_count++;
 }
 
-void ps_printer::do_endinvis(char *, const environment *)
+void ps_printer::do_endinvis(char *, device::context const *)
 {
   if (invis_count == 0)
     error("unbalanced `endinvis' command");
@@ -1778,9 +1795,14 @@ void ps_printer::do_endinvis(char *, const environment *)
     --invis_count;
 }
 
-printer *make_printer()
-{
-  return new ps_printer(user_paper_length);
+rf_static device::postproc *
+device::postproc::new_instance(void){
+  printer *rv;
+  rf_NYD_IN;
+
+  rv = rf_new(ps_printer)(user_paper_length);
+  rf_NYD_OU;
+  return rv;
 }
 
 static void usage(FILE *stream);
@@ -1863,10 +1885,10 @@ int main(int argc, char **argv)
   font::set_unknown_desc_command_handler(handle_unknown_desc_command);
   SET_BINARY(fileno(stdout));
   if (optind >= argc)
-    do_file("-");
+    device_process_file("-");
   else {
     for (int i = optind; i < argc; i++)
-      do_file(argv[i]);
+      device_process_file(argv[i]);
   }
   return 0;
 }

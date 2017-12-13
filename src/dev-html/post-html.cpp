@@ -35,9 +35,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
-#include "driver.h"
-#include "stringclass.h"
+#include "device.h"
 
 #include "html.h"
 #include "html-text.h"
@@ -57,7 +57,7 @@ static int auto_rule  = true;                        /* by default we enable an 
 static int simple_anchors = false;                   /* default to anchors with heading text     */
 static int manufacture_headings = false;             /* default is to use the Hn html headings,  */
                                                      /* rather than manufacture our own.         */
-static color *default_background = NULL;             /* has user requested initial bg color?     */
+static color_symbol *default_background = NULL;             /* has user requested initial bg color?     */
 static string job_name;                              /* if set then the output is split into     */
                                                      /* multiple files with `job_name'-%d.html   */
 static int multiple_files = false;                   /* must we the output be divided into       */
@@ -288,7 +288,7 @@ string files::next_file_name (void)
  *  the class and methods for styles
  */
 
-class style
+class style // TODO constructor that takes device::context!
 {
 public:
   font        *f;
@@ -296,9 +296,9 @@ public:
   int          font_no;
   int          height;
   int          slant;
-  color        col;
+  color_symbol        col;
                style       ();
-               style       (font *, int, int, int, int, color);
+               style       (font *, int, int, int, int, color_symbol &);
   int          operator == (const style &) const;
   int          operator != (const style &) const;
 };
@@ -308,7 +308,7 @@ style::style()
 {
 }
 
-style::style(font *p, int sz, int h, int sl, int no, color c)
+style::style(font *p, int sz, int h, int sl, int no, color_symbol &c)
   : f(p), point_size(sz), font_no(no), height(h), slant(sl), col(c)
 {
 }
@@ -1993,7 +1993,7 @@ class html_printer
   int                  pointsize;
   int                  vertical_spacing;
   int                  line_number;
-  color               *background;
+  color_symbol        *background;
   int                  seen_indent;
   int                  next_indent;
   int                  seen_pageoffset;
@@ -2011,17 +2011,18 @@ class html_printer
   void  flush_sbuf                    ();
   void  set_style                     (const style &);
   void  set_space_code                (unsigned char c);
-  void  do_exec                       (char *, const environment *);
-  void  do_import                     (char *, const environment *);
-  void  do_def                        (char *, const environment *);
-  void  do_mdef                       (char *, const environment *);
-  void  do_file                       (char *, const environment *);
-  void  set_line_thickness            (const environment *);
+  void  do_exec                       (char *, device::context const *);
+  void  do_import                     (char *, device::context const *);
+  void  do_def                        (char *, device::context const *);
+  void  do_mdef                       (char *, device::context const *);
+  void  do_file                       (char *, device::context const *);
+  void  set_line_thickness            (device::context const *);
   void  terminate_current_font        (void);
   void  flush_font                    (void);
   void  add_to_sbuf                   (glyph *g, const string &s);
   void  write_title                   (int in_head);
-  int   sbuf_continuation             (glyph *g, const char *name, const environment *env, int w);
+  int   sbuf_continuation             (glyph *g, const char *name,
+                                        device::context const *dvp, int w);
   void  flush_page                    (void);
   void  troff_tag                     (text_glob *g);
   void  flush_globs                   (void);
@@ -2072,7 +2073,8 @@ class html_printer
   void  outstanding_eol               (int n);
   int   is_bold                       (font *f);
   font *make_bold                     (font *f);
-  int   overstrike                    (glyph *g, const char *name, const environment *env, int w);
+  int   overstrike                    (glyph *g, const char *name,
+                                      device::context const *dcp, int w);
   void  do_body                       (void);
   int   next_horiz_pos                (text_glob *g, int nf);
   void  lookahead_for_tables          (void);
@@ -2114,22 +2116,28 @@ class html_printer
 public:
   html_printer          ();
   ~html_printer         ();
-  void set_char         (glyph *g, font *f, const environment *env, int w, const char *name);
-  void set_numbered_char(int num, const environment *env, int *widthp);
-  glyph *set_char_and_width(const char *nm, const environment *env,
+  void set_char         (glyph *g, font *f, device::context const *dcp, int w,
+                        const char *name);
+  void set_numbered_char(int num, device::context const *dcp, int *widthp);
+  glyph *set_char_and_width(const char *nm, device::context const *dcp,
 			 int *widthp, font **f);
-  void draw             (int code, int *p, int np, const environment *env);
-  void begin_page       (int);
-  void end_page         (int);
-  void special          (char *arg, const environment *env, char type);
-  void devtag           (char *arg, const environment *env, char type);
-  font *make_font       (const char *);
+  void draw             (int code, int *p, int np, device::context const *dcp);
+  OVW void page_begin   (int);
+  OVW void page_end     (int);
+  void special          (char *arg, device::context const *dcp, char type);
+  void devtag           (char *arg, device::context const *dcp, char type);
+  font *font_make       (const char *);
   void end_of_line      ();
 };
 
-printer *make_printer()
-{
-  return new html_printer;
+sta device::postproc *
+device::postproc::new_instance(void){
+  printer *rv;
+  NYD_IN;
+
+  rv = su_new(html_printer);
+  NYD_OU;
+  return rv;
 }
 
 static void usage(FILE *stream);
@@ -4184,12 +4192,12 @@ void html_printer::flush_sbuf()
   }
 }
 
-void html_printer::set_line_thickness(const environment *env)
+void html_printer::set_line_thickness(device::context const *dcp)
 {
-  line_thickness = env->size;
+  line_thickness = dcp->size();
 }
 
-void html_printer::draw(int code, int *p, int np, const environment *env)
+void html_printer::draw(int code, int *p, int np, device::context const *dcp)
 {
   switch (code) {
 
@@ -4198,7 +4206,8 @@ void html_printer::draw(int code, int *p, int np, const environment *env)
     if (np == 2) {
       page_contents->add_line(&sbuf_style,
 			      line_number,
-			      env->hpos, env->vpos, env->hpos+p[0], env->vpos+p[1], line_thickness);
+			      dcp->hpos(), dcp->vpos(), dcp->hpos()+p[0], dcp->vpos()+p[1],
+            line_thickness);
     } else {
       error("2 arguments required for line");
     }
@@ -4238,10 +4247,10 @@ void html_printer::draw(int code, int *p, int np, const environment *env)
   case 'f':
     break;
   case 'F':
-    // fill with color env->fill
+    // fill with color dcp->fill_color()
     if (background != NULL)
-      rf_del(background);
-    background = rf_new(color)(*env->fill);
+      su_del(background);
+    background = su_new(color_symbol)(dcp->fill_color());
     break;
 
   default:
@@ -4352,30 +4361,30 @@ void html_printer::add_to_sbuf (glyph *g, const string &s)
 }
 
 int html_printer::sbuf_continuation (glyph *g, const char *name,
-				     const environment *env, int w)
+				     device:context const *dcp, int w)
 {
   /*
    *  lets see whether the glyph is closer to the end of sbuf
    */
-  if ((sbuf_end_hpos == env->hpos)
+  if ((sbuf_end_hpos == dcp->hpos())
       || ((sbuf_prev_hpos < sbuf_end_hpos)
-	  && (env->hpos < sbuf_end_hpos)
-	  && ((sbuf_end_hpos-env->hpos < env->hpos-sbuf_prev_hpos)))) {
+	  && (dcp->hpos() < sbuf_end_hpos)
+	  && ((sbuf_end_hpos-dcp->hpos() < dcp->hpos()-sbuf_prev_hpos)))) {
     add_to_sbuf(g, name);
     sbuf_prev_hpos = sbuf_end_hpos;
     sbuf_end_hpos += w + sbuf_kern;
     return true;
   } else {
-    if ((env->hpos >= sbuf_end_hpos) &&
-	((sbuf_kern == 0) || (sbuf_end_hpos - sbuf_kern != env->hpos))) {
+    if ((dcp->hpos() >= sbuf_end_hpos) &&
+	((sbuf_kern == 0) || (sbuf_end_hpos - sbuf_kern != dcp->hpos()))) {
       /*
        *  lets see whether a space is needed or not
        */
 
-      if (env->hpos-sbuf_end_hpos < space_width) {
+      if (dcp->hpos()-sbuf_end_hpos < space_width) {
 	add_to_sbuf(g, name);
 	sbuf_prev_hpos = sbuf_end_hpos;
-	sbuf_end_hpos = env->hpos + w;
+	sbuf_end_hpos = dcp->hpos() + w;
 	return true;
       }
     }
@@ -4669,10 +4678,11 @@ static const char *get_html_entity (unsigned int code)
  *               is flushed.
  */
 
-int html_printer::overstrike(glyph *g, const char *name, const environment *env, int w)
+int html_printer::overstrike(glyph *g, const char *name,
+    device::context const *dcp, int w)
 {
-  if ((env->hpos < sbuf_end_hpos)
-      || ((sbuf_kern != 0) && (sbuf_end_hpos - sbuf_kern < env->hpos))) {
+  if ((dcp->hpos() < sbuf_end_hpos)
+      || ((sbuf_kern != 0) && (sbuf_end_hpos - sbuf_kern < dcp->hpos()))) {
     /*
      *  at this point we have detected an overlap
      */
@@ -4680,7 +4690,7 @@ int html_printer::overstrike(glyph *g, const char *name, const environment *env,
       /* already detected, remove previous glyph and use this glyph */
       sbuf.set_length(last_sbuf_length);
       add_to_sbuf(g, name);
-      sbuf_end_hpos = env->hpos + w;
+      sbuf_end_hpos = dcp->hpos() + w;
       return true;
     } else {
       /* first time we have detected an overstrike in the sbuf */
@@ -4689,7 +4699,7 @@ int html_printer::overstrike(glyph *g, const char *name, const environment *env,
 	flush_sbuf();
       overstrike_detected = true;
       add_to_sbuf(g, name);
-      sbuf_end_hpos = env->hpos + w;
+      sbuf_end_hpos = dcp->hpos() + w;
       return true;
     }
   }
@@ -4702,17 +4712,18 @@ int html_printer::overstrike(glyph *g, const char *name, const environment *env,
  *             and add character anew.
  */
 
-void html_printer::set_char(glyph *g, font *f, const environment *env,
+void html_printer::set_char(glyph *g, font *f, device:context const *dcp,
 			    int w, const char *name)
 {
-  style sty(f, env->size, env->height, env->slant, env->fontno, *env->col);
+  style sty(f, dcp->size(), dcp->height(), dcp->slant(), dcp->fontno(),
+          dcp->outline_color());
   if (sty.slant != 0) {
     if (sty.slant > 80 || sty.slant < -80) {
       error("silly slant `%1' degrees", sty.slant);
       sty.slant = 0;
     }
   }
-  if (((! sbuf.empty()) && (sty == sbuf_style) && (sbuf_vpos == env->vpos))
+  if (((! sbuf.empty()) && (sty == sbuf_style) && (sbuf_vpos == dcp->vpos()))
       && (sbuf_continuation(g, name, env, w)
 	  || overstrike(g, name, env, w)))
     return;
@@ -4721,10 +4732,10 @@ void html_printer::set_char(glyph *g, font *f, const environment *env,
   if (sbuf_style.f == NULL)
     sbuf_style = sty;
   add_to_sbuf(g, name);
-  sbuf_end_hpos = env->hpos + w;
-  sbuf_start_hpos = env->hpos;
-  sbuf_prev_hpos = env->hpos;
-  sbuf_vpos = env->vpos;
+  sbuf_end_hpos = dcp->hpos() + w;
+  sbuf_start_hpos = dcp->hpos();
+  sbuf_prev_hpos = dcp->hpos();
+  sbuf_vpos = dcp->vpos();
   sbuf_style = sty;
   sbuf_kern = 0;
 }
@@ -4735,7 +4746,7 @@ void html_printer::set_char(glyph *g, font *f, const environment *env,
  *                      the value (taken positive) gives the width.
  */
 
-void html_printer::set_numbered_char(int num, const environment *env,
+void html_printer::set_numbered_char(int num, device::context const *dcp,
 				     int *widthp)
 {
   int nbsp_width = 0;
@@ -4744,59 +4755,45 @@ void html_printer::set_numbered_char(int num, const environment *env,
     num = 160;		// &nbsp;
   }
   glyph *g = number_to_glyph(num);
-  int fn = env->fontno;
-  if (fn < 0 || fn >= nfonts) {
-    error("bad font position `%1'", fn);
-    return;
-  }
-  font *f = font_table[fn];
-  if (f == 0) {
-    error("no font mounted at `%1'", fn);
+  font *f;
+  if((f = font_from_index(dcp->fontno())) == NIL) {
+    error("no font mounted at `%1'", dcp->fontno());
     return;
   }
   if (!f->contains(g)) {
     error("font `%1' does not contain numbered character %2",
-	  f->get_name(),
-	  num);
+      f->get_name(), num);
     return;
   }
   int w;
   if (nbsp_width)
     w = nbsp_width;
   else
-    w = f->get_width(g, env->size);
+    w = f->get_width(g, dcp->size());
   w = round_width(w);
   if (widthp)
     *widthp = w;
   set_char(g, f, env, w, 0);
 }
 
-glyph *html_printer::set_char_and_width(const char *nm, const environment *env,
+glyph *html_printer::set_char_and_width(const char *nm, device::context const *dcp,
 					int *widthp, font **f)
 {
   glyph *g = name_to_glyph(nm);
-  int fn = env->fontno;
-  if (fn < 0 || fn >= nfonts) {
-    error("bad font position `%1'", fn);
-    return UNDEFINED_GLYPH;
-  }
-  *f = font_table[fn];
-  if (*f == 0) {
-    error("no font mounted at `%1'", fn);
+  if((*f = font_from_index(dcp->fontno())) == NIL) {
+    error("no font mounted at `%1'", dcp->fontno());
     return UNDEFINED_GLYPH;
   }
   if (!(*f)->contains(g)) {
     if (nm[0] != '\0' && nm[1] == '\0')
       error("font `%1' does not contain ascii character `%2'",
-	    (*f)->get_name(),
-	    nm[0]);
+        (*f)->get_name(), nm[0]);
     else
       error("font `%1' does not contain special character `%2'",
-	    (*f)->get_name(),
-	    nm);
+        (*f)->get_name(), nm);
     return UNDEFINED_GLYPH;
   }
-  int w = (*f)->get_width(g, env->size);
+  int w = (*f)->get_width(g, dcp->size());
   w = round_width(w);
   if (widthp)
     *widthp = w;
@@ -4845,7 +4842,8 @@ static void write_rule (void)
   }
 }
 
-void html_printer::begin_page(int n)
+OVW void
+html_printer::page_begin(int n)
 {
   page_number            =  n;
 #if defined(DEBUGGING)
@@ -4866,13 +4864,14 @@ void html_printer::begin_page(int n)
   current_paragraph->do_para("", false);
 }
 
-void html_printer::end_page(int)
+OVW void
+html_printer::page_end(int)
 {
   flush_sbuf();
   flush_page();
 }
 
-font *html_printer::make_font(const char *nm)
+font *html_printer::font_make(const char *nm)
 {
   return html_font::load_html_font(nm);
 }
@@ -5271,15 +5270,15 @@ void html_printer::handle_state_assertion (text_glob *g)
  *            headings off/on etc.
  */
 
-void html_printer::special(char *s, const environment *env, char type)
+void html_printer::special(char *s, device::context const *dcp, char type)
 {
   if (type != 'p')
     return;
   if (s != 0) {
     flush_sbuf();
-    if (env->fontno >= 0) {
-      style sty(get_font_from_index(env->fontno), env->size, env->height,
-		env->slant, env->fontno, *env->col);
+    if (dcp->fontno() >= 0) {
+      style sty(font_from_index(dcp->fontno()), dcp->size(),
+              dcp->height(), dcp->slant(), dcp->fontno(), dcp->outline_color());
       sbuf_style = sty;
     }
 
@@ -5298,9 +5297,8 @@ void html_printer::special(char *s, const environment *env, char type)
        */
       page_contents->add_and_encode(&sbuf_style, string(&s[5]),
 				    line_number,
-				    env->vpos-env->size*r/72, env->hpos,
-				    env->vpos               , env->hpos,
-				    false);
+				    dcp->vpos()-dcp->size()*r/72, dcp->hpos(),
+				    dcp->vpos(), dcp->hpos(), false);
 
       /*
        * assume that the html command has no width, if it does then
@@ -5337,9 +5335,8 @@ void html_printer::special(char *s, const environment *env, char type)
        */
       page_contents->add_and_encode(&sbuf_style, string(s),
 				    line_number,
-				    env->vpos-env->size*r/72, env->hpos,
-				    env->vpos               , env->hpos,
-				    true);
+				    dcp->vpos()-dcp->size()*r/72, dcp->hpos(),
+				    dcp->vpos(), dcp->hpos(), true);
 
       /*
        * assume that the html command has no width, if it does then
@@ -5353,8 +5350,8 @@ void html_printer::special(char *s, const environment *env, char type)
     } else if (strncmp(s, "assertion:[", 11) == 0) {
       int r=font::res;   /* resolution of the device */
 
-      handle_assertion(env->vpos-env->size*r/72, env->hpos,
-		       env->vpos, env->hpos, s);
+      handle_assertion(dcp->vpos()-dcp->size()*r/72, dcp->hpos(),
+		       dcp->vpos(), dcp->hpos(), s);
     }
   }
 }
@@ -5367,16 +5364,16 @@ void html_printer::special(char *s, const environment *env, char type)
  *           (see man 5 grohtml_tags).
  */
 
-void html_printer::devtag (char *s, const environment *env, char type)
+void html_printer::devtag (char *s, device::context const *dcp, char type)
 {
   if (type != 'p')
     return;
 
   if (s != 0) {
     flush_sbuf();
-    if (env->fontno >= 0) {
-      style sty(get_font_from_index(env->fontno), env->size, env->height,
-		env->slant, env->fontno, *env->col);
+    if (dcp->fontno() >= 0) {
+      style sty(font_from_index(dcp->fontno()), dcp->size(),
+              dcp->height(), dcp->slant(), dcp->fontno(), dcp->outline_color());
       sbuf_style = sty;
     }
 
@@ -5385,8 +5382,8 @@ void html_printer::devtag (char *s, const environment *env, char type)
 
       page_contents->add_tag(&sbuf_style, string(s),
 			     line_number,
-			     env->vpos-env->size*r/72, env->hpos,
-			     env->vpos               , env->hpos);
+			     dcp->vpos()-dcp->size()*r/72, dcp->hpos(),
+			     dcp->vpos(), dcp->hpos());
     }
   }
 }
@@ -5456,7 +5453,7 @@ int main(int argc, char **argv)
       break;
     case 'b':
       // set background color to white
-      (default_background = rf_new(color))->assign_gray(color::max_val);
+      (default_background = su_new(color_symbol))->assign_gray(color::max_val);
       break;
     case 'd':
       /* handled by pre-html */
@@ -5539,10 +5536,10 @@ int main(int argc, char **argv)
       assert(0);
     }
   if (optind >= argc) {
-    do_file("-");
+    device_process_file("-");
   } else {
     for (int i = optind; i < argc; i++)
-      do_file(argv[i]);
+      device_process_file(argv[i]);
   }
   return 0;
 }

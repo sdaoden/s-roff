@@ -1,6 +1,6 @@
 '\" e -- preprocess: eqn(1)
 .ig
-@ @L_ROFF@-out.5
+@ @L_ROFF@-intofor.5
 
 Copyright (c) 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 
@@ -82,10 +82,10 @@ after these commands, otherwise the position is not changed.
 .\" End of macro definitions
 .
 .
-.TH @U_ROFF@-OUT @MAN5EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
+.TH @U_ROFF@-INTOFOR @MAN5EXT@ "@MDATE@" "@T_ROFF@ v@VERSION@"
 .
 .SH NAME
-@L_ROFF@-out \- @T_ROFF@ intermediate output format
+@L_ROFF@-intofor \- @T_ROFF@ intermediate output format
 .
 .
 .SH DESCRIPTION
@@ -1558,12 +1558,6 @@ This output can be fed into the postprocessor
 .BR @L_D_TTY@ (@MAN1EXT@)
 to get a formatted text document.
 .
-.RS
-.
-.P
-Due to the obsolete jump-and-write command, the text clusters in the
-classical output are almost unreadable.
-.
 .
 .SH "COMPATIBILITY"
 .
@@ -1697,20 +1691,6 @@ are documented in
 Device description file for device
 .IR name .
 .
-.TP
-.IB \[la]@T_ROFF@-source-dir\[ra] /src/libs/driver/input.cpp
-Defines the parser and postprocessor for the
-.I intermediate
-.IR output .
-.
-It is located relative to the top directory of the
-.I @T_ROFF@
-source tree.
-.
-This parser is the definitive specification of the
-.I @T_ROFF@ intermediate output
-format.
-.
 .
 .SH "SEE ALSO"
 .
@@ -1812,7 +1792,7 @@ by
 .I J.\& F.\& Ossanna
 and
 .I Brian Kernighan
-isn't as comprehensive as
+is not as comprehensive as
 .I [CSTR\~#97]
 regarding the output language; see
 .UR http://\:cm.bell-labs.com/\:cm/\:cs/\:cstr/\:54.ps.gz
@@ -1826,19 +1806,7 @@ Copyright (c) 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 
 Copyright (C) 1989, 2001 - 2008
 Free Software Foundation, Inc.
-.
-.P
-This document is distributed under the terms of the FDL (GNU Free
-Documentation License) version 1.1 or later.
-.
-You should have received a copy of the FDL with this package; it is also
-available on-line at the
-.UR http://\:www.gnu.org/\:copyleft/\:fdl.html
-GNU copyleft site
-.UE .
-.
-.
-.P
+
 This document was rewritten in 2002 by Bernd Warken.
 .
 .\" s-ts-mode

@@ -37,7 +37,7 @@
 #include "su/cs.h"
 #include "su/mem.h"
 
-#include "driver.h"
+#include "device.h"
 #include "stringclass.h"
 
 #include "html.h"

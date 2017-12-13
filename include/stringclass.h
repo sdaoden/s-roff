@@ -1,4 +1,4 @@
-/*@
+/*@ FIXME rename cstring.h, class cstring;  we assume RF memory allocs!
  * Copyright (c) 2014 - 2017 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Copyright (C) 1989 - 1992, 2002 Free Software Foundation, Inc.
@@ -59,16 +59,23 @@ public:
   ~string();
 
   string &operator=(const string &);
+  string &assign(string const &t) {return (*this = t);}
   string &operator=(const char *);
+  string &assign(char const *cp) {return (*this = cp);}
   string &operator=(char);
+  string &assign(char c) {return (*this = c);}
 
   string &operator+=(const string &);
+  string &append(string const &t) {return (*this += t);}
   string &operator+=(const char *);
+  string &append(char const *cp) {return (*this += cp);}
   string &operator+=(char);
+  string &append(char c) {return (*this += c);}
   string &append(const char *, int);
 
   int length() const;
   int empty() const;
+  rf_bool is_empty(void) const {return len == 0;}
   int operator*() const;
 
   string substring(int i, int n) const;
@@ -80,10 +87,27 @@ public:
   char *data(void){
     return ptr;
   }
-  char const *cp(void) /*const*/; /* always valid terminated pointer */
+  // always valid terminated pointer
+  char const *cp(void) /*const TODO mutable */;
+
   const char *contents() const;
   int search(char) const;
+  // Newly allocated copy without NULs TODO new[] yet!
   char *extract() const;
+
+  char *release_data(rf_ui32 *lenp=NULL, rf_ui32 *sizep=NULL){
+    if(lenp != NULL)
+      *lenp = len;
+    if(sizep != NULL)
+      *sizep = sz;
+    char *rv = ptr;
+    if(rv != NULL) // XXX ensure termination
+      cp();
+    ptr = NULL;
+    len = sz = 0;
+    return rv;
+  }
+
   string &remove_spaces();
   string &clear(void){ /* TODO should release mem -> truncate()! */
     len = 0;

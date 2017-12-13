@@ -331,7 +331,7 @@ for more details.
 .BR @L_AFMTODIT@ (@MAN1EXT@),
 .BR @L_ROFF@ (@MAN1EXT@),
 .BR @L_TROFF@ (@MAN1EXT@),
-.BR @L_ROFF@-out (@MAN5EXT@),
+.BR @L_ROFF@-intofor (@MAN5EXT@),
 .BR @L_ROFF@-font (@MAN5EXT@),
 .BR @L_ROFF@-char (@MAN7EXT@)
 .

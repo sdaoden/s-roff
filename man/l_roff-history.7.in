@@ -556,7 +556,7 @@ or
 This language was first specified in
 .IR "[CSTR\~#97]" ;
 its @T_ROFF@ extension is documented in
-.BR @L_ROFF@-out (@MAN5EXT@).
+.BR @L_ROFF@-intofor (@MAN5EXT@).
 .
 The intermediate output language is a kind of assembly language
 compared to the high-level

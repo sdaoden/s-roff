@@ -422,7 +422,7 @@ cell, affecting all subsequent operations.
 .
 .BR @L_ROFF@ (@MAN1EXT@),
 .BR @L_TROFF@ (@MAN1EXT@),
-.BR @L_ROFF@-out (@MAN5EXT@),
+.BR @L_ROFF@-intofor (@MAN5EXT@),
 .BR @L_ROFF@-font (@MAN5EXT@),
 .BR @L_ROFF@-char (@MAN7EXT@),
 .BR ul (1),

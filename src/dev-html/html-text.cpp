@@ -27,7 +27,7 @@
 #include "lib.h"
 #include "html-config.h"
 
-#include "driver.h"
+#include "device.h"
 #include "stringclass.h"
 
 #include "html-text.h"
