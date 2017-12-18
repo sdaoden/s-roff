@@ -22,10 +22,17 @@
 #define su_HEADER
 #include <su/code-in.h>
 C_DECL_BEGIN
+
+struct su_array;
+struct su_parray;
+
 C_DECL_END
 
 #if !C_LANG
 NSPC_BEGIN(su)
+
+template<class T> class array;
+
 NSPC_END(su)
 #endif /* !C_LANG */
 #include <su/code-ou.h>
