@@ -656,8 +656,8 @@ typedef uintptr_t su_up;
 typedef intptr_t su_sp;
 #else
 # ifdef SIZE_MAX
-typedef su_uiz su_up;
-typedef su_siz su_sp;
+typedef su_uz su_up;
+typedef su_sz su_sp;
 # else
 typedef su_ul su_up;
 typedef su_sl su_sp;

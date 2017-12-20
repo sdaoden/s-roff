@@ -2122,8 +2122,8 @@ public:
   glyph *set_char_and_width(const char *nm, device::context const *dcp,
 			 int *widthp, font **f);
   void draw             (int code, int *p, int np, device::context const *dcp);
-  OVW void page_begin   (int);
-  OVW void page_end     (int);
+  OVR void page_begin   (int);
+  OVR void page_end     (int);
   void special          (char *arg, device::context const *dcp, char type);
   void devtag           (char *arg, device::context const *dcp, char type);
   font *font_make       (const char *);
@@ -4842,7 +4842,7 @@ static void write_rule (void)
   }
 }
 
-OVW void
+OVR void
 html_printer::page_begin(int n)
 {
   page_number            =  n;
@@ -4864,7 +4864,7 @@ html_printer::page_begin(int n)
   current_paragraph->do_para("", false);
 }
 
-OVW void
+OVR void
 html_printer::page_end(int)
 {
   flush_sbuf();

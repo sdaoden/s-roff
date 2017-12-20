@@ -1,5 +1,6 @@
 /*@ FIXME bad, use sfsys one!  no NUL termination by default!!
- * Copyright (c) 2014 - 2017 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+ *
+ * Copyright (c) 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Copyright (C) 1989, 1990, 1991, 1992, 2001, 2002
  *    Free Software Foundation, Inc.
