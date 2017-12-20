@@ -238,16 +238,16 @@ printer
 public:
    tty_printer(void);
    ~tty_printer();
-   OVW void set_char(glyph *, font *, const environment *, int, const char *);
+   OVR void set_char(glyph *, font *, const environment *, int, const char *);
    void draw(int, int *, int, const environment *);
-   OVW void special(char *, const environment *, char);
+   OVR void special(char *, const environment *, char);
    void change_color(const environment * const);
    void change_fill_color(const environment * const);
    void put_char(output_character);
    void put_color(rf_sc, int);
-   OVW void page_begin(int) { }
-   OVW void page_end(int);
-   OVW font *font_make(const char *);//FIXME cstr const
+   OVR void page_begin(int) { }
+   OVR void page_end(int);
+   OVR font *font_make(const char *);//FIXME cstr const
 };
 
 char *tty_printer::make_rgb_string(unsigned int r,
@@ -686,7 +686,7 @@ static output_character crossings[4*4] = {
    0x2500, 0x252C, 0x2534, 0x253C
 };
 
-OVW void
+OVR void
 tty_printer::page_end(int page_length)
 {
    if (page_length % font::vert != 0)

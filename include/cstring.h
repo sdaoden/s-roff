@@ -1,5 +1,6 @@
 /*@ FIXME rename cstring.h, class cstring;  we assume RF memory allocs!
- * Copyright (c) 2014 - 2017 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+ *
+ * Copyright (c) 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Copyright (C) 1989 - 1992, 2002 Free Software Foundation, Inc.
  *      Written by James Clark (jjc@jclark.com)
@@ -67,32 +68,48 @@ public:
 
   string &operator+=(const string &);
   string &append(string const &t) {return (*this += t);}
+  cstring &push(cstring const &t) {return (*this += t);}
   string &operator+=(const char *);
   string &append(char const *cp) {return (*this += cp);}
+  cstring &push(char const *cp) {return (*this += cp);}
   string &operator+=(char);
   string &append(char c) {return (*this += c);}
+  cstring &push(char c) {return (*this += c);}
   string &append(const char *, int);
 
   int length() const;
+len
   int empty() const;
   rf_bool is_empty(void) const {return len == 0;}
   int operator*() const;
 
   string substring(int i, int n) const;
+substr
 
-  char &operator[](int);
-  char operator[](int) const;
+   char *data(void) {return m_ca.ca_data;}
+   char const *data(void) const {return m_ca.ca_data;}
+
+   char at(uiz off) {ASSERT(off < count()); return data()[off];}
+   char const at(uiz off) const {ASSERT(off < count()); return data()[off];}
+   char &ref_at(uiz off) {ASSERT(off < count()); return data()[off];}
+
+   char &operator[](uiz off) {return ref_at(off);}
+   char operator[](uiz off) const {return at(off);}
 
   string &set_length(int i);
+drop vis S+R -> this is trunc()!
   char *data(void){
     return ptr;
   }
   // always valid terminated pointer
-  char const *cp(void) /*const TODO mutable */;
+  char const *cp(void) const /*const TODO mutable */;
+  char *cpdata(void);
 
-  const char *contents() const;
+  const char *contents() const;//FIXME remove
   int search(char) const;
-  // Newly allocated copy without NULs TODO new[] yet!
+  // Newly alloc copy without NULs TODO new[] yet!
+  // FIXME extract-> // to_cp_dup()
+  // FIXME with enum WHAT_TO_INCLUDE and/or to_cp_dup_strip_nuls()
   char *extract() const;
 
   char *release_data(rf_ui32 *lenp=NULL, rf_ui32 *sizep=NULL){
@@ -109,23 +126,30 @@ public:
   }
 
   string &remove_spaces();
+drop -> trim(), squeeze()
+
   string &clear(void){ /* TODO should release mem -> truncate()! */
     len = 0;
     return *this;
   }
-  string &truncate(rf_uiz newlen=0){
+  string &trunc(rf_uiz newlen=0){
     rf_ASSERT(newlen <= rf_S(rf_ui32,length())); /* TODO rf_uiz/32 */
     len = newlen;
     return *this;
   }
   string &move(string &);
   string &reserve(rf_uiz i, rf_bool setlen=TRU1){
+->book, book_at()
     int xlen = len; /* TODO int -> rf_uiz/32 */
     set_length(i + len);
     if(!setlen)
       len = xlen;
     return *this;
   }
+
+
+//FIXME cmp, casecmp() with string, buf and char!  
+//FIXME jsut use kind of my own C++ string and incorporate what is needed else
 
 
   friend string operator+(const string &, const string &);

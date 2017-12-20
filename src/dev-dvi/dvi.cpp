@@ -172,8 +172,8 @@ public:
   dvi_printer();
   ~dvi_printer();
   font *font_make(const char *);
-  OVW void page_begin(int);
-  OVW void page_end(int);
+  OVR void page_begin(int);
+  OVR void page_end(int);
   void set_char(glyph *, font *, const environment *, int, const char *);
   void special(char *, const environment *, char);
   void end_of_line();
@@ -191,7 +191,7 @@ public:
   draw_dvi_printer();
   ~draw_dvi_printer();
   void draw(int code, int *p, int np, const environment *env);
-  OVW void page_end(int);
+  OVR void page_end(int);
 };
 
 dvi_printer::dvi_printer()
@@ -492,7 +492,7 @@ void dvi_printer::postamble()
     out1(filler);
 }
 
-OVW void
+OVR void
 dvi_printer::page_begin(int i)
 {
   page_count++;
@@ -525,7 +525,7 @@ dvi_printer::page_begin(int i)
     set_color(&cur_color);
 }
 
-OVW void
+OVR void
 dvi_printer::page_end(int)
 {
   set_color(color_symbol::get_default());
@@ -535,7 +535,7 @@ dvi_printer::page_end(int)
   cur_font = 0;
 }
 
-OVW void
+OVR void
 draw_dvi_printer::page_end(int len)
 {
   dvi_printer::page_end(len);

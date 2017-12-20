@@ -591,8 +591,8 @@ public:
   ~ps_printer();
   void set_char(glyph *, font *, device::context const *, int, const char *);
   void draw(int, int *, int, device::context const *);
-  OVW void page_begin(int);
-  OVW void page_end(int);
+  OVR void page_begin(int);
+  OVR void page_end(int);
   void special(char *, device::context const *, char);
   font *font_make(const char *);
   void end_of_line();
@@ -1337,7 +1337,7 @@ void ps_printer::media_set()
   }
 }
 
-OVW void
+OVR void
 ps_printer::page_begin(int n)
 {
   out.begin_comment("Page:")
@@ -1366,7 +1366,7 @@ ps_printer::page_begin(int n)
     set_color(sbuf_color);
 }
 
-OVW void
+OVR void
 ps_printer::page_end(int)
 {
   flush_sbuf();
