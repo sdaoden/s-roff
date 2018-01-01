@@ -2,7 +2,7 @@
 .ig
 @ @L_ROFF@-diff.7
 
-Copyright (c) 2014 - 2017 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+Copyright (c) 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 
 Copyright (C) 1989, 2001 - 2004, 2006 - 2008
   Free Software Foundation, Inc.
@@ -3786,7 +3786,7 @@ classical `device-independent' troff did.
 .SH AUTHORS
 .\"
 .
-Copyright (c) 2014 - 2017 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+Copyright (c) 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 
 Copyright (C) 1989, 2001 - 2004, 2006 - 2008
 Free Software Foundation, Inc.

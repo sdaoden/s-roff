@@ -7,7 +7,7 @@
 # provided manually as a parameter to the filter.
 # This program needs a C preprocessor.
 #
-# Copyright (c) 2014 - 2017 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+# Copyright (c) 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 #
 # Copyright (C) 2005, 2006
 # Free Software Foundation, Inc.
