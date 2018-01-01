@@ -1,5 +1,5 @@
 /*@
- * Copyright (c) 2014 - 2017 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+ * Copyright (c) 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Copyright (C) 1992, 2000 - 2002, 2005 Free Software Foundation, Inc.
  *      Written by James Clark (jjc@jclark.com)

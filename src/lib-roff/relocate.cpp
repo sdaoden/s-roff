@@ -1,7 +1,7 @@
 /*@ Provide relocation for macro and font files.
  *@ Made after relocation code in kpathsea and gettext.
  *
- * Copyright (c) 2014 - 2017 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+ * Copyright (c) 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Copyright (C) 2005 Free Software Foundation, Inc.
  *
