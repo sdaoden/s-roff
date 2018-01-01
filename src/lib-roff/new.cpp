@@ -1,5 +1,6 @@
 /*@ FIXME please replace these damn allocators; especially for POD data!
- * Copyright (c) 2014 - 2017 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+ *
+ * Copyright (c) 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Copyright (C) 1989 - 1992, 2001, 2003, 2004
  *    Free Software Foundation, Inc.

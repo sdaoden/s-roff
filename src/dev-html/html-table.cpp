@@ -1,6 +1,6 @@
 /*@ Implementation of html_table.h.
  *
- * Copyright (c) 2014 - 2017 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+ * Copyright (c) 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Copyright (C) 2002 - 2005, 2007 Free Software Foundation, Inc.
  * Written by Gaius Mulley (gaius@glam.ac.uk)

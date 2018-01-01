@@ -1,5 +1,5 @@
 /*@
- * Copyright (c) 2014 - 2017 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+ * Copyright (c) 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Copyright (C) 1991, 2001, 2006 Free Software Foundation, Inc.
  * This file is part of the GNU C Library.

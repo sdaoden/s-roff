@@ -1,5 +1,5 @@
 /*@
- * Copyright (c) 2014 - 2017 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+ * Copyright (c) 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * This is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free
