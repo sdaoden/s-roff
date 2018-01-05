@@ -157,7 +157,7 @@ while [ 1 ]; do
   fi
 done
 trap "exit ${EX_TEMPFAIL}" HUP INT QUIT PIPE TERM
-trap "rm -f ${tmpfile}" EXIT
+trap "trap \"\" HUP INT QUIT PIPE TERM EXIT; rm -f ${tmpfile}" EXIT
 umask ${old_umask}
 
 # Let's go awk(1) {{{
