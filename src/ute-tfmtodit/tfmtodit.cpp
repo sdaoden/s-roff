@@ -54,7 +54,7 @@
 #include "lib.h"
 #include "tfmtodit-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -294,20 +294,20 @@ int tfm::load(const char *file)
   }
   int lf = (c1 << 8) + c2;
   int toread = lf*4 - 2;
-  unsigned char *buf = su_talloc(uc, toread);
+  unsigned char *buf = su_TALLOC(uc, toread);
   if (fread(buf, 1, toread, fp) != (size_t)toread) {
     if (feof(fp))
       error("unexpected end of file on `%1'", file);
     else
       error("error on file `%1'", file);
-    su_free(buf);
+    su_FREE(buf);
     fclose(fp);
     return 0;
   }
   fclose(fp);
   if (lf < 6) {
     error("bad tfm file `%1': impossibly short", file);
-    su_free(buf);
+    su_FREE(buf);
     return 0;
   }
   unsigned char *ptr = buf;
@@ -324,12 +324,12 @@ int tfm::load(const char *file)
   np = read2(ptr);
   if (6 + lh + (ec - bc + 1) + nw + nh + nd + ni + nl + nk + ne + np != lf) {
     error("bad tfm file `%1': lengths do not sum", file);
-    su_free(buf);
+    su_FREE(buf);
     return 0;
   }
   if (lh < 2) {
     error("bad tfm file `%1': header too short", file);
-    su_free(buf);
+    su_FREE(buf);
     return 0;
   }
   char_info = new char_info_word[ec - bc + 1];
@@ -374,7 +374,7 @@ int tfm::load(const char *file)
   for (i = 0; i < np; i++)
     param[i] = read4(ptr);
   assert(ptr == buf + lf*4 - 2);
-  su_free(buf);
+  su_FREE(buf);
   return 1;
 }
 
@@ -604,12 +604,12 @@ public:
   ~char_list(void);
 };
 
-char_list::char_list(const char *s, char_list *p) : ch(su_strdup(s)), next(p)
+char_list::char_list(const char *s, char_list *p) : ch(su_cs_dup(s)), next(p)
 {
 }
 
 char_list::~char_list(void){
-  su_free(ch);
+  su_FREE(ch);
 }
 
 int read_map(const char *file, char_list **table)
@@ -627,7 +627,7 @@ int read_map(const char *file, char_list **table)
   while (fgets(buf, int(sizeof(buf)), fp)) {
     lineno++;
     char *ptr = buf;
-    while (su_isspace(*ptr))
+    while (su_cs_is_space(*ptr))
       ptr++;
     if (*ptr == '\0' || *ptr == '#')
       continue;
@@ -774,24 +774,24 @@ int main(int argc, char **argv)
   printf("name %s\n", font_file);
   if (special_flag)
     fputs("special\n", stdout);
-  char *internal_name = su_strdup(argv[optind]);
+  char *internal_name = su_cs_dup(argv[optind]);
   int len = strlen(internal_name);
   if (len > 4 && strcmp(internal_name + len - 4, ".tfm") == 0)
     internal_name[len - 4] = '\0';
   // DIR_SEPS[] are possible directory separator characters, see nonposix.h.
   // We want the rightmost separator of all possible ones.
   // Example: d:/foo\\bar.
-  const char *s = strrchr(internal_name, DIR_SEPS[0]), *s1;
+  const char *s = su_cs_rfind_c(internal_name, DIR_SEPS[0]), *s1;
   const char *sep = &DIR_SEPS[1];
   while (*sep)
     {
-      s1 = strrchr(internal_name, *sep);
+      s1 = su_cs_rfind_c(internal_name, *sep);
       if (s1 && (!s || s1 > s))
 	s = s1;
       sep++;
     }
   printf("internalname %s\n", s ? s + 1 : internal_name);
-  su_free(internal_name);
+  su_FREE(internal_name);
   int n;
   if (t.get_param(2, &n)) {
     if (n > 0)

@@ -23,6 +23,9 @@
 #include "config.h"
 #include "lib.h"
 
+#include "su/cs.h"
+#include "su/mem.h"
+
 #include "errarg.h"
 #include "error.h"
 #include "symbol.h"
@@ -43,40 +46,11 @@ const int BLOCK_SIZE = 1024;
 // the table will increase in size as necessary
 // the size will be chosen from the following array
 // add some more if you want
-static const unsigned int table_sizes[] = {
+static const unsigned int table_sizes[] = { /* su_prime_next()!!! FIXME */
   101, 503, 1009, 2003, 3001, 4001, 5003, 10007, 20011, 40009, 80021,
   160001, 500009, 1000003, 1500007, 2000003, 0
 };
 const double FULL_MAX = 0.3;	// don't let the table get more than this full
-
-symbol default_symbol("default");
-
-static unsigned int hash_string(const char *p) /* FIXME Torek's hash */
-{
-  // compute a hash code; this assumes 32-bit unsigned ints
-  // see p436 of  Compilers by Aho, Sethi & Ullman
-  // give special treatment to two-character names
-  unsigned int hc = 0, g;
-  if (*p != 0) {
-    hc = *p++;
-    if (*p != 0) {
-      hc <<= 7;
-      hc += *p++;
-      for (; *p != 0; p++) {
-	hc <<= 4;
-	hc += *p;
-	if ((g = (hc & 0xf0000000)) == 0) {
-	  hc ^= g >> 24;
-	  hc ^= g;
-	}
-      }
-    }
-  }
-  return hc;
-}
-
-// Tell compiler that a variable is intentionally unused.
-inline void unused(void *) { }
 
 symbol::symbol(const char *p, int how)
 {
@@ -95,12 +69,12 @@ symbol::symbol(const char *p, int how)
       table[i] = 0;
     table_used = 0;
   }
-  unsigned int hc = hash_string(p);
+  unsigned int hc = su_cs_hash(p);
   const char **pp;
   for (pp = table + hc % table_size;
        *pp != 0;
        (pp == table ? pp = table + table_size - 1 : --pp))
-    if (strcmp(p, *pp) == 0) {
+    if (!su_cs_cmp(p, *pp)) {
       s = *pp;
       return;
     }
@@ -137,12 +111,12 @@ symbol::symbol(const char *p, int how)
     s = *pp = p;
   }
   else {
-    int len = strlen(p)+1;
+    int len = su_cs_len(p)+1;
     if (block == 0 || block_size < len) {
       block_size = len > BLOCK_SIZE ? len : BLOCK_SIZE;
-      block = new char [block_size];
+      block = su_TALLOC(char, block_size);
     }
-    (void)strcpy(block, p);
+    su_mem_copy(block, p, len);
     s = *pp = block;
     block += len;
     block_size -= len;
@@ -151,11 +125,11 @@ symbol::symbol(const char *p, int how)
 
 symbol concat(symbol s1, symbol s2)
 {
-  char *buf = new char [strlen(s1.contents()) + strlen(s2.contents()) + 1];
-  strcpy(buf, s1.contents());
-  strcat(buf, s2.contents());
+  char *buf = su_TALLOC(char, su_cs_len(s1.contents()) +
+      su_cs_len(s2.contents()) +1);
+  su_cs_pcopy(su_cs_pcopy(buf, s1.contents()), s2.contents());
   symbol res(buf);
-  a_delete buf;
+  su_FREE(buf);
   return res;
 }
 

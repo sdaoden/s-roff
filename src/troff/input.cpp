@@ -24,7 +24,8 @@
 #include "lib.h"
 #include "troff-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
+#include "su/mem.h"
 
 #include "defs.h"
 #include "file_case.h"
@@ -383,7 +384,7 @@ int file_iterator::get_location(int /*allow_macro*/,
 				const char **filenamep, int *linenop)
 {
   *linenop = lineno;
-  if (filename != 0 && strcmp(filename, "-") == 0)
+  if (filename != 0 && !su_cs_cmp(filename, "-"))
     *filenamep = "<standard input>";
   else
     *filenamep = filename;
@@ -870,7 +871,7 @@ static symbol read_long_escape_name(read_mode mode)
     c = get_char_for_escape_name(have_char && mode == WITH_ARGS);
     if (c == 0) {
       if (buf != abuf)
-        su_free(buf);
+        su_FREE(buf);
       return NULL_SYMBOL;
     }
     have_char = 1;
@@ -878,16 +879,16 @@ static symbol read_long_escape_name(read_mode mode)
       break;
     if (i + 2 > buf_size) {
       if (buf == abuf) {
-        buf = su_talloc(char, ABUF_SIZE * 2);
-        memcpy(buf, abuf, ABUF_SIZE);
+        buf = su_TALLOC(char, ABUF_SIZE * 2);
+        su_mem_copy(buf, abuf, ABUF_SIZE);
         buf_size = ABUF_SIZE * 2;
       }
       else {
         char *obd = buf;
         size_t obs = buf_size;
-        buf = su_talloc(char, buf_size *= 2);
-        memcpy(buf, obd, obs);
-        su_free(obd);
+        buf = su_TALLOC(char, buf_size *= 2);
+        su_mem_copy(buf, obd, obs);
+        su_FREE(obd);
       }
     }
     if (c == ']' && input_stack::get_level() == start_level)
@@ -907,7 +908,7 @@ static symbol read_long_escape_name(read_mode mode)
   }
   else {
     symbol s(buf);
-    su_free(buf);
+    su_FREE(buf);
     return s;
   }
 }
@@ -1239,7 +1240,7 @@ void do_fill_color(symbol nm)
     if (tem)
       curenv->set_fill_color(tem);
     else
-      (void)color_dictionary.lookup(nm, new color(nm));
+      (void)color_dictionary.lookup(nm, su_NEW(color_symbol)(nm));
   }
 }
 
@@ -2031,7 +2032,7 @@ void token::next()
 	    break;
 	  const char *p;
 	  for (p = s.contents(); *p != '\0'; p++)
-	    if (!su_isdigit(*p))
+	    if (!su_cs_is_digit(*p))
 	      break;
 	  if (*p || s.is_empty())
 	    curenv->set_font(s);
@@ -2260,10 +2261,10 @@ void token::next()
 	      if (groff_gn)
 		nm = symbol(groff_gn);
 	      else {
-		char *buf = su_talloc(char, strlen(gn) + 1 +1);
-		su_stpcpy(su_stpcpy(buf, "u"), gn);
+		char *buf = su_TALLOC(char, su_cs_len(gn) + 1 +1);
+		su_cs_pcopy(su_cs_pcopy(buf, "u"), gn);
 		nm = symbol(buf);
-		su_free(buf);
+		su_FREE(buf);
 	      }
 	    }
 	    else
@@ -2518,9 +2519,9 @@ static symbol do_get_long_name(int required, char end)
       else {
         char *obd = buf;
         size_t obs = buf_size;
-        buf = su_talloc(char, buf_size *= 2);
-        su_memcpy(buf, obd, obs);
-        su_free(obd);
+        buf = su_TALLOC(char, buf_size *= 2);
+        su_mem_copy(buf, obd, obs);
+        su_FREE(obd);
       }
     }
     if ((buf[i] = tok.ch()) == 0 || buf[i] == end)
@@ -2540,7 +2541,7 @@ static symbol do_get_long_name(int required, char end)
     return symbol(buf);
   else {
     symbol s(buf);
-    su_free(buf);
+    su_FREE(buf);
     return s;
   }
 }
@@ -2802,7 +2803,7 @@ void process_input_stack()
 		fflush(stderr);
 	      }
 	      fprintf(stderr, "interpreting [%s]", nm.contents());
-	      if (strcmp(nm.contents(), "di") == 0 && topdiv != curdiv)
+	      if (!su_cs_cmp(nm.contents(), "di") && topdiv != curdiv)
 		fprintf(stderr, " currently in diversion: %s",
 			curdiv->get_diversion_name());
 	      fprintf(stderr, "\n");
@@ -3575,15 +3576,15 @@ public:
 inline
 temp_iterator::temp_iterator(const char *s, int len)
 {
-  base = su_talloc(uc, len);
-  su_memcpy(base, s, len);
+  base = su_TALLOC(uc, len);
+  su_mem_copy(base, s, len);
   ptr = base;
   eptr = base + len;
 }
 
 temp_iterator::~temp_iterator()
 {
-  su_free(base);
+  su_FREE(base);
 }
 
 class small_temp_iterator
@@ -3650,7 +3651,7 @@ input_iterator *make_temp_iterator(const char *s)
   if (s == 0)
     return new small_temp_iterator(s, 0);
   else {
-    int n = strlen(s);
+    int n = su_cs_len(s);
     if (n <= small_temp_iterator::SIZE)
       return new small_temp_iterator(s, n);
     else
@@ -3819,7 +3820,7 @@ static void interpolate_macro(symbol nm, int no_next)
   if (p == 0) {
     int warned = 0;
     const char *s = nm.contents();
-    if (strlen(s) > 2) {
+    if (su_cs_len(s) > 2) {
       request_or_macro *r;
       char buf[3];
       buf[0] = s[0];
@@ -4032,7 +4033,7 @@ void composite_request()
       const char *to_decomposed = decompose_unicode(to_gn);
       if (to_decomposed)
 	to_gn = &to_decomposed[1];
-      if (strcmp(from_gn, to_gn) == 0)
+      if (!su_cs_cmp(from_gn, to_gn))
 	composite_dictionary.remove(symbol(from_gn));
       else
 	(void)composite_dictionary.lookup(symbol(from_gn), (void *)to_gn);
@@ -4380,7 +4381,7 @@ static void interpolate_arg(symbol nm)
   const char *s = nm.contents();
   if (!s || *s == '\0')
     copy_mode_error("missing argument name");
-  else if (s[1] == 0 && su_isdigit(s[0]))
+  else if (s[1] == 0 && su_cs_is_digit(s[0]))
     input_stack::push(input_stack::get_arg(s[0] - '0'));
   else if (s[0] == '*' && s[1] == '\0') {
     int limit = input_stack::nargs();
@@ -4441,7 +4442,7 @@ static void interpolate_arg(symbol nm)
   }
   else {
     const char *p;
-    for (p = s; *p && su_isdigit(*p); p++)
+    for (p = s; *p && su_cs_is_digit(*p); p++)
       ;
     if (*p)
       copy_mode_error("bad argument name `%1'", s);
@@ -5050,13 +5051,13 @@ static int read_size(int *x)
 	c = tok.ch();
       }
     }
-    if (!su_isdigit(c))
+    if (!su_cs_is_digit(c))
       bad = 1;
     else {
       val = c - '0';
       tok.next();
       c = tok.ch();
-      if (!su_isdigit(c))
+      if (!su_cs_is_digit(c))
 	bad = 1;
       else {
 	val = val*10 + (c - '0');
@@ -5064,12 +5065,12 @@ static int read_size(int *x)
       }
     }
   }
-  else if (su_isdigit(c)) {
+  else if (su_cs_is_digit(c)) {
     val = c - '0';
     if (!inc && c != '0' && c < '4') {
       tok.next();
       c = tok.ch();
-      if (!su_isdigit(c))
+      if (!su_cs_is_digit(c))
 	bad = 1;
       else
 	val = val*10 + (c - '0');
@@ -5147,16 +5148,16 @@ static symbol get_delim_name()
   for (;;) {
     if (i + 1 > buf_size) {
       if (buf == abuf) {
-        buf = su_talloc(char, ABUF_SIZE*2);
-        su_memcpy(buf, abuf, ABUF_SIZE);
+        buf = su_TALLOC(char, ABUF_SIZE*2);
+        su_mem_copy(buf, abuf, ABUF_SIZE);
         buf_size = ABUF_SIZE*2;
       }
       else {
         char *obd = buf;
         size_t obs = buf_size;
-        buf = su_talloc(char, buf_size *= 2);
-        su_memcpy(buf, obd, obs);
-        su_free(obd);
+        buf = su_TALLOC(char, buf_size *= 2);
+        su_mem_copy(buf, obd, obs);
+        su_FREE(obd);
       }
     }
     tok.next();
@@ -5166,7 +5167,7 @@ static symbol get_delim_name()
     if ((buf[i] = tok.ch()) == 0) {
       error("missing delimiter (got %1)", tok.description());
       if (buf != abuf)
-	su_free(buf);
+	su_FREE(buf);
       return NULL_SYMBOL;
     }
     i++;
@@ -5182,7 +5183,7 @@ static symbol get_delim_name()
   }
   else {
     symbol s(buf);
-    su_free(buf);
+    su_FREE(buf);
     return s;
   }
 }
@@ -5950,19 +5951,19 @@ void pipe_source()
       while ((c = get_copy(0)) == ' ' || c == '\t')
 	;
       int buf_size = 24;
-      char *buf = new char[buf_size];
+      char *buf = su_TALLOC(char, buf_size);//FIXME use cstring!
       int buf_used = 0;
       for (; c != '\n' && c != EOF; c = get_copy(0)) {
 	const char *s = asciify(c);
-	int slen = strlen(s);
+	int slen = su_cs_len(s);
 	if (buf_used + slen + 1> buf_size) {
 	  char *obd = buf;
 	  int obs = buf_size;
-	  buf = su_talloc(char, buf_size *= 2);
-	  su_memcpy(buf, obd, obs);
-	  su_free(obd);
+	  buf = su_TALLOC(char, buf_size *= 2);
+	  su_mem_copy(buf, obd, obs);
+	  su_FREE(obd);
 	}
-	strcpy(buf + buf_used, s);
+	memcpy(&buf[buf_used], s, slen);
 	buf_used += slen;
       }
       buf[buf_used] = '\0';
@@ -5974,7 +5975,7 @@ void pipe_source()
                 symbol(buf).contents()));
       else {
         error("can't open pipe to process `%1': %2", buf, su_err_doc(errno));
-        su_free(buf);
+        su_FREE(buf);
       }
     }
     tok.next();
@@ -6016,7 +6017,7 @@ int parse_bounding_box(char *p, bounding_box *bb)
     else {
       for (; *p == ' ' || *p == '\t'; p++)
 	;
-      if (strncmp(p, "(atend)", 7) == 0) {
+      if (!su_cs_cmp_n(p, "(atend)", 7)) {
 	return 2;
       }
     }
@@ -6080,7 +6081,7 @@ void do_ps_file(file_case *fcp, const char* filename)
     error("`%1' is empty", filename);
     return;
   }
-  if (strncmp("%!PS-Adobe-", buf, 11) != 0) {
+  if (su_cs_cmp_n("%!PS-Adobe-", buf, 11)) {
     error("`%1' is not conforming to the Document Structuring Conventions",
 	  filename);
     return;
@@ -6089,14 +6090,14 @@ void do_ps_file(file_case *fcp, const char* filename)
     // in header comments, `%X' (`X' any printable character except
     // whitespace) is possible too
     if (buf[0] == '%') {
-      if (strncmp(buf + 1, "%EndComments", 12) == 0)
+      if (!su_cs_cmp_n(buf + 1, "%EndComments", 12))
 	break;
       if (white_space(buf[1]))
 	break;
     }
     else
       break;
-    if (strncmp(buf + 1, "%BoundingBox:", 13) == 0) {
+    if (!su_cs_cmp_n(buf + 1, "%BoundingBox:", 13)) {
       int res = parse_bounding_box(buf + 14, &bb);
       if (res == 1) {
 	assign_registers(bb.llx, bb.lly, bb.urx, bb.ury);
@@ -6128,11 +6129,11 @@ void do_ps_file(file_case *fcp, const char* filename)
       while (ps_get_line(buf, fcp, filename) != 0) {
 	if (buf[0] == '%' && buf[1] == '%') {
 	  if (!had_trailer) {
-	    if (strncmp(buf + 2, "Trailer", 7) == 0)
+	    if (!su_cs_cmp_n(buf + 2, "Trailer", 7))
 	      had_trailer = 1;
 	  }
 	  else {
-	    if (strncmp(buf + 2, "BoundingBox:", 12) == 0) {
+	    if (!su_cs_cmp_n(buf + 2, "BoundingBox:", 12)) {
 	      int res = parse_bounding_box(buf + 14, &bb);
 	      if (res == 1)
 		got_bb = 1;
@@ -6278,14 +6279,13 @@ const char *input_char_description(int c)
     const char *s = asciify(c);
     if (*s) {
       buf[0] = '`';
-      strcpy(buf + 1, s);
-      strcat(buf, "'");
+      su_cs_pcopy(su_cs_pcopy(buf + 1, s), "'");
       return buf;
     }
     sprintf(buf, "magic character code %d", c);
     return buf;
   }
-  if (su_isprint(c)) {
+  if (su_cs_is_print(c)) {
     buf[0] = '`';
     buf[1] = c;
     buf[2] = '\'';
@@ -6556,13 +6556,13 @@ void spreadwarn_request()
 static void init_charset_table()
 {
   char buf[16];
-  strcpy(buf, "char");
-  for (int i = 0; i <= UCHAR_MAX; i++) {
-    strcpy(buf + 4, i_to_a(i));
+  memcpy(buf, "char", 4);
+  for (int i = 0; i <= U8_MAX; i++) {
+    su_cs_copy_n(&buf[4], i_to_a(i), sizeof(buf) - 4);
     charset_table[i] = get_charinfo(symbol(buf));
     charset_table[i]->set_ascii_code(i);
-    if (su_isalpha(i))
-      charset_table[i]->set_hyphenation_code(su_tolower(i));
+    if (su_cs_is_alpha(i))
+      charset_table[i]->set_hyphenation_code(su_cs_to_lower(i));
   }
   charset_table['.']->set_flags(charinfo::ENDS_SENTENCE);
   charset_table['?']->set_flags(charinfo::ENDS_SENTENCE);
@@ -6590,7 +6590,7 @@ static void init_charset_table()
 static void init_hpf_code_table()
 {
   for (unsigned char i = 0; i <= UCHAR_MAX; ++i)
-    hpf_code_table[i] = su_tolower(i);
+    hpf_code_table[i] = su_cs_to_lower(i);
 }
 
 static void do_translate(int translate_transparent, int translate_input)
@@ -6687,7 +6687,7 @@ void hyphenation_code()
       error("hyphenation code must be ordinary character");
       break;
     }
-    if (su_isdigit(c)) {
+    if (su_cs_is_digit(c)) {
       error("hyphenation code cannot be digit");
       break;
     }
@@ -7081,7 +7081,7 @@ void abort_request()
 char *read_string()
 {
   int len = 256;
-  char *s = su_talloc(char, len);
+  char *s = su_TALLOC(char, len);
   int c;
   while ((c = get_copy(0)) == ' ')
     ;
@@ -7089,7 +7089,7 @@ char *read_string()
   while (c != '\n' && c != EOF) {
     if (!invalid_input_char(c)) {
       if (i + 2 > len) {
-        s = su_trealloc(char, s, len *= 2);
+        s = su_TREALLOC(char, s, len *= 2);
       }
       s[i++] = c;
     }
@@ -7098,7 +7098,7 @@ char *read_string()
   s[i] = '\0';
   tok.next();
   if (i == 0) {
-    su_free(s);
+    su_FREE(s);
     return 0;
   }
   return s;
@@ -7124,10 +7124,10 @@ void pipe_output()
       if ((pc = read_string()) == 0)
 	error("can't pipe to empty command");
       if (pipe_command) {
-	char *s = su_talloc(char, su_strlen(pipe_command) + su_strlen(pc) + 1 +1);
-  su_stpcpy(su_stpcpy(su_stpcpy(s, pipe_command), "|"), pc);
-	su_free(pipe_command);
-	su_free(pc);
+	char *s = su_TALLOC(char, su_cs_len(pipe_command) + su_cs_len(pc) + 1 +1);
+  su_cs_pcopy(su_cs_pcopy(su_cs_pcopy(s, pipe_command), "|"), pc);
+	su_FREE(pipe_command);
+	su_FREE(pc);
 	pipe_command = s;
       }
       else
@@ -7151,7 +7151,7 @@ void system_request()
       error("empty command");
     else {
       system_status = system(command);
-      su_free(command);
+      su_FREE(command);
     }
   }
 }
@@ -7263,11 +7263,11 @@ static void parse_output_page_list(char *p)
     int i;
     if (*p == '-')
       i = 1;
-    else if (su_isdigit(*p)) {
+    else if (su_cs_is_digit(*p)) {
       i = 0;
       do
 	i = i*10 + *p++ - '0';
-      while (su_isdigit(*p));
+      while (su_cs_is_digit(*p));
     }
     else
       break;
@@ -7275,10 +7275,10 @@ static void parse_output_page_list(char *p)
     if (*p == '-') {
       p++;
       j = 0;
-      if (su_isdigit(*p)) {
+      if (su_cs_is_digit(*p)) {
 	do
 	  j = j*10 + *p++ - '0';
-	while (su_isdigit(*p));
+	while (su_cs_is_digit(*p));
       }
     }
     else
@@ -7301,15 +7301,13 @@ static void parse_output_page_list(char *p)
 static file_case *open_mac_file(const char *mac)
 {
   // Try first FOOBAR.tmac, then tmac.FOOBAR
-  char *s = new char[strlen(mac) + strlen(MACRO_POSTFIX) +1];
-  strcpy(s, mac);
-  strcat(s, MACRO_POSTFIX);
+  char *s = su_TALLOC(char, su_cs_len(mac) + sizeof(MACRO_POSTFIX));
+  su_cs_pcopy(su_cs_pcopy(s, mac), MACRO_POSTFIX);
 
   file_case *fcp;
   if ((fcp = mac_path->open_file(s, fcp->fc_take_path)) == NULL) {
-    s = new char[strlen(mac) + strlen(MACRO_PREFIX) +1];
-    strcpy(s, MACRO_PREFIX);
-    strcat(s, mac);
+    s = su_mem_TALLOC(char, su_cs_len(mac) + sizeof(MACRO_PREFIX));
+    su_cs_pcopy(su_cs_pcopy(s, MACRO_PREFIX), mac);
     fcp = mac_path->open_file(s, fcp->fc_take_path);
   }
   return fcp;
@@ -7354,19 +7352,20 @@ void macro_source()
     if ((fcp = mac_path->open_file(nm.contents())) == NULL) {
       const char *fn = nm.contents();
 
-      if (su_strncasecmp(fn, MACRO_PREFIX, sizeof(MACRO_PREFIX) - 1) == 0) {
+      if (!su_cs_casecmp_n(fn, MACRO_PREFIX, sizeof(MACRO_PREFIX) - 1)) {
         /* TODO cstring */
-        char *s = su_talloc(char, su_strlen(fn) + sizeof(MACRO_POSTFIX));
-        su_stpcpy(su_stpcpy(s, fn + sizeof(MACRO_PREFIX) - 1), MACRO_POSTFIX);
+        char *s = su_TALLOC(char, su_cs_len(fn) + sizeof(MACRO_POSTFIX));
+        su_cs_pcopy(su_cs_pcopy(s, fn + sizeof(MACRO_PREFIX) - 1),
+          MACRO_POSTFIX);
         fcp = mac_path->open_file(s, fcp->fc_take_path);
       }
 
       if (fcp == NULL) { /* TODO cstring */
-        if (su_strncasecmp(fn + su_strlen(fn) - sizeof(MACRO_POSTFIX) + 1,
-            MACRO_POSTFIX, sizeof(MACRO_POSTFIX) - 1) == 0) {
-          char *s = su_talloc(char, su_strlen(fn) + sizeof(MACRO_PREFIX));
-          char *e = su_stpcpy(s, MACRO_PREFIX);
-          su_strncat(e, fn, su_strlen(fn) - sizeof(MACRO_POSTFIX) + 1);
+        if (!su_cs_casecmp_n(fn + su_cs_len(fn) - sizeof(MACRO_POSTFIX) + 1,
+            MACRO_POSTFIX, sizeof(MACRO_POSTFIX) - 1)) {
+          char *s = su_TALLOC(char, su_cs_len(fn) + sizeof(MACRO_PREFIX));
+          char *e = su_cs_pcopy(s, MACRO_PREFIX);
+          su_cs_pcopy(e, fn, su_cs_len(fn) - sizeof(MACRO_POSTFIX) + 1);
           fcp = mac_path->open_file(s, fcp->fc_take_path);
         }
       }
@@ -7384,7 +7383,7 @@ static void process_input_file(const char *name)
 {
   file_case *fcp;
   if ((fcp = include_search_path.open_file_cautious(name)) == NULL) {
-    assert(strcmp(name, "-"));
+    assert(su_cs_cmp(name, "-"));
     fatal("can't open `%1': %2", name, su_err_doc(errno));
    }
   input_stack::push(new file_iterator(fcp, name));
@@ -7406,7 +7405,7 @@ static int evaluate_expression(const char *expr, units *res)
 
 static void do_register_assignment(const char *s)
 {
-  const char *p = strchr(s, '=');
+  const char *p = su_cs_find_c(s, '=');
   if (!p) {
     char buf[2];
     buf[0] = s[0];
@@ -7416,13 +7415,13 @@ static void do_register_assignment(const char *s)
       set_number_reg(buf, n);
   }
   else {
-    char *buf = su_talloc(char, p - s +1); /* TODO cstring */
-    su_memcpy(buf, s, p - s);
+    char *buf = su_TALLOC(char, p - s +1); /* TODO cstring */
+    su_mem_copy(buf, s, p - s);
     buf[p - s] = 0;
     units n;
     if (evaluate_expression(p + 1, &n))
       set_number_reg(buf, n);
-    su_free(buf);
+    su_FREE(buf);
   }
 }
 
@@ -7437,7 +7436,7 @@ static void set_string(const char *name, const char *value)
 
 static void do_string_assignment(const char *s)
 {
-  const char *p = strchr(s, '=');
+  const char *p = su_cs_find_c(s, '=');
   if (!p) {
     char buf[2];
     buf[0] = s[0];
@@ -7445,11 +7444,11 @@ static void do_string_assignment(const char *s)
     set_string(buf, s + 1);
   }
   else {
-    char *buf = su_talloc(char, p - s +1); /* TODO cstring */
-    su_memcpy(buf, s, p - s);
+    char *buf = su_TALLOC(char, p - s +1); /* TODO cstring */
+    su_mem_copy(buf, s, p - s);
     buf[p - s] = 0;
     set_string(buf, p + 1);
-    su_free(buf);
+    su_FREE(buf);
   }
 }
 
@@ -7511,7 +7510,7 @@ int main(int argc, char **argv)
     if (*groff_path)
       e += groff_path;
     e += '\0';
-    if (putenv(su_strdup(e.contents())))
+    if (putenv(su_cs_dup(e.contents())))
       fatal("putenv failed");
   }
   static const struct option long_options[] = {
@@ -7541,7 +7540,7 @@ int main(int argc, char **argv)
     case 'T':
       device = optarg;
       tflag = 1;
-      is_html = (strcmp(device, "html") == 0);
+      is_html = !su_cs_cmp(device, "html");
       break;
     case 'C':
       compatible_flag = 1;
@@ -7659,7 +7658,7 @@ int main(int argc, char **argv)
   for (i = 0; font::font_name_table[i]; i++, j++)
     // In the DESC file a font name of 0 (zero) means leave this
     // position empty.
-    if (strcmp(font::font_name_table[i], "0") != 0)
+    if (su_cs_cmp(font::font_name_table[i], "0"))
       mount_font(j, symbol(font::font_name_table[i]));
   curdiv = topdiv = new top_level_diversion;
   if (nflag)
@@ -8164,8 +8163,8 @@ static struct {
 static int lookup_warning(const char *name)
 {
   int rv = 0;
-  for (size_t i = 0; i < NELEM(warning_table); ++i)
-    if (!strcmp(name, warning_table[i].name)) {
+  for (uz i = 0; i < NELEM(warning_table); ++i)
+    if (!su_cs_cmp(name, warning_table[i].name)) {
       rv = warning_table[i].mask;
       break;
     }
@@ -8197,10 +8196,10 @@ static void copy_mode_error(const char *format,
 {
   if (ignoring) {
     static const char prefix[] = "(in ignored input) "; /* TODO cstring */
-    char *s = su_talloc(char, sizeof(prefix) + su_strlen(format));
-    su_stpcpy(su_stpcpy(s, prefix), format);
+    char *s = su_TALLOC(char, sizeof(prefix) + su_cs_len(format));
+    su_cs_pcopy(su_cs_pcopy(s, prefix), format);
     warning(WARN_IG, s, arg1, arg2, arg3);
-    su_free(s);
+    su_FREE(s);
   }
   else
     error(format, arg1, arg2, arg3);

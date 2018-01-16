@@ -22,7 +22,7 @@
 #include "config.h"
 #include "lib.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include "stringclass.h"
 
@@ -30,13 +30,13 @@ int interpret_lf_args(const char *p)
 {
   while (*p == ' ')
     p++;
-  if (!su_isdigit(*p))
+  if (!su_cs_is_digit(*p))
     return 0;
   int ln = 0;
   do {
     ln *= 10; /* TODO inline atoi */
     ln += *p++ - '0';
-  } while (su_isdigit(*p));
+  } while (su_cs_is_digit(*p));
   if (*p != ' ' && *p != '\n' && *p != '\0')
     return 0;
   while (*p == ' ')

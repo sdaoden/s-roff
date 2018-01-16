@@ -23,7 +23,7 @@
 #include "config.h"
 #include "lib.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include "stringclass.h"
 #include "unicode.h"
@@ -38,11 +38,11 @@ const char *check_unicode_name(const char *u)
     const char *start = p;
     for (;;) {
       // only uppercase hex digits allowed
-      if (!su_isxdigit(*p))
+      if (!su_cs_is_xdigit(*p))
 	return 0;
-      if (su_isdigit(*p))
+      if (su_cs_is_digit(*p))
 	val = val*0x10 + (*p-'0');
-      else if (su_isupper(*p))
+      else if (su_cs_is_upper(*p))
 	val = val*0x10 + (*p-'A'+10);
       else
 	return 0;

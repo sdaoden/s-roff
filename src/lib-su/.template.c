@@ -1,6 +1,6 @@
-/*@ su_stpcpy().
+/*@ Implementation of .h: .
  *
- * Copyright (c) 2017 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+ * Copyright (c) 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,24 +14,15 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#define su_FILE "su__strsup_stpcpy"
+#define su_FILE "su__"
+#define su_SOURCE
+#define su_SOURCE_
 
-#include "su/primary.h"
+#include "su/prime.h"
 
-#include "su/strsup.h"
+#include "su/.h"
 #include "su/code-in.h"
 
-char *
-su_stpcpy(char *dst, char const *src){
-   NYD_IN;
-   ASSERT_NYD_RET_VAL(dst != NIL, dst);
-   ASSERT_NYD_RET_VAL(src != NIL, dst);
-
-   while((*dst = *src++) != '\0')
-      ++dst;
-   NYD_OU;
-   return dst;
-}
 
 #include "su/code-ou.h"
 /* s-it-mode */

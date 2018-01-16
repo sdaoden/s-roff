@@ -24,7 +24,7 @@
 #include "lib.h"
 #include "ps-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include "driver.h"
 #include "file_case.h"
@@ -159,7 +159,7 @@ resource::resource(resource_type t, string &n, string &v, unsigned r)
 
 resource::~resource()
 {
-  su_free(filename);
+  su_FREE(filename);
 }
 
 void resource::print_type_and_name(FILE *outfp)
@@ -320,7 +320,7 @@ void resource_manager::output_prolog(ps_output &out)
     e += '=';
     e += (prologue = PROLOGUE_DEFAULT);
     e += '\0';
-    if (putenv(su_strdup(e.contents())))
+    if (putenv(su_cs_dup(e.contents())))
       fatal("putenv failed");
   }
 
@@ -368,7 +368,7 @@ void resource_manager::supply_resource(resource *r, int rank, FILE *outfp,
         error("can't open `%1': %2", r->filename, su_err_doc(errno));
     }
     if (fcp == NULL) {
-      su_free(r->filename);
+      su_FREE(r->filename);
       r->filename = NULL;
     }
   }
@@ -983,7 +983,7 @@ void resource_manager::process_file(int rank, file_case *fcp, FILE *outfp)
   const int NCOMMENTS = sizeof(comment_table)/sizeof(comment_table[0]);
   string buf;
   int saved_lineno = rf_current_lineno();
-  char *saved_filename = su_strdup(rf_current_filename());
+  char *saved_filename = su_cs_dup(rf_current_filename());
   rf_current_filename_set(cp->path());
   rf_current_lineno_set(0);
   if (!ps_get_line(buf, fcp))
@@ -1066,7 +1066,7 @@ void resource_manager::process_file(int rank, file_case *fcp, FILE *outfp)
 jleave:
     rf_current_filename_set(saved_filename);
     rf_current_lineno_set(saved_lineno);
-    su_free(saved_filename);
+    su_FREE(saved_filename);
 }
 
 void resource_manager::read_download_file()
@@ -1083,7 +1083,7 @@ void resource_manager::read_download_file()
     char *q = strtok(0, " \t\r\n");
     if (q == NULL)
       fatal_with_file_and_line(fcp->path(), lineno, "missing filename");
-    lookup_font(p)->filename = su_strdup(q);
+    lookup_font(p)->filename = su_cs_dup(q);
   }
 
   delete fcp;

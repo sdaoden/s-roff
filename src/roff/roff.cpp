@@ -25,7 +25,8 @@
 #include "lib.h"
 #include "roff-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
+#include "su/mem.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -377,7 +378,7 @@ int main(int argc, char **argv)
       e += fontpath;
     }
     e += '\0';
-    if (putenv(su_strdup(e.contents())))
+    if (putenv(su_cs_dup(e.contents())))
       fatal("putenv failed");
   }
   {
@@ -389,7 +390,7 @@ int main(int argc, char **argv)
     if (path && *path)
       e += path;
     e += '\0';
-    if (putenv(su_strdup(e.contents())))
+    if (putenv(su_cs_dup(e.contents())))
       fatal("putenv failed");
     char *binpath = getenv(U_ROFF_BIN_PATH);
     string f = "PATH";
@@ -403,7 +404,7 @@ int main(int argc, char **argv)
       f += path;
     }
     f += '\0';
-    if (putenv(su_strdup(f.contents())))
+    if (putenv(su_cs_dup(f.contents())))
       fatal("putenv failed");
   }
   if (Vflag)
@@ -420,12 +421,12 @@ const char *xbasename(const char *s) // TODO -> library
   // DIR_SEPS[] are possible directory separator characters, see nonposix.h
   // We want the rightmost separator of all possible ones.
   // Example: d:/foo\\bar.
-  const char *p = strrchr(s, DIR_SEPS[0]), *p1;
+  const char *p = su_cs_rfind_c(s, DIR_SEPS[0]), *p1;
   const char *sep = &DIR_SEPS[1];
 
   while (*sep)
     {
-      p1 = strrchr(s, *sep);
+      p1 = su_cs_rfind_c(s, *sep);
       if (p1 && (!p || p1 > p))
 	p = p1;
       sep++;
@@ -441,7 +442,7 @@ void handle_unknown_desc_command(const char *command, const char *arg,
       error_with_file_and_line(filename, lineno,
 			       "`print' command requires an argument");
     else
-      spooler = su_strdup(arg);
+      spooler = su_cs_dup(arg);
   }
   if (strcmp(command, "prepro") == 0) {
     if (arg == 0)
@@ -449,13 +450,13 @@ void handle_unknown_desc_command(const char *command, const char *arg,
 			       "`prepro' command requires an argument");
     else {
       for (const char *p = arg; *p; p++)
-	if (su_isspace(*p)) {
+	if (su_cs_is_space(*p)) {
 	  error_with_file_and_line(filename, lineno,
 				   "invalid `prepro' argument `%1'"
 				   ": program name required", arg);
 	  return;
 	}
-      predriver = su_strdup(arg);
+      predriver = su_cs_dup(arg);
     }
   }
   if (strcmp(command, "postpro") == 0) {
@@ -464,13 +465,13 @@ void handle_unknown_desc_command(const char *command, const char *arg,
 			       "`postpro' command requires an argument");
     else {
       for (const char *p = arg; *p; p++)
-	if (su_isspace(*p)) {
+	if (su_cs_is_space(*p)) {
 	  error_with_file_and_line(filename, lineno,
 				   "invalid `postpro' argument `%1'"
 				   ": program name required", arg);
 	  return;
 	}
-      postdriver = su_strdup(arg);
+      postdriver = su_cs_dup(arg);
     }
   }
 }
@@ -505,29 +506,29 @@ possible_command::possible_command()
 
 possible_command::~possible_command()
 {
-  su_free(name);
-  su_free(argv);
+  su_FREE(name);
+  su_FREE(argv);
 }
 
 void possible_command::set_name(const char *s)
 {
-  su_free(name);
-  name = su_strdup(s);
+  su_FREE(name);
+  name = su_cs_dup(s);
 }
 
 void possible_command::clear_name()
 {
-  su_free(name);
+  su_FREE(name);
   name = NULL;
-  su_free(argv);
+  su_FREE(argv);
   argv = NULL;
 }
 
 void possible_command::set_name(const char *s1, const char *s2)
 {
-  su_free(name);
-  name = su_talloc(char, su_strlen(s1) + su_strlen(s2) +1);
-  su_stpcpy(su_stpcpy(name, s1), s2);
+  su_FREE(name);
+  name = su_TALLOC(char, su_cs_len(s1) + su_cs_len(s2) +1);
+  su_cs_pcopy(su_cs_pcopy(name, s1), s2);
 }
 
 const char *possible_command::get_name()
@@ -592,11 +593,11 @@ void possible_command::build_argv()
 	argc++;
   }
   // Build an argument vector.
-  argv = su_talloc(char*, argc +1);
+  argv = su_TALLOC(char*, argc +1);
   argv[0] = name;
   for (int i = 1; i < argc; i++) {
     argv[i] = p;
-    p = su_strchr(p, '\0') + 1;
+    p = su_cs_find_c(p, '\0') + 1;
   }
   argv[argc] = NULL;
 }

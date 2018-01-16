@@ -23,7 +23,7 @@
 #include "lib.h"
 #include "addftinfo-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include <assert.h>
 #include <ctype.h>
@@ -163,11 +163,11 @@ static void convert_font(const font_params &param, FILE *infp, FILE *outfp)
     s += '\0';
     string name;
     const char *p = s.contents();
-    while (su_isspace(*p))
+    while (su_cs_is_space(*p))
       p++;
-    while (*p != '\0' && !su_isspace(*p))
+    while (*p != '\0' && !su_cs_is_space(*p))
       name += *p++;
-    while (su_isspace(*p))
+    while (su_cs_is_space(*p))
       p++;
     for (const char *q = s.contents(); q < p; q++)
       putc(*q, outfp);

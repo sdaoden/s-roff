@@ -24,7 +24,7 @@
 #include "lib.h"
 #include "troff-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include "dictionary.h"
 #include "request.h"
@@ -403,12 +403,12 @@ void alter_format()
   }
   tok.skip();
   char c = tok.ch();
-  if (su_isdigit(c)) {
+  if (su_cs_is_digit(c)) {
     int n = 0;
     do {
       ++n;
       tok.next();
-    } while (su_isdigit(tok.ch()));
+    } while (su_cs_is_digit(tok.ch()));
     r->alter_format('1', n);
   }
   else if (c == 'i' || c == 'I' || c == 'a' || c == 'A')

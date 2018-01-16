@@ -35,7 +35,6 @@
 #include "error.h"
 #include "stringclass.h"
 
-unsigned hash_string(const char *, int);
 int next_size(int);
 
 extern string capitalize_fields;

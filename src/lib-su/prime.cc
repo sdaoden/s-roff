@@ -1,6 +1,6 @@
-/*@ Forwards of and for all types.
+/*@ C++ injection point of most things which need it.
  *
- * Copyright (c) 2001 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+ * Copyright (c) 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,21 +14,28 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#ifndef su_FORWARDS_H
-#define su_FORWARDS_H
+#define su_FILE "su__prime"
+#define su_MASTER
+#define su_SOURCE
+#define su_SOURCE_PRIME
 
-#include <su/primary.h>
+#include "su/prime.h"
+#include "su/code-in.h"
 
-#include <su/code-in.h>
+NSPC_USE(su)
 
-C_DECL_BEGIN
-C_DECL_END
+PUB STA u16 const endian::bom = 0xFEFFu;
 
-#if !C_LANG
-NSPC_BEGIN(su)
-NSPC_END(su)
-#endif /* !C_LANG */
+void
+log::log(level lvl, char const *fmt, ...){ // XXX unroll
+   va_list va;
+   NYD_IN;
 
-#include <su/code-ou.h>
-#endif /* su_FORWARDS_H */
+   va_start(va, fmt);
+   su_log(S(enum su_log_level,lvl), fmt, &va);
+   va_end(va);
+   NYD_OU;
+}
+
+#include "su/code-ou.h"
 /* s-it-mode */

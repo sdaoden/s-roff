@@ -24,7 +24,8 @@
 #include "lib.h"
 #include "eqn-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
+#include "su/mem.h"
 
 #include "eqn.h"
 #include "eqn_tab.h"
@@ -58,7 +59,7 @@ definition::definition() : is_macro(1), is_simple(0)
 definition::~definition()
 {
   if (is_macro)
-    su_free(contents);
+    su_FREE(contents);
 }
 
 declare_ptable(definition)
@@ -299,7 +300,7 @@ void init_table(const char *device)
   for (i = 0; i < NELEM(common_defs); i++) {
     definition *def = new definition[1];
     def->is_macro = 1;
-    def->contents = su_strdup(common_defs[i].def);
+    def->contents = su_cs_dup(common_defs[i].def);
     def->is_simple = 1;
     macro_table.define(common_defs[i].name, def);
   }
@@ -307,7 +308,7 @@ void init_table(const char *device)
     for (i = 0; i < NELEM(troff_defs); i++) {
       definition *def = new definition[1];
       def->is_macro = 1;
-      def->contents = su_strdup(troff_defs[i].def);
+      def->contents = su_cs_dup(troff_defs[i].def);
       def->is_simple = 1;
       macro_table.define(troff_defs[i].name, def);
     }
@@ -316,14 +317,14 @@ void init_table(const char *device)
     for (i = 0; i < NELEM(mathml_defs); i++) {
       definition *def = new definition[1];
       def->is_macro = 1;
-      def->contents = su_strdup(mathml_defs[i].def);
+      def->contents = su_cs_dup(mathml_defs[i].def);
       def->is_simple = 1;
       macro_table.define(mathml_defs[i].name, def);
     }
   }
   definition *def = new definition[1];
   def->is_macro = 1;
-  def->contents = su_strdup("1");
+  def->contents = su_cs_dup("1");
   macro_table.define(device, def);
 }
 
@@ -421,13 +422,13 @@ int input::get_location(char **, int *)
 file_input::file_input(file_case *fcp, const char *fn, input *p)
 : input(p), _fcp(fcp), lineno(0), ptr("")
 {
-  filename = su_strdup(fn);
+  filename = su_cs_dup(fn);
 }
 
 file_input::~file_input()
 {
-  su_free(filename);
-  delete _fcp;
+  su_FREE(filename);
+  su_DEL(_fcp);
 }
 
 int file_input::read_line() /* TODO lib-roff */
@@ -487,12 +488,12 @@ int file_input::get_location(char **fnp, int *lnp)
 
 macro_input::macro_input(const char *str, input *x) : input(x)
 {
-  p = s = su_strdup(str);
+  p = s = su_cs_dup(str);
 }
 
 macro_input::~macro_input()
 {
-  su_free(s);
+  su_FREE(s);
 }
 
 int macro_input::get()
@@ -514,12 +515,12 @@ int macro_input::peek()
 top_input::top_input(const char *str, const char *fn, int ln, input *x)
 : macro_input(str, x), lineno(ln)
 {
-  filename = su_strdup(fn);
+  filename = su_cs_dup(fn);
 }
 
 top_input::~top_input()
 {
-  su_free(filename);
+  su_FREE(filename);
 }
 
 int top_input::get()
@@ -544,7 +545,7 @@ argument_macro_input::argument_macro_input(const char *body, int ac,
   int i;
   for (i = 0; i < argc; i++)
     argv[i] = av[i];
-  p = s = su_strdup(body);
+  p = s = su_cs_dup(body);
   int j = 0;
   for (i = 0; s[i] != '\0'; i++)
     if (s[i] == '$' && s[i+1] >= '0' && s[i+1] <= '9') {
@@ -559,8 +560,8 @@ argument_macro_input::argument_macro_input(const char *body, int ac,
 argument_macro_input::~argument_macro_input()
 {
   for (int i = 0; i < argc; i++)
-    su_free(argv[i]);
-  su_free(s);
+    su_FREE(argv[i]);
+  su_FREE(s);
 }
 
 int argument_macro_input::get()
@@ -771,7 +772,7 @@ void interpolate_macro_with_args(const char *body)
       if (level == 0 && (c == ',' || c == ')')) {
 	if (token_buffer.length() > 0) {
 	  token_buffer +=  '\0';
-	  argv[argc] = su_strdup(token_buffer.contents());
+	  argv[argc] = su_cs_dup(token_buffer.contents());
 	}
 	// for `foo()', argc = 0
 	if (argc > 0 || c != ')' || i > 0)
@@ -978,12 +979,12 @@ void do_definition(int is_simple)
     macro_table.define(name, def);
   }
   else if (def->is_macro) {
-    su_free(def->contents);
+    su_FREE(def->contents);
   }
   get_delimited_text();
   token_buffer += '\0';
   def->is_macro = 1;
-  def->contents = su_strdup(token_buffer.contents());
+  def->contents = su_cs_dup(token_buffer.contents());
   def->is_simple = is_simple;
 }
 
@@ -1111,7 +1112,7 @@ void do_chartype()
     return;
   }
   token_buffer += '\0';
-  set_char_type(type.contents(), su_strdup(token_buffer.contents()));
+  set_char_type(type.contents(), su_cs_dup(token_buffer.contents()));
 }
 
 void do_set()
@@ -1196,7 +1197,7 @@ int yylex()
     case QUOTED_TEXT:
     case TEXT:
       token_buffer += '\0';
-      yylval.str = su_strdup(token_buffer.contents());
+      yylval.str = su_cs_dup(token_buffer.contents());
       // fall through
     default:
       return tk;

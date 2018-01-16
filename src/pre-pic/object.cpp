@@ -23,7 +23,8 @@
 #include "lib.h"
 #include "pic-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
+#include "su/mem.h"
 
 #include "object.h"
 #include "pic.h"
@@ -42,7 +43,7 @@ output::output() : args(NULL), desired_height(0.0), desired_width(0.0)
 
 output::~output()
 {
-  su_free(args);
+  su_FREE(args);
 }
 
 void output::set_desired_width_height(double wid, double ht)
@@ -53,11 +54,11 @@ void output::set_desired_width_height(double wid, double ht)
 
 void output::set_args(const char *s)
 {
-  su_free(args);
+  su_FREE(args);
   if (s == 0 || *s == '\0')
     args = 0;
   else
-    args = su_strdup(s);
+    args = su_cs_dup(s);
 }
 
 int output::supports_filled_polygons()
@@ -621,12 +622,12 @@ void graphic_object::set_yslanted(double)
 
 void graphic_object::set_fill_color(char *c)
 {
-  color_fill = su_strdup(c);
+  color_fill = su_cs_dup(c);
 }
 
 void graphic_object::set_outline_color(char *c)
 {
-  outline_color = su_strdup(c);
+  outline_color = su_cs_dup(c);
 }
 
 char *graphic_object::get_outline_color()
@@ -768,7 +769,7 @@ void closed_object::set_yslanted(double s)
 
 void closed_object::set_fill_color(char *f)
 {
-  color_fill = su_strdup(f);
+  color_fill = su_cs_dup(f);
 }
 
 class box_object
@@ -973,7 +974,7 @@ static void adjust_objectless_places(PTABLE(place) *tbl, const position &a)
   const char *key;
   place *pl;
   while (iter.next(&key, &pl))
-    if (key && su_isupper(key[0]) && pl->obj == 0) {
+    if (key && su_cs_is_upper(key[0]) && pl->obj == 0) {
       pl->x += a.x;
       pl->y += a.y;
     }
@@ -2005,7 +2006,7 @@ string_list::string_list(char *s)
 
 string_list::~string_list()
 {
-  su_free(str);
+  su_FREE(str);
 }
 
 /* A path is used to hold the argument to the `with' attribute.  For
