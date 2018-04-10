@@ -6,7 +6,7 @@
 .\" Written 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 .\" Public Domain
 .
-.Dd July 15, 2017
+.Dd April 10, 2018
 .Dt MDOCMX 7
 .Os
 .Mx -enable
@@ -268,9 +268,17 @@ and postposed
 and
 .Ql \ec
 escape characters.
-However, reference look up can be actively prevented by prefixing two
-zero-width glyphs (after possible whitespace), i.e.,
-.Ql \e&\e& .
+Yet, prefixing a command with two zero-width glyphs (after possible
+whitespace), as in
+.Ql \e&\e& ,
+has the special meaning that reference lookup will be actively prevented
+for all remaining arguments of the command.
+For example, in the hypothetic
+.Ql .Ic if\0, elif\0, else\0, endif
+all four commands would be linked, but in
+.Ql .Ic \e&\e&if\0, elif\0, else\0, endif
+none of them; if that is not desired, a new command needs to be started:
+.Ql .Ic \e&\e&if\0, .Ic elif\0, else\0, endif .
 .
 .Ss Freely definable anchors and references
 .
@@ -409,7 +417,7 @@ lists the headings.
 Defining this string can be used to enforce the creation of a table of
 contents as specified, even if the documents
 .Ql Fl toc
-configuration wouldn't create one for the targeted output device.
+configuration would not create one for the targeted output device.
 A flat table of contents will be generated unless the string value is
 .Ql tree .
 .
@@ -438,7 +446,7 @@ The
 request cannot share a line with other macros, neither in the document
 prologue nor in its content.
 Whereas that is mostly owed to the necessity of ensuring (backward)
-compatibility with environments that don't support
+compatibility with environments that do not support
 .Xr mdocmx 7 ,
 it also simplified implementation of the preprocessor.
 .
