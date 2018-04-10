@@ -20,9 +20,9 @@
 #define su_SOURCE
 #define su_SOURCE_MEM_ALLOC
 
-#include "su/prime.h"
+#include "su/code.h"
 
-#include <stdlib.h>
+#include <stdlib.h> /* FIXME port C++ memcache! */
 
 #include "su/mem.h"
 #include "su/code-in.h"

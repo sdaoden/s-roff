@@ -14,8 +14,8 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#ifndef su_PRIME_H
-# error su/code-in.h must be included after su/prime.h
+#ifndef su_CODE_H
+# error su/code-in.h must be included after su/code.h
 #endif
 #ifdef su_CODE_IN_H
 # error su/code-ou.h must be included before including su/code-in.h again

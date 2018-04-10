@@ -21,7 +21,7 @@
 #ifndef su_MEM_H
 #define su_MEM_H
 
-#include <su/prime.h>
+#include <su/code.h>
 
 #define su_HEADER
 #include <su/code-in.h>

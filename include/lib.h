@@ -25,7 +25,7 @@
 
 #include <config.h>
 
-#include <su/prime.h>
+/*#include <su/code.h>*/
 #include <su/mem.h>
 
 #include <stdarg.h>

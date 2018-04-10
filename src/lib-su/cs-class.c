@@ -18,7 +18,7 @@
 #define su_SOURCE
 #define su_SOURCE_CS_CLASS
 
-#include "su/prime.h"
+#include "su/code.h"
 
 #include <ctype.h> /* FIXME as below */
 

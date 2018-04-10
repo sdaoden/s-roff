@@ -19,8 +19,8 @@
 #define su_SOURCE
 #define su_SOURCE_ARRAY
 
+#include "su/code.h"
 #include "su/mem.h"
-#include "su/prime.h"
 
 #include "su/array.h"
 #include "su/code-in.h"

@@ -19,7 +19,7 @@
 #ifndef su_ARRAY_H
 #define su_ARRAY_H
 
-#include <su/prime.h>
+#include <su/code.h>
 
 #define su_HEADER
 #include <su/code-in.h>

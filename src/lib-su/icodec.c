@@ -18,8 +18,8 @@
 #define su_SOURCE
 #define su_SOURCE_ICODEC
 
+#include "su/code.h"
 #include "su/cs.h"
-#include "su/prime.h"
 
 #include "su/icodec.h"
 #include "su/code-in.h"

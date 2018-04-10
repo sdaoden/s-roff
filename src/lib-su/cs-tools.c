@@ -18,7 +18,7 @@
 #define su_SOURCE
 #define su_SOURCE_CS_TOOLS
 
-#include "su/prime.h"
+#include "su/code.h"
 
 #include "su/cs.h"
 #include "su/code-in.h"

@@ -18,9 +18,9 @@
 #define su_SOURCE
 #define su_SOURCE_MEM_TOOLS
 
-#include "su/prime.h"
+#include "su/code.h"
 
-#include <string.h>
+#include <string.h> /* TODO add x-mem-tools.h, get impl.s from there */
 
 #include "su/mem.h"
 #include "su/code-in.h"

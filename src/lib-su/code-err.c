@@ -1,4 +1,4 @@
-/*@ Implementation of prime.h: errors.
+/*@ Implementation of code.h: errors.
  *
  * Copyright (c) 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
@@ -14,27 +14,27 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#define su_FILE "su__prime_err"
+#define su_FILE "su__code_err"
 #define su_SOURCE
-#define su_SOURCE_PRIME_ERR
+#define su_SOURCE_CODE_ERR
 
 #include "su/cs.h"
 
-#include "su/prime.h"
+#include "su/code.h"
 #include "su/code-in.h"
 
-struct a_pe_err_map{
-   u32 peem_hash;    /* Hash of name */
-   u32 peem_nameoff; /* Into a_pe_err_names[] */
-   u32 peem_docoff;  /* Into a_pe_err docs[] */
-   s32 peem_err_no;  /* The OS error value for this one */
+struct a_ce_err_map{
+   u32 ceem_hash;    /* Hash of name */
+   u32 ceem_nameoff; /* Into a_ce_err_names[] */
+   u32 ceem_docoff;  /* Into a_ce_err docs[] */
+   s32 ceem_err_no;  /* The OS error value for this one */
 };
 
 /* Include the constant make-errors.sh output */
 #include <gen-errors.h>
 
 /* And these come from mk-config.h (config-time make-errors.sh output) */
-static su__ERR_NUMBER_TYPE const a_pe_err_no2mapoff[][2] = {
+static su__ERR_NUMBER_TYPE const a_ce_err_no2mapoff[][2] = {
 #undef a_X
 #define a_X(N,I) {N,I},
 su__ERR_NUMBER_TO_MAPOFF
@@ -42,24 +42,24 @@ su__ERR_NUMBER_TO_MAPOFF
 };
 
 /* Find the descriptive mapping of an error number, or _ERR_INVAL */
-static struct a_pe_err_map const *a_pe_err_map_from_no(s32 eno);
+static struct a_ce_err_map const *a_ce_err_map_from_no(s32 eno);
 
-static struct a_pe_err_map const *
-a_pe_err_map_from_no(s32 eno){
+static struct a_ce_err_map const *
+a_ce_err_map_from_no(s32 eno){
    s32 ecmp;
    uz asz;
    su__ERR_NUMBER_TYPE const (*adat)[2], (*tmp)[2];
-   struct a_pe_err_map const *peemp;
+   struct a_ce_err_map const *ceemp;
    NYD2_IN;
 
-   peemp = &a_pe_err_map[su__ERR_NUMBER_VOIDOFF];
+   ceemp = &a_ce_err_map[su__ERR_NUMBER_VOIDOFF];
 
    if(UCMP(z, ABS(eno), <=, S(su__ERR_NUMBER_TYPE,-1))){
-      for(adat = a_pe_err_no2mapoff, asz = NELEM(a_pe_err_no2mapoff);
+      for(adat = a_ce_err_no2mapoff, asz = NELEM(a_ce_err_no2mapoff);
             asz != 0; asz >>= 1){
          tmp = &adat[asz >> 1];
          if((ecmp = S(s32,S(su__ERR_NUMBER_TYPE,eno) - (*tmp)[0])) == 0){
-            peemp = &a_pe_err_map[(*tmp)[1]];
+            ceemp = &a_ce_err_map[(*tmp)[1]];
             break;
          }
          if(ecmp > 0){
@@ -69,17 +69,17 @@ a_pe_err_map_from_no(s32 eno){
       }
    }
    NYD2_OU;
-   return peemp;
+   return ceemp;
 }
 
 char const *
 su_err_doc(s32 eno){
    char const *rv;
-   struct a_pe_err_map const *peemp;
+   struct a_ce_err_map const *ceemp;
    NYD2_IN;
 
-   peemp = a_pe_err_map_from_no(eno);
-   rv = &a_pe_err_docs[peemp->peem_docoff];
+   ceemp = a_ce_err_map_from_no(eno);
+   rv = &a_ce_err_docs[ceemp->ceem_docoff];
    NYD2_OU;
    return rv;
 }
@@ -87,18 +87,18 @@ su_err_doc(s32 eno){
 char const *
 su_err_name(s32 eno){
    char const *rv;
-   struct a_pe_err_map const *peemp;
+   struct a_ce_err_map const *ceemp;
    NYD2_IN;
 
-   peemp = a_pe_err_map_from_no(eno);
-   rv = &a_pe_err_names[peemp->peem_nameoff];
+   ceemp = a_ce_err_map_from_no(eno);
+   rv = &a_ce_err_names[ceemp->ceem_nameoff];
    NYD2_OU;
    return rv;
 }
 
 s32
 su_err_from_name(char const *name){
-   struct a_pe_err_map const *peemp;
+   struct a_ce_err_map const *ceemp;
    uz hash, i, j, x;
    s32 rv;
    NYD2_IN;
@@ -106,13 +106,13 @@ su_err_from_name(char const *name){
    hash = su_cs_hash(name);
 
    for(i = hash % a_SSM_ERR_REV_PRIME, j = 0; j <= a_SSM_ERR_REV_LONGEST; ++j){
-      if((x = a_pe_err_revmap[i]) == a_SSM_ERR_REV_ILL)
+      if((x = a_ce_err_revmap[i]) == a_SSM_ERR_REV_ILL)
          break;
 
-      peemp = &a_pe_err_map[x];
-      if(peemp->peem_hash == hash &&
-            !su_cs_cmp(&a_pe_err_names[peemp->peem_nameoff], name)){
-         rv = peemp->aem_err_no;
+      ceemp = &a_ce_err_map[x];
+      if(ceemp->ceem_hash == hash &&
+            !su_cs_cmp(&a_ce_err_names[ceemp->ceem_nameoff], name)){
+         rv = ceemp->aem_err_no;
          goto jleave;
       }
 

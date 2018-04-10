@@ -17,7 +17,9 @@
 #ifndef su_CS_H
 #define su_CS_H
 
-#include <su/prime.h>
+#include <su/code.h>
+#define su_A_T_T_DECL_ONLY
+#include <su/a-t-t.h>
 
 #define su_HEADER
 #include <su/code-in.h>
@@ -40,6 +42,8 @@ enum su_cs_class{
    su__CS_CLASS_MAXSHIFT = 11u,
    su__CS_CLASS_MASK = (1u<<su__CS_CLASS_MAXSHIFT) - 1
 };
+
+EXPORT_DATA struct toolbox const su_cs_toolbox;
 
 /* Character classification FIXME su_library_init()+inline */
 #define su_cs_is_alnum(C) su__c_is_class(C, su_CS_CLASS_ALNUM)
@@ -120,8 +124,13 @@ C_DECL_END
 NSPC_BEGIN(su)
 
 // Instanceless static encapsulator.
-class cs{
+class EXPORT cs{
 public:
+   static NSPC(su)type_toolbox<char*> const * const type_toolbox =
+         R(NSPC(su)type_toolbox<char*> const*,&su_cs_toolbox);
+   static NSPC(su)type_toolbox<char const*> const * const const_type_toolbox =
+         R(NSPC(su)type_toolbox<char const*> const*,&su_cs_toolbox);
+
    static boole is_alnum(s32 c) {return su_cs_is_alnum(c);}
    static boole is_alpha(s32 c) {return su_cs_is_alpha(c);}
    static boole is_cntrl(s32 c) {return su_cs_is_cntrl(c);}
@@ -183,6 +192,22 @@ public:
 
    static s32 to_lower(s32 c) {return su_cs_to_lower(c);}
    static s32 to_upper(s32 c) {return su_cs_to_upper(c);}
+};
+
+template<>
+class auto_type_toolbox<char*>{
+public:
+   static type_toolbox<char*> const *get_instance(void){
+      return cs::type_toolbox;
+   }
+};
+
+template<>
+class auto_type_toolbox<char const*>{
+public:
+   static type_toolbox<char const*> const *get_instance(void){
+      return cs::const_type_toolbox;
+   }
 };
 
 NSPC_END(su)

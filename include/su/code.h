@@ -1,4 +1,4 @@
-/*@ Prime: basic infrastructure (POD types, macros etc.) and functions.
+/*@ Code of the basic infrastructure (POD types, macros etc.) and functions.
  *@ And main documentation entry point, as below.
  *@ - Reacts upon su_HAVE_DEBUG, su_HAVE_DEVEL, and NDEBUG.
  *@ - Some macros require su_FILE to be defined to a literal.
@@ -19,13 +19,13 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#ifndef su_PRIME_H
-#define su_PRIME_H
+#ifndef su_CODE_H
+#define su_CODE_H
 
 #include <su/config.h>
 
-/*@=
- * blablabla
+/*!@
+ * TODO blablabla
  *
  * Some introductional remarks:
  *
@@ -111,10 +111,6 @@
 #endif
 
 /* OS }}} */
-
-#include <inttypes.h> /* TODO try to replace with */
-#include <limits.h> /* TODO config-time thing! */
-
 /* LANG {{{ */
 
 #ifndef __cplusplus
@@ -272,7 +268,7 @@ do{\
 #elif !defined su_CC_IGNORE_UNKNOWN
 # error SU: This compiler is not yet supported.
 # error SU: To continue with your CFLAGS etc., define su_CC_IGNORE_UNKNOWN.
-# error SU: It may be necessary to defined su_CC_PACKED to a statement that
+# error SU: It may be necessary to define su_CC_PACKED to a statement that
 # error SU: enables structure packing; it may not be a #pragma, but a _Pragma
 #endif
 
@@ -446,6 +442,9 @@ do{\
 /* SUPPORT MACROS+ }}} */
 
 /* We are ready to start using our own style */
+#include <inttypes.h> /* TODO try to replace with */
+#include <limits.h> /* TODO config-time thing! */
+
 #define su_HEADER
 #include <su/code-in.h>
 
@@ -700,67 +699,229 @@ typedef su_up up;
 typedef su_sp sp;
 
 enum {FAL0 = su_FAL0, TRU1 = su_TRU1, TRUM1 = su_TRUM1};
-typedef s8 boole;
-
-// Instanceless static encapsulator.
-class byte{
-public:
-   static uz const bits = 8;
-   static uz const bitmask = 7;
-   static uz const bitshift = 3;
-};
-
-// Instanceless static encapsulator.
-class reg{
-public:
-#if su_UZ_MAX == su_U32_MAX
-   static uz const size = 4;     // sizeof
-   static uz const mask = 3;     // ..of size
-   static uz const shift = 2;    // ..of size
-
-   static uz const bits = 32;
-   static uz const bitmask = 31;
-   static uz const bitshift = 5;
-#else
-   static uz const size = 8;     // sizeof
-   static uz const mask = 7;     // ..of size
-   static uz const shift = 3;    // ..of size
-
-   static uz const bits = 64;
-   static uz const bitmask = 63;
-   static uz const bitshift = 6;
-#endif
-};
-
-// Instanceless static encapsulator.
-class min{
-public:
-   static NSPC(su)s8 const s8 = su_S8_MIN;
-   static NSPC(su)s16 const s16 = su_S16_MIN;
-   static NSPC(su)s32 const s32 = su_S32_MIN;
-   static NSPC(su)s64 const s64 = su_S64_MIN;
-   static NSPC(su)sz const sz = su_SZ_MIN;
-};
-
-// Instanceless static encapsulator.
-class max{
-public:
-   static NSPC(su)u8 const u8 = su_U8_MAX;
-   static NSPC(su)s8 const s8 = su_S8_MAX;
-   static NSPC(su)u16 const u16 = su_U16_MAX;
-   static NSPC(su)s16 const s16 = su_S16_MAX;
-   static NSPC(su)u32 const u32 = su_U32_MAX;
-   static NSPC(su)s32 const s32 = su_S32_MAX;
-   static NSPC(su)u64 const u64 = su_U64_MAX;
-   static NSPC(su)s64 const s64 = su_S64_MAX;
-   static NSPC(su)uz const uz = su_UZ_MAX;
-   static NSPC(su)sz const sz = su_SZ_MAX;
-};
+typedef su_boole boole;
 
 NSPC_END(su)
 #endif /* !C_LANG */
 /* POD TYPE SUPPORT }}} */
-/* C/C++ BASICS {{{ */
+/* BASIC TYPE TRAITS {{{ */
+C_DECL_BEGIN
+
+struct su_toolbox;
+// plus PTF typedefs
+
+typedef void *(*su_new_fun)(void);
+typedef void *(*su_clone_fun)(void const *t);
+typedef void (*su_delete_fun)(void *self);
+// It should not be assumed self has been updated, use return value instead
+typedef void *(*su_assign_fun)(void *self, void const *t);
+typedef su_sz (*su_compare_fun)(void const *a, void const *b);
+typedef su_uz (*su_hash_fun)(void const *self);
+
+// This needs to be binary compatible with su::{toolbox,type_toolbox<T>}!
+struct su_toolbox{
+   su_new_fun tb_clone;
+   su_delete_fun tb_delete;
+   su_assign_fun tb_assign;
+   su_compare_fun tb_compare;
+   su_hash_fun tb_hash;
+};
+#define su_TOOLBOX_I9R(CLONE,DELETE,ASSIGN,COMPARE,HASH) {\
+   su_FIELD_INITN(tb_clone) (su_new_fun)CLONE,\
+   su_FIELD_INITN(tb_delete) (su_delete_fun)DELETE,\
+   su_FIELD_INITN(tb_assign) (su_assign_fun)ASSIGN,\
+   su_FIELD_INITN(tb_compare) (su_compare_fun)COMPARE,\
+   su_FIELD_INITN(tb_hash) (su_hash_fun)HASH\
+}
+
+C_DECL_END
+#if !C_LANG
+NSPC_BEGIN(su)
+
+template<class T> class type_traits;
+template<class T> struct type_toolbox;
+// Plus C wrapper typedef
+
+// External forward, defined in a-t-t.h.
+template<class T> class auto_type_toolbox;
+
+typedef su_toolbox toolbox;
+
+template<class T>
+class type_traits{
+public:
+   typedef T type;
+   typedef T *ptr;
+   typedef T const const_type;
+   typedef T const *const_ptr;
+
+   typedef NSPC(su)type_toolbox<type> toolbox;
+   typedef NSPC(su)auto_type_toolbox<type> auto_type_toolbox;
+
+   // Non-pointer types are by default own-guessed, pointer based ones not
+   static boole const ownguess = TRU1;
+   // Ditto, associative collections, keys.
+   static boole const ownguess_key = TRU1;
+
+   static void *to_vptr(const_ptr t) {return C(void*,S(void const*,t));}
+   static void const *to_const_vptr(const_ptr t) {return t;}
+
+   static ptr to_ptr(void const *t) {return C(ptr,S(const_ptr,t));}
+   static const_ptr to_const_ptr(void const *t) {return S(const_ptr,t);}
+};
+
+// Some specializations
+template<class T>
+class type_traits<const T>{ // (ugly, but required for some node based colls..)
+public:
+   typedef T type;
+   typedef T *ptr;
+   typedef T const const_type;
+   typedef T const *const_ptr;
+   typedef NSPC(su)type_toolbox<type> toolbox;
+   typedef NSPC(su)auto_type_toolbox<type> auto_type_toolbox;
+
+   static boole const ownguess = FAL0;
+   static boole const ownguess_key = TRU1;
+
+   static void *to_vptr(const_ptr t) {return C(ptr,t);}
+   static void const *to_const_vptr(const_ptr t) {return t;}
+   static ptr to_ptr(void const *t) {return C(ptr,S(const_ptr,t));}
+   static const_ptr to_const_ptr(void const *t) {return S(const_ptr,t);}
+};
+
+template<class T>
+class type_traits<T *>{
+public:
+   typedef T type;
+   typedef T *ptr;
+   typedef T const const_type;
+   typedef T const *const_ptr;
+   typedef NSPC(su)type_toolbox<type> toolbox;
+   typedef NSPC(su)auto_type_toolbox<type> auto_type_toolbox;
+
+   static boole const ownguess = FAL0;
+   static boole const ownguess_key = TRU1;
+
+   static void *to_vptr(const_ptr t) {return C(ptr,t);}
+   static void const *to_const_vptr(const_ptr t) {return t;}
+   static ptr to_ptr(void const *t) {return C(ptr,S(const_ptr,t));}
+   static const_ptr to_const_ptr(void const *t) {return S(const_ptr,t);}
+};
+
+template<>
+class type_traits<void *>{
+public:
+   typedef void *type;
+   typedef void *ptr;
+   typedef void const *const_type;
+   typedef void const *const_ptr;
+   typedef NSPC(su)toolbox toolbox;
+   typedef NSPC(su)auto_type_toolbox<void *> auto_type_toolbox;
+
+   static boole const ownguess = FAL0;
+   static boole const ownguess_key = FAL0;
+
+   static void *to_vptr(const_ptr t) {return C(ptr,t);}
+   static void const *to_const_vptr(const_ptr t) {return t;}
+   static ptr to_ptr(void const *t) {return C(ptr,S(const_ptr,t));}
+   static const_ptr to_const_ptr(void const *t) {return S(const_ptr,t);}
+};
+
+template<>
+class type_traits<void const *>{
+public:
+   typedef void const *type;
+   typedef void const *ptr;
+   typedef void const *const_type;
+   typedef void const *const_ptr;
+   typedef NSPC(su)toolbox toolbox;
+   typedef NSPC(su)auto_type_toolbox<void const *> auto_type_toolbox;
+
+   static boole const ownguess = FAL0;
+   static boole const ownguess_key = FAL0;
+
+   static void *to_vptr(const_ptr t) {return C(void*,t);}
+   static void const *to_const_vptr(const_ptr t) {return t;}
+   static ptr to_ptr(void const *t) {return C(void*,t);}
+   static const_ptr to_const_ptr(void const *t) {return t;}
+};
+
+template<>
+class type_traits<char *>{
+public:
+   typedef char *type;
+   typedef char *ptr;
+   typedef char const *const_type;
+   typedef char const *const_ptr;
+   typedef NSPC(su)type_toolbox<type> toolbox;
+   typedef NSPC(su)auto_type_toolbox<type> auto_type_toolbox;
+
+   static boole const ownguess = FAL0;
+   static boole const ownguess_key = TRU1;
+
+   static void *to_vptr(const_ptr t) {return C(ptr,t);}
+   static void const *to_const_vptr(const_ptr t) {return t;}
+   static ptr to_ptr(void const *t) {return C(ptr,S(const_ptr,t));}
+   static const_ptr to_const_ptr(void const *t) {return S(const_ptr,t);}
+};
+
+template<>
+class type_traits<char const *>{
+public:
+   typedef char const *type;
+   typedef char const *ptr;
+   typedef char const *const_type;
+   typedef char const *const_ptr;
+   typedef NSPC(su)type_toolbox<type> toolbox;
+   typedef NSPC(su)auto_type_toolbox<type> auto_type_toolbox;
+
+   static boole const ownguess = FAL0;
+   static boole const ownguess_key = TRU1;
+
+   static void *to_vptr(const_ptr t) {return C(char*,t);}
+   static void const *to_const_vptr(const_ptr t) {return t;}
+   static ptr to_ptr(void const *t) {return C(char*,S(const_ptr,t));}
+   static const_ptr to_const_ptr(void const *t) {return S(const_ptr,t);}
+};
+
+// This needs to be binary compatible with toolbox (and su_toolbox)!
+template<class T>
+struct type_toolbox{
+   typedef NSPC(su)type_traits<T> type_traits;
+
+   typename type_traits::ptr (*ttb_clone)(typename type_traits::const_ptr t);
+   void (*ttb_delete)(typename type_traits::ptr self);
+   typename type_traits::ptr (*ttb_assign)(typename type_traits::ptr self,
+         typename type_traits::const_ptr t);
+   sz (*ttb_compare)(typename type_traits::const_ptr self,
+         typename type_traits::const_ptr t);
+   uz (*ttb_hash)(typename type_traits::const_ptr self);
+};
+#define su_TYPE_TOOLBOX_I9R(CLONE,DELETE,ASSIGN,COMPARE,HASH) {\
+   su_FIELD_INITN(ttb_clone) CLONE,\
+   su_FIELD_INITN(ttb_delete) DELETE,\
+   su_FIELD_INITN(ttb_assign) ASSIGN,\
+   su_FIELD_INITN(ttb_compare) COMPARE,\
+   su_FIELD_INITN(ttb_hash) HASH\
+}
+
+// abc,clip,max,min,pow2 -- the C macros are in SUPPORT MACROS+
+template<class T> inline T get_abs(T const &a) {return su_ABS(a);}
+template<class T>
+inline T const &get_clip(T const &a, T const &min, T const &max){
+   return su_CLIP(a, min, max);
+}
+template<class T>
+inline T const &get_max(T const &a, T const &b) {return su_MAX(a, b);}
+template<class T>
+inline T const &get_min(T const &a, T const &b) {return su_MIN(a, b);}
+template<class T> inline int is_pow2(T const &a) {return su_IS_POW2(a);}
+
+NSPC_END(su)
+#endif /* !C_LANG */
+/* BASIC TYPE TRAITS }}} */
+/* BASIC C/C++ INTERFACE (SYMBOLS) {{{ */
 C_DECL_BEGIN
 
 /* Byte order of host.  su_ENDIAN one of those two, comes from config.h */
@@ -867,7 +1028,13 @@ C_DECL_END
 #if !C_LANG
 NSPC_BEGIN(su)
 
-// Instanceless static encapsulator.
+// All instanceless static encapsulators.
+// P.S.: endian is not in POD section above since it introduces .RODATA
+class endian;
+class err;
+class log;
+class state;
+
 class endian{
 public:
    enum type{
@@ -887,7 +1054,6 @@ public:
    static u16 const bom;
 };
 
-// Instanceless static encapsulator.
 class err{
 public:
    static s32 no(void) {return su_err_no();}
@@ -900,7 +1066,6 @@ public:
    static void set_errno(s32 nerr); {su_err_set_errno(nerr);}
 };
 
-// Instanceless static encapsulator.
 class EXPORT log{
 public:
    // Log priorities, for simplicity of use without _LEVEL or _LVL prefix
@@ -965,22 +1130,10 @@ public:
    }
 };
 
-// abc,clip,max,min,pow2
-template<class T> inline T get_abs(T const &a) {return su_ABS(a);}
-template<class T>
-inline T const &get_clip(T const &a, T const &min, T const &max){
-   return su_CLIP(a, min, max);
-}
-template<class T>
-inline T const &get_max(T const &a, T const &b) {return su_MAX(a, b);}
-template<class T>
-inline T const &get_min(T const &a, T const &b) {return su_MIN(a, b);}
-template<class T> inline int is_pow2(T const &a) {return su_IS_POW2(a);}
-
 NSPC_END(su)
 #endif /* !C_LANG */
-/* C/C++ BASICS }}} */
+/* BASIC C/C++ INTERFACE (SYMBOLS) }}} */
 
 #include <su/code-ou.h>
-#endif /* su_PRIME_H */
+#endif /* su_CODE_H */
 /* s-it-mode */

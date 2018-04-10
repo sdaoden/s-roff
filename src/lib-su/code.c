@@ -1,4 +1,4 @@
-/*@ Implementation of prime.h: (unavoidable) basics.
+/*@ Implementation of code.h: (unavoidable) basics.
  *@ TODO Log: domain should be configurable
  *@ TODO Assert: the C++ lib has per-thread assertion states, s_nolog to
  *@ TODO    suppress log, test_state(), test_and_clear_state(): for unit tests!
@@ -18,23 +18,23 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#define su_FILE "su__prime"
+#define su_FILE "su__code"
 #define su_MASTER
 #define su_SOURCE
-#define su_SOURCE_PRIME
+#define su_SOURCE_CODE
 
 #include <stdarg.h>
 #include <stdio.h> /* TODO Get rid? */
 #include <stdlib.h>
 
-#include "su/prime.h"
+#include "su/code.h"
 #include "su/code-in.h"
 
 #define a_PRIMARY_DOLOG(LVL) \
    ((S(u32,LVL) & su__STATE_LOG_MASK) <= (su_state & su__STATE_LOG_MASK) ||\
       (su_state & su__STATE_D_V))
 
-static char const a_pl_lvlnames[][8] = {
+static char const a_c_lvlnames[][8] = { /* TODO no level name stuff yet*/
    FIELD_INITI(su_LOG_EMERG) "emerg",
    FIELD_INITI(su_LOG_ALERT) "alert",
    FIELD_INITI(su_LOG_CRIT) "crit",

@@ -14,15 +14,19 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#define su_FILE "su__prime"
+#define su_FILE "su__code"
 #define su_MASTER
 #define su_SOURCE
-#define su_SOURCE_PRIME
+#define su_SOURCE_CODE
 
-#include "su/prime.h"
+#include "su/cs.h"
+
+#include "su/code.h"
 #include "su/code-in.h"
 
 NSPC_USE(su)
+
+// code.h
 
 PUB STA u16 const endian::bom = 0xFEFFu;
 
@@ -36,6 +40,13 @@ log::log(level lvl, char const *fmt, ...){ // XXX unroll
    va_end(va);
    NYD_OU;
 }
+
+// cs.h
+
+PUB STA type_toolbox<char*> const * const cs::type_toolbox =
+      R(;
+PUB STA type_toolbox<char const*> const * const cs::const_type_toolbox =
+      R(
 
 #include "su/code-ou.h"
 /* s-it-mode */

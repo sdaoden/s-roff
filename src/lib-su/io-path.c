@@ -18,7 +18,7 @@
 #define su_SOURCE
 #define su_SOURCE_IO_PATH
 
-#include "su/prime.h"
+#include "su/code.h"
 
 #include <unistd.h>
 

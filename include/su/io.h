@@ -18,7 +18,7 @@
 #ifndef su_IO_H
 #define su_IO_H
 
-#include <su/prime.h>
+#include <su/code.h>
 
 #define su_HEADER
 #include <su/code-in.h>

@@ -18,7 +18,7 @@
 #define su_SOURCE
 #define su_SOURCE_CS_ALLOC
 
-#include "su/prime.h"
+#include "su/code.h"
 #include "su/mem.h"
 
 #include "su/cs.h"

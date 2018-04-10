@@ -1,4 +1,4 @@
-/*@ Implementation of prime.h: what belongs nowhere else, really.
+/*@ Implementation of code.h: what belongs nowhere else, really.
  *@ Also to reduce static object inter-dependencies.
  *
  * Copyright (c) 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
@@ -15,15 +15,15 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#define su_FILE "su__prime_misc"
+#define su_FILE "su__code_misc"
 #define su_SOURCE
-#define su_SOURCE_PRIME_MISC
+#define su_SOURCE_CODE_MISC
 
 #include <errno.h> /* TODO Get rid */
 #include <stdio.h> /* TODO Get rid? */
 #include <stdlib.h> /* TODO Get rid (abort()) */
 
-#include "su/prime.h"
+#include "su/code.h"
 #include "su/code-in.h"
 
 void

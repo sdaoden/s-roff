@@ -18,7 +18,7 @@
 #define su_SOURCE
 #define su_SOURCE_
 
-#include "su/prime.h"
+#include "su/code.h"
 
 #include "su/.h"
 #include "su/code-in.h"
