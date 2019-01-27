@@ -9,7 +9,7 @@
 #@ -c: only with -t or -T: whether compact TOC display shall be generated
 #@ Set $AWK environment to force a special awk(1) interpreter.
 #
-# Written 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+# Written 2014 - 2019 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 # Public Domain
 
 : ${TMPDIR:=/tmp}
@@ -105,8 +105,8 @@ while getopts hvtT:c i; do
   esac
 done
 [ -n "${TT}" ] && [ -z "${T}" ] && synopsis ${EX_USAGE} '-c requires -t or -T'
-OPTIND=`expr ${OPTIND} - 1`
-shift ${OPTIND}
+i=`expr ${OPTIND} - 1`
+[ ${i} -gt 0 ] && shift ${i}
 
 [ ${#} -gt 1 ] && synopsis ${EX_USAGE} 'Excess arguments given'
 [ ${#} -eq 0 ] && F=- || F=${1}
