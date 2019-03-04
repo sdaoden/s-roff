@@ -462,18 +462,6 @@ covers the image's width.
 .
 .
 .TP
-.B ptx
-A single macro is provided in this file,
-.BR xx ,
-for formatting permuted index entries as produces by the GNU
-.BR ptx (1)
-program.
-.
-In case you need a different formatting, copy the macro into
-your document and adapt it to your needs.
-.
-.
-.TP
 .B trace
 Use this for tracing macro calls.
 .
