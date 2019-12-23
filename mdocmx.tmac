@@ -116,21 +116,22 @@
 .   \" Link output interface: see "Output formats" code block near EOF
 .   ie 'utf8'\*[.T]' \
 .     ds mx:istty
-.   el .ie 'latin1'\*[.T]' \
+.   el \{ .ie 'latin1'\*[.T]' \
 .     ds mx:istty
-.   el .ie 'ascii'\*[.T]' \
+.   el \{ .ie 'ascii'\*[.T]' \
 .     ds mx:istty
 .   \" TODO For HTML and PDF devices include their respective support
 .   \" TODO packages and inject anchors and references as appropriate
 .   \" TODO Requires mdoc(7) output reword via a .doc-out-put TYPE [DATA]
 .   \" TODO that is doc-out-flush'ed at the end, so that a completely
 .   \" TODO prepared recursion tree can be inspected as a whole.
-.   el .ie 'pdf'\*[.T]' \
+.   el \{ .ie 'pdf'\*[.T]' \
 .     mx:dump-init-pdf
-.   el .ie 'html'\*[.T]' \
+.   el \{ .ie 'html'\*[.T]' \
 .     mx:dump-init-html
 .   el \
 .     rm mx:gogogo
+.   \}\}\}\}
 .
 .   ie d mx:istty \{\
 .     ds mx#s1 tty
@@ -209,10 +210,11 @@
 . if '-sx'\$1' \{\
 .   ie (\n[.$] > 2) \
 .     mx:perr "synopsis: .Mx -sx [CATEGORY]"
-.   el .ie (\n[.$] == 2) \
+.   el \{ .ie (\n[.$] == 2) \
 .     ds mx:ixsx \$2
 .   el \
 .     ds mx:ixsx ixsx
+.   \}
 .   return
 . \}
 .
@@ -432,12 +434,13 @@
 . ie d \*[mx#s1] \
 .   ds \*[mx#s1] \*[\*[mx#s1]] \*[mx:cleans]
 . \" Request to explicitly ignore this?  And turn further args into noops
-. el .ie d mx:cleanstop \{\
+. el \{ .ie d mx:cleanstop \{\
 .   ds mx:arz\n[mx:ard]
 .   ds mx:arx\n[mx:ard]
 . \}
 . el \
 .   ds \*[mx#s1] \*[mx:cleans]
+. \}
 . rm mx#s1
 ..
 .
@@ -504,7 +507,7 @@
 .   \" Argument resplit necessary
 .   mx:mac-leave-xr \*[\*[mx#s1]]
 . \}
-. el .ie 'Sx'\*[\*[mx#s2]]' \{\
+. el \{ .ie 'Sx'\*[\*[mx#s2]]' \{\
 .   \" .Sx extended anchor / reference?
 .   ie d mx:ixsx \{\
 .     mx:mac-key-find "\*[mx:ixsx]" "\*[\*[mx#s1]]"
@@ -518,10 +521,11 @@
 .     rm mx:mac-leave-sx
 .   \}
 . \}
-. el .ie d mx:mac-needs-argsplit-\*[\*[mx#s2]] \
+. el \{ .ie d mx:mac-needs-argsplit-\*[\*[mx#s2]] \
 .   mx:mac-key-find-argsplit \*[\*[mx#s2]] \*[\*[mx#s1]]
 . el \
 .   mx:mac-key-find \*[\*[mx#s2]] "\*[\*[mx#s1]]"
+. \}\}
 . rm mx#s2
 . rm mx#s1
 .
@@ -560,25 +564,27 @@
 . rm mx#s1
 . rm mx#s2
 . ie     'Ar'\$1' .ds mx#s1 Ar
-. el .ie 'Cd'\$1' .ds mx#s1 Cd
-. el .ie 'Cm'\$1' .ds mx#s1 Cm
-. el .ie 'Dv'\$1' .ds mx#s1 Dv
-. el .ie 'Er'\$1' .ds mx#s1 Er
-. el .ie 'Ev'\$1' .ds mx#s1 Ev
-. el .ie 'Fl'\$1' .ds mx#s1 Fl
-. el .ie 'Fn'\$1' .ds mx#s1 Fn
-. el .ie 'Fo'\$1' .ds mx#s1 Fo
-. el .ie 'Ic'\$1' .ds mx#s1 Ic
-. el .ie 'In'\$1' .ds mx#s1 In
-. el .ie 'Pa'\$1' .ds mx#s1 Pa
-. el .ie 'Va'\$1' .ds mx#s1 Va
-. el .if 'Vt'\$1' .ds mx#s1 Vt
+. el \{ .ie 'Cd'\$1' .ds mx#s1 Cd
+. el \{ .ie 'Cm'\$1' .ds mx#s1 Cm
+. el \{ .ie 'Dv'\$1' .ds mx#s1 Dv
+. el \{ .ie 'Er'\$1' .ds mx#s1 Er
+. el \{ .ie 'Ev'\$1' .ds mx#s1 Ev
+. el \{ .ie 'Fl'\$1' .ds mx#s1 Fl
+. el \{ .ie 'Fn'\$1' .ds mx#s1 Fn
+. el \{ .ie 'Fo'\$1' .ds mx#s1 Fo
+. el \{ .ie 'Ic'\$1' .ds mx#s1 Ic
+. el \{ .ie 'In'\$1' .ds mx#s1 In
+. el \{ .ie 'Pa'\$1' .ds mx#s1 Pa
+. el \{ .ie 'Va'\$1' .ds mx#s1 Va
+. el \{ .if 'Vt'\$1' .ds mx#s1 Vt
+. \}\}\}\}\}\}\}\}\}\}\}\}\}
 . if d mx#s1 .return
 .
 . \" ..with [REL]
 . ie     'Sh'\$1' .ds mx#s1 Sh
-. el .ie 'Ss'\$1' .ds mx#s1 Ss
-. el .return
+. el \{ .ie 'Ss'\$1' .ds mx#s1 Ss
+. el \{ .return
+. \}\}
 . ds mx#s2 \*[mx#s1]
 ..
 .
@@ -653,12 +659,13 @@
 .   ds mx#c-s#s \*[mx:cleans]
 .   substring mx#c-s#s -1
 .   ie     '\&'\*[mx#c-s#s]' .
-.   el .ie '\%'\*[mx#c-s#s]' .
-.   el .ie '\/'\*[mx#c-s#s]' .
-.   el .ie '\c'\*[mx#c-s#s]' .
-.   el .ie ' '\*[mx#c-s#s]'  .
-.   el .ie '	'\*[mx#c-s#s]' .
+.   el \{ .ie '\%'\*[mx#c-s#s]' .
+.   el \{ .ie '\/'\*[mx#c-s#s]' .
+.   el \{ .ie '\c'\*[mx#c-s#s]' .
+.   el \{ .ie ' '\*[mx#c-s#s]'  .
+.   el \{ .ie '	'\*[mx#c-s#s]' .
 .   el .break
+.   \}\}\}\}\}
 .   nr mx#c-s#n +1
 .   if (\n[mx#c-s#n] > 10) \
 .     break
@@ -680,10 +687,11 @@
 .       break
 .     \}
 .   \}
-.   el .ie '\%'\*[mx#c-s#s]' .
-.   el .ie ' '\*[mx#c-s#s]'  .
-.   el .ie '	'\*[mx#c-s#s]' .
+.   el \{ .ie '\%'\*[mx#c-s#s]' .
+.   el \{ .ie ' '\*[mx#c-s#s]'  .
+.   el \{ .ie '	'\*[mx#c-s#s]' .
 .   el .break
+.   \}\}\}
 .   nr mx#c-s#n +1
 .   if (\n[mx#c-s#n] > 8) \
 .     break
@@ -777,11 +785,11 @@
 .   shift
 .   ds mx#anchor
 . \}
-. el .ie d mx:ixsx    .
-. el .ie 'Sx'\$1' .
-. el .ie 'Xr'\$1' .
-. el .ie 'Sh'\$1' .ds mx#showref
-. el .ie 'Ss'\$1' .ds mx#showref
+. el \{ .ie d mx:ixsx    .
+. el \{ .ie 'Sx'\$1' .
+. el \{ .ie 'Xr'\$1' .
+. el \{ .ie 'Sh'\$1' .ds mx#showref
+. el \{ .ie 'Ss'\$1' .ds mx#showref
 . el .if (\n[mx:stack-no] > 0) \{\
 .   ds mx#anchor
 .   \" On the stack there are real macro names, so compare against the
@@ -792,12 +800,13 @@
 .     ds mx#s1 \$1
 .   ie !d mx:stack-mac-\n[mx:stack-no] \
 .     \"
-.   el .ie !'\*[mx#s1]'\*[mx:stack-mac-\n[mx:stack-no]]' \
+.   el \{ .ie !'\*[mx#s1]'\*[mx:stack-mac-\n[mx:stack-no]]' \
 .     rm mx#anchor
-.   el .ie !d mx:stack-arg-\n[mx:stack-no] \
+.   el \{ .ie !d mx:stack-arg-\n[mx:stack-no] \
 .     \"
 .   el .if !'\$2'\*[mx:stack-arg-\n[mx:stack-no]]' \
 .     rm mx#anchor
+.   \}\}
 .   rm mx#s1
 .
 .   if d mx#anchor \{\
@@ -813,7 +822,7 @@
 .       return
 .     \}
 .   \}
-. \}
+. \}\}\}\}\}\}
 .
 . \" Iterate over the subdivision list
 . nr mx#n1 \n[mx:\$1-no]
@@ -831,17 +840,17 @@
 .       ie d mx:mac-leave-sx \
 .         mx:dump-ref "\*[mx#s2]"
 .       \" Anchor already exists, print a reference
-.       el .ie d mx:\$1-\n[mx#n1]-anchor \{\
+.       el \{ .ie d mx:\$1-\n[mx#n1]-anchor \{\
 .         if d mx:refok \
 .           mx:dump-ref "\*[mx#s2]"
 .       \}
 .       \" Define anchor and print the reference (section headings)
-.       el .ie d mx#showref \{\
+.       el \{ .ie d mx#showref \{\
 .         mx:dump-anchor "\$1" "\*[mx#s2]" "\$2"
 .         mx:dump-ref "\*[mx#s2]"
 .       \}
 .       \" Anchor doesn't yet exist, but not defined - print a reference
-.       el .ie !d mx#anchor \{\
+.       el \{ .ie !d mx#anchor \{\
 .         if d mx:refok \
 .           mx:dump-ref "\*[mx#s2]"
 .       \}
@@ -849,7 +858,7 @@
 .       el \{\
 .         ds mx:\$1-\n[mx#n1]-anchor
 .         mx:dump-anchor "\$1" "\*[mx#s2]" "\$2"
-.       \}
+.       \}\}\}\}
 .       rm mx:mac-leave-sx
 .       break
 .     \}
