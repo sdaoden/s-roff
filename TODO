@@ -1,5 +1,20 @@
 TODO reminder.
 
+
+
+   |Perhaps (originally) the ".el .ie" combination could have been made
+   |a macro of its own, it should really be treated as if it were (like
+   |the "elif" word in sh), but adding more code to process another macro,
+   |just to save (what would be) 3 input bytes per use wouldn't really
+   |have been justifiable.
+
+  Maybe the warning should really simply be removed, or only occur
+  if explicitly requested, i.e., remove the "el" warning bit from
+  the "all" level, just as is already done for some others; i guess
+  that would be the best.
+
+
+
 Generic
 =======
 
