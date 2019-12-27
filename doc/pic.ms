@@ -1652,7 +1652,8 @@ GNU \fBgpic\fP also documents a one-argument form or rand,
 version.
 .PP
 The function \fBsprintf()\fP behaves like a C \fIsprintf\/\fP(3)
-function that only takes %, %e, %f, and %g format strings.
+function that only takes the format strings %e, %E, %f, %g and %G,
+as well as %% for printing a raw percent character.
 .
 .
 .NH 1
