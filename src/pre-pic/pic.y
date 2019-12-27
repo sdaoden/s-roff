@@ -1884,6 +1884,11 @@ char *do_sprintf(const char *form, const double *v, int nv)
   string one_format;
   while (*form) {
     if (*form == '%') {
+      if(form[1] == '%'){
+        result += '%';
+        form += 2;
+        continue;
+      }
       one_format += *form++;
       for (; *form != '\0' && strchr("#-+ 0123456789.", *form) != 0; form++)
 	one_format += *form;
