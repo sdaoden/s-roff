@@ -1322,6 +1322,8 @@ macro handles command line flags.
 It prepends a dash,
 .Ql \- ,
 to the flag.
+For long options two adjacent macros should be used:
+.Ql \&.Fl \&Fl help .
 For interactive command flags, which are not prepended with a dash, the
 .Ql Ic .Cm
 (command modifier)
