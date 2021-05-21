@@ -3,7 +3,7 @@
 .\"@ allowing mdoc(7) to create anchors and table of contents.
 .\"@ Note this file will create warnings for using .\" inside .eo ..  .ec.
 .\"
-.\" Written 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+.\" Written 2014 - 2021 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 .\" Public Domain
 .eo
 .
@@ -896,14 +896,14 @@
 .\" mx:dump-init-DEVICE
 .\"   Called once upon startup to set anything up.
 .\" mx:dump-xr
-.\"   Dump a .Xr if possible.
+.\"   Dump a .Xr if possible (based upon ID)
 .\"   \$1: unique sequence number (of "anchor position")
-.\"   \$2: manual reference
-.\"   \$3: manual section
+.\"   \$2: manual section
+.\"   \$3: manual reference
 .\" mx:dump-anchor
 .\"   Create a document-internal anchor.
-.\"   \$1: unique sequence number (of anchor)
-.\"   \$2: index (macro) name (Sh, Ss, Ic..)
+.\"   \$1: index (macro) name (Sh, Ss, Ic..)
+.\"   \$2: unique sequence number (of anchor)
 .\"   \$3: index key (full text)
 .\" mx:dump-ref
 .\"   Show the reference-number of an anchor:
@@ -912,26 +912,27 @@
 .\" TTY
 .
 .de mx:dump-init-tty
-. als mx:dump-xr      mx:dump-xr-tty
-. als mx:dump-anchor  mx:dump-anchor-tty
-. als mx:dump-ref     mx:dump-ref-tty
+. als mx:dump-xr      mx:dump-xr-tty-osc8
+. als mx:dump-anchor  mx:dump-anchor-tty-osc8
+. als mx:dump-ref     mx:dump-ref-tty-osc8
 ..
 .
-.de mx:dump-xr-tty
-\%\&\fR\X'tty: mdocmx xr \$1 \$2 \$3'\m[blue][\$1]\m[]\fP\&\c
+.de mx:dump-xr-tty-osc8
+\%\&\fR\m[blue]\
+[\X'tty: osc8 id \$1 uri man://\$3.\$2'\$1\X'tty: osc8']\m[]\fP\&\c
 ..
 .
-.de mx:dump-anchor-tty
+.de mx:dump-anchor-tty-osc8
 . ie !d mx-debug \{\
-\%\&\X'tty: mdocmx \$1 \$2'\&\c
+\%\&\X'tty: osc8 id \$2'\X'tty: osc8'\&\c
 . \}
 . el \{\
-\%\&\fR\X'tty: mdocmx \$1 \$2'\m[blue]#\$2#\m[]\fP\&\c
+\%\&\fR\m[blue]#\X'tty: osc8 id \$2'\$2\X'tty: osc8'#\m[]\fP\&\c
 . \}
 ..
 .
-.de mx:dump-ref-tty
-\%\&\fR\m[blue][\$1]\m[]\fP\&\c
+.de mx:dump-ref-tty-osc8
+\%\&\fR\m[blue][\X'tty: osc8 uri #\$1'\$1\X'tty: osc8']\m[]\fP\&\c
 ..
 .
 .\" HTML
