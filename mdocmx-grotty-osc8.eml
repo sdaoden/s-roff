@@ -1,0 +1,141 @@
+From 64175d17c3a2359c3f9bd791221a13cf3d120762 Mon Sep 17 00:00:00 2001
+Message-Id: <64175d17c3a2359c3f9bd791221a13cf3d120762.1621901278.git.steffen@sdaoden.eu>
+From: Steffen Nurpmeso <steffen@sdaoden.eu>
+Date: Tue, 25 May 2021 02:07:15 +0200
+Subject: [PATCH] src/devices/grotty/tty.cpp: add support for \X'tty: osc8 [id
+ ID] [uri URI]'
+
+---
+ src/devices/grotty/tty.cpp | 79 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 79 insertions(+)
+
+diff --git a/src/devices/grotty/tty.cpp b/src/devices/grotty/tty.cpp
+index 60d46e8a96..92c0ebcdcd 100644
+--- a/src/devices/grotty/tty.cpp
++++ b/src/devices/grotty/tty.cpp
+@@ -19,6 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>. */
+ 
+ #include "driver.h"
+ #include "device.h"
++#include "cset.h"
+ #include "ptable.h"
+ 
+ typedef signed char schar;
+@@ -56,6 +57,7 @@ static int italic_flag;
+ static int reverse_flag_option = 0;
+ static int reverse_flag;
+ static int old_drawing_scheme = 0;
++static int no_osc8_refs = 0;
+ 
+ static void update_options();
+ static void usage(FILE *stream);
+@@ -80,8 +82,12 @@ static unsigned char bold_underline_mode;
+ 
+ #ifndef IS_EBCDIC_HOST
+ #define CSI "\033["
++#define OSC8 "\033]8;"
++#define ST "\033\\"
+ #else
+ #define CSI "\047["
++#define OSC8 "\047]8;"
++#define ST "\047\\"
+ #endif
+ 
+ // SGR handling (ISO 6429)
+@@ -216,6 +222,7 @@ class tty_printer : public printer {
+   void line(int, int, int, int, color *, color *);
+   void draw_line(int *, int, const environment *);
+   void draw_polygon(int *, int, const environment *);
++  void special_osc8(char *, const environment *);
+ public:
+   tty_printer();
+   ~tty_printer();
+@@ -470,6 +477,76 @@ void tty_printer::special(char *arg, const environment *env, char type)
+       old_drawing_scheme = 0;
+     update_options();
+   }
++  else if (strncmp(command, "osc8", p - command) == 0 && !no_osc8_refs)
++    special_osc8(p, env);
++}
++
++void
++tty_printer::special_osc8(char *ap, const environment *env){
++  size_t idl, uril, *lp;
++  char *ap_orig, *idp, *urip, *cp, **bpp;
++
++  ap_orig = ap;
++  idl = uril = 0;
++  idp = urip = NULL;
++
++  for(lp = NULL; *ap != '\0';){
++    for(; *ap == ' ' || *ap == '\n'; ++ap)
++      ;
++    cp = ap;
++    for(; *ap != '\0' && *ap != ' ' && *ap != '\n'; ++ap)
++      ;
++    if(cp == ap){
++      assert(*ap == '\0');
++      break;
++    }
++
++    if(lp != NULL){
++      *bpp = cp;
++      *lp = (size_t)(ap - cp);
++      lp = NULL;
++
++      for(; cp < ap; ++cp)
++        if(!csprint(*cp)){
++          error("invalid X osc8 parameter content, ignoring: %1", ap_orig);
++          goto jleave;
++        }
++    }else if(!strncmp(cp, "id", (size_t)(ap - cp))){
++      lp = &idl;
++      bpp = &idp;
++    }else if(!strncmp(cp, "uri", (size_t)(ap - cp))){
++      lp = &uril;
++      bpp = &urip;
++    }else{
++      error("unknown X osc8 parameter, ignoring: %1", ap_orig);
++      goto jleave;
++    }
++  }
++
++  if(lp != NULL){
++    error("missing argument of X osc8 parameter, ignoring: %1", ap_orig);
++    goto jleave;
++  }
++
++  for(char const *ccp = OSC8; *ccp != '\0'; ++ccp)
++    add_char(*ccp, 0, env->hpos, env->vpos, env->col, env->fill, 0);
++
++  if(idp != NULL){
++    for(char const *ccp = "id="; *ccp != '\0'; ++ccp)
++      add_char(*ccp, 0, env->hpos, env->vpos, env->col, env->fill, 0);
++    while(idl-- != 0)
++      add_char(*idp++, 0, env->hpos, env->vpos, env->col, env->fill, 0);
++  }
++
++  add_char(';', 0, env->hpos, env->vpos, env->col, env->fill, 0);
++
++  while(uril-- != 0)
++    add_char(*urip++, 0, env->hpos, env->vpos, env->col, env->fill, 0);
++
++  for(char const *ccp = ST; *ccp != '\0'; ++ccp)
++    add_char(*ccp, 0, env->hpos, env->vpos, env->col, env->fill, 0);
++
++jleave:;
+ }
+ 
+ void tty_printer::change_color(const environment * const env)
+@@ -863,6 +940,8 @@ int main(int argc, char **argv)
+   static char stderr_buf[BUFSIZ];
+   if (getenv("GROFF_NO_SGR"))
+     old_drawing_scheme = 1;
++  if(getenv("GROFF_NO_OSC8"))
++    no_osc8_refs = 1;
+   setbuf(stderr, stderr_buf);
+   setlocale(LC_CTYPE, "");
+   int c;
+-- 
+2.31.1
+
