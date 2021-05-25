@@ -3,10 +3,10 @@
 .\"@ mdocmx(7) extends the mdoc(7) semantic markup language by references,
 .\"@ allowing mdoc(7) to create anchors and table of contents.
 .\"
-.\" Written 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+.\" Written 2014 - 2021 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
 .\" Public Domain
 .
-.Dd April 10, 2018
+.Dd May 25, 2021
 .Dt MDOCMX 7
 .Os
 .Mx -enable
@@ -69,15 +69,11 @@ semantic markup language that is used for
 .Ux
 manual pages by defining a single new multiplexer command:
 .Nm .
-A precondition for enabling this extension in all involved parts of
-the manual page formatting system, including the
-.Ev PAGER
-used to view the formatted output, is to set the environment variable
+Users can truly enable this extension by setting the environment variable
 .Ev MDOCMX_ENABLE
-to a non-empty value (the value is necessary to make the variable
-perceivable on the macro level, i.e., to overcome a deficiency of the
+to a non-empty value (non-empty is a
 .Xr troff 1
-command set).
+requirement).
 .
 .Pp
 The
@@ -493,8 +489,6 @@ device of
 .Xr troff 1
 can, sufficient support provided, use to generate table of contents,
 internal as well as external references.
-All parts of the processing pipeline should be expected to require this
-environment variable to be set (to a non-empty value).
 .
 .
 .Sh EXAMPLES
@@ -629,7 +623,8 @@ command line flag in order to get a notion on what is going on:
 .Bd -literal -offset indent
 $ MDOCMX_ENABLE=1; export MDOCMX_ENABLE
 $ mdocmx.sh -vv < mdocmx.7 2> stderr.txt | \e
-  groff -Tutf8 -mdoc -dmx-toc-force=tree -dmx-debug=1 | less
+  groff -Tutf8 -mdoc -dmx-toc-force=tree -dmx-debug=1 | \e
+  less -R
 $ cat stderr.txt
 .Ed
 .
