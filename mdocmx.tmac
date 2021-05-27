@@ -3,7 +3,7 @@
 .\"@ allowing mdoc(7) to create anchors and table of contents.
 .\"@ Note this file will create warnings for using .\" inside .eo ..  .ec.
 .\"
-.\" Written 2014 - 2021 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+.\" Written 2014 - 2021 Steffen Nurpmeso <steffen@sdaoden.eu>.
 .\" Public Domain
 .eo
 .
@@ -43,14 +43,14 @@
 ..
 .eo
 .
-.\"@ User strings:
-.\" mx-debug
-.\" mx-disable
-.\" mx-toc-disable
-.\" mx-toc-emerged
-.\" mx-toc-force - special value: "tree"
+.\"@ User strings (can be part of $MDOCMX_ENABLE: "!" OR number):
+.\" mx-debug (2)
+.\" mx-disable (4)
+.\" mx-toc-disable (8)
+.\" mx-toc-emerged (16)
+.\" mx-toc-force (32) - special value: "tree" (64)
 .if !d mx-toc-name .ds mx-toc-name TABLE OF CONTENTS
-.\" mx-toc-numbered
+.\" mx-toc-numbered (128)
 .
 .\" --  >8  --  8<  --
 .
@@ -106,11 +106,30 @@
 .   \" If the string "mx-disable" is defined, suppress mdocmx(7)
 .   if d mx-disable \
 .     return
-.   \" It's not nice, but for security reasons all parts of mdocmx(7)
-.   \" (mdoc(7), grotty(1), less(1)) won't enable mdocmx(7) unless the
-.   \" environment variable MDOCMX_ENABLE is set with a value.  We, too
-.   if '\V[MDOCMX_ENABLE]'' \
+.   \" We do not do anything unless $MDOCMX_ENABLE is in environment.
+.   \" If that starts with !, interpret remains as a flag carrier
+.   ds mx:#s1 \V[MDOCMX_ENABLE]
+.   ie '\*[mx:#s1]'' \
 .     return
+.   el .if \B'\*[mx:#s1]' \{\
+.     nr mx:#n1 \*[mx:#s1]
+.     if (\n[mx:#n1] / 128) .ds mx-toc-numbered
+.     nr mx:#n1 (\n[mx:#n1] % 128)
+.     if (\n[mx:#n1] / 64) .ds mx-toc-force tree
+.     nr mx:#n1 (\n[mx:#n1] % 64)
+.     if (\n[mx:#n1] / 32) .ds mx-toc-force
+.     nr mx:#n1 (\n[mx:#n1] % 32)
+.     if (\n[mx:#n1] / 16) .ds mx-toc-emerged
+.     nr mx:#n1 (\n[mx:#n1] % 16)
+.     if (\n[mx:#n1] / 8) .ds mx-toc-disable
+.     nr mx:#n1 (\n[mx:#n1] % 8)
+.     if (\n[mx:#n1] / 4) .ds mx-debug
+.     nr mx:#n1 (\n[mx:#n1] % 4)
+.     if ((\n[mx:#n1] / 2) \{\
+.       ds mx-disable
+.       return
+.     \}
+.   \}
 .   ds mx:gogogo
 .
 .   \" Link output interface: see "Output formats" code block near EOF

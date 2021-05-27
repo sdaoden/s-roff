@@ -3,10 +3,10 @@
 .\"@ mdocmx(7) extends the mdoc(7) semantic markup language by references,
 .\"@ allowing mdoc(7) to create anchors and table of contents.
 .\"
-.\" Written 2014 - 2021 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+.\" Written 2014 - 2021 Steffen Nurpmeso <steffen@sdaoden.eu>.
 .\" Public Domain
 .
-.Dd May 25, 2021
+.Dd May 27, 2021
 .Dt MDOCMX 7
 .Os
 .Mx -enable
@@ -379,11 +379,13 @@ strings given on the command line (via option
 .Ql Fl d Ns )
 have to be given an argument in order to be perceived on the macro
 level.
+Alternatively the shown numbers can be bitmixed via
+.Ev MDOCMX_ENABLE .
 .
 .Bl -tag -width ".It Dv _docmx-_oc-_merged"
 .Mx
 .It Dv mx-debug
-If defined
+(2) If defined
 .Xr mdocmx 7
 macros will offer some verbosity.
 In addition not only references will produce visual output, but also
@@ -395,26 +397,26 @@ If this is set to a filename then the list of anchors is dumped to it.
 .
 .Mx
 .It Dv mx-disable
-Has the same effect as
+(4) Has the same effect as
 .Ql Nm Fl disable .
 .
 .Mx
 .It Dv mx-toc-disable
-Forcefully turn off any table of contents creation.
+(8) Forcefully turn off any table of contents creation.
 .
 .Mx
 .It Dv mx-toc-emerged
-Normally compact display is used for the table of contents, but when
+(16) Normally compact display is used for the table of contents, but when
 this string is set an emerged display is used for the first level that
 lists the headings.
 .
 .Mx
 .It Dv mx-toc-force
-Defining this string can be used to enforce the creation of a table of
+(32) Defining this string can be used to enforce the creation of a table of
 contents as specified, even if the documents
 .Ql Fl toc
 configuration would not create one for the targeted output device.
-A flat table of contents will be generated unless the string value is
+A flat table of contents will be generated unless the value is (64)
 .Ql tree .
 .
 .Mx
@@ -431,7 +433,7 @@ of this string to ensure compatibility with, at least,
 .
 .Mx
 .It Dv mx-toc-numbered
-If defined the first level of the table of contents will be numbered.
+(128) If defined the first level of the table of contents will be numbered.
 .El
 .
 .
@@ -489,6 +491,8 @@ device of
 .Xr troff 1
 can, sufficient support provided, use to generate table of contents,
 internal as well as external references.
+It can be set to a bitmix of the flags documented in
+.Sx "Strings that affect mdocmx" .
 .
 .
 .Sh EXAMPLES
