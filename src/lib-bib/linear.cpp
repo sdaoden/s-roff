@@ -23,6 +23,8 @@
 #include "config.h"
 #include "lib.h"
 
+#include "su/strsup.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -310,7 +312,7 @@ int file_buffer::load(int fd, const char *filename)
 {
   struct stat sb;
   if (fstat(fd, &sb) < 0)
-    error("can't fstat `%1': %2", filename, strerror(errno));
+    error("can't fstat `%1': %2", filename, su_err_doc(errno));
   else if (!S_ISREG(sb.st_mode))
     error("`%1' is not a regular file", filename);
   else {
@@ -323,7 +325,7 @@ int file_buffer::load(int fd, const char *filename)
     buffer = new char[size + 4 + 1];
     int nread = read(fd, buffer + 4, size);
     if (nread < 0)
-      error("error reading `%1': %2", filename, strerror(errno));
+      error("error reading `%1': %2", filename, su_err_doc(errno));
     else if (nread != size)
       error("size of `%1' decreased", filename);
     else {

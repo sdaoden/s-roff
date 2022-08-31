@@ -21,6 +21,9 @@
  */
 
 #include "config.h"
+#include "lib.h"
+
+#include "su/strsup.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -29,8 +32,7 @@
 
 #include "errarg.h"
 #include "error.h"
-#include "file_case.h"
-#include "lib.h"
+#include "file-case.h"
 #include "localcharset.h"
 #include "nonposix.h"
 #include "stringclass.h"
@@ -376,16 +378,16 @@ emacs2mime(char *emacs_enc)
 {
   int emacs_enc_len = strlen(emacs_enc);
   if (emacs_enc_len > 4
-      && !strcasecmp(emacs_enc + emacs_enc_len - 4, "-dos"))
+      && !su_strcasecmp(emacs_enc + emacs_enc_len - 4, "-dos"))
     emacs_enc[emacs_enc_len - 4] = 0;
   if (emacs_enc_len > 4
-      && !strcasecmp(emacs_enc + emacs_enc_len - 4, "-mac"))
+      && !su_strcasecmp(emacs_enc + emacs_enc_len - 4, "-mac"))
     emacs_enc[emacs_enc_len - 4] = 0;
   if (emacs_enc_len > 5
-      && !strcasecmp(emacs_enc + emacs_enc_len - 5, "-unix"))
+      && !su_strcasecmp(emacs_enc + emacs_enc_len - 5, "-unix"))
     emacs_enc[emacs_enc_len - 5] = 0;
   for (const conversion *table = emacs_to_mime; table->from; table++)
-    if (!strcasecmp(emacs_enc, table->from))
+    if (!su_strcasecmp(emacs_enc, table->from))
       return (char *)table->to;
   return emacs_enc;
 }
@@ -971,7 +973,7 @@ check_coding_tag(file_case *fcp, string &data)
     while (d1) {
       char *variable, *value;
       d1 = get_variable_value_pair(d1, &variable, &value);
-      if (!strcasecmp(variable, "coding")) {
+      if (!su_strcasecmp(variable, "coding")) {
 	*d2 = '-';		// restore '-'
 	a_delete inbuf;
 	return value;
@@ -994,7 +996,7 @@ do_file(const char *filename)
   file_case *fcp;
   if ((fcp = file_case::muxer(filename, fcp->mux_need_binary)) == NULL) {
     assert(strcmp(filename, "-"));
-    error("can't open `%1': %2", filename, strerror(errno));
+    error("can't open `%1': %2", filename, su_err_doc(errno));
     return 0;
   }
 
@@ -1047,11 +1049,11 @@ do_file(const char *filename)
     printf(".lf 1 %s\n", filename);
   int success = 1;
   // Call converter (converters write to stdout).
-  if (!strcasecmp(encoding, "ISO-8859-1"))
+  if (!su_strcasecmp(encoding, "ISO-8859-1"))
     conversion_latin1(fcp, BOM + data);
-  else if (!strcasecmp(encoding, "UTF-8"))
+  else if (!su_strcasecmp(encoding, "UTF-8"))
     conversion_utf8(fcp, data);
-  else if (!strcasecmp(encoding, "cp1047"))
+  else if (!su_strcasecmp(encoding, "cp1047"))
     conversion_cp1047(fcp, BOM + data);
   else {
 #if HAVE_ICONV

@@ -76,20 +76,11 @@
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
 
-/* Define to 1 if you have the `strcasecmp' function. */
-#undef HAVE_STRCASECMP
-
-/* Define to 1 if you have the `strerror' function. */
-#undef HAVE_STRERROR
-
 /* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H
 
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
-
-/* Define to 1 if you have the `strncasecmp' function. */
-#undef HAVE_STRNCASECMP
 
 /* Define to 1 if you have the `strsep' function. */
 #undef HAVE_STRSEP
@@ -150,12 +141,6 @@
 
 /* Define if your C++ doesn't declare srand(). */
 #undef NEED_DECLARATION_SRAND
-
-/* Define if your C++ doesn't declare strcasecmp(). */
-#undef NEED_DECLARATION_STRCASECMP
-
-/* Define if your C++ doesn't declare strncasecmp(). */
-#undef NEED_DECLARATION_STRNCASECMP
 
 /* Define if your C++ doesn't declare vfprintf(). */
 #undef NEED_DECLARATION_VFPRINTF

@@ -22,7 +22,10 @@
 #define PREHTMLC
 
 #include "config.h"
+#include "lib.h"
 #include "html-config.h"
+
+#include "su/strsup.h"
 
 #include <sys/types.h>
 
@@ -41,7 +44,6 @@
 #include "error.h"
 #include "file_case.h"
 #include "font.h"
-#include "lib.h"
 #include "nonposix.h"
 #include "paper.h"
 #include "posix.h"
@@ -208,7 +210,7 @@ static int do_file(const char *filename);
 
 void sys_fatal(const char *s)
 {
-  fatal("%1: %2", s, strerror(errno));
+  fatal("%1: %2", s, su_err_doc(errno));
 }
 
 /*
@@ -220,10 +222,8 @@ int get_line(file_case *fcp)
 {
   if (fcp == NULL)
     return 0;
-  if (linebuf == 0) {
-    linebuf = new char[128];
-    linebufsize = 128;
-  }
+  if (linebuf == 0)
+    linebuf = su_talloc(char, linebufsize = 128);
   int i = 0;
   // skip leading whitespace
   for (;;) {
@@ -241,10 +241,10 @@ int get_line(file_case *fcp)
       break;
     if (i + 1 >= linebufsize) {
       char *old_linebuf = linebuf;
-      linebuf = new char[linebufsize * 2];
-      memcpy(linebuf, old_linebuf, linebufsize);
-      a_delete old_linebuf;
-      linebufsize *= 2;
+      size_t old_linebufsize = linebufsize;
+      linebuf = su_talloc(char, linebufsize *= 2);
+      memcpy(linebuf, old_linebuf, old_linebufsize);
+      su_free(old_linebuf);
     }
     linebuf[i++] = c;
     if (c == '\n') {
@@ -329,7 +329,7 @@ char *make_message(const char *fmt, ...)
   char *p;
   char *np;
   va_list ap;
-  if ((p = (char *)malloc(size)) == NULL)
+  if ((p = su_talloc(char, size)) == NULL)
     return NULL;
   while (1) {
     /* Try to print in the allocated space. */
@@ -339,8 +339,8 @@ char *make_message(const char *fmt, ...)
     /* If that worked, return the string. */
     if (n > -1 && n < size - 1) { /* glibc 2.1 and pre-ANSI C 99 */
       if (size > n + 1) {
-	np = strsave(p);
-	free(p);
+	np = su_strdup(p);
+	su_free(p);
 	return np;
       }
       return p;
@@ -348,8 +348,8 @@ char *make_message(const char *fmt, ...)
     /* Else try again with more space. */
     else		/* glibc 2.0 */
       size *= 2;	/* twice the old size */
-    if ((np = (char *)realloc(p, size)) == NULL) {
-      free(p);		/* realloc failed, free old, p. */
+    if ((np = su_trealloc(char, p, size)) == NULL) {
+      su_free(p);		/* realloc failed, free old, p. */
       return NULL;
     }
     p = np;		/* use realloc'ed, p */
@@ -621,7 +621,7 @@ static void write_start_image(IMAGE_ALIGNMENT pos, int is_html)
     writeString("\\O[1]\\O[3]");
 }
 
-rf_static void
+sta void
 char_buffer::write_upto_newline(char_block **t, int *i, int is_html){
   enum {a_NONE, a_NL, a_LEADER} ev;
   char *b;
@@ -672,7 +672,7 @@ jleave:;
  *  can_see - Return true if we can see string in t->buffer[i] onwards.
  */
 
-rf_static
+sta
 int char_buffer::can_see(char_block **t, int *i, const char *str)
 {
   int j = 0;
@@ -703,7 +703,7 @@ int char_buffer::can_see(char_block **t, int *i, const char *str)
  *                Consume spaces also.
  */
 
-rf_static
+sta
 int char_buffer::skip_spaces(char_block **t, int *i)
 {
   char_block *s = *t;
@@ -729,7 +729,7 @@ int char_buffer::skip_spaces(char_block **t, int *i)
  *                       The newline is not consumed.
  */
 
-rf_static
+sta
 void char_buffer::skip_until_newline(char_block **t, int *i)
 {
   int j = *i;
@@ -838,8 +838,7 @@ imageItem::imageItem(int x1, int y1, int x2, int y2,
 
 imageItem::~imageItem()
 {
-  if (imageName)
-    free(imageName);
+  su_free(imageName);
 }
 
 /*
@@ -1020,7 +1019,7 @@ void imageList::createImage(imageItem *i)
 	sys_fatal("make_message");
 
       html_system(s, 0);
-      free(s);
+      su_free(s);
     }
     else {
       fprintf(stderr, "failed to generate image of page %d\n", i->pageNo);
@@ -1241,7 +1240,7 @@ char **addRegDef(int argc, char *argv[], const char *numReg)
     new_argv[i] = argv[i];
     i++;
   }
-  new_argv[argc] = strsave(numReg);
+  new_argv[argc] = su_strdup(numReg);
   argc++;
   new_argv[argc] = NULL;
   return new_argv;
@@ -1324,7 +1323,7 @@ int char_buffer::run_output_filter(int filter, int argc, char **argv)
     // If we get to here then the `exec...' request for the output filter
     // failed.  Diagnose it and bail out.
 
-    error("couldn't exec %1: %2", argv[0], strerror(errno), ((char *)0));
+    error("couldn't exec %1: %2", argv[0], su_err_doc(errno), NULL);
     fflush(stderr);	// just in case error() didn't
     exit(1);
   }
@@ -1388,7 +1387,7 @@ int char_buffer::run_output_filter(int filter, int argc, char **argv)
   if ((child_pid = spawnvp(_P_NOWAIT, argv[0], argv)) < 0) {
     // Should the spawn request fail we issue a diagnostic and bail out.
 
-    error("cannot spawn %1: %2", argv[0], strerror(errno), ((char *)0));
+    error("cannot spawn %1: %2", argv[0], su_err_doc(errno), NULL);
     exit(1);
   }
 
@@ -1550,9 +1549,9 @@ static int scanArguments(int argc, char **argv)
   const char *command_prefix = getenv(U_ROFF_COMMAND_PREFIX);
   if (!command_prefix)
     command_prefix = PROG_PREFIX;
-  char *troff_name = new char[strlen(command_prefix) + strlen("troff") + 1];
-  strcpy(troff_name, command_prefix);
-  strcat(troff_name, "troff");
+  char *troff_name = su_talloc(char,
+      su_strlen(command_prefix) + su_strlen("troff") +1);
+  su_stpcpy(su_stpcpy(troff_name, command_prefix, "troff");
   int c, i;
   static const struct option long_options[] = {
     { "help", no_argument, 0, CHAR_MAX + 1 },
@@ -1667,7 +1666,7 @@ static int scanArguments(int argc, char **argv)
       return i;
     i++;
   }
-  a_delete troff_name;
+  su_free(troff_name);
 
   return argc;
 }
@@ -1793,7 +1792,7 @@ static int do_file(const char *filename)
   fcp = file_case::muxer(filename);
   if (fcp == NULL) {
     assert(strcmp(filename, "-"));
-    error("can't open `%1': %2", filename, strerror(errno));
+    error("can't open `%1': %2", filename, su_err_doc(errno));
     return 0;
   }
 

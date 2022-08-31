@@ -21,7 +21,10 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "ps-config.h"
+
+#include "su/strsup.h"
 
 #include "cset.h"
 #include "driver.h"
@@ -144,7 +147,7 @@ public:
 };
 
 resource::resource(resource_type t, string &n, string &v, unsigned r)
-: next(0), type(t), flags(0), revision(r), filename(0), rank(-1)
+: next(0), type(t), flags(0), revision(r), filename(NULL), rank(-1)
 {
   name.move(n);
   version.move(v);
@@ -157,7 +160,7 @@ resource::resource(resource_type t, string &n, string &v, unsigned r)
 
 resource::~resource()
 {
-  a_delete filename;
+  su_free(filename);
 }
 
 void resource::print_type_and_name(FILE *outfp)
@@ -318,7 +321,7 @@ void resource_manager::output_prolog(ps_output &out)
     e += '=';
     e += (prologue = PROLOGUE_DEFAULT);
     e += '\0';
-    if (putenv(strsave(e.contents())))
+    if (putenv(su_strdup(e.contents())))
       fatal("putenv failed");
   }
 
@@ -363,10 +366,10 @@ void resource_manager::supply_resource(resource *r, int rank, FILE *outfp,
         error("can't find `%1'", r->filename);
     } else {
       if ((fcp = include_search_path.open_file_cautious(r->filename)) == NULL)
-        error("can't open `%1': %2", r->filename, strerror(errno));
+        error("can't open `%1': %2", r->filename, su_err_doc(errno));
     }
     if (fcp == NULL) {
-      a_delete r->filename;
+      su_free(r->filename);
       r->filename = NULL;
     }
   }
@@ -1081,7 +1084,7 @@ void resource_manager::read_download_file()
     char *q = strtok(0, " \t\r\n");
     if (q == NULL)
       fatal_with_file_and_line(fcp->path(), lineno, "missing filename");
-    lookup_font(p)->filename = strsave(q);
+    lookup_font(p)->filename = su_strdup(q);
   }
 
   delete fcp;

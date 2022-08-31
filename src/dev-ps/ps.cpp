@@ -26,7 +26,10 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "ps-config.h"
+
+#include "su/strsup.h"
 
 #include <time.h>
 
@@ -421,25 +424,25 @@ ps_font *ps_font::load_ps_font(const char *s)
 }
 
 ps_font::ps_font(const char *nm)
-: font(nm), encoding_index(-1), encoding(0), reencoded_name(0)
+: font(nm), encoding_index(-1), encoding(NULL), reencoded_name(NULL)
 {
 }
 
 ps_font::~ps_font()
 {
-  a_delete encoding;
-  a_delete reencoded_name;
+  su_free(encoding);
+  su_free(reencoded_name);
 }
 
 void ps_font::handle_unknown_font_command(const char *command, const char *arg,
 					  const char *filename, int lineno)
 {
   if (strcmp(command, "encoding") == 0) {
-    if (arg == 0)
+    if (arg == NULL)
       error_with_file_and_line(filename, lineno,
 			       "`encoding' command requires an argument");
     else
-      encoding = strsave(arg);
+      encoding = su_strdup(arg);
   }
 }
 
@@ -468,7 +471,7 @@ struct subencoding {
 };
 
 subencoding::subencoding(font *f, unsigned int n, int ix, subencoding *s)
-: p(f), num(n), idx(ix), subfont(0), next(s)
+: p(f), num(n), idx(ix), subfont(NULL), next(s)
 {
   for (int i = 0; i < 256; i++)
     glyphs[i] = 0;
@@ -476,7 +479,7 @@ subencoding::subencoding(font *f, unsigned int n, int ix, subencoding *s)
 
 subencoding::~subencoding()
 {
-  a_delete subfont;
+  su_free(subfont);
 }
 
 class style
@@ -646,7 +649,7 @@ int ps_printer::set_encoding_index(ps_font *f)
     if (p->p != f) {
       char *encoding = ((ps_font *)p->p)->encoding;
       int encoding_index = ((ps_font *)p->p)->encoding_index;
-      if (encoding != 0 && encoding_index >= 0
+      if (encoding != NULL && encoding_index >= 0
 	  && strcmp(f->encoding, encoding) == 0) {
 	return f->encoding_index = encoding_index;
       }
@@ -763,15 +766,15 @@ void ps_printer::set_char(glyph *g, font *f, const environment *env, int w,
 
 static char *make_encoding_name(int encoding_index)
 {
-  static char buf[3 + INT_DIGITS + 1];
-  sprintf(buf, "ENC%d", encoding_index);
+  static char buf[3 + INT_DIGITS +1];
+  snprintf(buf, sizeof buf, "ENC%d", encoding_index);
   return buf;
 }
 
 static char *make_subencoding_name(int subencoding_index)
 {
-  static char buf[6 + INT_DIGITS + 1];
-  sprintf(buf, "SUBENC%d", subencoding_index);
+  static char buf[6 + INT_DIGITS +1];
+  snprintf(buf, sizeof buf, "SUBENC%d", subencoding_index);
   return buf;
 }
 
@@ -782,7 +785,7 @@ void ps_printer::define_encoding(const char *encoding, int encoding_index)
   char *vec[256];
   int i;
   for (i = 0; i < 256; i++)
-    vec[i] = 0;
+    vec[i] = NULL;
 
   file_case *fcp = font::open_file(encoding);
   if (fcp == NULL)
@@ -795,23 +798,24 @@ void ps_printer::define_encoding(const char *encoding, int encoding_index)
     while (csspace(*p))
       p++;
     if (*p != '#' && *p != '\0' && (p = strtok(buf, WS)) != 0) {
+      size_t j;
       char *q = strtok(0, WS);
       int n = 0; // pacify compiler
       if (q == 0 || sscanf(q, "%d", &n) != 1 || n < 0 || n >= 256)
         fatal_with_file_and_line(fcp->path(), lineno, "bad second field");
-      vec[n] = new char[strlen(p) + 1];
-      strcpy(vec[n], p);
+      vec[n] = su_talloc(char, j = strlen(p) +1);
+      memcpy(vec[n], p, j);
     }
   }
 
   out.put_literal_symbol(make_encoding_name(encoding_index))
      .put_delimiter('[');
   for (i = 0; i < 256; i++) {
-    if (vec[i] == 0)
+    if (vec[i] == NULL)
       out.put_literal_symbol(".notdef");
     else {
       out.put_literal_symbol(vec[i]);
-      a_delete vec[i];
+      su_free(vec[i]);
     }
   }
   out.put_delimiter(']')
@@ -832,7 +836,7 @@ void ps_printer::encode_fonts()
 {
   if (next_encoding_index == 0)
     return;
-  char *done_encoding = new char[next_encoding_index];
+  char *done_encoding = su_talloc(char, next_encoding_index);
   for (int i = 0; i < next_encoding_index; i++)
     done_encoding[i] = 0;
   for (font_pointer_list *f = font_list; f; f = f->next) {
@@ -846,7 +850,7 @@ void ps_printer::encode_fonts()
       reencode_font((ps_font *)f->p);
     }
   }
-  a_delete done_encoding;
+  su_free(done_encoding);
 }
 
 void ps_printer::encode_subfont(subencoding *sub)
@@ -881,22 +885,24 @@ void ps_printer::set_style(const style &sty)
   const char *psname = sty.f->get_internal_name();
   if (psname == 0)
     fatal("no internalname specified for font `%1'", sty.f->get_name());
-  char *encoding = ((ps_font *)sty.f)->encoding;
   if (sty.sub == 0) {
-    if (encoding != 0) {
-      char *s = ((ps_font *)sty.f)->reencoded_name;
-      if (s == 0) {
-	int ei = set_encoding_index((ps_font *)sty.f);
-	char *tem = new char[strlen(psname) + 1 + INT_DIGITS + 1];
-	sprintf(tem, "%s@%d", psname, ei);
-	psname = tem;
-	((ps_font *)sty.f)->reencoded_name = tem;
-      }
-      else
+    char *encoding, *s, *tem;
+
+    if((encoding = S(ps_font*,sty.f)->encoding) != NULL){
+      if((s = S(ps_font*,sty.f)->reencoded_name) == NULL){
+        int ei;
+        size_t i;
+
+        ei = set_encoding_index(S(ps_font*,sty.f));
+        i = strlen(psname) + 1 + INT_DIGITS +1;
+        tem = su_talloc(char, i);
+        snprintf(tem, i, "%s@%d", psname, ei);
+        psname = tem;
+        S(ps_font*,sty.f)->reencoded_name = tem;
+      }else
         psname = s;
     }
-  }
-  else
+  }else
     psname = get_subfont(sty.sub, psname);
   out.put_fix_number((font::res/(72*font::sizescale))*sty.point_size);
   if (sty.height != 0 || sty.slant != 0) {
@@ -1834,7 +1840,7 @@ int main(int argc, char **argv)
       env += '=';
       env += optarg;
       env += '\0';
-      if (putenv(strsave(env.contents())))
+      if (putenv(su_strdup(env.contents())))
 	fatal("putenv failed");
       break;
     case 'v':

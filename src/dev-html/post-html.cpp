@@ -25,16 +25,15 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "html-config.h"
+
+#include "su/strsup.h"
 
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-
-#ifdef HAVE_UNISTD_H
-# include <unistd.h>
-#endif
 
 #include "cset.h"
 #include "driver.h"
@@ -1688,15 +1687,15 @@ assert_state::~assert_state ()
   while (xhead != NULL) {
     t = xhead;
     xhead = xhead->next;
-    a_delete (char *)t->val;
-    a_delete (char *)t->id;
+    su_free(UNCONST(t->val));
+    su_free(UNCONST(t->id));
     delete t;
   }
   while (yhead != NULL) {
     t = yhead;
     yhead = yhead->next;
-    a_delete (char *)t->val;
-    a_delete (char *)t->id;
+    su_free(UNCONST(t->val));
+    su_free(UNCONST(t->id));
     delete t;
   }
 }
@@ -1740,9 +1739,9 @@ void assert_state::add (assert_pos **h,
     }
     t->id = i;
     t->val = v;
-    a_delete (char *)c;
-    a_delete (char *)f;
-    a_delete (char *)l;
+    su_free(UNCONST(c));
+    su_free(UNCONST(f));
+    su_free(UNCONST(l));
   }
 }
 
@@ -1798,8 +1797,8 @@ void assert_state::close (const char *c)
 
 const char *replace_negate_str (const char *before, char *after)
 {
-  if (before != NULL)
-    a_delete (char *)before;
+  if(before != NULL)
+    su_free(UNCONST(before));
 
   if (strlen(after) > 0) {
     int d = atoi(after);
@@ -1819,8 +1818,8 @@ const char *replace_negate_str (const char *before, char *after)
 
 const char *replace_str (const char *before, const char *after)
 {
-  if (before != NULL)
-    a_delete (char *)before;
+  if(before != NULL)
+    su_free(UNCONST(before));
   return after;
 }
 
@@ -1832,32 +1831,38 @@ void assert_state::set (const char *c, const char *v,
   if (f == NULL)
     f = "stdin";
 
+  char *vd = su_strdup(v), *fd = su_strdup(f), *ld = su_strdup(l);
+
   // fprintf(stderr, "%s:%s:setting %s to %s\n", f, l, c, v);
   if (strcmp(c, "sp") == 0) {
     check_sp_flag = 1;
-    val_sp = replace_str(val_sp, strsave(v));
-    file_sp = replace_str(file_sp, strsave(f));
-    line_sp = replace_str(line_sp, strsave(l));
+    val_sp = replace_str(val_sp, vd);
+    file_sp = replace_str(file_sp, fd);
+    line_sp = replace_str(line_sp, ld);
   } else if (strcmp(c, "br") == 0) {
     check_br_flag = 1;
-    val_br = replace_str(val_br, strsave(v));
-    file_br = replace_str(file_br, strsave(f));
-    line_br = replace_str(line_br, strsave(l));
+    val_br = replace_str(val_br, vd);
+    file_br = replace_str(file_br, fd);
+    line_br = replace_str(line_br, ld);
   } else if (strcmp(c, "fi") == 0) {
     check_fi_flag = 1;
-    val_fi = replace_str(val_fi, strsave(v));
-    file_fi = replace_str(file_fi, strsave(f));
-    line_fi = replace_str(line_fi, strsave(l));
+    val_fi = replace_str(val_fi, vd);
+    file_fi = replace_str(file_fi, fd);
+    line_fi = replace_str(line_fi, ld);
   } else if (strcmp(c, "nf") == 0) {
     check_fi_flag = 1;
-    val_fi = replace_negate_str(val_fi, strsave(v));
-    file_fi = replace_str(file_fi, strsave(f));
-    line_fi = replace_str(line_fi, strsave(l));
+    val_fi = replace_negate_str(val_fi, vd);
+    file_fi = replace_str(file_fi, fd);
+    line_fi = replace_str(line_fi, ld);
   } else if (strcmp(c, "ce") == 0) {
     check_ce_flag = 1;
-    val_ce = replace_str(val_ce, strsave(v));
-    file_ce = replace_str(file_ce, strsave(f));
-    line_ce = replace_str(line_ce, strsave(l));
+    val_ce = replace_str(val_ce, vd);
+    file_ce = replace_str(file_ce, fd);
+    line_ce = replace_str(line_ce, ld);
+  }else{
+    su_free(vd);
+    su_free(fd);
+    su_free(ld);
   }
 }
 
@@ -5189,7 +5194,7 @@ char *make_val (char *s, int v, char *id, char *f, char *l)
     char buf[30];
 
     sprintf(buf, "%d", v);
-    return strsave(buf);
+    return su_strdup(buf);
   }
   else {
     /*

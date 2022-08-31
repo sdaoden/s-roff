@@ -21,7 +21,10 @@
 #define DEBUGGING // FIXME
 
 #include "config.h"
+#include "lib.h"
 #include "troff-config.h"
+
+#include "su/strsup.h"
 
 #include "defs.h"
 #include "file_case.h"
@@ -800,7 +803,7 @@ void next_file()
     if (fcp != NULL)
       input_stack::next_file(fcp, nm.contents());
     else
-      error("can't open `%1': %2", nm.contents(), strerror(errno));
+      error("can't open `%1': %2", nm.contents(), su_err_doc(errno));
   }
   tok.next();
 }
@@ -860,17 +863,16 @@ static symbol read_two_char_escape_name()
 static symbol read_long_escape_name(read_mode mode)
 {
   int start_level = input_stack::get_level();
-  char abuf[ABUF_SIZE];
+  char abuf[ABUF_SIZE]; /* FIXME magic size */
   char *buf = abuf;
-  int buf_size = ABUF_SIZE;
-  int i = 0;
+  size_t buf_size = sizeof(abuf), i = 0;
   char c;
   int have_char = 0;
   for (;;) {
     c = get_char_for_escape_name(have_char && mode == WITH_ARGS);
     if (c == 0) {
       if (buf != abuf)
-	a_delete buf;
+        su_free(buf);
       return NULL_SYMBOL;
     }
     have_char = 1;
@@ -878,16 +880,16 @@ static symbol read_long_escape_name(read_mode mode)
       break;
     if (i + 2 > buf_size) {
       if (buf == abuf) {
-	buf = new char[ABUF_SIZE*2];
-	memcpy(buf, abuf, buf_size);
-	buf_size = ABUF_SIZE*2;
+        buf = su_talloc(char, ABUF_SIZE * 2);
+        memcpy(buf, abuf, ABUF_SIZE);
+        buf_size = ABUF_SIZE * 2;
       }
       else {
-	char *old_buf = buf;
-	buf = new char[buf_size*2];
-	memcpy(buf, old_buf, buf_size);
-	buf_size *= 2;
-	a_delete old_buf;
+        char *obd = buf;
+        size_t obs = buf_size;
+        buf = su_talloc(char, buf_size *= 2);
+        memcpy(buf, obd, obs);
+        su_free(obd);
       }
     }
     if (c == ']' && input_stack::get_level() == start_level)
@@ -907,7 +909,7 @@ static symbol read_long_escape_name(read_mode mode)
   }
   else {
     symbol s(buf);
-    a_delete buf;
+    su_free(buf);
     return s;
   }
 }
@@ -2260,11 +2262,10 @@ void token::next()
 	      if (groff_gn)
 		nm = symbol(groff_gn);
 	      else {
-		char *buf = new char[strlen(gn) + 1 + 1];
-		strcpy(buf, "u");
-		strcat(buf, gn);
+		char *buf = su_talloc(char, strlen(gn) + 1 +1);
+		su_stpcpy(su_stpcpy(buf, "u"), gn);
 		nm = symbol(buf);
-		a_delete buf;
+		su_free(buf);
 	      }
 	    }
 	    else
@@ -2507,22 +2508,21 @@ static symbol do_get_long_name(int required, char end)
     tok.next();
   char abuf[ABUF_SIZE];
   char *buf = abuf;
-  int buf_size = ABUF_SIZE;
-  int i = 0;
+  size_t buf_size = ABUF_SIZE, i = 0;
   for (;;) {
     // If end != 0 we normally have to append a null byte
     if (i + 2 > buf_size) {
       if (buf == abuf) {
-	buf = new char[ABUF_SIZE*2];
-	memcpy(buf, abuf, buf_size);
-	buf_size = ABUF_SIZE*2;
+        buf = new char[ABUF_SIZE*2];
+        memcpy(buf, abuf, ABUF_SIZE);
+        buf_size = ABUF_SIZE*2;
       }
       else {
-	char *old_buf = buf;
-	buf = new char[buf_size*2];
-	memcpy(buf, old_buf, buf_size);
-	buf_size *= 2;
-	a_delete old_buf;
+        char *obd = buf;
+        size_t obs = buf_size;
+        buf = su_talloc(char, buf_size *= 2);
+        su_memcpy(buf, obd, obs);
+        su_free(obd);
       }
     }
     if ((buf[i] = tok.ch()) == 0 || buf[i] == end)
@@ -2542,7 +2542,7 @@ static symbol do_get_long_name(int required, char end)
     return symbol(buf);
   else {
     symbol s(buf);
-    a_delete buf;
+    su_free(buf);
     return s;
   }
 }
@@ -3577,15 +3577,15 @@ public:
 inline
 temp_iterator::temp_iterator(const char *s, int len)
 {
-  base = new unsigned char[len];
-  memcpy(base, s, len);
+  base = su_talloc(rf_uc, len);
+  su_memcpy(base, s, len);
   ptr = base;
   eptr = base + len;
 }
 
 temp_iterator::~temp_iterator()
 {
-  a_delete base;
+  su_free(base);
 }
 
 class small_temp_iterator
@@ -5145,21 +5145,20 @@ static symbol get_delim_name()
   int start_level = input_stack::get_level();
   char abuf[ABUF_SIZE];
   char *buf = abuf;
-  int buf_size = ABUF_SIZE;
-  int i = 0;
+  size_t buf_size = ABUF_SIZE, i = 0;
   for (;;) {
     if (i + 1 > buf_size) {
       if (buf == abuf) {
-	buf = new char[ABUF_SIZE*2];
-	memcpy(buf, abuf, buf_size);
-	buf_size = ABUF_SIZE*2;
+        buf = su_talloc(char, ABUF_SIZE*2);
+        su_memcpy(buf, abuf, ABUF_SIZE);
+        buf_size = ABUF_SIZE*2;
       }
       else {
-	char *old_buf = buf;
-	buf = new char[buf_size*2];
-	memcpy(buf, old_buf, buf_size);
-	buf_size *= 2;
-	a_delete old_buf;
+        char *obd = buf;
+        size_t obs = buf_size;
+        buf = su_talloc(char, buf_size *= 2);
+        su_memcpy(buf, obd, obs);
+        su_free(obd);
       }
     }
     tok.next();
@@ -5169,7 +5168,7 @@ static symbol get_delim_name()
     if ((buf[i] = tok.ch()) == 0) {
       error("missing delimiter (got %1)", tok.description());
       if (buf != abuf)
-	a_delete buf;
+	su_free(buf);
       return NULL_SYMBOL;
     }
     i++;
@@ -5185,7 +5184,7 @@ static symbol get_delim_name()
   }
   else {
     symbol s(buf);
-    a_delete buf;
+    su_free(buf);
     return s;
   }
 }
@@ -5929,7 +5928,7 @@ void source()
     if (fcp != NULL)
       input_stack::push(new file_iterator(fcp, nm.contents()));
     else
-      error("can't open `%1': %2", nm.contents(), strerror(errno));
+      error("can't open `%1': %2", nm.contents(), su_err_doc(errno));
     tok.next();
   }
 }
@@ -5959,12 +5958,11 @@ void pipe_source()
 	const char *s = asciify(c);
 	int slen = strlen(s);
 	if (buf_used + slen + 1> buf_size) {
-	  char *old_buf = buf;
-	  int old_buf_size = buf_size;
-	  buf_size *= 2;
-	  buf = new char[buf_size];
-	  memcpy(buf, old_buf, old_buf_size);
-	  a_delete old_buf;
+	  char *obd = buf;
+	  int obs = buf_size;
+	  buf = su_talloc(char, buf_size *= 2);
+	  su_memcpy(buf, obd, obs);
+	  su_free(obd);
 	}
 	strcpy(buf + buf_used, s);
 	buf_used += slen;
@@ -5977,8 +5975,8 @@ void pipe_source()
           new file_case(fp, buf, file_case::fc_pipe | file_case::fc_take_path),
                 symbol(buf).contents()));
       else {
-        error("can't open pipe to process `%1': %2", buf, strerror(errno));
-        a_delete buf;
+        error("can't open pipe to process `%1': %2", buf, su_err_doc(errno));
+        su_free(buf);
       }
     }
     tok.next();
@@ -6178,7 +6176,7 @@ void ps_bbox_request()
       do_ps_file(fcp, nm.contents());
       delete fcp;
     } else
-      error("can't open `%1': %2", nm.contents(), strerror(errno));
+      error("can't open `%1': %2", nm.contents(), su_err_doc(errno));
     tok.next();
   }
 }
@@ -6398,7 +6396,7 @@ void do_open(int append)
 	error("can't open `%1' for %2: %3",
 	      filename.contents(),
 	      append ? "appending" : "writing",
-	      strerror(errno));
+	      su_err_doc(errno));
 	fp = (FILE *)stream_dictionary.remove(stream);
       }
       else
@@ -7085,7 +7083,7 @@ void abort_request()
 char *read_string()
 {
   int len = 256;
-  char *s = new char[len];
+  char *s = su_talloc(char, len);
   int c;
   while ((c = get_copy(0)) == ' ')
     ;
@@ -7093,11 +7091,7 @@ char *read_string()
   while (c != '\n' && c != EOF) {
     if (!invalid_input_char(c)) {
       if (i + 2 > len) {
-	char *tem = s;
-	s = new char[len*2];
-	memcpy(s, tem, len);
-	len *= 2;
-	a_delete tem;
+        s = su_trealloc(char, s, len *= 2);
       }
       s[i++] = c;
     }
@@ -7106,7 +7100,7 @@ char *read_string()
   s[i] = '\0';
   tok.next();
   if (i == 0) {
-    a_delete s;
+    su_free(s);
     return 0;
   }
   return s;
@@ -7132,12 +7126,10 @@ void pipe_output()
       if ((pc = read_string()) == 0)
 	error("can't pipe to empty command");
       if (pipe_command) {
-	char *s = new char[strlen(pipe_command) + strlen(pc) + 1 + 1];
-	strcpy(s, pipe_command);
-	strcat(s, "|");
-	strcat(s, pc);
-	a_delete pipe_command;
-	a_delete pc;
+	char *s = su_talloc(char, su_strlen(pipe_command) + su_strlen(pc) + 1 +1);
+  su_stpcpy(su_stpcpy(su_stpcpy(s, pipe_command), "|"), pc);
+	su_free(pipe_command);
+	su_free(pc);
 	pipe_command = s;
       }
       else
@@ -7161,7 +7153,7 @@ void system_request()
       error("empty command");
     else {
       system_status = system(command);
-      a_delete command;
+      su_free(command);
     }
   }
 }
@@ -7211,7 +7203,7 @@ void transparent_file()
     file_case *fcp = include_search_path
         .open_file_cautious(filename.contents());
     if (fcp == NULL)
-      error("can't open `%1': %2", filename.contents(), strerror(errno));
+      error("can't open `%1': %2", filename.contents(), su_err_doc(errno));
     else {
       int bol = 1;
       for (;;) {
@@ -7364,19 +7356,19 @@ void macro_source()
     if ((fcp = mac_path->open_file(nm.contents())) == NULL) {
       const char *fn = nm.contents();
 
-      if (strncasecmp(fn, MACRO_PREFIX, sizeof(MACRO_PREFIX) - 1) == 0) {
-        char *s = new char[strlen(fn) + sizeof(MACRO_POSTFIX)];
-        strcpy(s, fn + sizeof(MACRO_PREFIX) - 1);
-        strcat(s, MACRO_POSTFIX);
+      if (su_strncasecmp(fn, MACRO_PREFIX, sizeof(MACRO_PREFIX) - 1) == 0) {
+        /* TODO cstring */
+        char *s = su_talloc(char, su_strlen(fn) + sizeof(MACRO_POSTFIX));
+        su_stpcpy(su_stpcpy(s, fn + sizeof(MACRO_PREFIX) - 1), MACRO_POSTFIX);
         fcp = mac_path->open_file(s, fcp->fc_take_path);
       }
 
-      if (fcp == NULL) {
-        if (strncasecmp(fn + strlen(fn) - sizeof(MACRO_POSTFIX) + 1,
+      if (fcp == NULL) { /* TODO cstring */
+        if (su_strncasecmp(fn + su_strlen(fn) - sizeof(MACRO_POSTFIX) + 1,
             MACRO_POSTFIX, sizeof(MACRO_POSTFIX) - 1) == 0) {
-          char *s = new char[strlen(fn) + sizeof(MACRO_PREFIX)];
-          strcpy(s, MACRO_PREFIX);
-          strncat(s, fn, strlen(fn) - sizeof(MACRO_POSTFIX) + 1);
+          char *s = su_talloc(char, su_strlen(fn) + sizeof(MACRO_PREFIX));
+          char *e = su_stpcpy(s, MACRO_PREFIX);
+          su_strncat(e, fn, su_strlen(fn) - sizeof(MACRO_POSTFIX) + 1);
           fcp = mac_path->open_file(s, fcp->fc_take_path);
         }
       }
@@ -7395,7 +7387,7 @@ static void process_input_file(const char *name)
   file_case *fcp;
   if ((fcp = include_search_path.open_file_cautious(name)) == NULL) {
     assert(strcmp(name, "-"));
-    fatal("can't open `%1': %2", name, strerror(errno));
+    fatal("can't open `%1': %2", name, su_err_doc(errno));
    }
   input_stack::push(new file_iterator(fcp, name));
   tok.next();
@@ -7426,13 +7418,13 @@ static void do_register_assignment(const char *s)
       set_number_reg(buf, n);
   }
   else {
-    char *buf = new char[p - s + 1];
-    memcpy(buf, s, p - s);
+    char *buf = su_talloc(char, p - s +1); /* TODO cstring */
+    su_memcpy(buf, s, p - s);
     buf[p - s] = 0;
     units n;
     if (evaluate_expression(p + 1, &n))
       set_number_reg(buf, n);
-    a_delete buf;
+    su_free(buf);
   }
 }
 
@@ -7455,11 +7447,11 @@ static void do_string_assignment(const char *s)
     set_string(buf, s + 1);
   }
   else {
-    char *buf = new char[p - s + 1];
-    memcpy(buf, s, p - s);
+    char *buf = su_talloc(char, p - s +1); /* TODO cstring */
+    su_memcpy(buf, s, p - s);
     buf[p - s] = 0;
     set_string(buf, p + 1);
-    a_delete buf;
+    su_free(buf);
   }
 }
 
@@ -7521,7 +7513,7 @@ int main(int argc, char **argv)
     if (*groff_path)
       e += groff_path;
     e += '\0';
-    if (putenv(strsave(e.contents())))
+    if (putenv(su_strdup(e.contents())))
       fatal("putenv failed");
   }
   static const struct option long_options[] = {
@@ -8206,12 +8198,11 @@ static void copy_mode_error(const char *format,
 			    const errarg &arg3)
 {
   if (ignoring) {
-    static const char prefix[] = "(in ignored input) ";
-    char *s = new char[sizeof(prefix) + strlen(format)];
-    strcpy(s, prefix);
-    strcat(s, format);
+    static const char prefix[] = "(in ignored input) "; /* TODO cstring */
+    char *s = su_talloc(char, sizeof(prefix) + su_strlen(format));
+    su_stpcpy(su_stpcpy(s, prefix), format);
     warning(WARN_IG, s, arg1, arg2, arg3);
-    a_delete s;
+    su_free(s);
   }
   else
     error(format, arg1, arg2, arg3);

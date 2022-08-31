@@ -23,6 +23,8 @@
 #include "config.h"
 #include "lib.h"
 
+#include "su/strsup.h"
+
 #include <assert.h>
 #include <ctype.h>
 #include <math.h>
@@ -96,11 +98,10 @@ text_file::text_file(file_case *fcp)
 {
 }
 
-text_file::~text_file()
-{
-  a_delete buf;
-  if (fcp != NULL)
-    delete fcp;
+text_file::~text_file(void){
+  su_free(buf);
+  if(fcp != NULL)
+    su_del(fcp);
 }
 
 int text_file::next()
@@ -108,7 +109,7 @@ int text_file::next()
   if (fcp == NULL)
     return 0;
   if (buf == 0) {
-    buf = new char[128];
+    buf = su_talloc(char, 128);
     size = 128;
   }
   for (;;) {
@@ -122,9 +123,9 @@ int text_file::next()
       else {
 	if (i + 1 >= size) {
 	  char *old_buf = buf;
-	  buf = new char[size*2];
+	  buf = su_talloc(char, size*2);
 	  memcpy(buf, old_buf, size);
-	  a_delete old_buf;
+    su_free(old_buf);
 	  size *= 2;
 	}
 	buf[i++] = c;
@@ -158,8 +159,7 @@ font::font(const char *s)
 : ligatures(0), kern_hash_table(0), space_width(0), special(0),
   ch_index(0), nindices(0), ch(0), ch_used(0), ch_size(0), widths_cache(0)
 {
-  name = new char[strlen(s) + 1];
-  strcpy(name, s);
+  name = su_strdup(s);
   internalname = 0;
   slant = 0.0;
   zoom = 0;
@@ -184,8 +184,8 @@ font::~font()
     }
     a_delete kern_hash_table;
   }
-  a_delete name;
-  a_delete internalname;
+  su_free(name);
+  su_free(internalname);
   while (widths_cache) {
     font_widths_cache *tem = widths_cache;
     widths_cache = widths_cache->next;
@@ -767,7 +767,7 @@ again:
   else {
     int i;
     for (i = 0; i < NUM_PAPERSIZES; i++)
-      if (strcasecmp(papersizes[i].name, pp) == 0) {
+      if (su_strcasecmp(papersizes[i].name, pp) == 0) {
 	if (length)
 	  *length = papersizes[i].length;
 	if (width)
@@ -1239,7 +1239,9 @@ int font::load_desc()
 	t.error("image_generator command requires an argument");
 	return 0;
       }
-      image_generator = strsave(p);
+      if(image_generator != NULL)
+        su_free(image_generator);
+      image_generator = su_strdup(p);
     }
     else if (strcmp("charset", p) == 0)
       break;

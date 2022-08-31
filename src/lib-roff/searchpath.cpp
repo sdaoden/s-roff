@@ -23,6 +23,8 @@
 #include "config.h"
 #include "lib.h"
 
+#include "su/strsup.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -34,7 +36,7 @@
 #ifdef _WIN32
 # include "relocate.h"
 #else
-# define relocate(path) strsave(path)
+# define relocate(path) su_strdup(path)
 #endif
 
 static file_case *  _try_iter(char const *dirs, char const *name,
@@ -54,7 +56,7 @@ _try_iter(char const *dirs, char const *name, uint32_t flags)
     if (end == NULL)
       end = strchr(p, '\0');
     int need_slash = (end > p && strchr(DIR_SEPS, end[-1]) == NULL);
-    char *origpath = new char[(end - p) + need_slash + namelen + 1];
+    char *origpath = su_talloc(char, (end - p) + need_slash + namelen + 1);
     memcpy(origpath, p, end - p);
     if (need_slash)
       origpath[end - p] = '/';
@@ -63,7 +65,7 @@ _try_iter(char const *dirs, char const *name, uint32_t flags)
     fprintf(stderr, "origpath `%s'\n", origpath);
 #endif
     char *path = relocate(origpath);
-    a_delete origpath;
+    su_free(origpath);
 #if 0
     fprintf(stderr, "trying `%s'\n", path);
 #endif
@@ -78,7 +80,7 @@ _try_iter(char const *dirs, char const *name, uint32_t flags)
   errno = ENOENT;
 jleave:
   if (delname)
-    a_delete name;
+    su_free(name);
   return fcp;
 }
 
@@ -91,23 +93,20 @@ search_path::search_path(const char *envvar, const char *standard,
   char *e = 0;
   if (envvar)
     e = getenv(envvar);
-  dirs = new char[((e && *e) ? strlen(e) + 1 : 0)
-		  + (add_current ? 1 + 1 : 0)
-		  + ((home && *home) ? strlen(home) + 1 : 0)
-		  + ((standard && *standard) ? strlen(standard) : 0)
-		  + 1];
+  dirs = su_talloc(char, ((e && *e) ? strlen(e) + 1 : 0)
+        + (add_current ? 1 + 1 : 0)
+        + ((home && *home) ? strlen(home) + 1 : 0)
+        + ((standard && *standard) ? strlen(standard) : 0)
+        + 1);
   *dirs = '\0';
   if (e && *e) {
-    strcat(dirs, e);
-    strcat(dirs, PATH_SEP);
+    su_stpcpy(su_stpcpy(dirs, e), PATH_SEP);
   }
   if (add_current) {
-    strcat(dirs, ".");
-    strcat(dirs, PATH_SEP);
+    su_stpcpy(su_stpcpy(dirs, "."), PATH_SEP);
   }
   if (home && *home) {
-    strcat(dirs, home);
-    strcat(dirs, PATH_SEP);
+    su_stpcpy(su_stpcpy(dirs, home), PATH_SEP);
   }
   if (standard && *standard)
     strcat(dirs, standard);
@@ -117,7 +116,7 @@ search_path::search_path(const char *envvar, const char *standard,
 search_path::~search_path()
 {
   // dirs is always allocated
-  a_delete dirs;
+  su_free(dirs);
 }
 
 void search_path::command_line_dir(const char *s)
@@ -125,7 +124,7 @@ void search_path::command_line_dir(const char *s)
   char *old = dirs;
   unsigned old_len = strlen(old);
   unsigned slen = strlen(s);
-  dirs = new char[old_len + 1 + slen + 1];
+  dirs = su_talloc(char, old_len + 1 + slen + 1);
   memcpy(dirs, old, old_len - init_len);
   char *p = dirs;
   p += old_len - init_len;
@@ -139,7 +138,7 @@ void search_path::command_line_dir(const char *s)
     p += init_len;
   }
   *p++ = '\0';
-  a_delete old;
+  su_free(old);
 }
 
 file_case *search_path::open_file(char const *name, uint32_t flags)

@@ -25,6 +25,7 @@
 #include "lib.h"
 
 #include "su/io.h"
+#include "su/strsup.h"
 
 #include <errno.h>
 #include <stdlib.h>
@@ -155,7 +156,7 @@ xtmpfile_list_init::~xtmpfile_list_init()
   xtmpfile_list *x = xtmpfiles_to_delete;
   while (x != 0) {
     if (unlink(x->fname) < 0)
-      error("cannot unlink `%1': %2", x->fname, strerror(errno));
+      error("cannot unlink `%1': %2", x->fname, su_err_doc(errno));
     xtmpfile_list *tmp = x;
     x = x->next;
     a_delete tmp->fname;
@@ -182,11 +183,11 @@ FILE *xtmpfile(char **namep,
   errno = 0;
   int fd = rf_mkstemp(templ, FAL0);
   if (fd < 0)
-    fatal("cannot create temporary file: %1", strerror(errno));
+    fatal("cannot create temporary file: %1", su_err_doc(errno));
   errno = 0;
   FILE *fp = fdopen(fd, FOPEN_RWB); // many callers of xtmpfile use binary I/O
   if (!fp)
-    fatal("fdopen: %1", strerror(errno));
+    fatal("fdopen: %1", su_err_doc(errno));
   if (do_unlink)
     add_tmp_file(templ);
   if (namep)

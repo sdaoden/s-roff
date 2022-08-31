@@ -22,7 +22,10 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "roff-config.h"
+
+#include "su/strsup.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -35,7 +38,6 @@
 #include "errarg.h"
 #include "error.h"
 #include "font.h"
-#include "lib.h"
 #include "nonposix.h"
 #include "pipeline.h"
 #include "stringclass.h"
@@ -376,7 +378,7 @@ int main(int argc, char **argv)
       e += fontpath;
     }
     e += '\0';
-    if (putenv(strsave(e.contents())))
+    if (putenv(su_strdup(e.contents())))
       fatal("putenv failed");
   }
   {
@@ -388,7 +390,7 @@ int main(int argc, char **argv)
     if (path && *path)
       e += path;
     e += '\0';
-    if (putenv(strsave(e.contents())))
+    if (putenv(su_strdup(e.contents())))
       fatal("putenv failed");
     char *binpath = getenv(U_ROFF_BIN_PATH);
     string f = "PATH";
@@ -402,7 +404,7 @@ int main(int argc, char **argv)
       f += path;
     }
     f += '\0';
-    if (putenv(strsave(f.contents())))
+    if (putenv(su_strdup(f.contents())))
       fatal("putenv failed");
   }
   if (Vflag)
@@ -440,7 +442,7 @@ void handle_unknown_desc_command(const char *command, const char *arg,
       error_with_file_and_line(filename, lineno,
 			       "`print' command requires an argument");
     else
-      spooler = strsave(arg);
+      spooler = su_strdup(arg);
   }
   if (strcmp(command, "prepro") == 0) {
     if (arg == 0)
@@ -454,7 +456,7 @@ void handle_unknown_desc_command(const char *command, const char *arg,
 				   ": program name required", arg);
 	  return;
 	}
-      predriver = strsave(arg);
+      predriver = su_strdup(arg);
     }
   }
   if (strcmp(command, "postpro") == 0) {
@@ -469,7 +471,7 @@ void handle_unknown_desc_command(const char *command, const char *arg,
 				   ": program name required", arg);
 	  return;
 	}
-      postdriver = strsave(arg);
+      postdriver = su_strdup(arg);
     }
   }
 }
@@ -498,36 +500,35 @@ int run_commands(int no_pipe)
 }
 
 possible_command::possible_command()
-: name(0), argv(0)
+: name(NULL), argv(NULL)
 {
 }
 
 possible_command::~possible_command()
 {
-  a_delete name;
-  a_delete argv;
+  su_free(name);
+  su_free(argv);
 }
 
 void possible_command::set_name(const char *s)
 {
-  a_delete name;
-  name = strsave(s);
+  su_free(name);
+  name = su_strdup(s);
 }
 
 void possible_command::clear_name()
 {
-  a_delete name;
-  a_delete argv;
+  su_free(name);
   name = NULL;
+  su_free(argv);
   argv = NULL;
 }
 
 void possible_command::set_name(const char *s1, const char *s2)
 {
-  a_delete name;
-  name = new char[strlen(s1) + strlen(s2) + 1];
-  strcpy(name, s1);
-  strcat(name, s2);
+  su_free(name);
+  name = su_talloc(char, su_strlen(s1) + su_strlen(s2) +1);
+  su_stpcpy(su_stpcpy(name, s1), s2);
 }
 
 const char *possible_command::get_name()
@@ -584,7 +585,7 @@ void possible_command::build_argv()
   // Count the number of arguments.
   int len = args.length();
   int argc = 1;
-  char *p = 0;
+  char *p = NULL;
   if (len > 0) {
     p = &args[0];
     for (int i = 0; i < len; i++)
@@ -592,21 +593,21 @@ void possible_command::build_argv()
 	argc++;
   }
   // Build an argument vector.
-  argv = new char *[argc + 1];
+  argv = su_talloc(char*, argc +1);
   argv[0] = name;
   for (int i = 1; i < argc; i++) {
     argv[i] = p;
-    p = strchr(p, '\0') + 1;
+    p = su_strchr(p, '\0') + 1;
   }
-  argv[argc] = 0;
+  argv[argc] = NULL;
 }
 
 void possible_command::print(int is_last, FILE *fp)
 {
   build_argv();
   if (IS_BSHELL(argv[0])
-      && argv[1] != 0 && strcmp(argv[1], BSHELL_DASH_C) == 0
-      && argv[2] != 0 && argv[3] == 0)
+      && argv[1] != NULL && strcmp(argv[1], BSHELL_DASH_C) == 0
+      && argv[2] != NULL && argv[3] == NULL)
     fputs(argv[2], fp);
   else {
     fputs(argv[0], fp);
