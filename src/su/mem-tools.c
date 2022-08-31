@@ -1,4 +1,4 @@
-/*@ Implementation of memory.h: utility funs.
+/*@ Implementation of mem.h: utility funs. XXX optimize
  *
  * Copyright (c) 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
@@ -14,32 +14,34 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#define su_FILE "su__memory_tools"
+#define su_FILE "su__mem_tools"
+#define su_SOURCE
+#define su_SOURCE_MEM_TOOLS
 
-#include "su/primary.h"
+#include "su/code.h"
 
-#include <string.h>
+#include <string.h> /* TODO add x-mem-tools.h, get impl.s from there */
 
-#include "su/memory.h"
+#include "su/mem.h"
 #include "su/code-in.h"
 
 void *
-su_memchr(void const *vp, si32 what, uiz len){
+su_mem_find(void const *vp, s32 what, uz len){
    void *rv;
    NYD_IN;
-   ASSERT_NYD_RET_VAL(len == 0 || vp != NIL, NIL);
+   ASSERT_NYD_RET(len == 0 || vp != NIL, rv = NIL);
 
    rv = (len == 0) ? NIL : memchr(vp, what, len);
    NYD_OU;
    return rv;
 }
 
-si32
-su_memcmp(void const *vpa, void const *vpb, uiz len){
-   si32 rv;
+sz
+su_mem_cmp(void const *vpa, void const *vpb, uz len){
+   sz rv;
    NYD_IN;
-   ASSERT_NYD_RET_VAL(len == 0 || vpa != NIL, (vpb == NIL ? 0 : -1));
-   ASSERT_NYD_RET_VAL(len == 0 || vpb != NIL, 1);
+   ASSERT_NYD_RET(len == 0 || vpa != NIL, rv = (vpb == NIL) ? 0 : -1);
+   ASSERT_NYD_RET(len == 0 || vpb != NIL, rv = 1);
 
    rv = (len == 0) ? 0 : memcmp(vpa, vbp, len);
    NYD_OU;
@@ -47,10 +49,10 @@ su_memcmp(void const *vpa, void const *vpb, uiz len){
 }
 
 void *
-su_memcpy(void *vp, void const *src, uiz len){
+su_mem_copy(void *vp, void const *src, uz len){
    NYD_IN;
-   ASSERT_NYD_RET_VAL(len == 0 || vp != NIL, vp);
-   ASSERT_NYD_RET_VAL(len == 0 || src != NIL, vp);
+   ASSERT_NYD_RET(len == 0 || vp != NIL, );
+   ASSERT_NYD_RET(len == 0 || src != NIL, );
 
    if(len > 0)
       memcpy(vp, src, len);
@@ -59,10 +61,10 @@ su_memcpy(void *vp, void const *src, uiz len){
 }
 
 void *
-su_memmove(void *vp, void const *src, uiz len){
+su_mem_move(void *vp, void const *src, uz len){
    NYD_IN;
-   ASSERT_NYD_RET_VAL(len == 0 || vp != NIL, vp);
-   ASSERT_NYD_RET_VAL(len == 0 || src != NIL, vp);
+   ASSERT_NYD_RET(len == 0 || vp != NIL, );
+   ASSERT_NYD_RET(len == 0 || src != NIL, );
 
    if(len > 0)
       memmove(vp, src, len);
@@ -71,9 +73,9 @@ su_memmove(void *vp, void const *src, uiz len){
 }
 
 void *
-su_memset(void *vp, si32 what, uiz len){
+su_mem_set(void *vp, s32 what, uz len){
    NYD_IN;
-   ASSERT_NYD_RET_VAL(len == 0 || vp != NIL, NIL);
+   ASSERT_NYD_RET(len == 0 || vp != NIL, );
 
    if(len > 0)
       memset(vp, what, len);

@@ -23,7 +23,8 @@
 #include "lib.h"
 #include "troff-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
+#include "su/mem.h"
 
 #include <math.h>
 
@@ -1216,7 +1217,7 @@ void font_change()
   }
   else {
     for (const char *p = s.contents(); p != 0 && *p != 0; p++)
-      if (!su_isdigit(*p)) {
+      if (!su_cs_is_digit(*p)) {
 	is_number = 0;
 	break;
       }
@@ -1256,7 +1257,7 @@ void override_sizes()
   char *buf = read_string();
   if (!buf)
     return;
-  char *p = strtok(buf, " \t");
+  char *p = strtok(buf, " \t"); /* FIXME strtok -> strsep() of nail */
   for (;;) {
     if (!p)
       break;
@@ -1284,7 +1285,7 @@ void override_sizes()
     if (lower == 0)
       break;
     sizes[i++] = upper;
-    p = strtok(0, " \t");
+    p = strtok(0, " \t"); /* FIXME strtok-> strsep */
   }
   font_size::init_size_table(sizes);
 }
@@ -1819,7 +1820,7 @@ void environment::output_line(node *n, hunits width, int was_centered)
       x -= number_text_separation*line_number_digit_width;
       char buf[30];
       sprintf(buf, "%3d", next_line_number);
-      for (char *p = strchr(buf, '\0') - 1; p >= buf && *p != ' '; --p) {
+      for (char *p = su_cs_find_c(buf, '\0') - 1; p >= buf && *p != ' '; --p) {
 	node *gn = numbering_nodes;
 	for (int count = *p - '0'; count > 0; count--)
 	  gn = gn->next;
@@ -2653,14 +2654,13 @@ const char *tab_stops::to_string()
   int need = count*12 + 3;
   if (buf == 0 || need > buf_size) {
     if (buf)
-      a_delete buf;
+      su_FREE(buf);
     buf_size = need;
-    buf = new char[buf_size];
+    buf = su_TALLOC(char, buf_size);
   }
   char *ptr = buf;
   for (p = initial_list; p; p = p->next) {
-    strcpy(ptr, i_to_a(p->pos.to_units()));
-    ptr = strchr(ptr, '\0');
+    ptr = su_cs_pcopy(ptr, i_to_a(p->pos.to_units()));
     *ptr++ = 'u';
     *ptr = '\0';
     switch (p->type) {
@@ -2680,8 +2680,7 @@ const char *tab_stops::to_string()
   if (repeated_list)
     *ptr++ = TAB_REPEAT_CHAR;
   for (p = repeated_list; p; p = p->next) {
-    strcpy(ptr, i_to_a(p->pos.to_units()));
-    ptr = strchr(ptr, '\0');
+    ptr = su_cs_pcopy(ptr, i_to_a(p->pos.to_units()));
     *ptr++ = 'u';
     *ptr = '\0';
     switch (p->type) {
@@ -3889,7 +3888,7 @@ void hyphen_trie::read_patterns_file(const char *name, int append,
 	  c = fcp->get_c();
 	} while (c != EOF && c != '\n');
       }
-      if (c == EOF || !su_isspace(c))
+      if (c == EOF || !su_cs_is_space(c))
 	break;
       c = hpf_getc(fcp);
     }
@@ -3907,19 +3906,19 @@ void hyphen_trie::read_patterns_file(const char *name, int append,
     num[0] = 0;
     if (!(c == '{' || c == '}')) {	// skip braces at line start
       do {				// scan patterns
-	if (su_isdigit(c))
+	if (su_cs_is_digit(c))
 	  num[i] = c - '0';
 	else {
 	  buf[i++] = c;
 	  num[i] = 0;
 	}
 	c = hpf_getc(fcp);
-      } while (i < WORD_MAX && c != EOF && !su_isspace(c)
+      } while (i < WORD_MAX && c != EOF && !su_cs_is_space(c)
 	       && c != '%' && c != '{' && c != '}');
     }
     if (!traditional) {
-      if (i >= 9 && !strncmp(buf + i - 9, "\\patterns", 9)) {
-	while (su_isspace(c))
+      if (i >= 9 && !su_cs_cmp_n(buf + i - 9, "\\patterns", 9)) {
+	while (su_cs_is_space(c))
 	  c = hpf_getc(fcp);
 	if (c == '{') {
 	  if (have_patterns || have_hyphenation)
@@ -3933,8 +3932,8 @@ void hyphen_trie::read_patterns_file(const char *name, int append,
 	  continue;
 	}
       }
-      else if (i >= 12 && !strncmp(buf + i - 12, "\\hyphenation", 12)) {
-	while (su_isspace(c))
+      else if (i >= 12 && !su_cs_cmp_n(buf + i - 12, "\\hyphenation", 12)) {
+	while (su_cs_is_space(c))
 	  c = hpf_getc(fcp);
 	if (c == '{') {
 	  if (have_patterns || have_hyphenation)
@@ -3948,7 +3947,7 @@ void hyphen_trie::read_patterns_file(const char *name, int append,
 	  continue;
 	}
       }
-      else if (strstr(buf, "\\endinput")) {
+      else if (su_cs_find(buf, "\\endinput")) {
 	if (have_patterns || have_hyphenation)
 	  error("found \\endinput inside of %1 group",
 		have_patterns ? "\\patterns" : "\\hyphenation");

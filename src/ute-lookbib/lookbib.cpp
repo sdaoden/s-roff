@@ -23,7 +23,7 @@
 #include "lib.h"
 #include "lookbib-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -111,7 +111,7 @@ int main(int argc, char **argv)
     if (!fgets(line, sizeof(line), stdin))
       break;
     char *ptr = line;
-    while (su_isspace(*ptr))
+    while (su_cs_is_space(*ptr))
       ptr++;
     if (*ptr == '\0')
       continue;

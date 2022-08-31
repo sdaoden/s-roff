@@ -24,7 +24,7 @@
 #include "lib.h"
 #include "refer-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include "file-case.h"
 #include "refid.h"
@@ -145,7 +145,7 @@ int main(int argc, char **argv)
 	  annotation_field = 'X';
 	  annotation_macro = "AP";
 	}
-	else if (su_isalnum(opt[0]) && opt[1] == '.' && opt[2] != '\0') {
+	else if (su_cs_is_alnum(opt[0]) && opt[1] == '.' && opt[2] != '\0') {
 	  annotation_field = opt[0];
 	  annotation_macro = opt + 2;
 	}
@@ -192,7 +192,7 @@ int main(int argc, char **argv)
 	  }
 	  const char *ptr;
 	  for (ptr = num; *ptr; ptr++)
-	    if (!su_isdigit(*ptr)) {
+	    if (!su_cs_is_digit(*ptr)) {
 	      error("bad character `%1' in argument to -f option", *ptr);
 	      break;
 	    }
@@ -222,7 +222,7 @@ int main(int argc, char **argv)
       case 'k':
 	{
 	  char buf[5];
-	  if (su_isalpha(*++opt))
+	  if (su_cs_is_alpha(*++opt))
 	    buf[0] = *opt++;
 	  else {
 	    if (*opt != '\0')
@@ -241,7 +241,7 @@ int main(int argc, char **argv)
 	{
 	  const char *ptr;
 	  for (ptr = ++opt; *ptr; ptr++)
-	    if (!su_isdigit(*ptr)) {
+	    if (!su_cs_is_digit(*ptr)) {
 	      error("argument to `a' option not a number");
 	      break;
 	    }
@@ -258,8 +258,9 @@ int main(int argc, char **argv)
 	break;
       case 'l':
 	{
-	  char buf[INT_DIGITS*2 + 11]; // A.n+2D.y-3%a
-	  strcpy(buf, "A.n");
+	  char buf[INT_DIGITS*2 + 11], *cp; // A.n+2D.y-3%a
+
+	  cp = su_cs_pcopy(buf, "A.n");
 	  if (*++opt != '\0' && *opt != ',') {
 	    char *ptr;
 	    long n = strtol(opt, &ptr, 10);
@@ -271,9 +272,9 @@ int main(int argc, char **argv)
 	    if (n < 0)
 	      n = 0;
 	    opt = ptr;
-	    sprintf(strchr(buf, '\0'), "+%ld", n);
+	    cp += sprintf(cp, "+%ld", n);
 	  }
-	  strcat(buf, "D.y");
+	  cp = su_cs_pcopy(cp, "D.y");
 	  if (*opt == ',')
 	    opt++;
 	  if (*opt != '\0') {
@@ -286,12 +287,12 @@ int main(int argc, char **argv)
 	    }
 	    if (n < 0)
 	      n = 0;
-	    sprintf(strchr(buf, '\0'), "-%ld", n);
+	    cp += sprintf(cp, "-%ld", n);
 	    opt = ptr;
 	    if (*opt != '\0')
 	      error("argument to `l' option not of form `m,n'");
 	  }
-	  strcat(buf, "%a");
+	  su_cs_pcopy(cp, "%a");
 	  if (!set_label_spec(buf))
 	    assert(0);
 	  done_spec = 1;
@@ -419,9 +420,9 @@ static int is_list(const string &str)
 {
   const char *start = str.contents();
   const char *end = start + str.length();
-  while (end > start && su_isspace(end[-1]))
+  while (end > start && su_cs_is_space(end[-1]))
     end--;
-  while (start < end && su_isspace(*start))
+  while (start < end && su_cs_is_space(*start))
     start++;
   return end - start == 6 && memcmp(start, "$LIST$", 6) == 0;
 }
@@ -994,7 +995,7 @@ void output_references()
 static reference *find_reference(const char *query, int query_len)
 {
   // This is so that error messages look better.
-  while (query_len > 0 && su_isspace(query[query_len - 1]))
+  while (query_len > 0 && su_cs_is_space(query[query_len - 1]))
     query_len--;
   string str;
   for (int i = 0; i < query_len; i++)
@@ -1047,7 +1048,7 @@ static reference *make_reference(const string &str, unsigned *flagsp)
       *flagsp |= FORCE_LEFT_BRACKET;
     else if (*start == ']')
       *flagsp |= FORCE_RIGHT_BRACKET;
-    else if (!su_isspace(*start))
+    else if (!su_cs_is_space(*start))
       break;
   }
   if (start >= end) {
@@ -1089,7 +1090,7 @@ static void trim_blanks(string &str)
 {
   const char *start = str.contents();
   const char *end = start + str.length();
-  while (end > start && end[-1] != '\n' && su_isspace(end[-1]))
+  while (end > start && end[-1] != '\n' && su_cs_is_space(end[-1]))
     --end;
   str.set_length(end - start);
 }
@@ -1145,7 +1146,7 @@ void do_bib(const char *filename)
       }
       else if (c == '.')
 	state = BODY_DOT;
-      else if (su_isspace(c)) {
+      else if (su_cs_is_space(c)) {
 	state = BODY_BLANK;
 	body += c;
       }
@@ -1160,7 +1161,7 @@ void do_bib(const char *filename)
 	do_ref(body);
 	state = START;
       }
-      else if (su_isspace(c))
+      else if (su_cs_is_space(c))
 	body += c;
       else {
 	body += c;
@@ -1205,21 +1206,6 @@ void do_bib(const char *filename)
 }
 
 // from the Dragon Book
-
-unsigned hash_string(const char *s, int len) // FIXME Torek's hash (lib-roff!)
-{
-  const char *end = s + len;
-  unsigned h = 0, g;
-  while (s < end) {
-    h <<= 4;
-    h += *s++;
-    if ((g = h & 0xf0000000) != 0) {
-      h ^= g >> 24;
-      h ^= g;
-    }
-  }
-  return h;
-}
 
 int next_size(int n) // FIXME PRIME LOOKUP -> lib-roff!!
 {

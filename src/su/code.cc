@@ -1,6 +1,6 @@
-/*@ su_file_name_max(dirname): pathconf(dirname, _PC_NAME_MAX).
+/*@ C++ injection point of most things which need it.
  *
- * Copyright (c) 2017 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+ * Copyright (c) 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,46 +14,39 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#define su_FILE "su__io_name_max"
+#define su_FILE "su__code"
+#define su_MASTER
+#define su_SOURCE
+#define su_SOURCE_CODE
 
-#include "su/primary.h"
+#include "su/cs.h"
 
-#include <unistd.h>
-
-#include "su/io.h"
+#include "su/code.h"
 #include "su/code-in.h"
 
-/* POSIX 2008/Cor 1-2013 defines a minimum of 14 for _POSIX_NAME_MAX */
-#ifndef NAME_MAX
-# ifdef _POSIX_NAME_MAX
-#  define NAME_MAX _POSIX_NAME_MAX
-# else
-#  define NAME_MAX 14
-# endif
-#endif
-#if NAME_MAX + 0 < 8
-# error NAME_MAX is too small
-#endif
+NSPC_USE(su)
 
-uiz
-su_file_name_max(char const *dname){
-   uiz rv;
-#ifdef HAVE_PATHCONF
-   long sr;
-#endif
+// code.h
+
+PUB STA u16 const endian::bom = 0xFEFFu;
+
+void
+log::log(level lvl, char const *fmt, ...){ // XXX unroll
+   va_list va;
    NYD_IN;
-   UNUSED(dname);
-   ASSERT_NYD_RET_VAL(dname != NIL, NAME_MAX);
 
-#ifdef HAVE_PATHCONF
-   if((sr = pathconf(dname, _PC_NAME_MAX)) != -1)
-      rv = S(uiz,sr);
-   else
-#endif
-      rv = NAME_MAX;
+   va_start(va, fmt);
+   su_log(S(enum su_log_level,lvl), fmt, &va);
+   va_end(va);
    NYD_OU;
-   return rv;
 }
+
+// cs.h
+
+PUB STA type_toolbox<char*> const * const cs::type_toolbox =
+      R(;
+PUB STA type_toolbox<char const*> const * const cs::const_type_toolbox =
+      R(
 
 #include "su/code-ou.h"
 /* s-it-mode */

@@ -28,7 +28,8 @@
 #include "lib.h"
 #include "html-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
+#include "su/cstr.h"
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -843,9 +844,9 @@ int text_glob::get_arg (void)
   if (strncmp("devtag:", text_string, strlen("devtag:")) == 0) {
     const char *p = text_string;
 
-    while ((*p != (char)0) && (!su_isspace(*p)))
+    while ((*p != (char)0) && (!su_cisspace(*p)))
       p++;
-    while ((*p != (char)0) && (su_isspace(*p)))
+    while ((*p != (char)0) && (su_cisspace(*p)))
       p++;
     if (*p == (char)0)
       return -1;
@@ -864,15 +865,15 @@ int text_glob::get_tab_args (char *align)
     const char *p = text_string;
 
     // firstly the alignment C|R|L
-    while ((*p != (char)0) && (!su_isspace(*p)))
+    while ((*p != (char)0) && (!su_cisspace(*p)))
       p++;
-    while ((*p != (char)0) && (su_isspace(*p)))
+    while ((*p != (char)0) && (su_cisspace(*p)))
       p++;
     *align = *p;
     // now the int value
-    while ((*p != (char)0) && (!su_isspace(*p)))
+    while ((*p != (char)0) && (!su_cisspace(*p)))
       p++;
-    while ((*p != (char)0) && (su_isspace(*p)))
+    while ((*p != (char)0) && (su_cisspace(*p)))
       p++;
     if (*p == (char)0)
       return -1;
@@ -1686,15 +1687,15 @@ assert_state::~assert_state ()
   while (xhead != NULL) {
     t = xhead;
     xhead = xhead->next;
-    su_free(UNCONST(t->val));
-    su_free(UNCONST(t->id));
+    su_FREE(UNCONST(t->val));
+    su_FREE(UNCONST(t->id));
     delete t;
   }
   while (yhead != NULL) {
     t = yhead;
     yhead = yhead->next;
-    su_free(UNCONST(t->val));
-    su_free(UNCONST(t->id));
+    su_FREE(UNCONST(t->val));
+    su_FREE(UNCONST(t->id));
     delete t;
   }
 }
@@ -1738,9 +1739,9 @@ void assert_state::add (assert_pos **h,
     }
     t->id = i;
     t->val = v;
-    su_free(UNCONST(c));
-    su_free(UNCONST(f));
-    su_free(UNCONST(l));
+    su_FREE(UNCONST(c));
+    su_FREE(UNCONST(f));
+    su_FREE(UNCONST(l));
   }
 }
 
@@ -1797,9 +1798,9 @@ void assert_state::close (const char *c)
 const char *replace_negate_str (const char *before, char *after)
 {
   if(before != NULL)
-    su_free(UNCONST(before));
+    su_FREE(UNCONST(before));
 
-  if (strlen(after) > 0) {
+  if (su_cs_len(after) > 0) {
     int d = atoi(after);
 
     if (d < 0 || d > 1) {
@@ -1818,7 +1819,7 @@ const char *replace_negate_str (const char *before, char *after)
 const char *replace_str (const char *before, const char *after)
 {
   if(before != NULL)
-    su_free(UNCONST(before));
+    su_FREE(UNCONST(before));
   return after;
 }
 
@@ -1830,7 +1831,7 @@ void assert_state::set (const char *c, const char *v,
   if (f == NULL)
     f = "stdin";
 
-  char *vd = su_strdup(v), *fd = su_strdup(f), *ld = su_strdup(l);
+  char *vd = su_cs_dup(v), *fd = su_cs_dup(f), *ld = su_cs_dup(l);
 
   // fprintf(stderr, "%s:%s:setting %s to %s\n", f, l, c, v);
   if (strcmp(c, "sp") == 0) {
@@ -1859,9 +1860,9 @@ void assert_state::set (const char *c, const char *v,
     file_ce = replace_str(file_ce, fd);
     line_ce = replace_str(line_ce, ld);
   }else{
-    su_free(vd);
-    su_free(fd);
-    su_free(ld);
+    su_FREE(vd);
+    su_FREE(fd);
+    su_FREE(ld);
   }
 }
 
@@ -3121,7 +3122,7 @@ void html_printer::do_tab_te (void)
 void html_printer::do_tab (char *s)
 {
   if (table) {
-    while (su_isspace(*s))
+    while (su_cisspace(*s))
       s++;
     s++;
     int col = table->find_column(atoi(s) + pageoffset + get_troff_indent());
@@ -5193,7 +5194,7 @@ char *make_val (char *s, int v, char *id, char *f, char *l)
     char buf[30];
 
     sprintf(buf, "%d", v);
-    return su_strdup(buf);
+    return su_cs_dup(buf);
   }
   else {
     /*

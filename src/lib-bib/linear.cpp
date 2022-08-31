@@ -23,7 +23,7 @@
 #include "config.h"
 #include "lib.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -67,14 +67,14 @@ map_init::map_init()
 {
   int i;
   for (i = 0; i < 256; i++)
-    map[i] = su_isalnum(i) ? su_tolower(i) : '\0';
+    map[i] = su_cs_is_alnum(i) ? su_cs_to_lower(i) : '\0';
   for (i = 0; i < 256; i++) {
-    if (su_islower(i)) {
+    if (su_cs_is_lower(i)) {
       inv_map[i][0] = i;
-      inv_map[i][1] = su_toupper(i);
+      inv_map[i][1] = su_cs_to_upper(i);
       inv_map[i][2] = '\0';
     }
-    else if (su_isdigit(i)) {
+    else if (su_cs_is_digit(i)) {
       inv_map[i][0] = i;
       inv_map[i][1] = 0;
     }

@@ -23,6 +23,8 @@
 #include "config.h"
 #include "lib.h"
 
+#include "su/cs.h"
+
 #include "paper.h"
 
 paper papersizes[NUM_PAPERSIZES];
@@ -35,7 +37,7 @@ static void add_iso_paper(char series, int offset,
   int width = start_width;
   for (int i = 0; i < 8; i++)
   {
-    char *p = new char[3];
+    char *p = su_TALLOC(char, 3);
     p[0] = series;
     p[1] = '0' + i;
     p[2] = '\0';
@@ -55,8 +57,9 @@ static void add_iso_paper(char series, int offset,
 static void add_american_paper(const char *name, int idx,
 			       double length, double width )
 {
-  char *p = new char[strlen(name) + 1];
-  strcpy(p, name);
+  uz len = su_cs_len(name) +1;
+  char *p = su_TALLOC(char, len);
+  su_mem_copy(p, name, len);
   papersizes[idx].name = p;
   papersizes[idx].length = length;
   papersizes[idx].width = width;

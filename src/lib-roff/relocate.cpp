@@ -23,8 +23,8 @@
 #include "config.h"
 #include "lib.h"
 
+#include "su/cs.h"
 #include "su/io.h"
-#include "su/strsup.h"
 
 #include <errno.h>
 #include <stdlib.h>
@@ -57,10 +57,10 @@ char *xdirname(char *s)
   // DIR_SEPS[] are possible directory separator characters, see nonposix.h.
   // We want the rightmost separator of all possible ones.
   // Example: d:/foo\\bar.
-  char *p = strrchr(s, DIR_SEPS[0]);
+  char *p = su_cs_rfind_c(s, DIR_SEPS[0]);
   const char *sep = &DIR_SEPS[1];
   while (*sep) {
-    char *p1 = strrchr(s, *sep);
+    char *p1 = su_cs_find_c(s, *sep);
     if (p1 && (!p || p1 > p))
       p = p1;
     sep++;
@@ -101,24 +101,24 @@ char *searchpath(const char *name, const char *pathp)
   }
   // Secondly, try the current directory.
   // Now search along PATHP.
-  size_t namelen = su_strlen(name);
+  size_t namelen = su_cs_len(name);
   char *p = UNCONST(pathp);
   for (;;) {
-    char *end = su_strchr(p, PATH_SEP_CHAR);
+    char *end = su_cs_find_c(p, PATH_SEP_CHAR);
     if (!end)
-      end = su_strchr(p, '\0');
-    int need_slash = end > p && su_strchr(DIR_SEPS, end[-1]) == 0;
-    path = su_talloc(char, end - p + need_slash + namelen + 1);
-    su_memcpy(path, p, end - p);
+      end = su_cs_find_c(p, '\0');
+    int need_slash = end > p && su_cs_find_c(DIR_SEPS, end[-1]) == 0;
+    path = su_TALLOC(char, end - p + need_slash + namelen + 1);
+    su_mem_copy(path, p, end - p);
     if (need_slash)
       path[end - p] = '/';
-    su_strcpy(path + (end - p) + need_slash, name);
+    su_mem_copy(path + (end - p) + need_slash, name, namelen);
     DBG( fprintf(stderr, "searchpath: trying `%s'\n", path); )
     if (!access(path, F_OK)) {
       DBG( fprintf(stderr, "searchpath: found `%s'\n", name); )
       return path;
     }
-    su_free(path);
+    su_FREE(path);
     if (*end == '\0')
       break;
     p = end + 1;
@@ -130,19 +130,17 @@ char *searchpath(const char *name, const char *pathp)
 char *searchpathext(const char *name, const char *pathext, const char *pathp)
 {
   char *found = 0;
-  char *tmpathext = su_strdup(pathext); // strtok modifies this string,
-					// so make a copy
-  char *ext = su_strtok(tmpathext, PATH_SEP);
-  while (ext) {
-    char *namex = su_talloc(char, strlen(name) + su_strlen(ext) +1);
-    su_stpcpy(su_stpcpy(namex, name), ext);
+  char *tmpathext = su_cs_dup(pathext), *tmpe = tmpathext, *ext;
+
+  while((ext = su_cs_sep_c(&tmpe, PATH_SEP, TRU1)) != NIL){
+    char *namex = su_TALLOC(char, su_cs_len(name) + su_cs_len(ext) +1);
+    su_cs_pcopy(su_cs_pcopy(namex, name), ext);
     found = searchpath(namex, pathp);
-    su_free(namex);
+    su_FREE(namex);
     if (found)
        break;
-    ext = su_strtok(0, PATH_SEP);
   }
-  su_free(tmpathext);
+  su_FREE(tmpathext);
   return found;
 }
 
@@ -177,11 +175,12 @@ void set_current_prefix()
 #else /* !_WIN32 */
   char const *ep = getenv("PATH");
   curr_prefix = searchpath(rf_current_program(), ep);
-  if (!curr_prefix && !su_strchr(rf_current_program(), '.')) { // try extensions
-    if((pathextstr = su_strdup(getenv("PATHEXT"))) == NULL)
-      pathextstr = su_strdup(PATH_EXT);
+  if (!curr_prefix && !su_cs_find_c(rf_current_program(), '.')) { // try .ext's
+    if((pathextstr = getenv("PATHEXT")) == NIL)
+      pathextstr = UNCONST(PATH_EXT);
+    pathextstr = su_cs_dup(pathextstr);
     curr_prefix = searchpathext(program_name, pathextstr, ep);
-    su_free(pathextstr);
+    su_FREE(pathextstr);
   }
   if (!curr_prefix)
     return;
@@ -192,7 +191,7 @@ void set_current_prefix()
 #endif
   curr_prefix = xdirname(curr_prefix);	// directory of executable
   curr_prefix = xdirname(curr_prefix);	// parent directory of executable
-  curr_prefix_len = strlen(curr_prefix);
+  curr_prefix_len = su_cs_len(curr_prefix);
 #if DEBUG
   fprintf(stderr, "curr_prefix: %s\n", curr_prefix);
   fprintf(stderr, "curr_prefix_len: %d\n", curr_prefix_len);
@@ -210,13 +209,13 @@ char *relocatep(const char *path)
 #endif
   if (!curr_prefix)
     set_current_prefix();
-  if (su_strncmp(INSTALLPATH, path, INSTALLPATHLEN))
-    return su_strdup(path);
+  if (su_cs_cmp_n(INSTALLPATH, path, INSTALLPATHLEN))
+    return su_cs_dup(path);
   char *relative_path = (char *)path + INSTALLPATHLEN;
-  size_t relative_path_len = strlen(relative_path);
+  size_t relative_path_len = su_cs_len(relative_path);
   char *relocated_path =
-      su_talloc(char, curr_prefix_len + relative_path_len +1);
-  su_stpcpy(su_stpcpy(relocated_path, curr_prefix), relative_path);
+      su_TALLOC(char, curr_prefix_len + relative_path_len +1);
+  su_cs_pcopy(su_cs_pcopy(relocated_path, curr_prefix), relative_path);
 #if DEBUG
   fprintf(stderr, "relocated_path: %s\n", relocated_path);
 #endif /* DEBUG */
@@ -231,7 +230,7 @@ char *relocate(const char *path)
   if (access(path, F_OK))
     p = relocatep(path);
   else
-    p = su_strdup(path);
+    p = su_cs_dup(path);
 #if DEBUG
   fprintf (stderr, "relocate: %s\n", p);
 #endif

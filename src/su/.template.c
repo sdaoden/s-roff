@@ -1,6 +1,6 @@
-/*@ Forwards of and for all types.
+/*@ Implementation of .h: .
  *
- * Copyright (c) 2001 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+ * Copyright (c) 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,21 +14,15 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#ifndef su_FORWARDS_H
-#define su_FORWARDS_H
+#define su_FILE "su__"
+#define su_SOURCE
+#define su_SOURCE_
 
-#include <su/primary.h>
+#include "su/code.h"
 
-#include <su/code-in.h>
+#include "su/.h"
+#include "su/code-in.h"
 
-C_DECL_BEGIN
-C_DECL_END
 
-#if !C_LANG
-NSPC_BEGIN(su)
-NSPC_END(su)
-#endif /* !C_LANG */
-
-#include <su/code-ou.h>
-#endif /* su_FORWARDS_H */
+#include "su/code-ou.h"
 /* s-it-mode */

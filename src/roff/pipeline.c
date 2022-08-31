@@ -24,7 +24,8 @@
 #include "lib.h"
 #include "roff-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
+#include "su/mem.h"
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -83,31 +84,28 @@ static const char *sh = "sh";
 static const char *cmd = "cmd";
 static const char *command = "command";
 
-char *sbasename(const char *path) // TODO lib.h
+char *sbasename(const char *path) // TODO su/io.h
 {
   char *base;
   const char *p1, *p2;
 
   p1 = path;
-  if ((p2 = strrchr(p1, '\\'))
-      || (p2 = strrchr(p1, '/'))
-      || (p2 = strrchr(p1, ':')))
+  if ((p2 = su_cs_rfind_c(p1, '\\'))
+      || (p2 = su_cs_rfind_c(p1, '/'))
+      || (p2 = su_cs_rfind_c(p1, ':')))
     p1 = p2 + 1;
-  if ((p2 = strrchr(p1, '.'))
-      && ((su_strcasecmp(p2, ".exe") == 0)
-	  || (su_strcasecmp(p2, ".com") == 0)))
+  if ((p2 = su_cs_rfind_c(p1, '.'))
+      && ((su_cs_casecmp(p2, ".exe") == 0)
+	  || (su_cs_casecmp(p2, ".com") == 0)))
     ;
   else
-    p2 = p1 + strlen(p1);
+    p2 = p1 + su_trlen(p1);
 
-  base = malloc((size_t)(p2 - p1));
-  strncpy(base, p1, p2 - p1);
-  *(base + (p2 - p1)) = '\0';
-
-  return(base);
+  base = su_cs_dup_cbuf(p1, PTR2UZ(p2 - p1));
+  return base;
 }
 
-/* Get the name of the system shell */// TODO lib.h
+/* Get the name of the system shell */// TODO su/??.h
 char *system_shell_name(void)
 {
   const char *shell_name;
@@ -140,13 +138,13 @@ const char *system_shell_dash_c(void)
   shell_name = system_shell_name();
 
   /* Assume that if the shell name ends in `sh', it's Unixy */
-  if (su_strcasecmp(shell_name + su_strlen(shell_name) -
-	  su_strlen("sh"), "sh") == 0)
+  if (su_cs_casecmp(shell_name + su_cs_len(shell_name) - su_cs_len("sh"),
+      "sh") == 0)
     dash_c = "-c";
   else
     dash_c = "/c";
 
-  free(shell_name);
+  su_FREE(shell_name);
   return dash_c;
 }
 
@@ -161,10 +159,10 @@ int is_system_shell(const char *prog)
   this_prog = sbasename(prog);
   system_shell = system_shell_name();
 
-  result = (su_strcasecmp(this_prog, system_shell) == 0);
+  result = !su_cs_casecmp(this_prog, system_shell);
 
-  free(this_prog);
-  free(system_shell);
+  su_FREE(this_prog);
+  su_FREE(system_shell);
 
   return result;
 }

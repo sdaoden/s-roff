@@ -22,7 +22,7 @@
 #include "config.h"
 #include "lib.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include <stdlib.h>
 #include <errno.h>
@@ -117,7 +117,7 @@ index_search_item::index_search_item(const char *filename, int fid)
 index_search_item::~index_search_item()
 {
   if(buffer != NULL)
-    su_free(buffer);
+    su_FREE(buffer);
   if (map_addr) {
     if (unmap(map_addr, map_len) < 0)
       error("unmap: %1", su_err_doc(errno));
@@ -127,12 +127,12 @@ index_search_item::~index_search_item()
     out_of_date_files = out_of_date_files->next;
     delete tem;
   }
-  su_free(filename_buffer);
-  su_free(key_buffer);
+  su_FREE(filename_buffer);
+  su_FREE(key_buffer);
   if (common_words_table) {
     for (int i = 0; i < common_words_table_size; i++)
-      su_free(common_words_table[i]);
-    su_free(common_words_table);
+      su_FREE(common_words_table[i]);
+    su_FREE(common_words_table);
   }
 }
 
@@ -276,14 +276,14 @@ search_item_iterator *index_search_item::make_search_item_iterator(
 
 search_item *make_index_search_item(const char *filename, int fid)
 {
-  char *index_filename = su_talloc(char,
+  char *index_filename = su_TALLOC(char,
       strlen(filename) + sizeof(INDEX_SUFFIX));
-  su_stpcpy(su_stpcpy(index_filename, filename), INDEX_SUFFIX);
+  su_cs_pcopy(su_cs_pcopy(index_filename, filename), INDEX_SUFFIX);
   int fd = open(index_filename, O_RDONLY | O_BINARY);
   if (fd < 0)
     return 0;
   index_search_item *item = new index_search_item(index_filename, fid);
-  su_free(index_filename);
+  su_FREE(index_filename);
   if (!item->load(fd)) {
     close(fd);
     delete item;
@@ -304,7 +304,7 @@ index_search_item_iterator::index_search_item_iterator(index_search_item *ind,
 : indx(ind), out_of_date_files_iter(0), next_out_of_date_file(0), temp_list(0),
   buf(NULL), buflen(0),
   searcher(q, strlen(q), ind->ignore_fields, ind->header.truncate),
-  query(su_strdup(q))
+  query(su_cs_dup(q))
 {
   found_list = indx->search(q, strlen(q), &temp_list);
   if (!found_list) {
@@ -317,8 +317,8 @@ index_search_item_iterator::index_search_item_iterator(index_search_item *ind,
 index_search_item_iterator::~index_search_item_iterator()
 {
   a_delete temp_list;
-  su_free(buf);
-  su_free(query);
+  su_FREE(buf);
+  su_FREE(query);
   delete out_of_date_files_iter;
 }
 
@@ -405,9 +405,9 @@ int index_search_item_iterator::get_tag(int tagno,
     }
     if (!err) {
       if (length + 2 > buflen) {
-	su_free(buf);
+	su_FREE(buf);
 	buflen = length + 2;
-	buf = su_talloc(char, buflen);
+	buf = su_TALLOC(char, buflen);
       }
       if (fread(buf + 1, 1, length, fp) != (size_t)length)
 	error("fread on `%1' failed: %2", filename, su_err_doc(errno));
@@ -448,25 +448,25 @@ const char *index_search_item::munge_filename(const char *filename)
 		    && strchr(DIR_SEPS, strchr(cwd, '\0')[-1]) == 0);
   uiz len = strlen(cwd) + strlen(filename) + need_slash +1;
   if (len > filename_buflen) {
-    su_free(filename_buffer);
+    su_FREE(filename_buffer);
     filename_buflen = len;
-    filename_buffer = su_talloc(char, len);
+    filename_buffer = su_TALLOC(char, len);
   }
-  char *cp = su_stpcpy(filename_buffer, cwd);
+  char *cp = su_cs_pcopy(filename_buffer, cwd);
   if(need_slash)
     *cp++ = '/';
-  cp = su_stpcpy(filename_buffer, filename);
+  cp = su_cs_pcopy(filename_buffer, filename);
   return filename_buffer;
 }
 
 const int *index_search_item::search1(const char **pp, const char *end)
 {
-  while (*pp < end && !su_isalnum(**pp))
+  while (*pp < end && !su_cs_is_alnum(**pp))
     *pp += 1;
   if (*pp >= end)
     return 0;
   const char *start = *pp;
-  while (*pp < end && su_isalnum(**pp))
+  while (*pp < end && su_cs_is_alnum(**pp))
     *pp += 1;
   int len = *pp - start;
   if (len < header.shortest)
@@ -475,10 +475,10 @@ const int *index_search_item::search1(const char **pp, const char *end)
     len = header.truncate;
   int is_number = 1;
   for (int i = 0; i < len; i++)
-    if (su_isdigit(start[i]))
+    if (su_cs_is_digit(start[i]))
       key_buffer[i] = start[i];
     else {
-      key_buffer[i] = su_tolower(start[i]);
+      key_buffer[i] = su_cs_to_lower(start[i]);
       is_number = 0;
     }
   if (is_number && !(len == 4 && start[0] == '1' && start[1] == '9'))
@@ -581,15 +581,15 @@ void index_search_item::read_common_words_file()
   int key_len = 0;
   for (;;) {
     int c = getc(fp);
-    while (c != EOF && !su_isalnum(c))
+    while (c != EOF && !su_cs_is_alnum(c))
       c = getc(fp);
     if (c == EOF)
       break;
     do {
       if (key_len < header.truncate)
-	key_buffer[key_len++] = su_tolower(c);
+	key_buffer[key_len++] = su_cs_to_lower(c);
       c = getc(fp);
-    } while (c != EOF && su_isalnum(c));
+    } while (c != EOF && su_cs_is_alnum(c));
     if (key_len >= header.shortest) {
       int h = hash(key_buffer, key_len) % common_words_table_size;
       while (common_words_table[h]) {

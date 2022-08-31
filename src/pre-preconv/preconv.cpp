@@ -23,7 +23,7 @@
 #include "config.h"
 #include "lib.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -376,18 +376,18 @@ emacs_to_mime[] = { // FIXME what kind of shit is THIS?? P.S.: it's documented!
 char *
 emacs2mime(char *emacs_enc)
 {
-  int emacs_enc_len = strlen(emacs_enc);
+  int emacs_enc_len = su_cs_len(emacs_enc);
   if (emacs_enc_len > 4
-      && !su_strcasecmp(emacs_enc + emacs_enc_len - 4, "-dos"))
+      && !su_cs_casecmp(emacs_enc + emacs_enc_len - 4, "-dos"))
     emacs_enc[emacs_enc_len - 4] = 0;
   if (emacs_enc_len > 4
-      && !su_strcasecmp(emacs_enc + emacs_enc_len - 4, "-mac"))
+      && !su_cs_casecmp(emacs_enc + emacs_enc_len - 4, "-mac"))
     emacs_enc[emacs_enc_len - 4] = 0;
   if (emacs_enc_len > 5
-      && !su_strcasecmp(emacs_enc + emacs_enc_len - 5, "-unix"))
+      && !su_cs_casecmp(emacs_enc + emacs_enc_len - 5, "-unix"))
     emacs_enc[emacs_enc_len - 5] = 0;
   for (const conversion *table = emacs_to_mime; table->from; table++)
-    if (!su_strcasecmp(emacs_enc, table->from))
+    if (!su_cs_casecmp(emacs_enc, table->from))
       return (char *)table->to;
   return emacs_enc;
 }
@@ -893,7 +893,7 @@ get_variable_value_pair(char *d1, char **variable, char **value)
     d1++;
   // Get variable.
   int l = 0;
-  while (l < MAX_VAR_LEN - 1 && *d1 && !strchr(";: \t", *d1))
+  while (l < MAX_VAR_LEN - 1 && *d1 && su_cs_find_c(";: \t", *d1) == NIL)
     var[l++] = *(d1++);
   var[l] = 0;
   // Skip everything until `:', `;', or end of data.
@@ -909,7 +909,7 @@ get_variable_value_pair(char *d1, char **variable, char **value)
     d1++;
   // Get value.
   l = 0;
-  while (l < MAX_VAR_LEN - 1 && *d1 && !strchr("; \t", *d1))
+  while (l < MAX_VAR_LEN - 1 && *d1 && su_cs_find_c("; \t", *d1) == NIL)
     val[l++] = *(d1++);
   val[l] = 0;
   // Skip everything until `;' or end of data.
@@ -958,13 +958,13 @@ check_coding_tag(file_case *fcp, string &data)
   char *inbuf = get_tag_lines(fcp, data);
   char *lineend;
   for (char *p = inbuf; is_comment_line(p); p = lineend + 1) {
-    if ((lineend = strchr(p, '\n')) == NULL)
+    if ((lineend = su_cs_find_c(p, '\n')) == NULL)
       break;
     *lineend = 0;		// switch temporarily to '\0'
-    char *d1 = strstr(p, "-*-");
+    char *d1 = su_cs_find(p, "-*-");
     char *d2 = 0;
     if (d1)
-      d2 = strstr(d1 + 3, "-*-");
+      d2 = su_cs_find(d1 + 3, "-*-");
     *lineend = '\n';		// restore newline
     if (!d1 || !d2)
       continue;
@@ -973,7 +973,7 @@ check_coding_tag(file_case *fcp, string &data)
     while (d1) {
       char *variable, *value;
       d1 = get_variable_value_pair(d1, &variable, &value);
-      if (!su_strcasecmp(variable, "coding")) {
+      if (!su_cs_casecmp(variable, "coding")) {
 	*d2 = '-';		// restore '-'
 	a_delete inbuf;
 	return value;
@@ -995,7 +995,7 @@ do_file(const char *filename)
     fprintf(stderr, "file `%s':\n", filename);
   file_case *fcp;
   if ((fcp = file_case::muxer(filename, fcp->mux_need_binary)) == NULL) {
-    assert(strcmp(filename, "-"));
+    assert(su_cs_cmp(filename, "-"));
     error("can't open `%1': %2", filename, su_err_doc(errno));
     return 0;
   }
@@ -1009,7 +1009,7 @@ do_file(const char *filename)
       fprintf(stderr, "  user-specified encoding `%s', "
 		      "no search for coding tag\n",
 		      user_encoding);
-      if (BOM_encoding && strcmp(BOM_encoding, user_encoding))
+      if (BOM_encoding && su_cs_cmp(BOM_encoding, user_encoding))
 	fprintf(stderr, "  but BOM in data stream implies encoding `%s'!\n",
 			BOM_encoding);
     }
@@ -1033,7 +1033,7 @@ do_file(const char *filename)
 	fprintf(stderr, "  file encoding: `%s'\n", file_encoding);
     encoding = file_encoding;
   }
-  strncpy(encoding_string, encoding, MAX_VAR_LEN - 1);
+  su_cs_copy_n(encoding_string, encoding, MAX_VAR_LEN - 1);
   encoding_string[MAX_VAR_LEN - 1] = 0;
   encoding = encoding_string;
   // Translate from MIME & Emacs encoding names to locale encoding names.
@@ -1049,11 +1049,11 @@ do_file(const char *filename)
     printf(".lf 1 %s\n", filename);
   int success = 1;
   // Call converter (converters write to stdout).
-  if (!su_strcasecmp(encoding, "ISO-8859-1"))
+  if (!su_cs_casecmp(encoding, "ISO-8859-1"))
     conversion_latin1(fcp, BOM + data);
-  else if (!su_strcasecmp(encoding, "UTF-8"))
+  else if (!su_cs_casecmp(encoding, "UTF-8"))
     conversion_utf8(fcp, data);
-  else if (!su_strcasecmp(encoding, "cp1047"))
+  else if (!su_cs_casecmp(encoding, "cp1047"))
     conversion_cp1047(fcp, BOM + data);
   else {
 #if HAVE_ICONV
@@ -1094,11 +1094,10 @@ main(int argc, char **argv)
   // encoding.
   setlocale(LC_ALL, "");
   char *locale = getlocale(LC_CTYPE);
-  if (!locale || !strcmp(locale, "C") || !strcmp(locale, "POSIX"))
-    strcpy(default_encoding, "latin1");
+  if (!locale || !su_cs_cmp(locale, "C") || !su_cs_cmp(locale, "POSIX"))
+    memcpy(default_encoding, "latin1", sizeof("latin1") -1);
   else {
-    strncpy(default_encoding, locale_charset(), MAX_VAR_LEN - 1);
-    default_encoding[MAX_VAR_LEN - 1] = 0;
+    su_cs_copy_n(default_encoding, locale_charset(), MAX_VAR_LEN - 1);
   }
 
   int opt;
@@ -1127,15 +1126,14 @@ main(int argc, char **argv)
       break;
     case 'e':
       if (optarg) {
-	strncpy(user_encoding, optarg, MAX_VAR_LEN - 1);
-	user_encoding[MAX_VAR_LEN - 1] = 0;
+	su_cs_copy_n(user_encoding, optarg, MAX_VAR_LEN - 1);
       }
       else
 	user_encoding[0] = 0;
       break;
     case 'D':
       if (optarg) {
-	strncpy(default_encoding, optarg, MAX_VAR_LEN - 1);
+	su_cs_copy_n(default_encoding, optarg, MAX_VAR_LEN - 1);
 	default_encoding[MAX_VAR_LEN - 1] = 0;
       }
       break;

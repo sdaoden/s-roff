@@ -23,7 +23,7 @@
 #include "lib.h"
 #include "refer-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include "refer.h"
 #include "token.h"
@@ -103,8 +103,8 @@ void token_info::sortify(const char *start, const char *end, string &result)
     result += sort_key;
   else if (type == TOKEN_UPPER || type == TOKEN_LOWER) {
     for (; start < end; start++)
-      if (su_isalpha(*start))
-	result += su_tolower(*start);
+      if (su_cs_is_alpha(*start))
+	result += su_cs_to_lower(*start);
   }
 }
 
@@ -115,7 +115,7 @@ int token_info::sortify_non_empty(const char *start, const char *end) const
   if (type != TOKEN_UPPER && type != TOKEN_LOWER)
     return 0;
   for (; start < end; start++)
-    if (su_isalpha(*start))
+    if (su_cs_is_alpha(*start))
       return 1;
   return 0;
 }
@@ -131,7 +131,7 @@ void token_info::lower_case(const char *start, const char *end,
     result += other_case;
   else {
     while (start < end)
-      result += su_tolower(*start++);
+      result += su_cs_to_lower(*start++);
   }
 }
 
@@ -146,7 +146,7 @@ void token_info::upper_case(const char *start, const char *end,
     result += other_case;
   else {
     while (start < end)
-      result += su_toupper(*start++);
+      result += su_cs_to_upper(*start++);
   }
 }
 
@@ -158,7 +158,7 @@ token_table_entry::token_table_entry()
 static void store_token(const char *tok, token_type typ,
 			const char *sk = 0, const char *oc = 0)
 {
-  unsigned n = hash_string(tok, strlen(tok)) % TOKEN_TABLE_SIZE;
+  unsigned n = su_cs_hash(tok) % TOKEN_TABLE_SIZE;
   for (;;) {
     if (token_table[n].tok == 0) {
       if (++ntokens == TOKEN_TABLE_SIZE)
@@ -180,7 +180,7 @@ token_info default_token_info; // FIXME
 
 const token_info *lookup_token(const char *start, const char *end)
 {
-  unsigned n = hash_string(start, end - start) % TOKEN_TABLE_SIZE;
+  unsigned n = su_cs_hash_cbuf(start, end - start) % TOKEN_TABLE_SIZE;
   for (;;) {
     if (token_table[n].tok == 0)
       break;
@@ -202,22 +202,22 @@ static void init_ascii()
     char buf[2];
     buf[0] = *p;
     buf[1] = '\0';
-    store_token(su_strdup(buf), TOKEN_LOWER);
-    buf[0] = su_toupper(buf[0]);
-    store_token(su_strdup(buf), TOKEN_UPPER);
+    store_token(su_cs_dup(buf), TOKEN_LOWER);
+    buf[0] = su_cs_to_upper(buf[0]);
+    store_token(su_cs_dup(buf), TOKEN_UPPER);
   }
   for (p = "0123456789"; *p; p++) {
     char buf[2];
     buf[0] = *p;
     buf[1] = '\0';
-    const char *s = su_strdup(buf);
+    const char *s = su_cs_dup(buf);
     store_token(s, TOKEN_OTHER, s);
   }
   for (p = ".,:;?!"; *p; p++) {
     char buf[2];
     buf[0] = *p;
     buf[1] = '\0';
-    store_token(su_strdup(buf), TOKEN_PUNCT);
+    store_token(su_cs_dup(buf), TOKEN_PUNCT);
   }
   store_token("-", TOKEN_HYPHEN);
 }
@@ -238,7 +238,7 @@ static void init_letter(unsigned char uc_code, unsigned char lc_code,
   char ubuf[2];
   ubuf[0] = uc_code;
   ubuf[1] = 0;
-  store_letter(su_strdup(lbuf), su_strdup(ubuf), sort_key);
+  store_letter(su_cs_dup(lbuf), su_cs_dup(ubuf), sort_key);
 }
 
 static void init_latin1()
@@ -288,17 +288,17 @@ static void init_two_char_letter(char l1, char l2, char u1, char u2,
   buf[2] = l1;
   buf[3] = l2;
   buf[4] = '\0';
-  const char *p = su_strdup(buf);
+  const char *p = su_cs_dup(buf);
   buf[2] = u1;
   buf[3] = u2;
-  store_letter(p, su_strdup(buf), sk);
+  store_letter(p, su_cs_dup(buf), sk);
   buf[1] = '[';
   buf[4] = ']';
   buf[5] = '\0';
-  p = su_strdup(buf);
+  p = su_cs_dup(buf);
   buf[2] = l1;
   buf[3] = l2;
-  store_letter(su_strdup(buf), p, sk);
+  store_letter(su_cs_dup(buf), p, sk);
 }
 
 static void init_special_chars()
@@ -307,13 +307,13 @@ static void init_special_chars()
   for (p = "':^`~"; *p; p++)
     for (const char *q = "aeiouy"; *q; q++) {
       // Use a variable to work around bug in gcc 2.0
-      char c = su_toupper(*q);
+      char c = su_cs_to_upper(*q);
       init_two_char_letter(*p, *q, *p, c);
     }
   for (p = "/l/o~n,coeaeij"; *p; p += 2) {
     // Use variables to work around bug in gcc 2.0
-    char c0 = su_toupper(p[0]);
-    char c1 = su_toupper(p[1]);
+    char c0 = su_cs_to_upper(p[0]);
+    char c1 = su_cs_to_upper(p[1]);
     init_two_char_letter(p[0], p[1], c0, c1);
   }
   init_two_char_letter('v', 's', 'v', 'S', "s");
@@ -341,12 +341,12 @@ static void init_strings()
   for (const char *p = "'`^^,:~v_o./;"; *p; p++) {
     buf[2] = *p;
     buf[3] = '\0';
-    store_token(su_strdup(buf), TOKEN_ACCENT);
+    store_token(su_cs_dup(buf), TOKEN_ACCENT);
     buf[2] = '[';
     buf[3] = *p;
     buf[4] = ']';
     buf[5] = '\0';
-    store_token(su_strdup(buf), TOKEN_ACCENT);
+    store_token(su_cs_dup(buf), TOKEN_ACCENT);
   }
 
   // -ms special letters

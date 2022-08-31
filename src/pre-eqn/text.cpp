@@ -24,7 +24,8 @@
 #include "lib.h"
 #include "eqn-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
+#include "su/mem.h"
 
 #include "eqn.h"
 #include "pbox.h"
@@ -538,7 +539,7 @@ void init_char_table()
   char_table['<'].spacing_type = s_relation;
   char_table['*'].spacing_type = s_binary;
   for (ui8 i = 0; i < NELEM(char_table); ++i)
-    if (su_isalpha(i))
+    if (su_cs_is_alpha(i))
       char_table[i].font_type = LETTER_TYPE;
 }
 
@@ -565,7 +566,7 @@ void box::set_spacing_type(char *type)
     error("unrecognised type `%1'", type);
   else
     spacing_type = t;
-  su_free(type);
+  su_FREE(type);
 }
 
 char_box::char_box(unsigned char cc)
@@ -602,7 +603,7 @@ void char_box::output()
       fputs("\\fP", stdout);
   }
   else if (output_format == mathml) {
-    if (su_isdigit(c))
+    if (su_cs_is_digit(c))
       printf("<mn>");
     else if (char_table[c].spacing_type)
       printf("<mo>");
@@ -616,7 +617,7 @@ void char_box::output()
       printf("&amp;");
     else
       putchar(c);
-    if (su_isdigit(c))
+    if (su_cs_is_digit(c))
       printf("</mn>");
     else if (char_table[c].spacing_type)
       printf("</mo>");
@@ -654,13 +655,13 @@ void char_box::debug_print()
 
 special_char_box::special_char_box(const char *t)
 {
-  s = su_strdup(t);
+  s = su_cs_dup(t);
   spacing_type = get_special_char_spacing_type(s);
 }
 
 special_char_box::~special_char_box()
 {
-  su_free(s);
+  su_FREE(s);
 }
 
 void special_char_box::output()
@@ -712,7 +713,7 @@ void set_char_type(const char *type, char *ch)
   int ft = lookup_font_type(type);
   if (st < 0 && ft < 0) {
     error("bad character type `%1'", type);
-    su_free(ch);
+    su_FREE(ch);
     return;
   }
   box *b = split_text(ch);
@@ -890,7 +891,7 @@ box *split_text(char *text)
 	    lex_error("bad escape");
 	  else {
 	    ++s;
-	    char *buf = su_talloc(char, s - escape_start + 1);
+	    char *buf = su_TALLOC(char, s - escape_start + 1);
 	    memcpy(buf, escape_start, s - escape_start);
 	    buf[s - escape_start] = '\0';
 	    b = new quoted_text_box(buf);
@@ -924,13 +925,13 @@ box *split_text(char *text)
 	  buf[0] = '\\';
 	  buf[1] = c;
 	  buf[2] = '\0';
-	  b = new quoted_text_box(su_strdup(buf));
+	  b = new quoted_text_box(su_cs_dup(buf));
 	  break;
 	}
       default:
 	lex_error("unquoted escape");
-	b = new quoted_text_box(su_strdup(s - 2));
-	s = strchr(s, '\0');
+	b = new quoted_text_box(su_cs_dup(s - 2));
+	s = su_cs_find_c(s, '\0');
 	break;
       }
       break;
@@ -956,7 +957,7 @@ box *split_text(char *text)
 	fb = b;
     }
   }
-  su_free(text);
+  su_FREE(text);
   if (lb != 0)
     return lb;
   else if (fb != 0)

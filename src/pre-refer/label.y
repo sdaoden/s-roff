@@ -25,7 +25,7 @@
 #include "lib.h"
 #include "refer-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include "refid.h"
 
@@ -477,17 +477,17 @@ static char lowercase_array[] = { // FIXME const
 
 int yylex()
 {
-  while (spec_ptr < spec_end && su_isspace(*spec_ptr))
+  while (spec_ptr < spec_end && su_cs_is_space(*spec_ptr))
     spec_ptr++;
   spec_cur = spec_ptr;
   if (spec_ptr >= spec_end)
     return 0;
   unsigned char c = *spec_ptr++;
-  if (su_isalpha(c)) {
+  if (su_cs_is_alpha(c)) {
     yylval.num = c;
     return TOKEN_LETTER;
   }
-  if (su_isdigit(c)) {
+  if (su_cs_is_digit(c)) {
     yylval.num = c - '0';
     return TOKEN_DIGIT;
   }
@@ -1015,7 +1015,8 @@ label_info *lookup_label(const string &label)
     for (int i = 0; i < 17; i++)
       label_table[i] = 0;
   }
-  unsigned h = hash_string(label.contents(), label.length()) % label_table_size;
+  unsigned h = su_cs_hash_cbuf(label.contents(), label.length()) %
+      label_table_size;
   label_info **ptr;
   for (ptr = label_table + h;
        *ptr != 0;
@@ -1040,8 +1041,8 @@ label_info *lookup_label(const string &label)
       label_table[i] = 0;
     for (i = 0; i < old_size; i++)
       if (old_table[i]) {
-	h = hash_string(label_pool.contents() + old_table[i]->start,
-			old_table[i]->length);
+	h = su_cs_hash_cbuf(label_pool.contents() + old_table[i]->start,
+      old_table[i]->length);
 	label_info **p;
 	for (p = label_table + (h % label_table_size);
 	     *p != 0;

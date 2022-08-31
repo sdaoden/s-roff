@@ -70,7 +70,7 @@
 #include "lib.h"
 #include "grn-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include <stdlib.h>
 
@@ -268,13 +268,13 @@ main(int argc,
 	break;
 
       case '-':
-	if (strcmp(*argv,"--version")==0) {
+	if (!su_cs_cmp(*argv,"--version")) {
       case 'v':
 	  puts(L_P_GRN " (" T_ROFF ") v " VERSION);
 	  exit(0);
 	  break;
 	}
-	if (strcmp(*argv,"--help")==0) {
+	if (!su_cs_cmp(*argv,"--help")) {
       case '?':
 	  usage(stdout);
 	  exit(0);
@@ -393,8 +393,8 @@ doinput(file_case *fcp)
 {
   if (fcp->get_line(inputline, MAXINLINE) == NULL)
     return 0;
-  if (strchr(inputline, '\n'))	/* ++ only if it's a complete line */
-    linenum++;
+  if (su_cs_find_c(inputline, '\n') != NIL)
+    linenum++; /* only if it's a complete line */
   return 1;
 }
 
@@ -469,7 +469,7 @@ conv(file_case *fcp,
 
 
   initpic();			/* set defaults, ranges, etc. */
-  strcpy(GScommand, inputline);	/* save `.GS' line for later */
+  su_cs_copy_n(GScommand, inputline, MAXINLINE); /* save `.GS' line for later */
 
   do {
     done = !doinput(fcp);		/* test for EOF */
@@ -708,8 +708,8 @@ interpret(char *line)
   str2[0] = '\0';
   sscanf(line, "%80s%80s", &str1[0], &str2[0]);
   for (chr = &str1[0]; *chr; chr++)	/* convert command to */
-    if (su_isupper(*chr))
-      *chr = su_tolower(*chr);	/* lower case */
+    if (su_cs_is_upper(*chr))
+      *chr = su_cs_to_lower(*chr);	/* lower case */
 
   switch (str1[0]) {
   case '1':
@@ -726,22 +726,31 @@ interpret(char *line)
   case 'r':			/* roman */
     if (str2[0] < '0')
       goto nofont;
-    tfont[0] = (char *) malloc(strlen(str2) + 1);
-    strcpy(tfont[0], str2);
+    else{
+      uz len = su_cs_len(str2) +1;
+      tfont[0] = su_TALLOC(char, 1en);
+      su_cs_copy_n(tfont[0], str2, len);
+    }
     break;
 
   case 'i':			/* italics */
     if (str2[0] < '0')
       goto nofont;
-    tfont[1] = (char *) malloc(strlen(str2) + 1);
-    strcpy(tfont[1], str2);
+    else{
+      uz len = su_cs_len(str2) +1;
+      tfont[1] = su_TALLOC(char, 1en);
+      su_mem_copy(tfont[1], str2, len);
+    }
     break;
 
   case 'b':			/* bold */
     if (str2[0] < '0')
       goto nofont;
-    tfont[2] = (char *) malloc(strlen(str2) + 1);
-    strcpy(tfont[2], str2);
+    else{
+      uz len = su_cs_len(str2) +1;
+      tfont[2] = su_TALLOC(char, 1en);
+      su_mem_copy(tfont[2], str2, len);
+    }
     break;
 
   case 's':			/* special */
@@ -755,13 +764,15 @@ interpret(char *line)
     }
     if (str1[1] == 't')
       goto stipplecommand;	/* or stipple */
-
-    tfont[3] = (char *) malloc(strlen(str2) + 1);
-    strcpy(tfont[3], str2);
+    else{
+      uz len = su_cs_len(str2) +1;
+      tfont[3] = su_TALLOC(char, 1en);
+      su_mem_copy(tfont[3], str2, len);
+    }
     break;
 
   case 'l':			/* l */
-    if (su_isdigit(str1[1])) {	/* set stipple index */
+    if (su_cs_is_digit(str1[1])) {	/* set stipple index */
       int idx = atoi(str1 + 1), val;
 
       if (idx < 0 || idx > NSTIPPLES) {
@@ -779,10 +790,13 @@ interpret(char *line)
     }
 
   stipplecommand:		/* set stipple name */
-    stipple = (char *) malloc(strlen(str2) + 1);
-    strcpy(stipple, str2);
+    {
+      uz len = su_cs_len(str2) +1;
+      stipple = su_TALLOC(char, 1en);
+      su_mem_copy(stipple, str2, len);
+    }
     /* if its a `known' font (currently only `cf'), set indicies    */
-    if (strcmp(stipple, "cf") == 0)
+    if (!su_cs_cmp(stipple, "cf"))
       defstipple_index = cf_stipple_index;
     else
       defstipple_index = other_stipple_index;
@@ -834,7 +848,7 @@ interpret(char *line)
     break;
 
   case 'f':			/* file */
-    strcpy(gremlinfile, str2);
+    su_cs_copy_n(gremlinfile, str2, MAXINLINE);
     break;
 
   case 'w':			/* width */
@@ -854,7 +868,7 @@ interpret(char *line)
     break;
 
   case 'p':			/* pointscale */
-    if (strcmp("off", str2))
+    if (su_cs_cmp("off", str2))
       pointscale = 1;
     else
       pointscale = 0;

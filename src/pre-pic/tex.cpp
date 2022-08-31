@@ -25,7 +25,7 @@
 
 #include "lib.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include "common.h"
 #include "pic.h"
@@ -427,9 +427,9 @@ tpic_output::tpic_output()
 void tpic_output::command(const char *s, const char *filename, int lineno)
 {
   assert(s[0] == '.');
-  if (s[1] == 'p' && s[2] == 's' && (s[3] == '\0' || !su_isalpha(s[3]))) {
+  if (s[1] == 'p' && s[2] == 's' && (s[3] == '\0' || !su_cs_is_alpha(s[3]))) {
     const char *p = s + 3;
-    while (su_isspace(*p))
+    while (su_cs_is_space(*p))
       p++;
     if (*p == '\0') {
       int temp = default_pen_size;

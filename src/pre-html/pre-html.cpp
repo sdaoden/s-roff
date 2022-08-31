@@ -25,7 +25,8 @@
 #include "lib.h"
 #include "html-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
+#include "su/mem.h"
 
 #include <sys/types.h>
 
@@ -223,7 +224,7 @@ int get_line(file_case *fcp)
   if (fcp == NULL)
     return 0;
   if (linebuf == 0)
-    linebuf = su_talloc(char, linebufsize = 128);
+    linebuf = su_TALLOC(char, linebufsize = 128);
   int i = 0;
   // skip leading whitespace
   for (;;) {
@@ -242,9 +243,9 @@ int get_line(file_case *fcp)
     if (i + 1 >= linebufsize) {
       char *old_linebuf = linebuf;
       size_t old_linebufsize = linebufsize;
-      linebuf = su_talloc(char, linebufsize *= 2);
-      memcpy(linebuf, old_linebuf, old_linebufsize);
-      su_free(old_linebuf);
+      linebuf = su_TALLOC(char, linebufsize *= 2);
+      su_mem_copy(linebuf, old_linebuf, old_linebufsize);
+      su_FREE(old_linebuf);
     }
     linebuf[i++] = c;
     if (c == '\n') {
@@ -329,7 +330,7 @@ char *make_message(const char *fmt, ...)
   char *p;
   char *np;
   va_list ap;
-  if ((p = su_talloc(char, size)) == NULL)
+  if ((p = su_TALLOC(char, size)) == NULL)
     return NULL;
   while (1) {
     /* Try to print in the allocated space. */
@@ -339,8 +340,8 @@ char *make_message(const char *fmt, ...)
     /* If that worked, return the string. */
     if (n > -1 && n < size - 1) { /* glibc 2.1 and pre-ANSI C 99 */
       if (size > n + 1) {
-	np = su_strdup(p);
-	su_free(p);
+	np = su_cs_dup(p);
+	su_FREE(p);
 	return np;
       }
       return p;
@@ -348,8 +349,8 @@ char *make_message(const char *fmt, ...)
     /* Else try again with more space. */
     else		/* glibc 2.0 */
       size *= 2;	/* twice the old size */
-    if ((np = su_trealloc(char, p, size)) == NULL) {
-      su_free(p);		/* realloc failed, free old, p. */
+    if ((np = su_TREALLOC(char, p, size)) == NULL) {
+      su_FREE(p);		/* realloc failed, free old, p. */
       return NULL;
     }
     p = np;		/* use realloc'ed, p */
@@ -530,8 +531,7 @@ static void makeFileName(void)
     (char *)malloc(strlen("-%d") + strlen(macroset_template) + 1);
   if (image_template == NULL)
     sys_fatal("malloc");
-  strcpy(image_template, macroset_template);
-  strcat(image_template, "-%d");
+  su_cs_pcopy(su_cs_pcopy(image_template, macroset_template), "-%d");
 }
 
 /*
@@ -710,7 +710,7 @@ int char_buffer::skip_spaces(char_block **t, int *i)
   int k = *i;
 
   while (s) {
-    while (k < s->used && su_isspace(s->buffer[k]))
+    while (k < s->used && su_cs_is_space(s->buffer[k]))
       k++;
     if (k == s->used) {
       k = 0;
@@ -838,7 +838,8 @@ imageItem::imageItem(int x1, int y1, int x2, int y2,
 
 imageItem::~imageItem()
 {
-  su_free(imageName);
+  if(imageName != NIL)
+    su_FREE(imageName);
 }
 
 /*
@@ -1019,7 +1020,7 @@ void imageList::createImage(imageItem *i)
 	sys_fatal("make_message");
 
       html_system(s, 0);
-      su_free(s);
+      su_FREE(s);
     }
     else {
       fprintf(stderr, "failed to generate image of page %d\n", i->pageNo);
@@ -1240,7 +1241,7 @@ char **addRegDef(int argc, char *argv[], const char *numReg)
     new_argv[i] = argv[i];
     i++;
   }
-  new_argv[argc] = su_strdup(numReg);
+  new_argv[argc] = su_cs_dup(numReg);
   argc++;
   new_argv[argc] = NULL;
   return new_argv;
@@ -1549,9 +1550,9 @@ static int scanArguments(int argc, char **argv)
   const char *command_prefix = getenv(U_ROFF_COMMAND_PREFIX);
   if (!command_prefix)
     command_prefix = PROG_PREFIX;
-  char *troff_name = su_talloc(char,
-      su_strlen(command_prefix) + su_strlen("troff") +1);
-  su_stpcpy(su_stpcpy(troff_name, command_prefix, "troff");
+  char *troff_name = su_TALLOC(char,
+      su_cs_len(command_prefix) + su_cs_len("troff") +1);
+  su_cs_pcopy(su_cs_pcopy(troff_name, command_prefix, "troff");
   int c, i;
   static const struct option long_options[] = {
     { "help", no_argument, 0, CHAR_MAX + 1 },
@@ -1666,7 +1667,7 @@ static int scanArguments(int argc, char **argv)
       return i;
     i++;
   }
-  su_free(troff_name);
+  su_FREE(troff_name);
 
   return argc;
 }

@@ -24,7 +24,8 @@
 #include "lib.h"
 #include "refer-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
+#include "su/mem.h"
 
 #include "file-case.h"
 #include "refid.h"
@@ -37,7 +38,7 @@ static boole a_isfield(ui8 c);
 
 static inline boole
 a_isfield(ui8 c){
-  return su_isalpha(c);
+  return su_cs_is_alpha(c);
 }
 
 class input_item
@@ -61,7 +62,7 @@ public:
 };
 
 input_item::input_item(string &s, const char *fn, int ln)
-: filename(su_strdup(fn)), first_lineno(ln)
+: filename(su_cs_dup(fn)), first_lineno(ln)
 {
   buffer.move(s);
   ptr = buffer.contents();
@@ -70,7 +71,7 @@ input_item::input_item(string &s, const char *fn, int ln)
 
 input_item::~input_item()
 {
-  su_free(filename);
+  su_FREE(filename);
 }
 
 inline int input_item::peek_char()
@@ -403,7 +404,7 @@ static void articles_command(int argc, argument *argv)
   }
   int len = articles.length();
   for (i = 0; i < len; i++)
-    articles[i] = su_tolower(articles[i]);
+    articles[i] = su_cs_to_lower(articles[i]);
 }
 
 static void database_command(int argc, argument *argv)
@@ -425,7 +426,7 @@ static void no_default_database_command(int, argument *)
 static void bibliography_command(int argc, argument *argv)
 {
   have_bibliography = 1;
-  char *saved_filename = su_strdup(rf_current_filename());
+  char *saved_filename = su_cs_dup(rf_current_filename());
   int saved_lineno = rf_current_lineno();
   int saved_label_in_text = label_in_text;
   label_in_text = 0;
@@ -439,7 +440,7 @@ static void bibliography_command(int argc, argument *argv)
     fputs(".]>\n", stdout);
   rf_current_filename_set(saved_filename);
   rf_current_lineno_set(saved_lineno);
-  su_free(saved_filename);
+  su_FREE(saved_filename);
   label_in_text = saved_label_in_text;
 }
 

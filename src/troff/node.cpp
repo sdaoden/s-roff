@@ -23,7 +23,8 @@
 #include "lib.h"
 #include "troff-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
+#include "su/mem.h"
 
 #include <sys/wait.h>
 
@@ -4152,8 +4153,8 @@ void suppress_node::tprint(troff_output_file *out)
   if (is_on == 2) {
     // remember position and filename
     last_position = position;
-    su_free(last_image_filename);
-    last_image_filename = su_strdup(filename.contents());
+    su_FREE(last_image_filename);
+    last_image_filename = su_cs_dup(filename.contents());
     last_image_id = image_id;
     // printf("start of image and page = %d\n", current_page);
   }
@@ -4988,7 +4989,7 @@ node *make_glyph_node(charinfo *s, environment *env, int no_error_message = 0)
       if (!no_error_message && s->first_time_not_found()) {
 	unsigned char input_code = s->get_ascii_code();
 	if (input_code != 0) {
-	  if (su_isgraph(input_code))
+	  if (su_cs_is_graph(input_code))
 	    warning(WARN_CHAR, "can't find character `%1'", input_code);
 	  else
 	    warning(WARN_CHAR, "can't find character with input code %1",

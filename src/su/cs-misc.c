@@ -1,4 +1,4 @@
-/*@ su_stpcpy().
+/*@ Implementation of cs.h: anything non-specific, like hashing.
  *
  * Copyright (c) 2017 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
@@ -14,23 +14,53 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#define su_FILE "su__strsup_stpcpy"
+#define su_FILE "su__cs_misc"
+#define su_SOURCE
+#define su_SOURCE_CS_MISC
 
-#include "su/primary.h"
+#include "su/code.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 #include "su/code-in.h"
 
-char *
-su_stpcpy(char *dst, char const *src){
+uz
+su_cs_casehash_cbuf(char const *buf, uz len){
+   char c;
+   uz h;
    NYD_IN;
-   ASSERT_NYD_RET_VAL(dst != NIL, dst);
-   ASSERT_NYD_RET_VAL(src != NIL, dst);
+   ASSERT_NYD_RET(len == 0 || buf != NIL, h = 0);
 
-   while((*dst = *src++) != '\0')
-      ++dst;
+   h = 0;
+   if(len == UZ_MAX)
+      for(; (c = *buf++) != '\0';){
+         c = su_cs_to_lower(c);
+         h = (h * 33) + c;
+      }
+   else
+      while(len-- != 0){
+         c = su_cs_to_lower(*buf++);
+         h = (h * 33) + c;
+      }
    NYD_OU;
-   return dst;
+   return h;
+}
+
+uz
+su_cs_hash_cbuf(char const *buf, uz len){
+   char c;
+   uz h;
+   NYD_IN;
+   ASSERT_NYD_RET(len == 0 || buf != NIL, h = 0);
+
+   h = 0;
+   if(len == UZ_MAX)
+      for(; (c = *buf++) != '\0';)
+         h = (h * 33) + c;
+   else
+      while(len-- != 0) /* XXX Duff's device, unroll 8? */
+         h = (h * 33) + *buf++;
+   NYD_OU;
+   return h;
 }
 
 #include "su/code-ou.h"

@@ -23,7 +23,8 @@
 #include "config.h"
 #include "pic-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
+#include "su/mem.h"
 
 #include "object.h"
 #include "pic.h"
@@ -308,10 +309,10 @@ separator:
 placeless_element:
 	FIGNAME '=' macro_name
 		{
-		  a_delete graphname;
-		  graphname = new char[strlen($3) + 1];
-		  strcpy(graphname, $3);
-		  a_delete $3;
+      uz len = su_cs_len($3) +1;
+		  su_FREE(graphname);
+		  graphname = su_TALLOC(char, len);
+		  su_mem_copy(graphname, $3, len);
 		}
 	|
 	VARIABLE '=' any_expr
@@ -352,7 +353,7 @@ placeless_element:
 	| PRINT print_args
 		{
 		  fprintf(stderr, "%s\n", $2.str);
-		  su_free($2.str);
+		  su_FREE($2.str);
 		  fflush(stderr);
 		}
 	| SH
@@ -462,10 +463,10 @@ print_args:
 		{ $$ = $1; }
 	| print_args print_arg
 		{
-		  $$.str = su_talloc(char, su_strlen($1.str) + su_strlen($2.str) +1);
-		  su_stpcpy(su_stpcpy($$.str, $1.str), $2.str);
-		  su_free($1.str);
-		  su_free($2.str);
+		  $$.str = su_TALLOC(char, su_cs_len($1.str) + su_cs_len($2.str) +1);
+		  su_cs_pcopy(su_cs_pcopy($$.str, $1.str), $2.str);
+		  su_FREE($1.str);
+		  su_FREE($2.str);
 		  if ($1.filename) {
 		    $$.filename = $1.filename;
 		    $$.lineno = $1.lineno;
@@ -480,7 +481,7 @@ print_args:
 print_arg:
 	expr							%prec ','
 		{
-		  $$.str = su_talloc(char, GDIGITS +1);
+		  $$.str = su_TALLOC(char, GDIGITS +1);
 		  snprintf($$.str, GDIGITS +1, "%g", $1);
 		  $$.filename = 0;
 		  $$.lineno = 0;
@@ -489,7 +490,7 @@ print_arg:
 		{ $$ = $1; }
 	| position						%prec ','
 		{
-		  $$.str = su_talloc(char, GDIGITS + 2 + GDIGITS +1);
+		  $$.str = su_TALLOC(char, GDIGITS + 2 + GDIGITS +1);
 		  snprintf($$.str, GDIGITS + 2 + GDIGITS +1, "%g, %g", $1.x, $1.y);
 		  $$.filename = 0;
 		  $$.lineno = 0;
@@ -524,15 +525,15 @@ any_expr:
 text_expr:
 	text EQUALEQUAL text
 		{
-		  $$ = (su_strcmp($1.str, $3.str) == 0);
-		  su_free($1.str);
-		  su_free($3.str);
+		  $$ = !su_cs_cmp($1.str, $3.str);
+		  su_FREE($1.str);
+		  su_FREE($3.str);
 		}
 	| text NOTEQUAL text
 		{
-		  $$ = (su_strcmp($1.str, $3.str) != 0);
-		  su_free($1.str);
-		  su_free($3.str);
+		  $$ = (su_cs_cmp($1.str, $3.str) != 0);
+		  su_FREE($1.str);
+		  su_FREE($3.str);
 		}
 	| text_expr ANDAND text_expr
 		{ $$ = ($1 != 0.0 && $3 != 0.0); }
@@ -690,7 +691,7 @@ object_spec:
 		  $$ = new object_spec(TEXT_OBJECT);
 		  $$->text = new text_item(format_number($3.str, $2),
 					   $3.filename, $3.lineno);
-		  su_free($3.str);
+		  su_FREE($3.str);
 		}
 	| '['
 		{
@@ -952,29 +953,29 @@ object_spec:
 		}
 	| object_spec SHADED text
 		{
-      size_t i;
+      uz i;
 		  $$ = $1;
 		  $$->flags |= (IS_SHADED | IS_FILLED);
-		  $$->shaded = su_talloc(char, i = su_strlen($3.str) +1);
-		  su_memcpy($$->shaded, $3.str, i);
+		  $$->shaded = su_TALLOC(char, i = su_cs_len($3.str) +1);
+		  su_mem_copy($$->shaded, $3.str, i);
 		}
 	| object_spec COLORED text
 		{
-      size_t i;
+      uz i;
 		  $$ = $1;
 		  $$->flags |= (IS_SHADED | IS_OUTLINED | IS_FILLED);
-		  $$->shaded = su_talloc(char, i = su_strlen($3.str) +1);
-		  su_memcpy($$->shaded, $3.str, i);
-		  $$->outlined = su_talloc(char, i = su_strlen($3.str) +1);
-		  su_memcpy($$->outlined, $3.str, i);
+		  $$->shaded = su_TALLOC(char, i = su_cs_len($3.str) +1);
+		  su_mem_copy($$->shaded, $3.str, i);
+		  $$->outlined = su_TALLOC(char, i = su_cs_len($3.str) +1);
+		  su_mem_copy($$->outlined, $3.str, i);
 		}
 	| object_spec OUTLINED text
 		{
-      size_t i;
+      uz i;
 		  $$ = $1;
 		  $$->flags |= IS_OUTLINED;
-		  $$->outlined = su_talloc(char, i = su_strlen($3.str) +1);
-		  su_memcpy($$->outlined, $3.str, i);
+		  $$->outlined = su_TALLOC(char, i = su_cs_len($3.str) +1);
+		  su_mem_copy($$->outlined, $3.str, i);
 		}
 	| object_spec CHOP
 		{
@@ -1114,7 +1115,7 @@ text:
 		  $$.lineno = $3.lineno;
 		  $$.str = do_sprintf($3.str, $4.v, $4.nv);
 		  a_delete $4.v;
-		  su_free($3.str);
+		  su_FREE($3.str);
 		}
 	;
 
@@ -1744,7 +1745,7 @@ void define_variable(const char *name, double val)
   p->x = val;
   p->y = 0.0;
   current_table->define(name, p);
-  if (strcmp(name, "scale") == 0) {
+  if (!su_cs_cmp(name, "scale")) {
     // When the scale changes, reset all scaled pre-defined variables to
     // their default values.
     for (unsigned int i = 0;
@@ -1769,7 +1770,7 @@ void reset(const char *nm)
 {
   for (unsigned int i = 0;
        i < sizeof(defaults_table)/sizeof(defaults_table[0]); i++)
-    if (strcmp(nm, defaults_table[i].name) == 0) {
+    if (su_cs_cmp(nm, defaults_table[i].name)) {
       double val = defaults_table[i].val;
       if (defaults_table[i].scaled) {
 	double scale;
@@ -1894,9 +1895,10 @@ char *do_sprintf(const char *form, const double *v, int nv)
         continue;
       }
       one_format += *form++;
-      for (; *form != '\0' && strchr("#-+ 0123456789.", *form) != 0; form++)
+      for (; *form != '\0' && su_cs_find_c("#-+ 0123456789.", *form) != NIL;
+          form++)
 	one_format += *form;
-      if (*form == '\0' || strchr("eEfgG%", *form) == 0) {
+      if (*form == '\0' || su_cs_find_c("eEfgG%", *form) == NIL) {
 	lex_error("bad sprintf format");
 	result += one_format;
 	result += form;
@@ -1927,7 +1929,7 @@ char *do_sprintf(const char *form, const double *v, int nv)
       result += *form++;
   }
   result += '\0';
-  return su_strdup(result.contents());
+  return su_cs_dup(result.contents());
 }
 
 // s-it2-mode

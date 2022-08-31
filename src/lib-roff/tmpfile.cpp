@@ -25,7 +25,7 @@
 #include "lib.h"
 
 #include "su/io.h"
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include <errno.h>
 #include <stdlib.h>
@@ -85,28 +85,27 @@ temp_init::temp_init()
      )
     // If we didn't find an environment spec fall back to this default.
     tem = DEFAULT_TMPDIR;
-  size_t tem_len = strlen(tem);
+  uz tem_len = su_cs_len(tem);
   const char *tem_end = tem + tem_len - 1;
-  int need_slash = strchr(DIR_SEPS, *tem_end) == NULL ? 1 : 0;
-  char *tem2 = new char[tem_len + need_slash + 1];
-  strcpy(tem2, tem);
+  int need_slash = (su_cs_find_c(DIR_SEPS, *tem_end) == NIL) ? 1 : 0;
+  char *tem2 = su_TALLOC(char, tem_len + need_slash +1);
+  su_mem_copy(tem2, tem, tem_len);
   if (need_slash)
-    strcat(tem2, "/");
+    tem2[tem_len] = '/';
   const char *tem3 = TMPFILE_PREFIX_LONG;
   if (su_file_name_max(tem2) <= 14) {
     tem3 = TMPFILE_PREFIX_SHORT;
     use_short_postfix = 1;
   }
   tmpfile_prefix_len = tem_len + need_slash + strlen(tem3);
-  tmpfile_prefix = new char[tmpfile_prefix_len + 1];
-  strcpy(tmpfile_prefix, tem2);
-  strcat(tmpfile_prefix, tem3);
-  a_delete tem2;
+  tmpfile_prefix = su_TALLOC(char, tmpfile_prefix_len +1);
+  su_cs_pcopy(su_cs_pcopy(tmpfile_prefix, tem2), tem3);
+  su_FREE(tem2);
 }
 
 temp_init::~temp_init()
 {
-  a_delete tmpfile_prefix;
+  su_FREE(tmpfile_prefix);
 }
 
 /*
@@ -123,11 +122,12 @@ static char *xtmptemplate(const char *postfix_long, const char *postfix_short)
   int postlen = 0;
   if (postfix)
     postlen = strlen(postfix);
-  char *templ = new char[tmpfile_prefix_len + postlen + 6 + 1];
-  strcpy(templ, tmpfile_prefix);
+  char *templ = su_TALLOC(char, tmpfile_prefix_len + postlen + 6 + 1);
+  memcpy(templ, tmpfile_prefix, tmpfile_prefix_len);
+  char *cp = &templ[tmpfile_prefix_len];
   if (postlen > 0)
-    strcat(templ, postfix);
-  strcat(templ, "XXXXXX");
+    cp = su_cs_pcopy(templ, postfix);
+  su_cs_pcopy(cp, "XXXXXX");
   return templ;
 }
 
@@ -159,16 +159,17 @@ xtmpfile_list_init::~xtmpfile_list_init()
       error("cannot unlink `%1': %2", x->fname, su_err_doc(errno));
     xtmpfile_list *tmp = x;
     x = x->next;
-    a_delete tmp->fname;
-    delete tmp;
+    su_FREE(tmp->fname);
+    su_DEL(tmp);
   }
 }
 
 static void add_tmp_file(const char *name)
 {
-  char *s = new char[strlen(name)+1];
-  strcpy(s, name);
-  xtmpfile_list *x = new xtmpfile_list(s);
+  uz len = su_cs_len(name) +1;
+  char *s = su_TALLOC(char, len);
+  memcpy(s, name, len);
+  xtmpfile_list *x = su_NEW(xtmpfile_list)(s);
   x->next = xtmpfiles_to_delete;
   xtmpfiles_to_delete = x;
 }
@@ -193,7 +194,7 @@ FILE *xtmpfile(char **namep,
   if (namep)
     *namep = templ;
   else
-    a_delete templ;
+    su_FREE(templ);
   return fp;
 }
 
