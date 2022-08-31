@@ -21,9 +21,12 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "tbl-config.h"
 
-#include "file_case.h"
+#include "su/strsup.h"
+
+#include "file-case.h"
 
 #include "table.h"
 
@@ -1618,7 +1621,7 @@ int main(int argc, char **argv)
     fcp = file_case::muxer(current_filename);
     if (fcp == NULL) {
       assert(strcmp(current_filename, "-"));
-      fatal("can't open `%1': %2", current_filename, strerror(errno));
+      fatal("can't open `%1': %2", current_filename, su_err_doc(errno));
     }
 
     current_lineno = 1;

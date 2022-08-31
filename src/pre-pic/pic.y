@@ -23,6 +23,8 @@
 #include "config.h"
 #include "pic-config.h"
 
+#include "su/strsup.h"
+
 #include "object.h"
 #include "pic.h"
 #include "ptable.h"
@@ -350,7 +352,7 @@ placeless_element:
 	| PRINT print_args
 		{
 		  fprintf(stderr, "%s\n", $2.str);
-		  a_delete $2.str;
+		  su_free($2.str);
 		  fflush(stderr);
 		}
 	| SH
@@ -460,11 +462,10 @@ print_args:
 		{ $$ = $1; }
 	| print_args print_arg
 		{
-		  $$.str = new char[strlen($1.str) + strlen($2.str) + 1];
-		  strcpy($$.str, $1.str);
-		  strcat($$.str, $2.str);
-		  a_delete $1.str;
-		  a_delete $2.str;
+		  $$.str = su_talloc(char, su_strlen($1.str) + su_strlen($2.str) +1);
+		  su_stpcpy(su_stpcpy($$.str, $1.str), $2.str);
+		  su_free($1.str);
+		  su_free($2.str);
 		  if ($1.filename) {
 		    $$.filename = $1.filename;
 		    $$.lineno = $1.lineno;
@@ -479,8 +480,8 @@ print_args:
 print_arg:
 	expr							%prec ','
 		{
-		  $$.str = new char[GDIGITS + 1];
-		  sprintf($$.str, "%g", $1);
+		  $$.str = su_talloc(char, GDIGITS +1);
+		  snprintf($$.str, GDIGITS +1, "%g", $1);
 		  $$.filename = 0;
 		  $$.lineno = 0;
 		}
@@ -488,8 +489,8 @@ print_arg:
 		{ $$ = $1; }
 	| position						%prec ','
 		{
-		  $$.str = new char[GDIGITS + 2 + GDIGITS + 1];
-		  sprintf($$.str, "%g, %g", $1.x, $1.y);
+		  $$.str = su_talloc(char, GDIGITS + 2 + GDIGITS +1);
+		  snprintf($$.str, GDIGITS + 2 + GDIGITS +1, "%g, %g", $1.x, $1.y);
 		  $$.filename = 0;
 		  $$.lineno = 0;
 		}
@@ -523,15 +524,15 @@ any_expr:
 text_expr:
 	text EQUALEQUAL text
 		{
-		  $$ = strcmp($1.str, $3.str) == 0;
-		  a_delete $1.str;
-		  a_delete $3.str;
+		  $$ = (su_strcmp($1.str, $3.str) == 0);
+		  su_free($1.str);
+		  su_free($3.str);
 		}
 	| text NOTEQUAL text
 		{
-		  $$ = strcmp($1.str, $3.str) != 0;
-		  a_delete $1.str;
-		  a_delete $3.str;
+		  $$ = (su_strcmp($1.str, $3.str) != 0);
+		  su_free($1.str);
+		  su_free($3.str);
 		}
 	| text_expr ANDAND text_expr
 		{ $$ = ($1 != 0.0 && $3 != 0.0); }
@@ -689,7 +690,7 @@ object_spec:
 		  $$ = new object_spec(TEXT_OBJECT);
 		  $$->text = new text_item(format_number($3.str, $2),
 					   $3.filename, $3.lineno);
-		  a_delete $3.str;
+		  su_free($3.str);
 		}
 	| '['
 		{
@@ -951,26 +952,29 @@ object_spec:
 		}
 	| object_spec SHADED text
 		{
+      size_t i;
 		  $$ = $1;
 		  $$->flags |= (IS_SHADED | IS_FILLED);
-		  $$->shaded = new char[strlen($3.str)+1];
-		  strcpy($$->shaded, $3.str);
+		  $$->shaded = su_talloc(char, i = su_strlen($3.str) +1);
+		  su_memcpy($$->shaded, $3.str, i);
 		}
 	| object_spec COLORED text
 		{
+      size_t i;
 		  $$ = $1;
 		  $$->flags |= (IS_SHADED | IS_OUTLINED | IS_FILLED);
-		  $$->shaded = new char[strlen($3.str)+1];
-		  strcpy($$->shaded, $3.str);
-		  $$->outlined = new char[strlen($3.str)+1];
-		  strcpy($$->outlined, $3.str);
+		  $$->shaded = su_talloc(char, i = su_strlen($3.str) +1);
+		  su_memcpy($$->shaded, $3.str, i);
+		  $$->outlined = su_talloc(char, i = su_strlen($3.str) +1);
+		  su_memcpy($$->outlined, $3.str, i);
 		}
 	| object_spec OUTLINED text
 		{
+      size_t i;
 		  $$ = $1;
 		  $$->flags |= IS_OUTLINED;
-		  $$->outlined = new char[strlen($3.str)+1];
-		  strcpy($$->outlined, $3.str);
+		  $$->outlined = su_talloc(char, i = su_strlen($3.str) +1);
+		  su_memcpy($$->outlined, $3.str, i);
 		}
 	| object_spec CHOP
 		{
@@ -1110,7 +1114,7 @@ text:
 		  $$.lineno = $3.lineno;
 		  $$.str = do_sprintf($3.str, $4.v, $4.nv);
 		  a_delete $4.v;
-		  a_delete $3.str;
+		  su_free($3.str);
 		}
 	;
 
@@ -1923,7 +1927,7 @@ char *do_sprintf(const char *form, const double *v, int nv)
       result += *form++;
   }
   result += '\0';
-  return strsave(result.contents());
+  return su_strdup(result.contents());
 }
 
 // s-it2-mode

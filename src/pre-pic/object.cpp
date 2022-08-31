@@ -20,7 +20,10 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "pic-config.h"
+
+#include "su/strsup.h"
 
 #include "object.h"
 #include "pic.h"
@@ -33,13 +36,13 @@ line_type::line_type()
 {
 }
 
-output::output() : args(0), desired_height(0.0), desired_width(0.0)
+output::output() : args(NULL), desired_height(0.0), desired_width(0.0)
 {
 }
 
 output::~output()
 {
-  a_delete args;
+  su_free(args);
 }
 
 void output::set_desired_width_height(double wid, double ht)
@@ -50,11 +53,11 @@ void output::set_desired_width_height(double wid, double ht)
 
 void output::set_args(const char *s)
 {
-  a_delete args;
+  su_free(args);
   if (s == 0 || *s == '\0')
     args = 0;
   else
-    args = strsave(s);
+    args = su_strdup(s);
 }
 
 int output::supports_filled_polygons()
@@ -618,12 +621,12 @@ void graphic_object::set_yslanted(double)
 
 void graphic_object::set_fill_color(char *c)
 {
-  color_fill = strsave(c);
+  color_fill = su_strdup(c);
 }
 
 void graphic_object::set_outline_color(char *c)
 {
-  outline_color = strsave(c);
+  outline_color = su_strdup(c);
 }
 
 char *graphic_object::get_outline_color()
@@ -765,7 +768,7 @@ void closed_object::set_yslanted(double s)
 
 void closed_object::set_fill_color(char *f)
 {
-  color_fill = strsave(f);
+  color_fill = su_strdup(f);
 }
 
 class box_object
@@ -2002,7 +2005,7 @@ string_list::string_list(char *s)
 
 string_list::~string_list()
 {
-  a_delete str;
+  su_free(str);
 }
 
 /* A path is used to hold the argument to the `with' attribute.  For

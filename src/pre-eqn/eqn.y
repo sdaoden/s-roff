@@ -21,13 +21,15 @@
 
 %{
 #include "config.h"
+#include "lib.h"
 #include "eqn-config.h"
+
+#include "su/strsup.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "lib.h"
 
 #include "box.h"
 
@@ -238,11 +240,11 @@ simple:
 	| simple UACCENT simple
 		{ $$ = make_uaccent_box($1, $3); }
 	| ROMAN simple
-		{ $$ = new font_box(strsave(get_grfont()), $2); }
+		{ $$ = new font_box(su_strdup(get_grfont()), $2); }
 	| BOLD simple
-		{ $$ = new font_box(strsave(get_gbfont()), $2); }
+		{ $$ = new font_box(su_strdup(get_gbfont()), $2); }
 	| ITALIC simple
-		{ $$ = new font_box(strsave(get_gfont()), $2); }
+		{ $$ = new font_box(su_strdup(get_gfont()), $2); }
 	| FAT simple
 		{ $$ = new fat_box($2); }
 	| FONT text simple
@@ -271,7 +273,7 @@ number:
 		  int n;
 		  if (sscanf($1, "%d", &n) == 1)
 		    $$ = n;
-		  a_delete $1;
+		  su_free($1);
 		}
 	;
 
@@ -331,9 +333,9 @@ delim:
 	text
 		{ $$ = $1; }
 	| '{'
-		{ $$ = strsave("{"); }
+		{ $$ = su_strdup("{"); }
 	| '}'
-		{ $$ = strsave("}"); }
+		{ $$ = su_strdup("}"); }
 	;
 
 %%

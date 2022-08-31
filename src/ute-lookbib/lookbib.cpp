@@ -20,7 +20,10 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "lookbib-config.h"
+
+#include "su/strsup.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -29,7 +32,6 @@
 #include "cset.h"
 #include "errarg.h"
 #include "error.h"
-#include "lib.h"
 #include "nonposix.h"
 #include "posix.h"
 #include "refid.h"
@@ -120,7 +122,7 @@ int main(int argc, char **argv)
     int count;
     for (count = 0; iter.next(&start, &len); count++) {
       if (fwrite(start, 1, len, stdout) != (size_t)len)
-	fatal("write error on stdout: %1", strerror(errno));
+	fatal("write error on stdout: %1", su_err_doc(errno));
       // Can happen for last reference in file.
       if (start[len - 1] != '\n')
 	putchar('\n');

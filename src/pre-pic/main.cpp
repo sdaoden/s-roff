@@ -21,9 +21,12 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "pic-config.h"
 
-#include "file_case.h"
+#include "su/strsup.h"
+
+#include "file-case.h"
 
 #include "pic.h"
 
@@ -230,8 +233,8 @@ void do_picture(file_case *fcp)
 {
   flyback_flag = 0;
   int c;
-  a_delete graphname;
-  graphname = strsave("graph");		// default picture name in TeX mode
+  su_free(graphname);
+  graphname = su_strdup("graph"); // default picture name in TeX mode
   while ((c = fcp->get_c()) == ' ')
     ;
   if (c == '<') {
@@ -256,7 +259,7 @@ void do_picture(file_case *fcp)
       const char *old_filename = current_filename;
       int old_lineno = current_lineno;
       // filenames must be permanent
-      do_file(strsave(filename.contents()));
+      do_file(su_strdup(filename.contents()));
       current_filename = old_filename;
       current_lineno = old_lineno;
     }
@@ -313,7 +316,7 @@ do_file(char const *filename)
   if ((fcp = file_case::muxer(filename)) == NULL) {
     assert(strcmp(filename, "-"));
     delete out;
-    fatal("can't open `%1': %2", filename, strerror(errno));
+    fatal("can't open `%1': %2", filename, su_err_doc(errno));
   }
 
   out->set_location(filename, 1);
@@ -466,7 +469,7 @@ void do_whole_file(const char *filename)
   file_case *fcp;
   if ((fcp = file_case::muxer(filename)) == NULL) {
     assert(strcmp(filename, "-"));
-    fatal("can't open `%1': %2", filename, strerror(errno));
+    fatal("can't open `%1': %2", filename, su_err_doc(errno));
   }
 
   lex_init(new file_input(fcp, filename));

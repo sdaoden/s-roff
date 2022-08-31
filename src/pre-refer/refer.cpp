@@ -21,9 +21,12 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "refer-config.h"
 
-#include "file_case.h"
+#include "su/strsup.h"
+
+#include "file-case.h"
 #include "refid.h"
 #include "search.h"
 
@@ -428,7 +431,7 @@ static void do_file(const char *filename)
   file_case *fcp;
   if ((fcp = file_case::muxer(filename)) == NULL) {
     assert(strcmp(filename, "-"));
-    error("can't open `%1': %2", filename, strerror(errno));
+    error("can't open `%1': %2", filename, su_err_doc(errno));
     return;
   }
 
@@ -1101,7 +1104,7 @@ void do_bib(const char *filename)
     errno = 0;
     fp = fopen(filename, "r");
     if (fp == 0) {
-      error("can't open `%1': %2", filename, strerror(errno));
+      error("can't open `%1': %2", filename, su_err_doc(errno));
       return;
     }
     current_filename = filename;

@@ -21,9 +21,12 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "refer-config.h"
 
-#include "file_case.h"
+#include "su/strsup.h"
+
+#include "file-case.h"
 #include "refid.h"
 #include "search.h"
 
@@ -53,7 +56,7 @@ public:
 };
 
 input_item::input_item(string &s, const char *fn, int ln)
-: filename(strsave(fn)), first_lineno(ln)
+: filename(su_strdup(fn)), first_lineno(ln)
 {
   buffer.move(s);
   ptr = buffer.contents();
@@ -62,7 +65,7 @@ input_item::input_item(string &s, const char *fn, int ln)
 
 input_item::~input_item()
 {
-  a_delete filename;
+  su_free(filename);
 }
 
 inline int input_item::peek_char()
@@ -161,7 +164,7 @@ void input_stack::push_file(const char *fn)
   file_case *fcp = file_case::muxer(fn);
   if (fcp == NULL) {
     assert(strcmp(fn, "-"));
-    error("can't open `%1': %2", fn, strerror(errno));
+    error("can't open `%1': %2", fn, su_err_doc(errno));
     return;
   }
   if (fn[0] == '-' && fn[1] == '\0')

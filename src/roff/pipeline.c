@@ -21,7 +21,10 @@
  */
 
 #include "config.h"
+#include "lib.h"
 #include "roff-config.h"
+
+#include "su/strsup.h"
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -80,8 +83,6 @@ static const char *sh = "sh";
 static const char *cmd = "cmd";
 static const char *command = "command";
 
-extern int strcasecmp(const char *, const char *);
-
 char *sbasename(const char *path) // TODO lib.h
 {
   char *base;
@@ -93,8 +94,8 @@ char *sbasename(const char *path) // TODO lib.h
       || (p2 = strrchr(p1, ':')))
     p1 = p2 + 1;
   if ((p2 = strrchr(p1, '.'))
-      && ((strcasecmp(p2, ".exe") == 0)
-	  || (strcasecmp(p2, ".com") == 0)))
+      && ((su_strcasecmp(p2, ".exe") == 0)
+	  || (su_strcasecmp(p2, ".com") == 0)))
     ;
   else
     p2 = p1 + strlen(p1);
@@ -139,7 +140,8 @@ const char *system_shell_dash_c(void)
   shell_name = system_shell_name();
 
   /* Assume that if the shell name ends in `sh', it's Unixy */
-  if (strcasecmp(shell_name + strlen(shell_name) - strlen("sh"), "sh") == 0)
+  if (su_strcasecmp(shell_name + su_strlen(shell_name) -
+	  su_strlen("sh"), "sh") == 0)
     dash_c = "-c";
   else
     dash_c = "/c";
@@ -159,7 +161,7 @@ int is_system_shell(const char *prog)
   this_prog = sbasename(prog);
   system_shell = system_shell_name();
 
-  result = strcasecmp(this_prog, system_shell) == 0;
+  result = (su_strcasecmp(this_prog, system_shell) == 0);
 
   free(this_prog);
   free(system_shell);
@@ -274,7 +276,7 @@ int run_pipeline(int ncommands, char ***commands, int no_pipe)
     }
     if ((pid = spawnvp(_P_NOWAIT, commands[i][0], commands[i])) < 0) {
       error("couldn't exec %1: %2",
-	    commands[i][0], strerror(errno), (char *)0);
+	    commands[i][0], su_err_doc(errno), (char *)0);
       fflush(stderr);			/* just in case error() doesn't */
       _exit(EXEC_FAILED_EXIT_STATUS);
     }
@@ -387,7 +389,7 @@ int run_pipeline(int ncommands, char ***commands, int no_pipe)
     }
     else if (exit_status < 0) {
       error("couldn't exec %1: %2",
-	    commands[i][0], strerror(errno), (char *)0);
+	    commands[i][0], su_err_doc(errno), (char *)0);
       fflush(stderr);			/* just in case error() doesn't */
       ret |= 4;
     }
@@ -453,7 +455,7 @@ int run_pipeline(int ncommands, char ***commands, int no_pipe)
       }
       execvp(commands[i][0], commands[i]);
       error("couldn't exec %1: %2",
-	    commands[i][0], strerror(errno), (char *)0);
+	    commands[i][0], su_err_doc(errno), (char *)0);
       fflush(stderr);			/* just in case error() doesn't */
       _exit(EXEC_FAILED_EXIT_STATUS);
     }
@@ -529,7 +531,7 @@ int run_pipeline(int ncommands, char ***commands, int no_pipe)
 
 static void sys_fatal(const char *s)
 {
-  c_fatal("%1: %2", s, strerror(errno), (char *)0);
+  c_fatal("%1: %2", s, su_err_doc(errno), (char *)0);
 }
 
 static const char *xstrsignal(int n)
