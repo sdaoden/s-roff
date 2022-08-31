@@ -3,10 +3,10 @@
 .\"@ mdocmx(7) extends the mdoc(7) semantic markup language by references,
 .\"@ allowing mdoc(7) to create anchors and table of contents.
 .\"
-.\" Written 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+.\" Written 2014 - 2022 Steffen Nurpmeso <steffen@sdaoden.eu>.
 .\" Public Domain
 .
-.Dd February 28, 2017
+.Dd Sep 03, 2022
 .Dt MDOCMX 1
 .Os
 .Mx -enable
@@ -67,18 +67,24 @@ subsections will always be displayed in compact format).
 .It Fl t
 Replace any
 .Ql .Mx -toc
-command line in the document with a table of content that consists of
-section headers only.
+command line in the document with a resolved table of content that
+consists of section headers only.
+The result does not require further
+.Xr mdocmx 7
+processing (but which will create references).
 .
 .Mx
 .It Fl T Ar \&Sh | sh | \&Ss | ss
 Replace any
 .Ql .Mx -toc
-command line in the document with a table of contents that either
-consists of only section headers
-.Pf ( Sq \&Sh Ns )
+command line in the document with a resolved table of contents that
+either consists of only section headers
+.Pf ( Sq \&Sh Ns ) ,
 or the full tree of headers and their subsections
 .Pf ( Sq \&Ss Ns ) .
+The result does not require further
+.Xr mdocmx 7
+processing (but which will create references).
 .
 .Mx
 .It Fl v
@@ -134,13 +140,6 @@ and
 .Xr troff 1 ,
 .Xr mdoc 7 ,
 .Xr mdocmx 7
-.
-.
-.Sh HISTORY
-.
-The
-.Nm
-environment appeared in 2014.
 .
 .
 .Sh AUTHORS

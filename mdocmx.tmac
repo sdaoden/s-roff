@@ -3,7 +3,7 @@
 .\"@ allowing mdoc(7) to create anchors and table of contents.
 .\"@ Note this file will create warnings for using .\" inside .eo ..  .ec.
 .\"
-.\" Written 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+.\" Written 2014 - 2022 Steffen Nurpmeso <steffen@sdaoden.eu>.
 .\" Public Domain
 .eo
 .
@@ -13,24 +13,20 @@
 .\" Only loaded upon request, yet we need stub dummies otherwise:
 .\" - .Mx is the user interface
 .\" - .mx-mac-(enter|add-arg|sequence|leave) are the call-in
-.\"   hooks for mdoc(7) macros (as long as mdoc(7) itself isn't
+.\"   hooks for mdoc(7) macros (as long as mdoc(7) itself is not
 .\"   rewritten to use a yet non-existing
 .\"     .doc-output-node TYPE [DATA]"
 .\"   to produce output etc. instead of directly doing so.
 .\"   (Of course this only if native macros use _those_ directly..)
 .\" Notes:
-.\" - mdocmx(7) tests \n[doc-in-synopsis-section] (less doc-).
+.\" - mdocmx(7) tests \n[doc-in-synopsis-section].
 .\" - It tests \n[doc-arg-limit] and uses doc-macro-name and
-.\"   doc-reset-args if not 0 (names less doc-, of course).
-.\" - It may use \*[doc-document-title] and \*[doc-section]
-.\"   (all less doc-).
+.\"   doc-reset-args if not 0.
+.\" - It may use \*[doc-document-title] and \*[doc-section].
 .\" - It may temporarily replace .Nd request.
 .de Mx
-.  ie !'\V[MDOCMX_ENABLE]'' \{\
-.    mso mdocmx.tmac
-.    Mx \$@
-.  \}
-.  el .als Mx mx-mac-enter
+.  mso mdocmx.tmac
+.  Mx \\$@
 ..
 .\" Note these may not .als each other or over-defining will fail!
 .de mx-mac-enter
@@ -43,14 +39,14 @@
 ..
 .eo
 .
-.\"@ User strings:
-.\" mx-debug
-.\" mx-disable
-.\" mx-toc-disable
-.\" mx-toc-emerged
-.\" mx-toc-force - special value: "tree"
+.\"@ User strings (may be bitmixed in $MDOCMX_FLAGS):
+.\" mx-debug (2)
+.\" mx-disable (4)
+.\" mx-toc-disable (8)
+.\" mx-toc-emerged (16)
+.\" mx-toc-force (32) - special value: "tree" (64)
 .if !d mx-toc-name .ds mx-toc-name TABLE OF CONTENTS
-.\" mx-toc-numbered
+.\" mx-toc-numbered (128)
 .
 .\" --  >8  --  8<  --
 .
@@ -71,10 +67,9 @@
 . if d mx:enabled .if !d mx:gogogo .return
 .
 . \" Mx is a mdoc(7) extension and may not be used by noone else
-. \" mdoc(7) doc-arg-limit, doc-macro-name and doc-reset-args are stripped
-. if \n[arg-limit] \{\
-.   if !'Mx'\*[macro-name]' \{\
-.     mx:perr ".Mx not callable by other macros (like \*[macro-name])"
+. if \n[doc-arg-limit] \{\
+.   if !'Mx'\*[doc-macro-name]' \{\
+.     mx:perr ".Mx not callable by other macros (like \*[doc-macro-name])"
 .     reset-args
 .     rm mx:gogogo
 .     return
@@ -106,11 +101,28 @@
 .   \" If the string "mx-disable" is defined, suppress mdocmx(7)
 .   if d mx-disable \
 .     return
-.   \" It's not nice, but for security reasons all parts of mdocmx(7)
-.   \" (mdoc(7), grotty(1), less(1)) won't enable mdocmx(7) unless the
-.   \" environment variable MDOCMX_ENABLE is set with a value.  We, too
-.   if '\V[MDOCMX_ENABLE]'' \
-.     return
+.
+.   \" Via the $MDOCMX_FLAGS environment?
+.   ds mx#s1 \V[MDOCMX_FLAGS]
+.   if \B'\*[mx#s1]' \{\
+.     nr mx#n1 \*[mx#s1]
+.     if (\n[mx#n1] / 128) .ds mx-toc-numbered
+.     nr mx#n1 (\n[mx#n1] % 128)
+.     if (\n[mx#n1] / 64) .ds mx-toc-force tree
+.     nr mx#n1 (\n[mx#n1] % 64)
+.     if (\n[mx#n1] / 32) .ds mx-toc-force
+.     nr mx#n1 (\n[mx#n1] % 32)
+.     if (\n[mx#n1] / 16) .ds mx-toc-emerged
+.     nr mx#n1 (\n[mx#n1] % 16)
+.     if (\n[mx#n1] / 8) .ds mx-toc-disable
+.     nr mx#n1 (\n[mx#n1] % 8)
+.     if (\n[mx#n1] / 4) \{\
+.       ds mx-disable
+.       return
+.     \}
+.     nr mx#n1 (\n[mx#n1] % 4)
+.     if ((\n[mx#n1] / 2) .ds mx-debug
+.   \}
 .   ds mx:gogogo
 .
 .   \" Link output interface: see "Output formats" code block near EOF
@@ -240,7 +252,7 @@
 .     \}
 .     ds mx#s3
 .   \}
-.   \" If we wouldn't produce a TOC check mx-toc-force
+.   \" If we would not produce a TOC check mx-toc-force
 .   if d mx#s3 .if d mx-toc-force \{\
 .     rm mx#s3
 .     ie '\*[mx-toc-force]'tree' \
@@ -265,7 +277,7 @@
 .   ds mx#s3 mx:\*[mx#s1]-\n[mx:\*[mx#s1]-no]
 .   \" mdocmx(1) cannot expand \*[STRING]s, so cleanup the expansion
 .   mx:cleanup-string "\$3"
-.   \" xxx don't check mx:cleanstop, it's an anchor, not a reference
+.   \" xxx do not check mx:cleanstop, it is an anchor, not a reference
 .   ds \*[mx#s3]-arg \*[mx:cleans]
 .   if !'\*[mx#s2]'' \
 .     ds \*[mx#s3]-rel \$4
@@ -289,7 +301,7 @@
 . \}
 .
 . \" VII. .Mx stack handling
-. \"if \n[in-synopsis-section] \{\
+. \"if \n[doc-in-synopsis-section] \{\
 . \"  mx:perr "in SYNOPSIS .Mx only supports -enable or -toc"
 . \"  return
 . \"\}
@@ -320,7 +332,7 @@
 .   while (\n[.$] > 1) \{\
 .     shift
 .     mx:cleanup-string "\$1"
-.     \" xxx don't check mx:cleanstop, it's an anchor, not a reference
+.     \" xxx do not check mx:cleanstop, it is an anchor, not a reference
 .     ie d mx#s1 \
 .       ds mx#s1 \*[mx#s1] \*[mx:cleans]
 .     el \
@@ -345,7 +357,7 @@
 .\" And without "textof" or "stringof" it is not gracefully possible
 .\" to get at the arguments since many macros inject format
 .\" information into them, leave alone user formatting stuff.
-.\" The latter can't be helped, but the former usually can be
+.\" The latter cannot be helped, but the former usually can be
 .\" prevented by collecting the argument *before* the formatting
 .\" injection occurs: to support this, mx-mac-enter may be
 .\" given those arguments, too, in which case any mx-mac-add-arg
@@ -369,7 +381,7 @@
 .ds mx:mac-needs-argsplit-Fn
 .\" A "hashmap" of all macros for which no error should be reported if
 .\" no KEY is seen: e.g., .Fl can be used without arguments, which causes
-.\" "-" to be printed, but it won't be parsed by us.  (Obviously neither
+.\" "-" to be printed, but it will not be parsed by us.  (Obviously neither
 .\" anchors nor references to these default values can be generated.)
 .ds mx:mac-empty-key-ok-Fl
 .
@@ -399,7 +411,7 @@
 .   return
 . \}
 . ds mx:arn\n[mx:ard] \*[mx#s1]
-. \" Some macros don't have their own index but are warped to another
+. \" Some macros do not have their own index but are warped to another
 . \" macro's index - our .Mx stack however uses the real name!
 . if !'\$1'\*[mx#s1]' \
 .   ds mx:arw\n[mx:ard] \$1
@@ -449,7 +461,7 @@
 .\" macro and immediately reopen the very same macro.
 .\" GNU mdoc(7) seems to do it like that for e.g. .Va, but not for .Fn.
 .\" But this is beyond our level of understanding, if a new macro is
-.\" invoked it'll start a new mx-mac-enter cycle, which will truly
+.\" invoked it will start a new mx-mac-enter cycle, which will truly
 .\" finalize the current macro.
 .de mx-mac-sequence
 . if !d mx:gogogo \
@@ -498,7 +510,7 @@
 .   \}
 . \}
 .
-. \" .Xr and .Sx are special: they can't create anchors, only references
+. \" .Xr and .Sx are special: they cannot create anchors, only references
 . ds mx#s1 mx:ara\n[mx:ard]
 . if !d \*[mx#s1] \
 .   ds \*[mx#s1]
@@ -595,8 +607,7 @@
 .   \"
 . el \
 .   return
-. \" doc-in-synopsis, but doc- prefix is stripped away..
-. if !\n[in-synopsis-section] \
+. if !\n[doc-in-synopsis-section] \
 .   return
 . rm mx:refok
 ..
@@ -645,7 +656,7 @@
 . El
 ..
 .
-.\" "Clean up", i.e., vaporise a string down to what we'll use as
+.\" "Clean up", i.e., vaporise a string down to what we will use as
 .\" identifiers for anchors and references.
 .\" Note: must be in sync with mdocmx(1)!
 .de mx:cleanup-string
@@ -653,7 +664,7 @@
 . rm mx:cleanstop
 .
 . \" Because of the quirkiness of .substring, prevent endless loops (e.g. \!)
-. \" Also don't mind mysterious .substring args, _that_ works for GNU troff!
+. \" Also do not mind mysterious .substring args, _that_ works for GNU troff!
 . nr mx#c-s#n 0
 . while (1) \{\
 .   ds mx#c-s#s \*[mx:cleans]
@@ -751,7 +762,7 @@
 . \}
 . if ''\$2' \{\
 .   \" Though pretty useless for a reference, the manual section
-.   \" is indeed optional, so don't complain if it is missing!
+.   \" is indeed optional, so do not complain if it is missing!
 .   \"mx:perr .Xr: missing manual section, something is wrong
 .   rm mx#mlx
 . \}
@@ -849,7 +860,7 @@
 .         mx:dump-anchor "\$1" "\*[mx#s2]" "\$2"
 .         \"mx:dump-ref "\*[mx#s2]"
 .       \}
-.       \" Anchor doesn't yet exist, but not defined - print a reference
+.       \" Anchor does not yet exist, but not defined - print a reference
 .       el \{ .ie !d mx#anchor \{\
 .         if d mx:refok \
 .           mx:dump-ref "\*[mx#s2]"
@@ -896,14 +907,14 @@
 .\" mx:dump-init-DEVICE
 .\"   Called once upon startup to set anything up.
 .\" mx:dump-xr
-.\"   Dump a .Xr if possible.
+.\"   Dump a .Xr if possible (based upon ID)
 .\"   \$1: unique sequence number (of "anchor position")
-.\"   \$2: manual reference
-.\"   \$3: manual section
+.\"   \$2: manual section
+.\"   \$3: manual reference
 .\" mx:dump-anchor
 .\"   Create a document-internal anchor.
-.\"   \$1: unique sequence number (of anchor)
-.\"   \$2: index (macro) name (Sh, Ss, Ic..)
+.\"   \$1: index (macro) name (Sh, Ss, Ic..)
+.\"   \$2: unique sequence number (of anchor)
 .\"   \$3: index key (full text)
 .\" mx:dump-ref
 .\"   Show the reference-number of an anchor:
@@ -912,26 +923,27 @@
 .\" TTY
 .
 .de mx:dump-init-tty
-. als mx:dump-xr      mx:dump-xr-tty
-. als mx:dump-anchor  mx:dump-anchor-tty
-. als mx:dump-ref     mx:dump-ref-tty
+. als mx:dump-xr      mx:dump-xr-tty-osc8
+. als mx:dump-anchor  mx:dump-anchor-tty-osc8
+. als mx:dump-ref     mx:dump-ref-tty-osc8
 ..
 .
-.de mx:dump-xr-tty
-\%\&\fR\X'tty: mdocmx xr \$1 \$2 \$3'\m[blue][\$1]\m[]\fP\&\c
+.de mx:dump-xr-tty-osc8
+\%\&\fR\m[blue]\
+[\X'tty: link man:\$3(\$2) id=\$1'\$1\X'tty: link']\m[]\fP\&\c
 ..
 .
-.de mx:dump-anchor-tty
+.de mx:dump-anchor-tty-osc8
 . ie !d mx-debug \{\
-\%\&\X'tty: mdocmx \$1 \$2'\&\c
+\%\&\X'tty: link # id=\$2'\X'tty: link'\&\c
 . \}
 . el \{\
-\%\&\fR\X'tty: mdocmx \$1 \$2'\m[blue]#\$2#\m[]\fP\&\c
+\%\&\fR\m[blue]#\X'tty: link # id=\$2'\$2\X'tty: link'#\m[]\fP\&\c
 . \}
 ..
 .
-.de mx:dump-ref-tty
-\%\&\fR\m[blue][\$1]\m[]\fP\&\c
+.de mx:dump-ref-tty-osc8
+\%\&\fR\m[blue][\X'tty: link #\$1'\$1\X'tty: link']\m[]\fP\&\c
 ..
 .
 .\" HTML
@@ -963,9 +975,9 @@
 .de mx:dump-init-pdf
 . mso pdfmark.tmac
 . \" Try to fill in some stuff from mdoc(7) macros
-. ds mx#s1 \*[document-title]
-. if !"\*[section]"Null" \
-.   as mx#s1 (\*[section])
+. ds mx#s1 \*[doc-document-title]
+. if !"\*[doc-section]"" \
+.   as mx#s1 (\*[doc-section])
 . if !'\*[mx#s1]'' \
 .   pdfinfo /Title "\*[mx#s1]"
 . rm mx#s1

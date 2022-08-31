@@ -3,10 +3,10 @@
 .\"@ mdocmx(7) extends the mdoc(7) semantic markup language by references,
 .\"@ allowing mdoc(7) to create anchors and table of contents.
 .\"
-.\" Written 2014 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+.\" Written 2014 - 2022 Steffen Nurpmeso <steffen@sdaoden.eu>.
 .\" Public Domain
 .
-.Dd April 10, 2018
+.Dd Sep 03, 2022
 .Dt MDOCMX 7
 .Os
 .Mx -enable
@@ -69,15 +69,6 @@ semantic markup language that is used for
 .Ux
 manual pages by defining a single new multiplexer command:
 .Nm .
-A precondition for enabling this extension in all involved parts of
-the manual page formatting system, including the
-.Ev PAGER
-used to view the formatted output, is to set the environment variable
-.Ev MDOCMX_ENABLE
-to a non-empty value (the value is necessary to make the variable
-perceivable on the macro level, i.e., to overcome a deficiency of the
-.Xr troff 1
-command set).
 .
 .Pp
 The
@@ -133,7 +124,6 @@ argument or by defining the string
 as in
 .
 .Bd -literal -offset indent
-$ MDOCMX_ENABLE=anyval; export MDOCMX_ENABLE
 $ < xy.z mdocmx.sh | troff -Tutf8 -mdoc -a -dmx-disable=1
 .Ed
 .
@@ -383,11 +373,13 @@ strings given on the command line (via option
 .Ql Fl d Ns )
 have to be given an argument in order to be perceived on the macro
 level.
+Alternatively the shown numbers can be bitmixed via
+.Ev MDOCMX_FLAGS .
 .
 .Bl -tag -width ".It Dv _docmx-_oc-_merged"
 .Mx
 .It Dv mx-debug
-If defined
+(2) If defined
 .Xr mdocmx 7
 macros will offer some verbosity.
 In addition not only references will produce visual output, but also
@@ -399,26 +391,26 @@ If this is set to a filename then the list of anchors is dumped to it.
 .
 .Mx
 .It Dv mx-disable
-Has the same effect as
+(4) Has the same effect as
 .Ql Nm Fl disable .
 .
 .Mx
 .It Dv mx-toc-disable
-Forcefully turn off any table of contents creation.
+(8) Forcefully turn off any table of contents creation.
 .
 .Mx
 .It Dv mx-toc-emerged
-Normally compact display is used for the table of contents, but when
+(16) Normally compact display is used for the table of contents, but when
 this string is set an emerged display is used for the first level that
 lists the headings.
 .
 .Mx
 .It Dv mx-toc-force
-Defining this string can be used to enforce the creation of a table of
+(32) Defining this string can be used to enforce the creation of a table of
 contents as specified, even if the documents
 .Ql Fl toc
 configuration would not create one for the targeted output device.
-A flat table of contents will be generated unless the string value is
+A flat table of contents will be generated unless the value is (64)
 .Ql tree .
 .
 .Mx
@@ -435,7 +427,7 @@ of this string to ensure compatibility with, at least,
 .
 .Mx
 .It Dv mx-toc-numbered
-If defined the first level of the table of contents will be numbered.
+(128) If defined the first level of the table of contents will be numbered.
 .El
 .
 .
@@ -483,18 +475,22 @@ belong to, therefore creating the possibility to generate TOCs.
 .
 .Sh ENVIRONMENT
 .
-Only if the environment variable
+The environment variable
 .Mx
-.Ql Ev MDOCMX_ENABLE
-is set to a non-empty value will the
-.Xr mdocmx 7
-macros generate the necessary information that the chosen output
-device of
-.Xr troff 1
-can, sufficient support provided, use to generate table of contents,
-internal as well as external references.
-All parts of the processing pipeline should be expected to require this
-environment variable to be set (to a non-empty value).
+.Ev MDOCMX_FLAGS
+may be set to a bitmix of the
+.Sx "Strings that affect mdocmx" .
+So for example
+.Ql export MDOCMX_FLAGS=4
+disables
+.Xr mdocmx 7 ,
+whereas
+.Ql export MDOCMX_FLAGS=$((64 | 16))
+sets
+.Dv mx-toc-force
+to produce a tree view of the table of contents, and also
+.Dv mx-toc-emerged
+to make it appear less compact.
 .
 .
 .Sh EXAMPLES
@@ -571,7 +567,7 @@ Using the
 .Xr mdocmx 7
 extension in
 .Xr mdoc 7
-manual pages should not cause any compatibility problems in sofar as
+manual pages should not cause any compatibility problems in so far as
 all tested environments silently ignore the unknown commands by default.
 Because of this, and due to the nature of this extension, an
 interesting, backward as well as forward compatible approach to use
@@ -596,6 +592,7 @@ on developer machines and instead distribute the resulting documents.
 The
 .Nm
 environment appeared in 2014.
+It was rewritten to use OSC 8 in 2022.
 .
 .
 .Sh AUTHORS
@@ -627,9 +624,9 @@ preprocessor on its standard error I/O channel by using the
 command line flag in order to get a notion on what is going on:
 .
 .Bd -literal -offset indent
-$ MDOCMX_ENABLE=1; export MDOCMX_ENABLE
 $ mdocmx.sh -vv < mdocmx.7 2> stderr.txt | \e
-  groff -Tutf8 -mdoc -dmx-toc-force=tree -dmx-debug=1 | less
+  groff -Tutf8 -mdoc -dmx-toc-force=tree -dmx-debug=1 | \e
+  less -R
 $ cat stderr.txt
 .Ed
 .

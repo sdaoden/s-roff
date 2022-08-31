@@ -1,0 +1,54 @@
+mdocmx(7) extension for [groff_]mdoc(7)
+=======================================
+
+ The mdoc(7) manual semantic markup language does not support any kind
+ of anchoring: whereas you can exactly state what `x' is whenever you
+ refer to it --- variable, function etc. ---, you have no option to
+ define the exact place where `x' is itself defined, or whether it is
+ at all defined in a given manual page.
+
+ Also, whereas mdoc(7) does support differentiation in between anchors
+ and references for headlines (`.Sh' / `.Ss' and `.Sx', respectively),
+ referencing a headline is only of notational interest, the reference
+ is in no way "active", never.
+
+ mdocmx(7) extends mdoc(7) by adding all the missing functionality and
+ more, like table of contents, and including (output device dependent)
+ referencable external manuals, with a single new multiplexer command:
+ `.Mx'.
+
+ Installations without mdocmx(7) support will ignore this request, the
+ documents will render as if it would not have been used.
+
+ How does it work?
+ -----------------
+
+ Non-multipass troff(1) implementations are not capable to generate
+ forward references to anchors not yet defined, therefore the
+ preprocessor mdocmx(1), implemented in portable sh(1) and awk(1),
+ is necessary.  However, a nice property of mdocmx(7) is that it
+ "recognizes" its state, therefore preprocessed manuals can also
+ be distributed.
+
+ For output devices like HTML or PDF mdocmx(7) will use the
+ corresponding and well-known support troff(1) macro packages
+ to generate anchor and reference information.  For terminal
+ (typewriter-like) devices groff(1) 1.23 and later comes with the new
+ OSC 8 production command \X'tty: link' for grotty(1).  OSC 8 escape
+ sequences are understood by more and more terminals and console
+ programs, like less(1) (since version 566).  With the OSC 8 search
+ patch included (see enhancement request), less(1) could even provide
+ fully interactive internal and external references, like a web browser.
+
+ Note
+  Due to the way that mdoc(7) is implemented section and subsection
+  headers may not contain macro recursions, mdocmx(7) cannot deal
+  with this.  The next mdocmx(7) iteration will generate warnings for
+  such use cases (at least in the preprocess stage); just as stated in
+  the (first) enhancement request mdoc(7) itself has to be rewritten
+  in order to overcome this restriction.
+
+ mdocmx was written by Steffen Nurpmeso <steffen@sdaoden.eu> in 2014,
+ fixed in 2015, and rewritten for OSC 8 in 2022.
+
+# s-ts-mode
