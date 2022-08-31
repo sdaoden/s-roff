@@ -23,7 +23,7 @@
 #include "config.h"
 #include "lib.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include <assert.h>
 #include <math.h>
@@ -96,7 +96,7 @@ text_file::text_file(file_case *fcp)
 }
 
 text_file::~text_file(void){
-  su_free(buf);
+  su_FREE(buf);
   if(fcp != NULL)
     su_del(fcp);
 }
@@ -106,7 +106,7 @@ int text_file::next()
   if (fcp == NULL)
     return 0;
   if (buf == 0) {
-    buf = su_talloc(char, 128);
+    buf = su_TALLOC(char, 128);
     size = 128;
   }
   for (;;) {
@@ -120,9 +120,9 @@ int text_file::next()
       else {
 	if (i + 1 >= size) {
 	  char *old_buf = buf;
-	  buf = su_talloc(char, size*2);
+	  buf = su_TALLOC(char, size*2);
 	  memcpy(buf, old_buf, size);
-    su_free(old_buf);
+    su_FREE(old_buf);
 	  size *= 2;
 	}
 	buf[i++] = c;
@@ -135,7 +135,7 @@ int text_file::next()
     buf[i] = '\0';
     lineno++;
     char *ptr = buf;
-    while (su_isspace(*ptr))
+    while (su_cs_is_space(*ptr))
       ptr++;
     if (*ptr != 0 && (!skip_comments || *ptr != '#'))
       return 1;
@@ -156,7 +156,7 @@ font::font(const char *s)
 : ligatures(0), kern_hash_table(0), space_width(0), special(0),
   ch_index(0), nindices(0), ch(0), ch_used(0), ch_size(0), widths_cache(0)
 {
-  name = su_strdup(s);
+  name = su_cs_dup(s);
   internalname = 0;
   slant = 0.0;
   zoom = 0;
@@ -167,7 +167,7 @@ font::~font()
 {
   for (int i = 0; i < ch_used; i++)
     if (ch[i].special_device_coding)
-      a_delete ch[i].special_device_coding;
+      su_FREE(ch[i].special_device_coding);
   a_delete ch;
   a_delete ch_index;
   if (kern_hash_table) {
@@ -181,8 +181,8 @@ font::~font()
     }
     a_delete kern_hash_table;
   }
-  su_free(name);
-  su_free(internalname);
+  su_FREE(name);
+  su_FREE(internalname);
   while (widths_cache) {
     font_widths_cache *tem = widths_cache;
     widths_cache = widths_cache->next;
@@ -300,7 +300,7 @@ int font::contains(glyph *g)
       }
       // groff glyph name that maps to Unicode?
       const char *unicode = glyph_name_to_unicode(nm);
-      if (unicode != NULL && strchr(unicode, '_') == NULL)
+      if (unicode != NULL && su_cs_find_c(unicode, '_') == NIL)
 	return 1;
     }
     // Numbered character?
@@ -587,7 +587,7 @@ int font::get_code(glyph *g)
       }
       // groff glyphs that map to Unicode?
       const char *unicode = glyph_name_to_unicode(nm);
-      if (unicode != NULL && strchr(unicode, '_') == NULL) {
+      if (unicode != NULL && su_cs_find_c(unicode, '_') == NIL) {
 	char *ignore;
 	return (int)strtol(unicode, &ignore, 16);
       }
@@ -647,11 +647,11 @@ void font::alloc_ch_index(int idx)
     if (idx >= nindices)
       nindices = idx + 10;
     int *old_ch_index = ch_index;
-    ch_index = new int[nindices];
-    memcpy(ch_index, old_ch_index, sizeof(int)*old_nindices);
+    ch_index = su_TALLOC(int, nindices);
+    su_mem_copy(ch_index, old_ch_index, sizeof(int)*old_nindices);
     for (int i = old_nindices; i < nindices; i++)
       ch_index[i] = -1;
-    a_delete old_ch_index;
+    su_FREE(old_ch_index);
   }
 }
 
@@ -678,9 +678,9 @@ void font::compact()
   i++;
   if (i < nindices) {
     int *old_ch_index = ch_index;
-    ch_index = new int[i];
-    memcpy(ch_index, old_ch_index, i*sizeof(int));
-    a_delete old_ch_index;
+    ch_index = su_TALLOC(int, i);
+    su_mem_copy(ch_index, old_ch_index, i*sizeof(int));
+    su_FREE(old_ch_index);
     nindices = i;
   }
   if (ch_used < ch_size) {
@@ -730,10 +730,10 @@ static char *trim_arg(char *p)
 {
   if (!p)
     return 0;
-  while (su_isspace(*p))
+  while (su_cs_is_space(*p))
     p++;
-  char *q = strchr(p, '\0');
-  while (q > p && su_isspace(q[-1]))
+  char *q = su_cs_find_c(p, '\0');
+  while (q > p && su_cs_is_space(q[-1]))
     q--;
   *q = '\0';
   return p;
@@ -748,7 +748,7 @@ int font::scan_papersize(const char *p,
   int test_file = 1;
   char line[255];
 again:
-  if (su_isdigit(*pp)) {
+  if (su_cs_is_digit(*pp)) {
     if (sscanf(pp, "%lf%1[ipPc],%lf%1[ipPc]", &l, lu, &w, wu) == 4
 	&& l > 0 && w > 0
 	&& unit_scale(&l, lu[0]) && unit_scale(&w, wu[0])) {
@@ -764,7 +764,7 @@ again:
   else {
     int i;
     for (i = 0; i < NUM_PAPERSIZES; i++)
-      if (su_strcasecmp(papersizes[i].name, pp) == 0) {
+      if (!su_cs_casecmp(papersizes[i].name, pp)) {
 	if (length)
 	  *length = papersizes[i].length;
 	if (width)
@@ -779,7 +779,7 @@ again:
 	fgets(line, 254, f);
 	fclose(f);
 	test_file = 0;
-	char *linep = strchr(line, '\0');
+	char *linep = su_cs_find_c(line, '\0');
 	// skip final newline, if any
 	if (*(--linep) == '\n')
 	  *linep = '\0';
@@ -796,7 +796,7 @@ again:
 
 int font::load(int *not_found, int head_only)
 {
-  if (strcmp(name, "DESC") == 0) {
+  if (!su_cs_cmp(name, "DESC")) {
     if (not_found)
       *not_found = 1;
     else
@@ -820,11 +820,11 @@ int font::load(int *not_found, int head_only)
       p = 0;
       break;
     }
-    p = strtok(t.buf, WS);
-    if (strcmp(p, "name") == 0) {
+    p = strtok(t.buf, WS); /* FIXME strsep */
+    if (!su_cs_cmp(p, "name")) {
     }
-    else if (strcmp(p, "spacewidth") == 0) {
-      p = strtok(0, WS);
+    else if (!su_cs_cmp(p, "spacewidth")) {
+      p = strtok(0, WS); /* FIXME strsep */
       int n;
       if (p == 0 || sscanf(p, "%d", &n) != 1 || n <= 0) {
 	t.error("bad argument for `spacewidth' command");
@@ -832,8 +832,8 @@ int font::load(int *not_found, int head_only)
       }
       space_width = n;
     }
-    else if (strcmp(p, "slant") == 0) {
-      p = strtok(0, WS);
+    else if (!su_cs_cmp(p, "slant")) {
+      p = strtok(0, WS); /* FIXME strsep */
       double n;
       if (p == 0 || sscanf(p, "%lf", &n) != 1 || n >= 90.0 || n <= -90.0) {
 	t.error("bad argument for `slant' command", p);
@@ -841,20 +841,20 @@ int font::load(int *not_found, int head_only)
       }
       slant = n;
     }
-    else if (strcmp(p, "ligatures") == 0) {
+    else if (!su_cs_cmp(p, "ligatures")) {
       for (;;) {
-	p = strtok(0, WS);
-	if (p == 0 || strcmp(p, "0") == 0)
+	p = strtok(0, WS); /* FIXME strsep */
+	if (p == 0 || !su_cs_cmp(p, "0"))
 	  break;
-	if (strcmp(p, "ff") == 0)
+	if (!su_cs_cmp(p, "ff"))
 	  ligatures |= LIG_ff;
-	else if (strcmp(p, "fi") == 0)
+	else if (!su_cs_cmp(p, "fi"))
 	  ligatures |= LIG_fi;
-	else if (strcmp(p, "fl") == 0)
+	else if (!su_cs_cmp(p, "fl"))
 	  ligatures |= LIG_fl;
-	else if (strcmp(p, "ffi") == 0)
+	else if (!su_cs_cmp(p, "ffi"))
 	  ligatures |= LIG_ffi;
-	else if (strcmp(p, "ffl") == 0)
+	else if (!su_cs_cmp(p, "ffl"))
 	  ligatures |= LIG_ffl;
 	else {
 	  t.error("unrecognised ligature `%1'", p);
@@ -862,21 +862,20 @@ int font::load(int *not_found, int head_only)
 	}
       }
     }
-    else if (strcmp(p, "internalname") == 0) {
-      p = strtok(0, WS);
+    else if (!su_cs_cmp(p, "internalname")) {
+      p = strtok(0, WS); /* FIXME strsep */
       if (!p) {
 	t.error("`internalname' command requires argument");
 	return 0;
       }
-      internalname = new char[strlen(p) + 1];
-      strcpy(internalname, p);
+      internalname = su_cs_dup(p);
     }
-    else if (strcmp(p, "special") == 0) {
+    else if (!su_cs_cmp(p, "special")) {
       special = 1;
     }
-    else if (strcmp(p, "kernpairs") != 0 && strcmp(p, "charset") != 0) {
+    else if (su_cs_cmp(p, "kernpairs") && su_cs_cmp(p, "charset")) {
       char *command = p;
-      p = strtok(0, "\n");
+      p = strtok(0, "\n"); /* FIXME strsep */
       handle_unknown_font_command(command, trim_arg(p), t.fcp->path(),
         t.lineno);
     }
@@ -893,7 +892,7 @@ int font::load(int *not_found, int head_only)
     char *command = p;
     t.skip_comments = 0;
     while (command) {
-      if (strcmp(command, "kernpairs") == 0) {
+      if (!su_cs_cmp(command, "kernpairs")) {
 	if (head_only)
 	  return 1;
 	for (;;) {
@@ -901,15 +900,15 @@ int font::load(int *not_found, int head_only)
 	    command = 0;
 	    break;
 	  }
-	  char *c1 = strtok(t.buf, WS);
+	  char *c1 = strtok(t.buf, WS); /* FIXME strsep */
 	  if (c1 == 0)
 	    continue;
-	  char *c2 = strtok(0, WS);
+	  char *c2 = strtok(0, WS); /* FIXME strsep */
 	  if (c2 == 0) {
 	    command = c1;
 	    break;
 	  }
-	  p = strtok(0, WS);
+	  p = strtok(0, WS); /* FIXME strsep */
 	  if (p == 0) {
 	    t.error("missing kern amount");
 	    return 0;
@@ -924,7 +923,7 @@ int font::load(int *not_found, int head_only)
 	  add_kern(g1, g2, n);
 	}
       }
-      else if (strcmp(command, "charset") == 0) {
+      else if (!su_cs_cmp(command, "charset")) {
 	if (head_only)
 	  return 1;
 	had_charset = 1;
@@ -934,10 +933,10 @@ int font::load(int *not_found, int head_only)
 	    command = 0;
 	    break;
 	  }
-	  char *nm = strtok(t.buf, WS);
+	  char *nm = strtok(t.buf, WS); /* FIXME strsep */
 	  if (nm == 0)
 	    continue;			// I dont think this should happen
-	  p = strtok(0, WS);
+	  p = strtok(0, WS); /* FIXME strsep */
 	  if (p == 0) {
 	    command = nm;
 	    break;
@@ -947,7 +946,7 @@ int font::load(int *not_found, int head_only)
 	      t.error("first charset entry is duplicate");
 	      return 0;
 	    }
-	    if (strcmp(nm, "---") == 0) {
+	    if (!su_cs_cmp(nm, "---")) {
 	      t.error("unnamed character cannot be duplicate");
 	      return 0;
 	    }
@@ -970,7 +969,7 @@ int font::load(int *not_found, int head_only)
 	      t.error("bad width for `%1'", nm);
 	      return 0;
 	    }
-	    p = strtok(0, WS);
+	    p = strtok(0, WS); /* FIXME strsep */
 	    if (p == 0) {
 	      t.error("missing character type for `%1'", nm);
 	      return 0;
@@ -985,7 +984,7 @@ int font::load(int *not_found, int head_only)
 	      return 0;
 	    }
 	    metric.type = type;
-	    p = strtok(0, WS);
+	    p = strtok(0, WS); /* FIXME strsep */
 	    if (p == 0) {
 	      t.error("missing code for `%1'", nm);
 	      return 0;
@@ -996,16 +995,14 @@ int font::load(int *not_found, int head_only)
 	      t.error("bad code `%1' for character `%2'", p, nm);
 	      return 0;
 	    }
-	    p = strtok(0, WS);
-	    if ((p == NULL) || (strcmp(p, "--") == 0)) {
+	    p = strtok(0, WS); /* FIXME strsep */
+	    if ((p == NULL) || !su_cs_cmp(p, "--")) {
 	      metric.special_device_coding = NULL;
 	    }
 	    else {
-	      char *nam = new char[strlen(p) + 1];
-	      strcpy(nam, p);
-	      metric.special_device_coding = nam;
+	      metric.special_device_coding = su_cs_dup(p);
 	    }
-	    if (strcmp(nm, "---") == 0) {
+	    if (!su_cs_cmp(nm, "---")) {
 	      last_glyph = number_to_glyph(metric.code);
 	      add_entry(last_glyph, metric);
 	    }
@@ -1071,14 +1068,14 @@ int font::load_desc()
   t.skip_comments = 1;
   res = 0;
   while (t.next()) {
-    char *p = strtok(t.buf, WS);
+    char *p = strtok(t.buf, WS); /* FIXME strsep */
     int found = 0;
     unsigned int idx;
     for (idx = 0; !found && idx < sizeof(table)/sizeof(table[0]); idx++)
-      if (strcmp(table[idx].command, p) == 0)
+      if (!su_cs_cmp(table[idx].command, p))
 	found = 1;
     if (found) {
-      char *q = strtok(0, WS);
+      char *q = strtok(0, WS); /* FIXME strsep */
       if (!q) {
 	t.error("missing value for command `%1'", p);
 	return 0;
@@ -1090,45 +1087,42 @@ int font::load_desc()
 	return 0;
       }
     }
-    else if (strcmp("family", p) == 0) {
-      p = strtok(0, WS);
+    else if (!su_cs_cmp("family", p)) {
+      p = strtok(0, WS); /* FIXME strsep */
       if (!p) {
 	t.error("family command requires an argument");
 	return 0;
       }
-      char *tem = new char[strlen(p)+1];
-      strcpy(tem, p);
-      family = tem;
+      family = su_cs_dup(p);
     }
-    else if (strcmp("fonts", p) == 0) {
-      p = strtok(0, WS);
+    else if (!su_cs_cmp("fonts", p)) {
+      p = strtok(0, WS); /* FIXME strsep */
       if (!p || sscanf(p, "%d", &nfonts) != 1 || nfonts <= 0) {
 	t.error("bad number of fonts `%1'", p);
 	return 0;
       }
-      font_name_table = (const char **)new char *[nfonts+1];
+      /* TODO what if font_name_table yet set? */
+      font_name_table = su_TALLOC(char*, nfonts+1);
       for (int i = 0; i < nfonts; i++) {
-	p = strtok(0, WS);
+	p = strtok(0, WS); /* FIXME strsep */
 	while (p == 0) {
 	  if (!t.next()) {
 	    t.error("end of file while reading list of fonts");
 	    return 0;
 	  }
-	  p = strtok(t.buf, WS);
+	  p = strtok(t.buf, WS); /* FIXME strsep */
 	}
-	char *temp = new char[strlen(p)+1];
-	strcpy(temp, p);
-	font_name_table[i] = temp;
+	font_name_table[i] = su_cs_dup(p);
       }
-      p = strtok(0, WS);
+      p = strtok(0, WS); /* FIXME strsep */
       if (p != 0) {
 	t.error("font count does not match number of fonts");
 	return 0;
       }
-      font_name_table[nfonts] = 0;
+      font_name_table[nfonts] = NIL;
     }
-    else if (strcmp("papersize", p) == 0) {
-      p = strtok(0, WS);
+    else if (!su_cs_cmp("papersize", p)) {
+      p = strtok(0, WS); /* FIXME strsep */
       if (!p) {
 	t.error("papersize command requires an argument");
 	return 0;
@@ -1143,29 +1137,29 @@ int font::load_desc()
 	  found_paper = 1;
 	  break;
 	}
-	p = strtok(0, WS);
+	p = strtok(0, WS); /* FIXME strsep */
       }
       if (!found_paper) {
 	t.error("bad paper size");
 	return 0;
       }
     }
-    else if (strcmp("unscaled_charwidths", p) == 0)
+    else if (!su_cs_cmp("unscaled_charwidths", p))
       unscaled_charwidths = 1;
-    else if (strcmp("pass_filenames", p) == 0)
+    else if (!su_cs_cmp("pass_filenames", p))
       pass_filenames = 1;
-    else if (strcmp("sizes", p) == 0) {
+    else if (!su_cs_cmp("sizes", p)) {
       int n = 16;
       sizes = new int[n];
       int i = 0;
       for (;;) {
-	p = strtok(0, WS);
+	p = strtok(0, WS); /* FIXME strsep */
 	while (p == 0) {
 	  if (!t.next()) {
 	    t.error("list of sizes must be terminated by `0'");
 	    return 0;
 	  }
-	  p = strtok(t.buf, WS);
+	  p = strtok(t.buf, WS); /* FIXME strsep */
 	}
 	int lower, upper;
 	switch (sscanf(p, "%d-%d", &lower, &upper)) {
@@ -1182,10 +1176,10 @@ int font::load_desc()
 	}
 	if (i + 2 > n) {
 	  int *old_sizes = sizes;
-	  sizes = new int[n*2];
+	  sizes = su_TALLOC(int, n*2);
 	  memcpy(sizes, old_sizes, n*sizeof(int));
 	  n *= 2;
-	  a_delete old_sizes;
+	  su_FREE(old_sizes);
 	}
 	sizes[i++] = lower;
 	if (lower == 0)
@@ -1197,54 +1191,53 @@ int font::load_desc()
 	return 0;
       }
     }
-    else if (strcmp("styles", p) == 0) {
+    else if (!su_cs_cmp("styles", p)) {
       int style_table_size = 5;
-      style_table = (const char **)new char *[style_table_size];
+      /* TODO what if style_table not NIL */
+      style_table = su_TALLOC(char*, style_table_size);
       int j;
       for (j = 0; j < style_table_size; j++)
-	style_table[j] = 0;
+	style_table[j] = NIL;
       int i = 0;
       for (;;) {
-	p = strtok(0, WS);
+	p = strtok(0, WS); /* FIXME strsep */
 	if (p == 0)
 	  break;
 	// leave room for terminating 0
 	if (i + 1 >= style_table_size) {
 	  const char **old_style_table = style_table;
 	  style_table_size *= 2;
-	  style_table = (const char **)new char*[style_table_size];
+	  style_table = su_TALLOC(char*, style_table_size);
 	  for (j = 0; j < i; j++)
 	    style_table[j] = old_style_table[j];
 	  for (; j < style_table_size; j++)
-	    style_table[j] = 0;
-	  a_delete old_style_table;
+	    style_table[j] = NIL;
+	  su_FREE(old_style_table);
 	}
-	char *tem = new char[strlen(p) + 1];
-	strcpy(tem, p);
-	style_table[i++] = tem;
+	style_table[i++] = su_cs_dup(p);
       }
     }
-    else if (strcmp("tcommand", p) == 0)
+    else if (!su_cs_cmp("tcommand", p))
       tcommand = 1;
-    else if (strcmp("use_charnames_in_special", p) == 0)
+    else if (!su_cs_cmp("use_charnames_in_special", p))
       use_charnames_in_special = 1;
-    else if (strcmp("unicode", p) == 0)
+    else if (!su_cs_cmp("unicode", p))
       is_unicode = 1;
-    else if (strcmp("image_generator", p) == 0) {
-      p = strtok(0, WS);
+    else if (!su_cs_cmp("image_generator", p)) {
+      p = strtok(0, WS); /* FIXME strsep */
       if (!p) {
 	t.error("image_generator command requires an argument");
 	return 0;
       }
       if(image_generator != NULL)
-        su_free(image_generator);
-      image_generator = su_strdup(p);
+        su_FREE(image_generator);
+      image_generator = su_cs_dup(p);
     }
-    else if (strcmp("charset", p) == 0)
+    else if (!su_cs_cmp("charset", p))
       break;
     else if (unknown_desc_command_handler) {
       char *command = p;
-      p = strtok(0, "\n");
+      p = strtok(0, "\n"); /* FIXME strsep */
       (*unknown_desc_command_handler)(command, trim_arg(p), t.fcp->path(),
         t.lineno);
     }

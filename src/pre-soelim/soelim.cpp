@@ -24,7 +24,7 @@
 #include "lib.h"
 #include "soelim-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include <assert.h>
 #include <ctype.h>
@@ -141,17 +141,17 @@ void do_so(const char *line)
       filename += char(*q);
   if (success && filename.length() > 0) {
     filename += '\0';
-    char *fn = su_strdup(rf_current_filename());
+    char *fn = su_cs_dup(rf_current_filename());
     int ln = rf_current_lineno();
     rf_current_lineno_dec();
     if (do_file(filename.contents())) {
       rf_current_filename_set(fn);
       rf_current_lineno_set(ln);
-      su_free(fn);
+      su_FREE(fn);
       set_location();
       return;
     }
-    su_free(fn);
+    su_FREE(fn);
     rf_current_lineno_inc();
   }
   fputs(".so", stdout);

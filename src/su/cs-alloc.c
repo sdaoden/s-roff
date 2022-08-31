@@ -1,4 +1,4 @@
-/*@ su_strn?casecmp().
+/*@ Implementation of cs.h: anything which performs allocations.
  *
  * Copyright (c) 2017 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
@@ -14,49 +14,52 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#define su_FILE "su__strsup_strcasecmp"
+#define su_FILE "su__cs_alloc"
+#define su_SOURCE
+#define su_SOURCE_CS_ALLOC
 
-#include "su/primary.h"
+#include "su/code.h"
+#include "su/mem.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 #include "su/code-in.h"
 
-si32
-su_strcasecmp(char const *cp1, char const *cp2){
-   si32 rv;
+char *
+su_cs_dup(char const *cp){
+   char *rv;
+   uz l;
    NYD_IN;
-   ASSERT_NYD_RET_VAL(cp1 != NIL, (cp2 == NIL) ? 0 : -1);
-   ASSERT_NYD_RET_VAL(cp2 != NIL, 1);
+   ASSERT_EXEC(cp != NIL, cp = su_empty);
 
-   for(;;){
-      char c1, c2;
-
-      c = *s1++;
-      c2 = *s2++;
-      if((rv = S(ui8,su_tolower(c1)) - S(ui8,su_tolower(c2))) != 0 ||
-            c1 == '\0')
-         break;
+   if(LIKELY((l = su_cs_len(cp)) != UZ_MAX)){
+      ++l;
+      if((rv = su_TALLOC(char, l)) != NIL)
+         su_mem_copy(rv, cp, l);
+   }else{
+      su_state_err(su_STATE_ERR_OVERFLOW, _("SU cs_dup: string too long"));
+      rv = NIL;
    }
    NYD_OU;
    return rv;
 }
 
-si32
-su_strncasecmp(char const *cp1, char const *cp2, uiz n){
-   si32 rv;
+char *
+su_cs_dup_cbuf(char const *buf, uz len){
+   char *rv;
    NYD_IN;
-   ASSERT_NYD_RET_VAL(cp1 != NIL, (cp2 == NIL) ? 0 : -1);
-   ASSERT_NYD_RET_VAL(cp2 != NIL, 1);
+   ASSERT_EXEC(len == 0 || buf != NIL, len = 0);
 
-   for(rv = 0; n != 0; --n){
-      char c1, c2;
+   if(len == UZ_MAX)
+      len = su_cs_len(buf);
 
-      c1 = *s1++;
-      c2 = *s2++;
-      rv = S(ui8,su_tolower(c1));
-      rv -= S(ui8,su_tolower(c2));
-      if(rv != 0 || c1 == '\0')
-         break;
+   if(LIKELY(len != UZ_MAX)){
+      if((rv = su_TALLOC(char, len +1)) != NIL){
+         su_mem_copy(rv, buf, len);
+         buf[len] = '\0';
+      }
+   }else{
+      su_state_err(su_STATE_ERR_OVERFLOW, _("SU cs_dup: buffer too large"));
+      rv = NIL;
    }
    NYD_OU;
    return rv;

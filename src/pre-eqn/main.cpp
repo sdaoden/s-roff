@@ -23,10 +23,6 @@
 #include "lib.h"
 #include "eqn-config.h"
 
-#include "su/strsup.h"
-
-#include <ctype.h>
-
 #include "eqn.h"
 #include "device.h"
 #include "file_case.h"

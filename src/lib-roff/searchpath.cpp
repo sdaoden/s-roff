@@ -23,7 +23,7 @@
 #include "config.h"
 #include "lib.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -36,7 +36,7 @@
 #ifdef _WIN32
 # include "relocate.h"
 #else
-# define relocate(path) su_strdup(path)
+# define relocate(path) su_cs_dup(path)
 #endif
 
 static file_case *  _try_iter(char const *dirs, char const *name,
@@ -48,24 +48,24 @@ _try_iter(char const *dirs, char const *name, uint32_t flags)
   file_case *fcp;
   bool delname = ((flags & fcp->fc_take_path) != 0);
   flags = (flags & ~(fcp->fc_const_path)) | fcp->fc_take_path;
-  unsigned namelen = strlen(name);
+  unsigned namelen = su_cs_len(name);
   char const *p = dirs;
 
   for (;;) {
-    char *end = strchr(p, PATH_SEP_CHAR);
+    char *end = su_cs_find_c(p, PATH_SEP_CHAR);
     if (end == NULL)
-      end = strchr(p, '\0');
-    int need_slash = (end > p && strchr(DIR_SEPS, end[-1]) == NULL);
-    char *origpath = su_talloc(char, (end - p) + need_slash + namelen + 1);
-    memcpy(origpath, p, end - p);
+      end = su_cs_find_c(p, '\0');
+    int need_slash = (end > p && su_cs_find_c(DIR_SEPS, end[-1]) == NULL);
+    char *origpath = su_TALLOC(char, (end - p) + need_slash + namelen +1);
+    su_mem_copy(origpath, p, end - p);
     if (need_slash)
       origpath[end - p] = '/';
-    strcpy(origpath + (end - p) + need_slash, name);
+    su_mem_copy(origpath + (end - p) + need_slash, name, namelen);
 #if 0
     fprintf(stderr, "origpath `%s'\n", origpath);
 #endif
     char *path = relocate(origpath);
-    su_free(origpath);
+    su_FREE(origpath);
 #if 0
     fprintf(stderr, "trying `%s'\n", path);
 #endif
@@ -80,7 +80,7 @@ _try_iter(char const *dirs, char const *name, uint32_t flags)
   errno = ENOENT;
 jleave:
   if (delname)
-    su_free(name);
+    su_FREE(name);
   return fcp;
 }
 
@@ -93,52 +93,54 @@ search_path::search_path(const char *envvar, const char *standard,
   char *e = 0;
   if (envvar)
     e = getenv(envvar);
-  dirs = su_talloc(char, ((e && *e) ? strlen(e) + 1 : 0)
+  dirs = su_TALLOC(char, ((e && *e) ? su_cs_len(e) + 1 : 0)
         + (add_current ? 1 + 1 : 0)
-        + ((home && *home) ? strlen(home) + 1 : 0)
-        + ((standard && *standard) ? strlen(standard) : 0)
+        + ((home && *home) ? su_cs_len(home) + 1 : 0)
+        + ((standard && *standard) ? su_cs_len(standard) : 0)
         + 1);
   *dirs = '\0';
+  char *cp = dirs;
+
   if (e && *e) {
-    su_stpcpy(su_stpcpy(dirs, e), PATH_SEP);
+    cp = su_cs_pcopy(su_cs_pcopy(cp, e), PATH_SEP);
   }
   if (add_current) {
-    su_stpcpy(su_stpcpy(dirs, "."), PATH_SEP);
+    cp = su_cs_pcopy(su_cs_pcopy(cp, "."), PATH_SEP);
   }
   if (home && *home) {
-    su_stpcpy(su_stpcpy(dirs, home), PATH_SEP);
+    cp = su_cs_pcopy(su_cs_pcopy(cp, home), PATH_SEP);
   }
   if (standard && *standard)
-    strcat(dirs, standard);
-  init_len = strlen(dirs);
+    cp = su_cs_pcopy(cp, standard);
+  init_len = PTR2UZ(cp - dirst);
 }
 
 search_path::~search_path()
 {
   // dirs is always allocated
-  su_free(dirs);
+  su_FREE(dirs);
 }
 
 void search_path::command_line_dir(const char *s)
 {
   char *old = dirs;
-  unsigned old_len = strlen(old);
-  unsigned slen = strlen(s);
-  dirs = su_talloc(char, old_len + 1 + slen + 1);
-  memcpy(dirs, old, old_len - init_len);
+  unsigned old_len = su_cs_len(old);
+  unsigned slen = su_cs_len(s);
+  dirs = su_TALLOC(char, old_len + 1 + slen + 1);
+  su_mem_copy(dirs, old, old_len - init_len);
   char *p = dirs;
   p += old_len - init_len;
   if (init_len == 0)
     *p++ = PATH_SEP_CHAR;
-  memcpy(p, s, slen);
+  su_mem_copy(p, s, slen);
   p += slen;
   if (init_len > 0) {
     *p++ = PATH_SEP_CHAR;
-    memcpy(p, old + old_len - init_len, init_len);
+    su_mem_copy(p, old + old_len - init_len, init_len);
     p += init_len;
   }
   *p++ = '\0';
-  su_free(old);
+  su_FREE(old);
 }
 
 file_case *search_path::open_file(char const *name, uint32_t flags)
@@ -156,7 +158,7 @@ file_case *search_path::open_file(char const *name, uint32_t flags)
 file_case *search_path::open_file_cautious(char const *name, uint32_t flags)
 {
   file_case *fcp;
-  if (name == NULL || strcmp(name, "-") == 0) {
+  if (name == NULL || !su_cs_cmp(name, "-")) {
     name = NULL;
     goto jmuxer;
   }

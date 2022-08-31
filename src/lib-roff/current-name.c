@@ -40,10 +40,10 @@ a_curnam_set(char **cpp, char const *ncp){
    if(*cpp == NIL)
       goto jdup;
 
-   if(su_strcmp(*cpp, f)){
-      su_free(UNCONST(*cpp));
+   if(su_c_cmp(*cpp, f)){
+      su_mem_free(UNCONST(*cpp));
 jdup:
-      *cpp = su_strdup(f);
+      *cpp = su_c_dup(f);
    }
    NYD2_OU;
 }
@@ -52,7 +52,7 @@ static void
 a_curnam_clear(char **cpp){
    NYD2_IN;
    if(*cpp != NIL){
-      su_free(UNCONST(*cpp));
+      su_mem_free(UNCONST(*cpp));
       *cpp = NIL;
    }
    NYD2_OU;

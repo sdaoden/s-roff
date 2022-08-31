@@ -24,7 +24,7 @@
 #include "lib.h"
 #include "pic-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include "file-case.h"
 
@@ -233,8 +233,8 @@ void do_picture(file_case *fcp)
 {
   flyback_flag = 0;
   int c;
-  su_free(graphname);
-  graphname = su_strdup("graph"); // default picture name in TeX mode
+  su_FREE(graphname);
+  graphname = su_cs_dup("graph"); // default picture name in TeX mode
   while ((c = fcp->get_c()) == ' ')
     ;
   if (c == '<') {
@@ -256,13 +256,13 @@ void do_picture(file_case *fcp)
       error("missing filename after `<'");
     else {
       filename += '\0';
-      char *old_filename = su_strdup(rf_current_filename());
+      char *old_filename = su_cs_dup(rf_current_filename());
       int old_lineno = rf_current_lineno();
       // filenames must be permanent
-      do_file(su_strdup(filename.contents()));
+      do_file(su_cs_dup(filename.contents()));
       rf_current_filename_set(old_filename);
       rf_current_lineno_set(old_lineno);
-      su_free(old_filename);
+      su_FREE(old_filename);
     }
     out->set_location(rf_current_filename(), rf_current_lineno());
   }

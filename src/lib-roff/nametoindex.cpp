@@ -23,7 +23,7 @@
 #include "config.h"
 #include "lib.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include <assert.h>
 #include <ctype.h>
@@ -91,24 +91,23 @@ character_indexer::~character_indexer()
 
   for (i = 0; i < NELEM(ascii_glyph); i++)
     if(ascii_glyph[i] != UNDEFINED_GLYPH){
-      su_free(ascii_glyph[i].name);
-      su_del(ascii_glyph[i]);
+      su_FREE(ascii_glyph[i].name);
+      su_DEL(ascii_glyph[i]);
     }
   for (i = 0; i < NELEM(small_number_glyph); i++)
     if(small_number_glyph[i] != UNDEFINED_GLYPH)
-      su_del(small_number_glyph[i]);
+      su_DEL(small_number_glyph[i]);
 }
 
 glyph *character_indexer::ascii_char_glyph(unsigned char c)
 {
   if (ascii_glyph[c] == UNDEFINED_GLYPH) {
     char buf[4+3+1];
-    memcpy(buf, "char", 4);
-    strcpy(buf + 4, i_to_a(c));
-    charinfo *ci = su_new(charinfo);
+    su_cs_pcopy(su_cs_pcopy(buf, "char"), i_to_a(c));
+    charinfo *ci = su_NEW(charinfo);
     ci->index = next_index++;
     ci->number = -1;
-    ci->name = su_strdup(buf);
+    ci->name = su_cs_dup(buf);
     ascii_glyph[c] = ci;
   }
   return ascii_glyph[c];
@@ -138,7 +137,7 @@ inline glyph *character_indexer::numbered_char_glyph(int n)
 {
   if (n >= 0 && n < NSMALL) {
     if (small_number_glyph[n] == UNDEFINED_GLYPH) {
-      charinfo *ci = su_new(charinfo);
+      charinfo *ci = su_NEW(charinfo);
       ci->index = next_index++;
       ci->number = n;
       ci->name = NULL;

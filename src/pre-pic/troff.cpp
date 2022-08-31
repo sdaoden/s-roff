@@ -23,7 +23,8 @@
 #include "lib.h"
 #include "pic-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
+#include "su/mem.h"
 
 #include "common.h"
 #include "pic.h"
@@ -504,11 +505,11 @@ void troff_output::set_color(char *color_fill, char *color_outlined)
     // but that won't work anyway
     if (color_fill) {
       printf(".fcolor %s\n", color_fill);
-      last_filled = su_strdup(color_fill);
+      last_filled = su_cs_dup(color_fill);
     }
     if (color_outlined) {
       printf(".gcolor %s\n", color_outlined);
-      last_outlined = su_strdup(color_outlined);
+      last_outlined = su_cs_dup(color_outlined);
     }
   }
 }
@@ -518,12 +519,12 @@ void troff_output::reset_color()
   if (driver_extension_flag) {
     if(last_filled != NULL){
       printf(".fcolor\n");
-      su_free(last_filled);
+      su_FREE(last_filled);
       last_filled = NULL;
     }
     if(last_outlined != NULL){
       printf(".gcolor\n");
-      su_free(last_outlined);
+      su_FREE(last_outlined);
       last_outlined = NULL;
     }
   }

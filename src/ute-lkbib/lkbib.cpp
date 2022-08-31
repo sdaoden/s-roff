@@ -23,7 +23,8 @@
 #include "lib.h"
 #include "lkbib-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
+#include "su/mem.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -114,15 +115,14 @@ int main(int argc, char **argv)
   int total_len = 0;
   int i;
   for (i = optind; i < argc; i++)
-    total_len += strlen(argv[i]);
+    total_len += su_cs_len(argv[i]);
   total_len += argc - optind - 1 + 1; // for spaces and '\0'
-  char *buffer = new char[total_len];
+  char *buffer = su_TALLOC(char, total_len);
   char *ptr = buffer;
   for (i = optind; i < argc; i++) {
     if (i > optind)
       *ptr++ = ' ';
-    strcpy(ptr, argv[i]);
-    ptr = strchr(ptr, '\0');
+    ptr = su_cs_pcopy(ptr, argv[i]);
   }
   search_list_iterator iter(&list, buffer);
   const char *start;

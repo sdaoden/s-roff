@@ -24,7 +24,7 @@
 #include "config.h"
 #include "lib.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include "nonposix.h"
 
@@ -63,7 +63,7 @@ needs_quoting(const char *string)
      * returning 'true' if quote or white space found.
      */
 
-    if (*string == '"' || su_isspace(*string))
+    if (*string == '"' || su_cs_is_space(*string))
       return true;
 
     /* otherwise, continue scanning to end of string */

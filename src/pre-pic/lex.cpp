@@ -24,7 +24,7 @@
 #include "lib.h"
 #include "pic-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include "object.h"
 #include "pic.h"
@@ -146,12 +146,12 @@ int file_input::get_location(const char **fnp, int *lnp)
 
 macro_input::macro_input(const char *str)
 {
-  p = s = su_strdup(str);
+  p = s = su_cs_dup(str);
 }
 
 macro_input::~macro_input()
 {
-  su_free(s);
+  su_FREE(s);
 }
 
 int macro_input::get()
@@ -172,14 +172,14 @@ int macro_input::peek()
 
 char *process_body(const char *body)
 {
-  char *s = su_strdup(body);
+  char *s = su_cs_dup(body);
   int j = 0;
   for (int i = 0; s[i] != '\0'; i++)
-    if (s[i] == '$' && su_isdigit(s[i + 1])) {
+    if (s[i] == '$' && su_cs_is_digit(s[i + 1])) {
       int n = 0;
       int start = i;
       i++;
-      while (su_isdigit(s[i]))
+      while (su_cs_is_digit(s[i]))
 	if (n > MAX_ARG)
 	  i++;
 	else
@@ -211,8 +211,8 @@ argument_macro_input::argument_macro_input(const char *body, int ac, char **av)
 argument_macro_input::~argument_macro_input()
 {
   for (int i = 0; i < argc; i++)
-    su_free(argv[i]);
-  su_free(s);
+    su_FREE(argv[i]);
+  su_FREE(s);
 }
 
 int argument_macro_input::get()
@@ -419,7 +419,7 @@ void interpolate_macro_with_args(const char *body)
 	      ignore = 1;
 	    }
 	    else
-	      argv[argc] = su_strdup(token_buffer.contents());
+	      argv[argc] = su_cs_dup(token_buffer.contents());
 	  }
 	}
 	// for `foo()', argc = 0
@@ -973,7 +973,7 @@ int get_token(int lookup_flag)
 	  n += c - '0';
 	  context_buffer += char(c);
 	  c = input_stack::peek_char();
-	  if (c == EOF || !su_isdigit(c))
+	  if (c == EOF || !su_cs_is_digit(c))
 	    break;
 	  c = input_stack::get_char();
 	}
@@ -984,7 +984,7 @@ int get_token(int lookup_flag)
 	    token_double += c - '0';
 	    context_buffer += char(c);
 	    c = input_stack::peek_char();
-	    if (c == EOF || !su_isdigit(c))
+	    if (c == EOF || !su_cs_is_digit(c))
 	      break;
 	    c = input_stack::get_char();
 	  }
@@ -1011,7 +1011,7 @@ int get_token(int lookup_flag)
 	  double factor = 1.0;
 	  for (;;) {
 	    c = input_stack::peek_char();
-	    if (c == EOF || !su_isdigit(c))
+	    if (c == EOF || !su_cs_is_digit(c))
 	      break;
 	    input_stack::get_char();
 	    context_buffer += char(c);
@@ -1039,7 +1039,7 @@ int get_token(int lookup_flag)
 	    sign = c;
 	    input_stack::get_char();
 	    c = input_stack::peek_char();
-	    if (c == EOF || !su_isdigit(c)) {
+	    if (c == EOF || !su_cs_is_digit(c)) {
 	      input_stack::push_back(sign);
 	      input_stack::push_back(echar);
 	      return NUMBER;
@@ -1048,7 +1048,7 @@ int get_token(int lookup_flag)
 	    context_buffer += char(sign);
 	  }
 	  else {
-	    if (c == EOF || !su_isdigit(c)) {
+	    if (c == EOF || !su_cs_is_digit(c)) {
 	      input_stack::push_back(echar);
 	      return NUMBER;
 	    }
@@ -1059,7 +1059,7 @@ int get_token(int lookup_flag)
 	  n = c - '0';
 	  for (;;) {
 	    c = input_stack::peek_char();
-	    if (c == EOF || !su_isdigit(c))
+	    if (c == EOF || !su_cs_is_digit(c))
 	      break;
 	    input_stack::get_char();
 	    context_buffer += char(c);
@@ -1142,7 +1142,7 @@ int get_token(int lookup_flag)
     case '.':
       {
 	c = input_stack::peek_char();
-	if (c != EOF && su_isdigit(c)) {
+	if (c != EOF && su_cs_is_digit(c)) {
 	  n = 0;
 	  token_double = 0.0;
 	  context_buffer = '.';
@@ -1225,12 +1225,12 @@ int get_token(int lookup_flag)
       context_buffer = "|";
       return '|';
     default:
-      if (c != EOF && su_isalpha(c)) {
+      if (c != EOF && su_cs_is_alpha(c)) {
 	token_buffer.clear();
 	token_buffer = c;
 	for (;;) {
 	  c = input_stack::peek_char();
-	  if (c == EOF || (!su_isalnum(c) && c != '_'))
+	  if (c == EOF || (!su_cs_is_alnum(c) && c != '_'))
 	    break;
 	  input_stack::get_char();
 	  token_buffer += char(c);
@@ -1257,7 +1257,7 @@ int get_token(int lookup_flag)
 	}
 	if (!def) {
 	  context_buffer = token_buffer;
-	  if (su_isupper(token_buffer[0]))
+	  if (su_cs_is_upper(token_buffer[0]))
 	    return LABEL;
 	  else
 	    return VARIABLE;
@@ -1356,7 +1356,7 @@ void do_define()
   if (!get_delimited())
     return;
   token_buffer += '\0';
-  macro_table.define(name, su_strdup(token_buffer.contents()));
+  macro_table.define(name, su_cs_dup(token_buffer.contents()));
 }
 
 void do_undef()
@@ -1398,8 +1398,8 @@ for_input::for_input(char *vr, double f, double t,
 
 for_input::~for_input()
 {
-  su_free(var);
-  su_free(body);
+  su_FREE(var);
+  su_FREE(body);
 }
 
 int for_input::get()
@@ -1567,13 +1567,13 @@ copy_thru_input::copy_thru_input(const char *b, const char *u)
   ap = 0;
   body = process_body(b);
   p = 0;
-  until = su_strdup(u);
+  until = su_cs_dup(u);
 }
 
 copy_thru_input::~copy_thru_input()
 {
-  su_free(body);
-  su_free(until);
+  su_FREE(body);
+  su_FREE(until);
 }
 
 int copy_thru_input::get()
@@ -1757,13 +1757,13 @@ char *get_thru_arg()
     input_stack::get_char();
     c = input_stack::peek_char();
   }
-  if (c != EOF && su_isalpha(c)) {
+  if (c != EOF && su_cs_is_alpha(c)) {
     // looks like a macro
     input_stack::get_char();
     token_buffer = c;
     for (;;) {
       c = input_stack::peek_char();
-      if (c == EOF || (!su_isalnum(c) && c != '_'))
+      if (c == EOF || (!su_cs_is_alnum(c) && c != '_'))
 	break;
       input_stack::get_char();
       token_buffer += char(c);
@@ -1772,7 +1772,7 @@ char *get_thru_arg()
     token_buffer += '\0';
     char *def = macro_table.lookup(token_buffer.contents());
     if (def)
-      return su_strdup(def);
+      return su_cs_dup(def);
     // I guess it wasn't a macro after all; so push the macro name back.
     // -2 because we added a '\0'
     for (int i = token_buffer.length() - 2; i >= 0; i--)
@@ -1780,7 +1780,7 @@ char *get_thru_arg()
   }
   if (get_delimited()) {
     token_buffer += '\0';
-    return su_strdup(token_buffer.contents());
+    return su_cs_dup(token_buffer.contents());
   }
   else
     return 0;
@@ -1810,7 +1810,7 @@ int yylex()
     else {
       if (get_delimited()) {
 	token_buffer += '\0';
-	yylval.str = su_strdup(token_buffer.contents());
+	yylval.str = su_cs_dup(token_buffer.contents());
 	return DELIMITED;
       }
       else
@@ -1850,12 +1850,12 @@ int yylex()
 	yylval.lstr.filename = 0;
 	yylval.lstr.lineno = -1;
       }
-      yylval.lstr.str = su_strdup(token_buffer.contents());
+      yylval.lstr.str = su_cs_dup(token_buffer.contents());
       return t;
     case LABEL:
     case VARIABLE:
       token_buffer += '\0';
-      yylval.str = su_strdup(token_buffer.contents());
+      yylval.str = su_cs_dup(token_buffer.contents());
       return t;
     case LEFT:
       // change LEFT to LEFT_CORNER when followed by OF
@@ -1878,7 +1878,7 @@ int yylex()
       old_context_buffer = context_buffer;
       lookahead_token = get_token(1);
       if (lookahead_token != LEFT && lookahead_token != RIGHT) {
-	yylval.str = su_strdup("upper");
+	yylval.str = su_cs_dup("upper");
 	return VARIABLE;
       }
       else
@@ -1888,7 +1888,7 @@ int yylex()
       old_context_buffer = context_buffer;
       lookahead_token = get_token(1);
       if (lookahead_token != LEFT && lookahead_token != RIGHT) {
-	yylval.str = su_strdup("lower");
+	yylval.str = su_cs_dup("lower");
 	return VARIABLE;
       }
       else
@@ -1898,7 +1898,7 @@ int yylex()
       old_context_buffer = context_buffer;
       lookahead_token = get_token(1);
       if (lookahead_token != OF) {
-	yylval.str = su_strdup("north");
+	yylval.str = su_cs_dup("north");
 	return VARIABLE;
       }
       else
@@ -1908,7 +1908,7 @@ int yylex()
       old_context_buffer = context_buffer;
       lookahead_token = get_token(1);
       if (lookahead_token != OF) {
-	yylval.str = su_strdup("south");
+	yylval.str = su_cs_dup("south");
 	return VARIABLE;
       }
       else
@@ -1918,7 +1918,7 @@ int yylex()
       old_context_buffer = context_buffer;
       lookahead_token = get_token(1);
       if (lookahead_token != OF) {
-	yylval.str = su_strdup("east");
+	yylval.str = su_cs_dup("east");
 	return VARIABLE;
       }
       else
@@ -1928,7 +1928,7 @@ int yylex()
       old_context_buffer = context_buffer;
       lookahead_token = get_token(1);
       if (lookahead_token != OF) {
-	yylval.str = su_strdup("west");
+	yylval.str = su_cs_dup("west");
 	return VARIABLE;
       }
       else
@@ -1938,7 +1938,7 @@ int yylex()
       old_context_buffer = context_buffer;
       lookahead_token = get_token(1);
       if (lookahead_token != OF) {
-	yylval.str = su_strdup("top");
+	yylval.str = su_cs_dup("top");
 	return VARIABLE;
       }
       else
@@ -1948,7 +1948,7 @@ int yylex()
       old_context_buffer = context_buffer;
       lookahead_token = get_token(1);
       if (lookahead_token != OF) {
-	yylval.str = su_strdup("bottom");
+	yylval.str = su_cs_dup("bottom");
 	return VARIABLE;
       }
       else
@@ -1958,7 +1958,7 @@ int yylex()
       old_context_buffer = context_buffer;
       lookahead_token = get_token(1);
       if (lookahead_token != OF) {
-	yylval.str = su_strdup("center");
+	yylval.str = su_cs_dup("center");
 	return VARIABLE;
       }
       else
@@ -1968,7 +1968,7 @@ int yylex()
       old_context_buffer = context_buffer;
       lookahead_token = get_token(1);
       if (lookahead_token != OF) {
-	yylval.str = su_strdup("start");
+	yylval.str = su_cs_dup("start");
 	return VARIABLE;
       }
       else
@@ -1978,7 +1978,7 @@ int yylex()
       old_context_buffer = context_buffer;
       lookahead_token = get_token(1);
       if (lookahead_token != OF) {
-	yylval.str = su_strdup("end");
+	yylval.str = su_cs_dup("end");
 	return VARIABLE;
       }
       else

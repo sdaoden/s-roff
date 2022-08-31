@@ -25,8 +25,8 @@
 
 #include <config.h>
 
-#include <su/primary.h>
-#include <su/memory.h>
+/*#include <su/code.h>*/
+#include <su/mem.h>
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -35,6 +35,7 @@
 #define __GETOPT_PREFIX groff_ /* FIXME drop this mess! */
 #include <getopt.h> /* FIXME use that of sfsys! */
 
+#define rf_HEADER
 #include <su/code-in.h>
 
 /* We simply use su facilities in r(of)f headers, so globally ensure the su
@@ -90,7 +91,7 @@ C_DECL_BEGIN
    /* The last six characters of template must be "XXXXXX";
     * they are replaced with a string that makes the filename unique.
     * Then open the file (or directory) and return a fd */
-   c_decl int rf_mkstemp(char *template, boole wantdir);
+   EXPORT int rf_mkstemp(char *template, boole wantdir);
 C_DECL_END
 
 FILE *xtmpfile(char **namep = 0,

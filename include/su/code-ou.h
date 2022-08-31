@@ -19,27 +19,41 @@
 #endif
 #undef su_CODE_IN_H
 
+#undef su_HEADER
+#undef rf_HEADER
+
 /* LANG */
 
 #undef C_LANG
 #undef C_DECL_BEGIN
-#undef c_DECL_END
-#undef c_decl
+#undef C_DECL_END
 #undef NSPC_BEGIN
 #undef NSPC_END
 #undef NSPC_USE
+#undef NSPC
 
 #undef CLASS_NO_COPY
 
-#undef pub
-#undef pro
-#undef pri
-#undef sta
-#undef vir
+#undef PUB
+#undef PRO
+#undef PRI
+#undef STA
+#undef VIR
+#undef OVW
+#undef OVR
 
 #undef S
 #undef R
 #undef C
+
+#undef NIL
+
+#undef SHADOW
+
+#undef EXPORT
+#undef EXPORT_DATA
+#undef IMPORT
+#undef IMPORT_DATA
 
 #undef CTA
 #undef LCTA
@@ -47,25 +61,31 @@
 #undef LCTAV
 #undef MCTA
 
-#undef NIL
-
 /* CC */
+
+#undef PACKED
 
 #undef INLINE
 
 #undef LIKELY
 #undef UNLIKELY
 
-/* Support */
+/* SUPPORT MACROS+ */
 
 #undef ABS
 #undef CLIP
 #undef MAX
 #undef MIN
-#undef ISPOW2
+#undef IS_POW2
 
 #undef ALIGN
 #undef ALIGN_SMALL
+
+#undef ASSERT
+#undef ASSERT_EXEC
+#undef ASSERT_JUMP
+#undef ASSERT_RET
+#undef ASSERT_NYD_RET
 
 #undef BITENUM_MASK
 
@@ -80,7 +100,14 @@
 
 #undef NELEM
 
-#undef PTR2SIZE
+#undef NYD_IN
+#undef NYD_OU
+#undef NYD
+#undef NYD2_IN
+#undef NYD2_OU
+#undef NYD2
+
+#undef PTR2UZ
 
 #undef PTRCMP
 
@@ -88,7 +115,7 @@
 #undef N_
 #undef V_
 
-#undef UICMP
+#undef UCMP
 
 #undef UNCONST
 #undef UNVOLATILE
@@ -101,62 +128,81 @@
 #undef VFIELD_SIZE
 #undef VSTRUCT_SIZEOF
 
-/* TYPES */
+/* POD TYPE SUPPORT (only if !C++) */
 
-#undef UI8_MAX
-#undef SI8_MIN
-#undef SI8_MAX
-#undef ui8
-#undef si8
+#if C_LANG
+# undef ul
+# undef ui
+# undef us
+# undef uc
 
-#undef FAL0
-#undef TRU1
-#undef TRUM1
-#undef boole
+# undef sl
+# undef si
+# undef ss
+# undef sc
 
-#undef UI16_MAX
-#undef SI16_MIN
-#undef SI16_MAX
-#undef ui16
-#undef si16
+# undef U8_MAX
+# undef S8_MIN
+# undef S8_MAX
+# undef u8
+# undef s8
 
-#undef UI32_MAX
-#undef SI32_MIN
-#undef SI32_MAX
-#undef ui32
-#undef si32
+# undef U16_MAX
+# undef S16_MIN
+# undef S16_MAX
+# undef u16
+# undef s16
 
-#undef UI64_MAX
-#undef SI64_MIN
-#undef SI64_MAX
-#undef ui64
-#undef si64
+# undef U32_MAX
+# undef S32_MIN
+# undef S32_MAX
+# undef u32
+# undef s32
 
-#undef uiz
-#undef siz
+# undef U64_MAX
+# undef S64_MIN
+# undef S64_MAX
+# undef U64_C
+# undef S64_C
+# undef u64
+# undef s64
 
-#undef uip
-#undef sip
+# undef UZ_MAX
+# undef SZ_MIN
+# undef SZ_MAX
+# undef UZ_BITS
+# undef uz
+# undef sz
 
-/* PROBLEMS */
+# undef up
+# undef sp
 
-#undef NYD_IN
-#undef NYD_OU
-#undef NYD
-#undef NYD2_IN
-#undef NYD2_OU
-#undef NYD2
+# undef FAL0
+# undef TRU1
+# undef TRUM1
+# undef boole
+#endif /* C_LANG */
 
-#undef ASSERT
-#undef ASSERT_EXEC
-#undef ASSERT_JUMP
-#undef ASSERT_NYD_RET
-#undef ASSERT_NYD_RET_THIS
-#undef ASSERT_NYD_RET_SELF
-#undef ASSERT_NYD_RET_VAL
-#undef ASSERT_RET
-#undef ASSERT_RET_THIS
-#undef ASSERT_RET_SELF
-#undef ASSERT_RET_VAL
+/* MEMORY */
+
+#undef su_ALLOC
+#undef su_NALLOC
+#undef su_CALLOC
+#undef su_NCALLOC
+#undef su_REALLOC
+#undef su_NREALLOC
+#undef su_TALLOC
+#undef su_TCALLOC
+#undef su_TREALLOC
+#undef su_FREE
+#if !C_LANG
+# undef su_NEW
+# undef su_CNEW
+# undef su_NEW_HEAP
+# undef su_DEL
+# undef su_DEL_HEAP
+# undef su_DEL_PRIVATE
+# undef su_DEL_HEAP_PRIVATE
+#endif
 
 /* s-it-mode */

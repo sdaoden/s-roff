@@ -24,7 +24,7 @@
 #include "lib.h"
 #include "tbl-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include "file-case.h"
 
@@ -401,17 +401,17 @@ options *process_options(table_input &in)
     return opt;
   char *p = &line[0];
   for (;;) {
-    while (!su_isalpha(*p) && *p != '\0')
+    while (!su_cs_is_alpha(*p) && *p != '\0')
       p++;
     if (*p == '\0')
       break;
     char *q = p;
-    while (su_isalpha(*q))
+    while (su_cs_is_alpha(*q))
       q++;
     char *arg = 0;
     if (*q != '(' && *q != '\0')
       *q++ = '\0';
-    while (su_isspace(*q))
+    while (su_cs_is_space(*q))
       q++;
     if (*q == '(') {
       *q++ = '\0';
@@ -427,7 +427,7 @@ options *process_options(table_input &in)
       if (arg)
 	error("argument without option");
     }
-    else if (!su_strcasecmp(p, "tab")) {
+    else if (!su_cs_casecmp(p, "tab")) {
       if (!arg)
 	error("`tab' option requires argument in parentheses");
       else {
@@ -437,7 +437,7 @@ options *process_options(table_input &in)
 	  opt->tab_char = arg[0];
       }
     }
-    else if (!su_strcasecmp(p, "linesize")) {
+    else if (!su_cs_casecmp(p, "linesize")) {
       if (!arg)
 	error("`linesize' option requires argument in parentheses");
       else {
@@ -449,7 +449,7 @@ options *process_options(table_input &in)
 	}
       }
     }
-    else if (!su_strcasecmp(p, "delim")) {
+    else if (!su_cs_casecmp(p, "delim")) {
       if (!arg)
 	error("`delim' option requires argument in parentheses");
       else if (arg[0] == '\0' || arg[1] == '\0' || arg[2] != '\0')
@@ -459,47 +459,47 @@ options *process_options(table_input &in)
 	opt->delim[1] = arg[1];
       }
     }
-    else if (!su_strcasecmp(p, "center") || !su_strcasecmp(p, "centre")) {
+    else if (!su_cs_casecmp(p, "center") || !su_cs_casecmp(p, "centre")) {
       if (arg)
 	error("`center' option does not take an argument");
       opt->flags |= table::CENTER;
     }
-    else if (!su_strcasecmp(p, "expand")) {
+    else if (!su_cs_casecmp(p, "expand")) {
       if (arg)
 	error("`expand' option does not take an argument");
       opt->flags |= table::EXPAND;
     }
-    else if (!su_strcasecmp(p, "box") || !su_strcasecmp(p, "frame")) {
+    else if (!su_cs_casecmp(p, "box") || !su_cs_casecmp(p, "frame")) {
       if (arg)
 	error("`box' option does not take an argument");
       opt->flags |= table::BOX;
     }
-    else if (!su_strcasecmp(p, "doublebox") ||
-        !su_strcasecmp(p, "doubleframe")) {
+    else if (!su_cs_casecmp(p, "doublebox") ||
+        !su_cs_casecmp(p, "doubleframe")) {
       if (arg)
 	error("`doublebox' option does not take an argument");
       opt->flags |= table::DOUBLEBOX;
     }
-    else if (!su_strcasecmp(p, "allbox")) {
+    else if (!su_cs_casecmp(p, "allbox")) {
       if (arg)
 	error("`allbox' option does not take an argument");
       opt->flags |= table::ALLBOX;
     }
-    else if (su_strcasecmp(p, "nokeep")) {
+    else if (su_cs_casecmp(p, "nokeep")) {
       if (arg)
 	error("`nokeep' option does not take an argument");
       opt->flags |= table::NOKEEP;
     }
-    else if (su_strcasecmp(p, "nospaces")) {
+    else if (su_cs_casecmp(p, "nospaces")) {
       if (arg)
 	error("`nospaces' option does not take an argument");
       opt->flags |= table::NOSPACES;
-    } else if (su_strcasecmp(p, "nowarn")) { // TODO if(arg)goto jerr;
+    } else if (su_cs_casecmp(p, "nowarn")) { // TODO if(arg)goto jerr;
       if (arg)
         error("`nowarn' option does not take an argument");
       opt->flags |= table::NOWARN;
     }
-    else if (!su_strcasecmp(p, "decimalpoint")) {
+    else if (!su_cs_casecmp(p, "decimalpoint")) {
       if (!arg)
 	error("`decimalpoint' option requires argument in parentheses");
       else {
@@ -509,7 +509,7 @@ options *process_options(table_input &in)
 	  opt->decimal_point_char = arg[0];
       }
     }
-    else if (!su_strcasecmp(p, "experimental")) {
+    else if (!su_cs_casecmp(p, "experimental")) {
       opt->flags |= table::EXPERIMENTAL;
     }
     else {
@@ -872,7 +872,7 @@ format *process_format(table_input &in, options *opt,
 	  do {
 	    w = w*10 + (c - '0');
 	    c = in.get();
-	  } while (c != EOF && su_isdigit(c));
+	  } while (c != EOF && su_cs_is_digit(c));
 	  list->separation = w;
 	}
 	break;
@@ -920,7 +920,7 @@ format *process_format(table_input &in, options *opt,
 	  list->font = c;
 	  char cc = c;
 	  c = in.get();
-	  if (!su_isdigit(cc)
+	  if (!su_cs_is_digit(cc)
 	      && c != EOF && c != ' ' && c != '\t' && c != '.' && c != '\n') {
 	    list->font += char(c);
 	    c = in.get();
@@ -959,7 +959,7 @@ format *process_format(table_input &in, options *opt,
 	  list->macro = c;
 	  char cc = c;
 	  c = in.get();
-	  if (!su_isdigit(cc)
+	  if (!su_cs_is_digit(cc)
 	      && c != EOF && c != ' ' && c != '\t' && c != '.' && c != '\n') {
 	    list->macro += char(c);
 	    c = in.get();
@@ -975,7 +975,7 @@ format *process_format(table_input &in, options *opt,
 	  list->point_size.inc = (c == '+' ? 1 : -1);
 	  c = in.get();
 	}
-	if (c == EOF || !su_isdigit(c)) {
+	if (c == EOF || !su_cs_is_digit(c)) {
 	  error("`p' modifier must be followed by number");
 	  list->point_size.inc = 0;
 	}
@@ -984,7 +984,7 @@ format *process_format(table_input &in, options *opt,
 	    list->point_size.val *= 10;
 	    list->point_size.val += c - '0';
 	    c = in.get();
-	  } while (c != EOF && su_isdigit(c));
+	  } while (c != EOF && su_cs_is_digit(c));
 	}
 	if (list->point_size.val > MAX_POINT_SIZE
 	    || list->point_size.val < -MAX_POINT_SIZE) {
@@ -1012,7 +1012,7 @@ format *process_format(table_input &in, options *opt,
 	  list->vertical_spacing.inc = (c == '+' ? 1 : -1);
 	  c = in.get();
 	}
-	if (c == EOF || !su_isdigit(c)) {
+	if (c == EOF || !su_cs_is_digit(c)) {
 	  error("`v' modifier must be followed by number");
 	  list->vertical_spacing.inc = 0;
 	}
@@ -1021,7 +1021,7 @@ format *process_format(table_input &in, options *opt,
 	    list->vertical_spacing.val *= 10;
 	    list->vertical_spacing.val += c - '0';
 	    c = in.get();
-	  } while (c != EOF && su_isdigit(c));
+	  } while (c != EOF && su_cs_is_digit(c));
 	}
 	if (list->vertical_spacing.val > MAX_VERTICAL_SPACING
 	    || list->vertical_spacing.val < -MAX_VERTICAL_SPACING) {
@@ -1056,13 +1056,13 @@ format *process_format(table_input &in, options *opt,
 	  }
 	  else
 	    list->width = "";
-	  if (c == EOF || !su_isdigit(c))
+	  if (c == EOF || !su_cs_is_digit(c))
 	    error("bad argument for `w' modifier");
 	  else {
 	    do {
 	      list->width += char(c);
 	      c = in.get();
-	    } while (c != EOF && su_isdigit(c));
+	    } while (c != EOF && su_cs_is_digit(c));
 	  }
 	}
 	// `w' and `x' are mutually exclusive
@@ -1254,7 +1254,7 @@ table *process_data(table_input &in, format *f, options *opt)
       break;
     if (c == '.') {
       int d = in.get();
-      if (d != EOF && su_isdigit(d)) {
+      if (d != EOF && su_cs_is_digit(d)) {
 	in.unget(d);
 	type = DATA_INPUT_LINE;
       }
@@ -1613,7 +1613,7 @@ int main(int argc, char **argv)
     rf_current_filename_set(fname);
     fcp = file_case::muxer(fname);
     if (fcp == NULL) {
-      ASSERT(su_strcmp(fcp, "-"));
+      ASSERT(su_cs_cmp(fcp, "-"));
       fatal("can't open `%1': %2", rf_current_filename(), su_err_doc(errno));
     }
 

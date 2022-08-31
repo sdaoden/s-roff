@@ -10,7 +10,7 @@
 #include "lib.h"
 #include grn-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include "errarg.h"
 #include "error.h"
@@ -203,7 +203,7 @@ DBRead(register FILE *file)
 int
 DBGetType(register char *s)
 {
-  if (su_isdigit(s[0]) || (s[0] == '-'))	/* old element format or EOF */
+  if (su_cs_is_digit(s[0]) || (s[0] == '-'))	/* old element format or EOF */
     return (atoi(s));
 
   switch (s[0]) {
@@ -296,7 +296,7 @@ xscanf(FILE *f,
     return 0;
   }
   i = m = frac = 0;
-  while (su_isdigit(c) || c == '.' || c == '-') {
+  while (su_cs_is_digit(c) || c == '.' || c == '-') {
     if (c == '-') {
       m++;
       c = getc(f);
@@ -317,7 +317,7 @@ xscanf(FILE *f,
 
   while ((c = getc(f)) == ' ');
   j = m = frac = 0;
-  while (su_isdigit(c) || c == '.' || c == '-') {
+  while (su_cs_is_digit(c) || c == '.' || c == '-') {
     if (c == '-') {
       m++;
       c = getc(f);

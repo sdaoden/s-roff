@@ -34,6 +34,9 @@
 # include <unistd.h>
 #endif
 
+#include "su/cs.h"
+#include "su/mem.h"
+
 #include "driver.h"
 #include "stringclass.h"
 
@@ -56,9 +59,8 @@
 word::word (const char *w, int n)
   : next(0)
 {
-  s = new char[n+1];
-  strncpy(s, w, n);
-  s[n] = (char)0;
+  s = su_TALLOC(char, ++n);
+  su_cs_copy_n(s, w, n);
 }
 
 /*
@@ -67,7 +69,7 @@ word::word (const char *w, int n)
 
 word::~word ()
 {
-  a_delete s;
+  su_FREE(s);
 }
 
 /*

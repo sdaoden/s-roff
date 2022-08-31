@@ -25,7 +25,8 @@
 #include "config.h"
 
 #include <assert.h>
-#include <string.h>
+
+#include <su/cs.h>
 
 // `class PTABLE(T)' is the type of a hash table mapping a string
 // (const char *) to an object of type T.
@@ -49,10 +50,6 @@ extern unsigned next_ptable_size(unsigned);	// Return the first suitable
 				// hash table size greater than the given
 				// value.
 #endif
-
-extern unsigned long hash_string(const char *);	// Return a hash code of the
-				// given string.  The hash function is
-				// platform dependent.  */
 
 // Declare the types `class PTABLE(T)', `struct PASSOC(T)', and `class
 // PTABLE_ITERATOR(T)' for the type `T'.
@@ -132,22 +129,22 @@ PTABLE(T)::PTABLE(T)()							      \
 PTABLE(T)::~PTABLE(T)()							      \
 {									      \
   for (unsigned i = 0; i < size; i++) {					      \
-    a_delete v[i].key;							      \
-    a_delete v[i].val;							      \
+    su_FREE(v[i].key);							      \
+    delete v[i].val;							      \
   }									      \
-  a_delete v;								      \
+  delete v;								      \
 }									      \
 									      \
 const char *PTABLE(T)::define(const char *key, T *val)			      \
 {									      \
   assert(key != 0);							      \
-  unsigned long h = hash_string(key);					      \
+  unsigned long h = su_cs_hash(key);					      \
   unsigned n;								      \
   for (n = unsigned(h % size);					      	      \
        v[n].key != 0;							      \
        n = (n == 0 ? size - 1 : n - 1))					      \
-    if (strcmp(v[n].key, key) == 0) {					      \
-      a_delete v[n].val;						      \
+    if (su_cs_cmp(v[n].key, key) == 0) {					      \
+      delete v[n].val;						      \
       v[n].val = val;							      \
       return v[n].key;							      \
     }									      \
@@ -161,10 +158,10 @@ const char *PTABLE(T)::define(const char *key, T *val)			      \
     for (unsigned i = 0; i < old_size; i++)				      \
       if (oldv[i].key != 0) {						      \
 	if (oldv[i].val == 0)						      \
-	  a_delete oldv[i].key;						      \
+	  su_FREE(oldv[i].key);						      \
 	else {								      \
 	  unsigned j;							      \
-	  for (j = unsigned(hash_string(oldv[i].key) % size);	      	      \
+	  for (j = unsigned(su_cs_hash(oldv[i].key) % size);	      	      \
 	       v[j].key != 0;						      \
 	       j = (j == 0 ? size - 1 : j - 1))				      \
 		 ;							      \
@@ -176,10 +173,11 @@ const char *PTABLE(T)::define(const char *key, T *val)			      \
 	 v[n].key != 0;							      \
 	 n = (n == 0 ? size - 1 : n - 1))				      \
       ;									      \
-    a_delete oldv;							      \
+    delete oldv;							      \
   }									      \
-  char *temp = new char[strlen(key)+1];					      \
-  strcpy(temp, key);							      \
+  uz len = su_cs_len(key) +1;
+  char *temp = su_TALLOC(char, len);					      \
+  memcpy(temp, key, len);							      \
   v[n].key = temp;							      \
   v[n].val = val;							      \
   used++;								      \
@@ -189,10 +187,10 @@ const char *PTABLE(T)::define(const char *key, T *val)			      \
 T *PTABLE(T)::lookup(const char *key)					      \
 {									      \
   assert(key != 0);							      \
-  for (unsigned n = unsigned(hash_string(key) % size);			      \
+  for (unsigned n = unsigned(su_cs_hash(key) % size);			      \
        v[n].key != 0;							      \
        n = (n == 0 ? size - 1 : n - 1))					      \
-    if (strcmp(v[n].key, key) == 0)					      \
+    if (!su_cs_cmp(v[n].key, key))					      \
       return v[n].val;							      \
   return 0;								      \
 }									      \
@@ -201,10 +199,10 @@ T *PTABLE(T)::lookupassoc(const char **keyptr)				      \
 {									      \
   const char *key = *keyptr;						      \
   assert(key != 0);							      \
-  for (unsigned n = unsigned(hash_string(key) % size);			      \
+  for (unsigned n = unsigned(su_cs_hash(key) % size);			      \
        v[n].key != 0;							      \
        n = (n == 0 ? size - 1 : n - 1))					      \
-    if (strcmp(v[n].key, key) == 0) {					      \
+    if (!su_cs_cmp(v[n].key, key)) {					      \
       *keyptr = v[n].key;						      \
       return v[n].val;							      \
     }									      \

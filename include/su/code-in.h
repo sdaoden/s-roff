@@ -14,8 +14,8 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#ifndef su_PRIMARY_H
-# error su/code-in.h must be included after su/primary.h
+#ifndef su_CODE_H
+# error su/code-in.h must be included after su/code.h
 #endif
 #ifdef su_CODE_IN_H
 # error su/code-ou.h must be included before including su/code-in.h again
@@ -26,27 +26,54 @@
 
 #undef C_LANG
 #undef C_DECL_BEGIN
-#undef c_DECL_END
-#undef c_decl
+#undef C_DECL_END
 #define C_LANG su_C_LANG
 #define C_DECL_BEGIN su_C_DECL_BEGIN
 #define C_DECL_END su_C_DECL_END
-#define c_decl su_c_decl
 #define NSPC_BEGIN su_NSPC_BEGIN
 #define NSPC_END su_NSPC_END
 #define NSPC_USE su_NSPC_USE
+#defien NSPC su_NSPC
 
 #define CLASS_NO_COPY su_CLASS_NO_COPY
 
-#define pub su_public
-#define pro su_protected
-#define pri su_private
-#define sta su_static
-#define vir su_virtual
+#define PUB su_PUB
+#define PRO su_PRO
+#define PRI su_PRI
+#define STA su_STA
+#define VIR su_VIR
+#define OVW su_OVW
+#define OVR su_OVR
 
 #define S su_S
 #define R su_R
 #define C su_C
+
+#define NIL su_NIL
+
+#define SHADOW su_SHADOW
+
+#ifdef su_HEADER
+# ifdef su_SOURCE
+#  define EXPORT su_EXPORT
+#  define EXPORT_DATA su_EXPORT_DATA
+#  define IMPORT su_IMPORT
+#  define IMPORT_DATA su_IMPORT_DATA
+# endif
+#elif defined rf_HEADER
+# ifdef rf_SOURCE
+#  define EXPORT su_EXPORT
+#  define EXPORT_DATA su_EXPORT_DATA
+#  define IMPORT su_IMPORT
+#  define IMPORT_DATA su_IMPORT_DATA
+# endif
+#endif
+#ifndef EXPORT
+# define EXPORT su_IMPORT
+# define EXPORT_DATA su_IMPORT_DATA
+# define IMPORT su_IMPORT
+# define IMPORT_DATA su_IMPORT_DATA
+#endif
 
 #define CTA su_CTA
 #define LCTA su_LCTA
@@ -54,32 +81,64 @@
 #define LCTAV su_LCTAV
 #define MCTA su_MCTA
 
-#define NIL su_NIL
-
 /* CC */
+
+#define PACKED su_PACKED
 
 #define INLINE su_INLINE
 
 #define LIKELY su_LIKELY
 #define UNLIKELY su_UNLIKELY
 
-/* Support */
+/* SUPPORT MACROS+ */
 
 #undef ABS
 #undef CLIP
 #undef MAX
 #undef MIN
-#undef ISPOW2
+#undef IS_POW2
 #define ABS su_ABS
 #define CLIP su_CLIP
 #define MAX su_MAX
 #define MIN su_MIN
-#define ISPOW2 su_ISPOW2
+#define IS_POW2 su_IS_POW2
 
 #define ALIGN su_ALIGN
 #define ALIGN_SMALL su_ALIGN_SMALL
 
-/* ASSERT is last! */
+/* ASSERT series */
+#if defined NDEBUG || !defined su_HAVE_DEBUG
+# define ASSERT(X) do{}while(0)
+# define ASSERT_EXEC(X,S) do{}while(0)
+# define ASSERT_JUMP(X,L) do{}while(0)
+# define ASSERT_RET(X,Y) do{}while(0)
+# define ASSERT_NYD_RET(X,Y) do{}while(0)
+#else
+# define ASSERT(X) \
+do if(!(X))\
+   su_assert(STRINGIFY(X), __FILE__, __LINE__, su_FUN, TRU1);\
+while(0)
+# define ASSERT_EXEC(X,S) \
+do if(!(X)){\
+   su_assert(STRINGIFY(X), __FILE__, __LINE__, su_FUN, FAL0);\
+   S;\
+}while(0)
+# define ASSERT_JUMP(X,L) \
+do if(!(X)){\
+   su_assert(STRINGIFY(X), __FILE__, __LINE__, su_FUN, FAL0);\
+   goto L;\
+}while(0)
+# define ASSERT_RET(X,Y) \
+do if(!(X)){\
+   su_assert(STRINGIFY(X), __FILE__, __LINE__, su_FUN, FAL0);\
+   return Y;\
+}while(0)
+# define ASSERT_NYD_RET(X,Y) \
+do if(!(X)){\
+   su_assert(STRINGIFY(X), __FILE__, __LINE__, su_FUN, FAL0);\
+   Y; goto j__su_nydou;\
+}while(0)
+#endif /* defined NDEBUG || !defined su_HAVE_DEBUG */
 
 #define BITENUM_MASK su_BITENUM_MASK
 
@@ -94,9 +153,44 @@
 
 #define NELEM su_NELEM
 
-/* NYD at bottom */
+/* Not-Yet-Dead macros TODO stubs */
+#if defined NDEBUG || (!defined su_HAVE_DEBUG && !defined su_HAVE_DEVEL)
+# undef NYD
+# undef NYD2
+#elif defined su_HAVE_DEVEL
+# define NYD_IN if(1){
+# define NYD_OU goto j__su_nydou;j__su_nydou:;}else{}
+# define NYD if(0){}else{}
+# ifdef NYD2
+#  undef NYD2
+#  define NYD2_IN if(1){
+#  define NYD2_OU goto j__su_nydou;j__su_nydou:;}else{}
+#  define NYD2 if(0){}else{}
+# endif
+#else
+# define NYD_IN do{
+# define NYD_OU goto j__su_nydou;j__su_nydou:;}while(0)
+# define NYD do{}while(0)
+# ifdef NYD2
+#  undef NYD2
+#  define NYD2_IN do{
+#  define NYD2_OU goto j__su_nydou;j__su_nydou:;}while(0)
+#  define NYD2 do{}while(0)
+# endif
+#endif
+/**/
+#ifndef NYD
+# define NYD_IN do{
+# define NYD_OU goto j__su_nydou;j__su_nydou:;}while(0)
+# define NYD do{}while(0)
+#endif
+#ifndef NYD2
+# define NYD2_IN do{
+# define NYD2_OU goto j__su_nydou;j__su_nydou:;}while(0)
+# define NYD2 do{}while(0)
+#endif
 
-#define PTR2SIZE su_PTR2SIZE
+#define PTR2UZ su_PTR2UZ
 
 #define PTRCMP su_PTRCMP
 
@@ -108,7 +202,7 @@
 #define N_(S) S
 #define V_(S) S
 
-#define UICMP su_UICMP
+#define UCMP su_UCMP
 
 #define UNCONST su_UNCONST
 #define UNVOLATILE su_UNVOLATILE
@@ -121,102 +215,82 @@
 #define VFIELD_SIZE su_VFIELD_SIZE
 #define VSTRUCT_SIZEOF su_VSTRUCT_SIZEOF
 
-/* TYPES */
+/* POD TYPE SUPPORT (only if !C++) */
+#if C_LANG
 
-#define UI8_MAX su_UI8_MAX
-#define SI8_MIN su_SI8_MIN
-#define SI8_MAX su_SI8_MAX
-#define ui8 su_ui8
-#define si8 su_si8
+# define ul su_ul
+# define ui su_ui
+# define us su_us
+# define uc su_uc
 
-#define FAL0 su_FAL0
-#define TRU1 su_TRU1
-#define TRUM1 su_TRUM1
-#define boole su_boole
+# define sl su_sl
+# define si su_si
+# define ss su_ss
+# define sc su_sc
 
-#define UI16_MAX su_UI16_MAX
-#define SI16_MIN su_SI16_MIN
-#define SI16_MAX su_SI16_MAX
-#define ui16 su_ui16
-#define si16 su_si16
+# define U8_MAX su_U8_MAX
+# define S8_MIN su_S8_MIN
+# define S8_MAX su_S8_MAX
+# define u8 su_u8
+# define s8 su_s8
 
-#define UI32_MAX su_UI32_MAX
-#define SI32_MIN su_SI32_MIN
-#define SI32_MAX su_SI32_MAX
-#define ui32 su_ui32
-#define si32 su_si32
+# define U16_MAX su_U16_MAX
+# define S16_MIN su_S16_MIN
+# define S16_MAX su_S16_MAX
+# define u16 su_u16
+# define s16 su_s16
 
-#define UI64_MAX su_UI64_MAX
-#define SI64_MIN su_SI64_MIN
-#define SI64_MAX su_SI64_MAX
-#define ui64 su_ui64
-#define si64 su_si64
+# define U32_MAX su_U32_MAX
+# define S32_MIN su_S32_MIN
+# define S32_MAX su_S32_MAX
+# define u32 su_u32
+# define s32 su_s32
 
-#define uiz su_uiz
-#define siz su_siz
+# define U64_MAX su_U64_MAX
+# define S64_MIN su_S64_MIN
+# define S64_MAX su_S64_MAX
+# define U64_C su_U64_C
+# define S64_C su_S64_C
+# define u64 su_u64
+# define s64 su_s64
 
-#define uip su_uip
-#define sip su_sip
+# define UZ_MAX su_UZ_MAX
+# define SZ_MIN su_SZ_MIN
+# define SZ_MAX su_SZ_MAX
+# define UZ_BITS su_UZ_BITS
+# define uz su_uz
+# define sz su_sz
 
-/* PROBLEMS */
+# define up su_up
+# define sp su_sp
 
-/* Not-Yet-Dead macros TODO stub */
-#ifndef NYD
-# ifdef su_HAVE_DEVEL
-#  define NYD_IN if(1){
-#  define NYD_OU ;}else{}
-#  define NYD if(0){}else{}
-# else
-#  define NYD_IN do{
-#  define NYD_OU ;}while(0)
-#  define NYD do{}while(0)
-# endif
-#endif
-#ifndef NYD2
-# ifdef su_HAVE_DEVEL
-#  define NYD2_IN if(1){
-#  define NYD2_OU ;}else{}
-#  define NYD2 if(0){}else{}
-# else
-#  define NYD2_IN do{
-#  define NYD2_OU ;}while(0)
-#  define NYD2 do{}while(0)
-# endif
-#endif
+# define FAL0 su_FAL0
+# define TRU1 su_TRU1
+# define TRUM1 su_TRUM1
+# define boole su_boole
 
-/* The problem with ASSERT is that primary.h must be fully included first */
-#ifdef su_ASSERT_H
-# define ASSERT(X) do {if(!(X)) assert(0);} while(0)
-# define ASSERT_EXEC(X,S) do {if(!(X)) S;} while(0)
-# define ASSERT_JUMP(X,L) do {if(!(X)) goto L;} while(0)
-# define ASSERT_NYD_RET(X) do {if(!(X)) {NYD_OU; return;}} while(0)
-# define ASSERT_NYD_RET_THIS(X) do {if(!(X)) {NYD_OU; return *this;}} while(0)
-# define ASSERT_NYD_RET_SELF(X) do {if(!(X)) {NYD_OU; return self;}} while(0)
-# define ASSERT_NYD_RET_VAL(X,V) do {if(!(X)) {NYD_OU; return V;}} while(0)
-# define ASSERT_RET(X) do {if(!(X)) return;} while(0)
-# define ASSERT_RET_THIS(X) do {if(!(X)) return *this;} while(0)
-# define ASSERT_RET_SELF(X) do {if(!(X)) return self;} while(0)
-# define ASSERT_RET_VAL(X,V) do {if(!(X)) return V;} while(0)
-#elif !defined su_HAVE_DEBUG || defined NDEBUG ||\
-      !defined su_CODE_IN_H_EVER_SEEN
-# define ASSERT(X) do{}while(0)
-# define ASSERT_EXEC(X,S) do{}while(0)
-# define ASSERT_JUMP(X,L) do{}while(0)
-# define ASSERT_NYD_RET(X) do{}while(0)
-# define ASSERT_NYD_RET_THIS(X) do{}while(0)
-# define ASSERT_NYD_RET_SELF(X) do{}while(0)
-# define ASSERT_NYD_RET_VAL(X,V) do{}while(0)
-# define ASSERT_RET(X) do{}while(0)
-# define ASSERT_RET_THIS(X) do{}while(0)
-# define ASSERT_RET_SELF(X) do{}while(0)
-# define ASSERT_RET_VAL(X,V) do{}while(0)
-#else
-# include <su/code-ou.h>
-# include <su/assert.h>
-# include <su/code-in.h>
+#endif /* C_LANG */
+
+/* MEMORY */
+
+#define su_ALLOC su_MEM_ALLOC
+#define su_ALLOC_N su_MEM_ALLOC_N
+#define su_CALLOC su_MEM_CALLOC
+#define su_CALLOC_N su_MEM_CALLOC_N
+#define su_REALLOC su_MEM_REALLOC
+#define su_REALLOC_n su_MEM_REALLOC_N
+#define su_TALLOC su_MEM_TALLOC
+#define su_TCALLOC su_MEM_TCALLOC
+#define su_TREALLOC su_MEM_TREALLOC
+#define su_FREE su_MEM_FREE
+#if !C_LANG
+# define su_NEW su_MEM_NEW
+# define su_CNEW su_MEM_CNEW
+# define su_NEW_HEAP su_MEM_NEW_HEAP
+# define su_DEL su_MEM_DEL
+# define su_DEL_HEAP su_MEM_DEL_HEAP
+# define su_DEL_PRIVATE su_MEM_DEL_PRIVATE
+# define su_DEL_HEAP_PRIVATE su_MEM_DEL_HEAP_PRIVATE
 #endif
 
-#ifndef su_CODE_IN_H_EVER_SEEN
-# define su_CODE_IN_H_EVER_SEEN
-#endif
 /* s-it-mode */

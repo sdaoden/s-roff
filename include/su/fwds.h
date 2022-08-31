@@ -1,6 +1,6 @@
-/*@ su_strdup().
+/*@ Forwards of and for all types.
  *
- * Copyright (c) 2017 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
+ * Copyright (c) 2001 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,31 +14,27 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#define su_FILE "su__strsup_strdup"
+#ifndef su_FWDS_H
+#define su_FWDS_H
 
-#include "su/primary.h"
-#include "su/memory.h"
+#include <su/code.h>
 
-#include "su/strsup.h"
-#include "su/code-in.h"
+#define su_HEADER
+#include <su/code-in.h>
+C_DECL_BEGIN
 
-char *
-su_strdup(char const *cp){
-   char *rv;
-   NYD_IN;
+struct su_array;
+struct su_parray;
 
-   if(cp == NIL)
-      rv = NIL;
-   else{
-      uiz l;
+C_DECL_END
 
-      l = su_strlen(cp) +1;
-      rv = su_talloc(char, l);
-      su_memcpy(rv, cp, l);
-   }
-   NYD_OU;
-   return rv;
-}
+#if !C_LANG
+NSPC_BEGIN(su)
 
-#include "su/code-ou.h"
+template<class T> class array;
+
+NSPC_END(su)
+#endif /* !C_LANG */
+#include <su/code-ou.h>
+#endif /* su_FWDS_H */
 /* s-it-mode */

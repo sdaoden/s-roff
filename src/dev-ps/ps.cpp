@@ -29,7 +29,8 @@
 #include "lib.h"
 #include "ps-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
+#include "su/mem.h"
 
 #include <time.h>
 
@@ -204,7 +205,7 @@ ps_output &ps_output::put_string(const char *s, int n)
   int i;
   for (i = 0; i < n; i++) {
     char c = s[i];
-    if (is_ascii(c) && su_isprint(c)) {
+    if (is_ascii(c) && su_cisprint(c)) {
       if (c == '(' || c == ')' || c == '\\')
 	len += 2;
       else
@@ -248,7 +249,7 @@ ps_output &ps_output::put_string(const char *s, int n)
     col++;
     for (i = 0; i < n; i++) {
       char c = s[i];
-      if (is_ascii(c) && su_isprint(c)) {
+      if (is_ascii(c) && su_cisprint(c)) {
 	if (c == '(' || c == ')' || c == '\\')
 	  len = 2;
 	else
@@ -429,8 +430,8 @@ ps_font::ps_font(const char *nm)
 
 ps_font::~ps_font()
 {
-  su_free(encoding);
-  su_free(reencoded_name);
+  su_FREE(encoding);
+  su_FREE(reencoded_name);
 }
 
 void ps_font::handle_unknown_font_command(const char *command, const char *arg,
@@ -441,7 +442,7 @@ void ps_font::handle_unknown_font_command(const char *command, const char *arg,
       error_with_file_and_line(filename, lineno,
 			       "`encoding' command requires an argument");
     else
-      encoding = su_strdup(arg);
+      encoding = su_cs_dup(arg);
   }
 }
 
@@ -478,7 +479,7 @@ subencoding::subencoding(font *f, unsigned int n, int ix, subencoding *s)
 
 subencoding::~subencoding()
 {
-  su_free(subfont);
+  su_FREE(subfont);
 }
 
 class style
@@ -649,7 +650,7 @@ int ps_printer::set_encoding_index(ps_font *f)
       char *encoding = ((ps_font *)p->p)->encoding;
       int encoding_index = ((ps_font *)p->p)->encoding_index;
       if (encoding != NULL && encoding_index >= 0
-	  && strcmp(f->encoding, encoding) == 0) {
+	  && !su_cs_cmp(f->encoding, encoding)) {
 	return f->encoding_index = encoding_index;
       }
     }
@@ -794,7 +795,7 @@ void ps_printer::define_encoding(const char *encoding, int encoding_index)
   char buf[BUFFER_SIZE];
   for (int lineno = 1; fcp->get_line(buf, BUFFER_SIZE) != NULL; ++lineno) {
     char *p = buf;
-    while (su_isspace(*p))
+    while (su_cisspace(*p))
       p++;
     if (*p != '#' && *p != '\0' && (p = strtok(buf, WS)) != 0) {
       size_t j;
@@ -802,8 +803,8 @@ void ps_printer::define_encoding(const char *encoding, int encoding_index)
       int n = 0; // pacify compiler
       if (q == 0 || sscanf(q, "%d", &n) != 1 || n < 0 || n >= 256)
         fatal_with_file_and_line(fcp->path(), lineno, "bad second field");
-      vec[n] = su_talloc(char, j = strlen(p) +1);
-      memcpy(vec[n], p, j);
+      vec[n] = su_TALLOC(char, j = strlen(p) +1);
+      su_mem_copy(vec[n], p, j);
     }
   }
 
@@ -814,7 +815,7 @@ void ps_printer::define_encoding(const char *encoding, int encoding_index)
       out.put_literal_symbol(".notdef");
     else {
       out.put_literal_symbol(vec[i]);
-      su_free(vec[i]);
+      su_FREE(vec[i]);
     }
   }
   out.put_delimiter(']')
@@ -835,7 +836,7 @@ void ps_printer::encode_fonts()
 {
   if (next_encoding_index == 0)
     return;
-  char *done_encoding = su_talloc(char, next_encoding_index);
+  char *done_encoding = su_TALLOC(char, next_encoding_index);
   for (int i = 0; i < next_encoding_index; i++)
     done_encoding[i] = 0;
   for (font_pointer_list *f = font_list; f; f = f->next) {
@@ -849,7 +850,7 @@ void ps_printer::encode_fonts()
       reencode_font((ps_font *)f->p);
     }
   }
-  su_free(done_encoding);
+  su_FREE(done_encoding);
 }
 
 void ps_printer::encode_subfont(subencoding *sub)
@@ -894,7 +895,7 @@ void ps_printer::set_style(const style &sty)
 
         ei = set_encoding_index(S(ps_font*,sty.f));
         i = strlen(psname) + 1 + INT_DIGITS +1;
-        tem = su_talloc(char, i);
+        tem = su_TALLOC(char, i);
         snprintf(tem, i, "%s@%d", psname, ei);
         psname = tem;
         S(ps_font*,sty.f)->reencoded_name = tem;
@@ -1593,7 +1594,7 @@ static int check_line_lengths(const char *p)
 
 void ps_printer::_do_exec(char *arg, const environment *env)
 {
-  while (su_isspace(*arg))
+  while (su_cisspace(*arg))
     arg++;
   if (*arg == '\0') {
     error("missing argument to X exec command");
@@ -1618,7 +1619,7 @@ void ps_printer::_do_exec(char *arg, const environment *env)
 
 void ps_printer::_do_file(char *arg, const environment *env)
 {
-  while (su_isspace(*arg))
+  while (su_cisspace(*arg))
     arg++;
   if (*arg == '\0') {
     error("missing argument to X file command");
@@ -1644,7 +1645,7 @@ void ps_printer::_do_file(char *arg, const environment *env)
 
 void ps_printer::_do_def(char *arg, const environment *)
 {
-  while (su_isspace(*arg))
+  while (su_cisspace(*arg))
     arg++;
   if (!check_line_lengths(arg))
     warning("lines in X def command should"
@@ -1670,7 +1671,7 @@ void ps_printer::_do_mdef(char *arg, const environment *)
     return;
   }
   arg = p;
-  while (su_isspace(*arg))
+  while (su_cisspace(*arg))
     arg++;
   if (!check_line_lengths(arg))
     warning("lines in X mdef command should"
@@ -1700,7 +1701,7 @@ void ps_printer::_do_import(char *arg, const environment *env)
     parms[nparms++] = int(n);
     p = end;
   }
-  if (su_isalpha(*p) && (p[1] == '\0' || p[1] == ' ' || p[1] == '\n')) {
+  if (su_cisalpha(*p) && (p[1] == '\0' || p[1] == ' ' || p[1] == '\n')) {
     error("scaling indicators not allowed in arguments for X import command");
     return;
   }
@@ -1838,7 +1839,7 @@ int main(int argc, char **argv)
       env += '=';
       env += optarg;
       env += '\0';
-      if (putenv(su_strdup(env.contents())))
+      if (putenv(su_cs_dup(env.contents())))
 	fatal("putenv failed");
       break;
     case 'v':

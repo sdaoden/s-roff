@@ -30,6 +30,8 @@
 #include <signal.h>
 #include <stdlib.h>
 
+#include "su/cs.h"
+
 #include "errarg.h"
 #include "error.h"
 #include "lib.h"
@@ -55,7 +57,7 @@ pushBackBuffer::pushBackBuffer (char *filename)
   verbose  = 0;
   eofFound = false;
   lineNo   = 1;
-  if (strcmp(filename, "") != 0) {
+  if (su_cs_cmp(filename, "")) {
     if ((stdIn = dup(0)) == -1)
       sys_fatal("cannot dup(2)licate standard input");
     close(0);
@@ -176,7 +178,7 @@ void pushBackBuffer::skipUntilToken (void)
 
 int pushBackBuffer::isString (const char *s)
 {
-  int length=strlen(s);
+  int length=su_cs_len(s);
   int i=0;
 
   while ((i<length) && (putPB(getPB())==s[i])) {
@@ -308,11 +310,14 @@ char *pushBackBuffer::readString (void)
     ch = getPB();
   }
   if (i < MAXPUSHBACKSTACK) {
-    buffer[i] = (char)0;
-    str = (char *)malloc(strlen(buffer)+1);
-    strcpy(str, buffer);
+    uz len;
+
+    buffer[i] = '\0';
+    len = su_cs_len(buffer) +1;
+    str = su_TALLOC(char, len);
+    su_mem_copy(str, buffer, len);
   }
-  return( str );
+  return str;
 }
 
 // s-it2-mode

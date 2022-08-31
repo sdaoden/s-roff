@@ -24,7 +24,7 @@
 #include "lib.h"
 #include "tbl-config.h"
 
-#include "su/strsup.h"
+#include "su/cs.h"
 
 #include "table.h"
 
@@ -1537,7 +1537,7 @@ int find_decimal_point(const char *s, char decimal_point_char,
     }
     else if (*p == delim[0])
       in_delim = 1;
-    else if (p[0] == decimal_point_char && su_isdigit(p[1]))
+    else if (p[0] == decimal_point_char && su_cs_is_digit(p[1]))
       possible_pos = p - s;
   if (possible_pos >= 0)
     return possible_pos;
@@ -1549,7 +1549,7 @@ int find_decimal_point(const char *s, char decimal_point_char,
     }
     else if (*p == delim[0])
       in_delim = 1;
-    else if (su_isdigit(*p))
+    else if (su_cs_is_digit(*p))
       possible_pos = p + 1 - s;
   return possible_pos;
 }

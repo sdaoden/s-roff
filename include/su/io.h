@@ -1,4 +1,5 @@
 /*@ I/O and anything around that topic.
+ * TODO needs most things from posix.h/nonposix.h, yet used like su_io_.
  *
  * Copyright (c) 2001 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
@@ -17,18 +18,30 @@
 #ifndef su_IO_H
 #define su_IO_H
 
-#include <su/primary.h>
+#include <su/code.h>
 
+#define su_HEADER
 #include <su/code-in.h>
 C_DECL_BEGIN
 
 /* _PC_NAME_MAX for files in directory dname */
-c_decl uiz su_file_name_max(char const *dname);
+EXPORT uz su_file_name_max(char const *dname);
 
 /* _PC_PATH_MAX for files (in directory dname_or_nil) */
-c_decl uiz su_path_name_max(char const *dname_or_nil);
+EXPORT uz su_path_name_max(char const *dname_or_nil);
 
 C_DECL_END
+#if !C_LANG
+NSPC_BEGIN(su)
+
+inline uz file_name_max(char const *dname) {return su_file_name_max(dname);}
+
+inline uz path_name_max(char const *dname_or_nil){
+   return su_path_name_max(dname_or_nil);
+}
+
+NSPC_END(su)
+#endif /* !C_LANG */
 #include <su/code-ou.h>
 #endif /* su_IO_H */
 /* s-it-mode */

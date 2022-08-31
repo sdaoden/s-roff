@@ -1,4 +1,4 @@
-/*@ su_path_name_max(dname): pathconf(dname, _PC_PATH_MAX).
+/*@ Implementation of io.h: path related functions.
  *
  * Copyright (c) 2017 - 2018 Steffen (Daode) Nurpmeso <steffen@sdaoden.eu>.
  *
@@ -14,14 +14,28 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#define su_FILE "su__io_path_max"
+#define su_FILE "su__io_path"
+#define su_SOURCE
+#define su_SOURCE_IO_PATH
 
-#include "su/primary.h"
+#include "su/code.h"
 
 #include <unistd.h>
 
 #include "su/io.h"
 #include "su/code-in.h"
+
+/* POSIX 2008/Cor 1-2013 defines a minimum of 14 for _POSIX_NAME_MAX */
+#ifndef NAME_MAX
+# ifdef _POSIX_NAME_MAX
+#  define NAME_MAX _POSIX_NAME_MAX
+# else
+#  define NAME_MAX 14
+# endif
+#endif
+#if NAME_MAX + 0 < 8
+# error NAME_MAX is too small
+#endif
 
 /* POSIX 2008/Cor 1-2013 defines for
  * - _POSIX_PATH_MAX a minimum of 256
@@ -35,15 +49,34 @@
 #  define PATH_MAX 1024
 # endif
 #endif
-
 #if PATH_MAX + 0 < 1024
 # undef PATH_MAX
 # define PATH_MAX 1024
 #endif
 
-uiz
+uz
+su_file_name_max(char const *dname){
+   uz rv;
+#ifdef HAVE_PATHCONF
+   long sr;
+#endif
+   NYD_IN;
+   UNUSED(dname);
+   ASSERT_NYD_RET(dname != NIL, rv = NAME_MAX);
+
+#ifdef HAVE_PATHCONF
+   if((sr = pathconf(dname, _PC_NAME_MAX)) != -1)
+      rv = S(uz,sr);
+   else
+#endif
+      rv = NAME_MAX;
+   NYD_OU;
+   return rv;
+}
+
+uz
 su_path_name_max(char const *dname_or_nil){
-   uiz rv;
+   uz rv;
 #ifdef HAVE_PATHCONF
    long rv;
 #endif
@@ -55,7 +88,7 @@ su_path_name_max(char const *dname_or_nil){
       dname_or_nil = "/"; /* TODO dirsep configurable */
 
    if((sr = pathconf(dname_or_nil, _PC_PATH_MAX)) != -1)
-      rv = S(uiz,sr);
+      rv = S(uz,sr);
    else
 #endif
       rv = PATH_MAX;

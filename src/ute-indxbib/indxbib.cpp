@@ -24,8 +24,8 @@
 #include "lib.h"
 #include "indxbib-config.h"
 
+#include "su/cs.h"
 #include "su/io.h"
-#include "su/strsup.h"
 
 #include <sys/types.h>
 
@@ -197,7 +197,7 @@ int main(int argc, char **argv)
   if (!directory) {
     char *path = get_cwd();
     store_filename(path);
-    su_free(path);
+    su_FREE(path);
   }
   else
     store_filename(directory);
@@ -208,35 +208,35 @@ int main(int argc, char **argv)
   read_common_words_file();
   if (!base_name)
     base_name = optind < argc ? argv[optind] : DEFAULT_INDEX_NAME;
-  const char *p = strrchr(base_name, DIR_SEPS[0]), *p1;
+  const char *p = su_cs_rfind_c(base_name, DIR_SEPS[0]), *p1;
   const char *sep = &DIR_SEPS[1];
   while (*sep) {
-    p1 = strrchr(base_name, *sep);
+    p1 = su_cs_rfind_c(base_name, *sep);
     if (p1 && (!p || p1 > p))
       p = p1;
     sep++;
   }
   size_t name_max;
   if (p) {
-    char *dir = su_strdup(base_name);
+    char *dir = su_cs_dup(base_name);
     dir[p - base_name] = '\0';
     name_max = su_file_name_max(dir);
-    su_free(dir);
+    su_FREE(dir);
   }
   else
     name_max = su_file_name_max(".");
   const char *filename = p ? p + 1 : base_name;
-  if (strlen(filename) + sizeof(INDEX_SUFFIX) - 1 > name_max)
+  if (su_cs_len(filename) + sizeof(INDEX_SUFFIX) - 1 > name_max)
     fatal("`%1.%2' is too long for a filename", filename, INDEX_SUFFIX);
   if (p) {
     p++;
-    temp_index_file = su_talloc(char,
+    temp_index_file = su_TALLOC(char,
         p - base_name + sizeof(TEMP_INDEX_TEMPLATE));
     memcpy(temp_index_file, base_name, p - base_name);
-    strcpy(temp_index_file + (p - base_name), TEMP_INDEX_TEMPLATE);
+    su_cs_pcopy(temp_index_file + (p - base_name), TEMP_INDEX_TEMPLATE);
   }
   else {
-    temp_index_file = su_strdup(TEMP_INDEX_TEMPLATE);
+    temp_index_file = su_cs_dup(TEMP_INDEX_TEMPLATE);
   }
   _catch_fatal_signals();
   int fd = rf_mkstemp(temp_index_file, FAL0);
@@ -250,7 +250,7 @@ int main(int argc, char **argv)
   int failed = 0;
   if (foption) {
     FILE *fp = stdin;
-    if (strcmp(foption, "-") != 0) {
+    if (su_cs_cmp(foption, "-")) {
       errno = 0;
       fp = fopen(foption, "r");
       if (!fp)
@@ -286,9 +286,9 @@ int main(int argc, char **argv)
   write_hash_table();
   if (fclose(indxfp) < 0)
     fatal("error closing temporary index file: %1", su_err_doc(errno));
-  char *index_file = new char[strlen(base_name) + sizeof(INDEX_SUFFIX)];
-  strcpy(index_file, base_name);
-  strcat(index_file, INDEX_SUFFIX);
+  char *index_file = su_TALLOC(char,
+      su_cs_len(base_name) + sizeof(INDEX_SUFFIX));
+  su_cs_pcopy(su_cs_pcopy(index_file, base_name), INDEX_SUFFIX);
 #ifdef HAVE_RENAME
 # ifdef __EMX__
   if (access(index_file, R_OK) == 0)
@@ -303,8 +303,7 @@ int main(int argc, char **argv)
 
     // Replace the dot with an underscore and try again.
     if (fname
-        && (dot = strchr(fname, '.')) != 0
-        && strcmp(dot, INDEX_SUFFIX) != 0)
+        && (dot = su_cs_find_c(fname, '.')) != 0 && su_cs_cmp(dot, INDEX_SUFFIX))
       *dot = '_';
     if (rename(temp_index_file, index_file) < 0)
 # endif
@@ -322,7 +321,8 @@ int main(int argc, char **argv)
     fatal("can't unlink temporary index file: %1", su_err_doc(errno));
 #endif /* HAVE_RENAME */
 
-  su_free(temp_index_file);
+  su_FREE(index_file);
+  su_FREE(temp_index_file);
   temp_index_file = NULL;
   return failed;
 }
@@ -358,12 +358,12 @@ static char *get_cwd() /* FIXME -> lib-roff!  (and DO take it from S-nail!) */
   size_t size = 12;
 
   for (;;) {
-    buf = su_talloc(char, size);
+    buf = su_TALLOC(char, size);
     if (getcwd(buf, size))
       break;
     if (errno != ERANGE)
       fatal("cannot get current working directory: %1", su_err_doc(errno));
-    su_free(buf);
+    su_FREE(buf);
     if (size == UI32_MAX)
       fatal("current working directory longer than UI32_MAX");
     if (size > UI32_MAX/2)
@@ -377,8 +377,9 @@ static char *get_cwd() /* FIXME -> lib-roff!  (and DO take it from S-nail!) */
 word_list::word_list(const char *s, int n, word_list *p)
 : next(p), len(n)
 {
-  str = new char[n];
-  memcpy(str, s, n);
+  /* Not NUL terminated */
+  str = su_TALLOC(char, n);
+  su_mem_copy(str, s, n);
 }
 
 static void read_common_words_file()
@@ -396,15 +397,15 @@ static void read_common_words_file()
   int key_len = 0;
   for (;;) {
     int c = getc(fp);
-    while (c != EOF && !su_isalnum(c))
+    while (c != EOF && !su_cs_is_alnum(c))
       c = getc(fp);
     if (c == EOF)
       break;
     do {
       if (key_len < truncate_len)
-	key_buffer[key_len++] = su_tolower(c);
+	key_buffer[key_len++] = su_cs_to_lower(c);
       c = getc(fp);
-    } while (c != EOF && su_isalnum(c));
+    } while (c != EOF && su_cs_is_alnum(c));
     if (key_len >= shortest_len) {
       int h = hash(key_buffer, key_len) % hash_table_size;
       common_words_table[h] = new word_list(key_buffer, key_len,
@@ -432,11 +433,11 @@ static int do_whole_file(const char *filename)
   int key_len = 0;
   int c;
   while ((c = getc(fp)) != EOF) {
-    if (su_isalnum(c)) {
+    if (su_cs_is_alnum(c)) {
       key_len = 1;
       key_buffer[0] = c;
       while ((c = getc(fp)) != EOF) {
-	if (!su_isalnum(c))
+	if (!su_cs_is_alnum(c))
 	  break;
 	if (key_len < truncate_len)
 	  key_buffer[key_len++] = c;
@@ -520,7 +521,7 @@ static int do_file(const char *filename)
       space_count = 0;
       if (c == '%')
 	state = PERCENT;
-      else if (su_isalnum(c)) {
+      else if (su_cs_is_alnum(c)) {
 	state = KEY;
 	key_buffer[0] = c;
 	key_len = 1;
@@ -550,7 +551,7 @@ static int do_file(const char *filename)
 	break;
       default:
 	space_count = 0;
-	if (su_isalnum(c)) {
+	if (su_cs_is_alnum(c)) {
 	  state = KEY;
 	  key_buffer[0] = c;
 	  key_len = 1;
@@ -560,7 +561,7 @@ static int do_file(const char *filename)
       }
       break;
     case PERCENT:
-      if (strchr(ignore_fields, c) != 0)
+      if (su_cs_find_c(ignore_fields, c) != 0)
 	state = IGNORE;
       else if (c == '\n')
 	state = BOL;
@@ -597,7 +598,7 @@ static int do_file(const char *filename)
       }
       break;
     case KEY:
-      if (su_isalnum(c)) {
+      if (su_cs_is_alnum(c)) {
 	if (key_len < truncate_len)
 	  key_buffer[key_len++] = c;
 	else
@@ -613,7 +614,7 @@ static int do_file(const char *filename)
       }
       break;
     case DISCARD:
-      if (!su_isalnum(c)) {
+      if (!su_cs_is_alnum(c)) {
 	possibly_store_key(key_buffer, key_len);
 	key_len = 0;
 	if (c == '\n')
@@ -623,7 +624,7 @@ static int do_file(const char *filename)
       }
       break;
     case MIDDLE:
-      if (su_isalnum(c)) {
+      if (su_cs_is_alnum(c)) {
 	state = KEY;
 	key_buffer[0] = c;
 	key_len = 1;
@@ -700,16 +701,16 @@ static int store_key(char *s, int len)
     return 0;
   int is_number = 1;
   for (int i = 0; i < len; i++)
-    if (!su_isdigit(s[i])) {
+    if (!su_cs_is_digit(s[i])) {
       is_number = 0;
-      s[i] = su_tolower(s[i]);
+      s[i] = su_cs_to_lower(s[i]);
     }
   if (is_number && !(len == 4 && s[0] == '1' && s[1] == '9'))
     return 0;
   int h = hash(s, len) % hash_table_size;
   if (common_words_table) {
     for (word_list *ptr = common_words_table[h]; ptr; ptr = ptr->next)
-      if (len == ptr->len && memcmp(s, ptr->str, len) == 0)
+      if (len == ptr->len && !memcmp(s, ptr->str, len))
 	return 0;
   }
   table_entry *pp =  hash_table + h;
