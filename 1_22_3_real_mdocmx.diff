@@ -1,0 +1,367 @@
+diff --git a/src/devices/grotty/grotty.man b/src/devices/grotty/grotty.man
+index 07ab62a81e..f9f415313a 100644
+--- a/src/devices/grotty/grotty.man
++++ b/src/devices/grotty/grotty.man
+@@ -372,7 +372,7 @@ Print the version number.
+ .\" --------------------------------------------------------------------
+ .
+ .B grotty
+-understands a single X command produced using the
++understands two X commands produced using the
+ .B \[rs]X
+ escape sequence.
+ .
+@@ -384,6 +384,21 @@ If
+ is non-zero or missing, enable SGR output (this is the default),
+ otherwise use the old drawing scheme for bold and underline.
+ .
++.TP
++.BI \[rs]X'tty:\ mdocmx\ ...'
++.
++This request is used by the
++.BR mdocmx (@MAN7EXT@)
++reference extension of the
++.BR mdoc (@MAN7EXT@)
++semantic markup language and generates
++.SM BACKSPACE
++character sequences that allow supporting pager programs to perform
++reference navigation, but are ignored otherwise.
++This request should not be used directly;
++its interpretation will be suppressed unless the environment variable
++.B MDOCMX_ENABLE
++is set to a non-empty value.
+ .
+ .\" --------------------------------------------------------------------
+ .SH ENVIRONMENT
+@@ -400,6 +415,19 @@ Colors are disabled.
+ .
+ .TP
+ .SM
++.B MDOCMX_ENABLE
++Can be set to enable generation and interpretation of markup of the
++.BR mdocmx (@MAN7EXT@)
++reference extension of the
++.BR mdoc (@MAN7EXT@)
++semantic markup language.
++Note that it must be set to a non-empty value because of
++.BR @g@troff (@MAN1EXT@)
++language shortcomings (the macros won't see it otherwise).
++.
++.
++.TP
++.SM
+ .B GROFF_FONT_PATH
+ A list of directories in which to search for the
+ .BI dev name
+diff --git a/src/devices/grotty/tty.cpp b/src/devices/grotty/tty.cpp
+index 60d46e8a96..7b41974bf9 100644
+--- a/src/devices/grotty/tty.cpp
++++ b/src/devices/grotty/tty.cpp
+@@ -30,6 +30,10 @@ extern "C" const char *Version_string;
+ 
+ #define putstring(s) fputs(s, stdout)
+ 
++#ifndef PTR2SIZE
++# define PTR2SIZE(X)	((size_t)(X))
++#endif
++
+ #ifndef SHRT_MIN
+ #define SHRT_MIN (-32768)
+ #endif
+@@ -56,6 +60,7 @@ static int italic_flag;
+ static int reverse_flag_option = 0;
+ static int reverse_flag;
+ static int old_drawing_scheme = 0;
++static int _mdocmx_enable = 0;
+ 
+ static void update_options();
+ static void usage(FILE *stream);
+@@ -216,6 +221,7 @@ class tty_printer : public printer {
+   void line(int, int, int, int, color *, color *);
+   void draw_line(int *, int, const environment *);
+   void draw_polygon(int *, int, const environment *);
++  void _special_mdocmx(char const *, environment const *);
+ public:
+   tty_printer();
+   ~tty_printer();
+@@ -434,42 +440,120 @@ void tty_printer::add_char(output_character c, int w,
+ void tty_printer::special(char *arg, const environment *env, char type)
+ {
+   if (type == 'u') {
+-    add_char(*arg - '0', 0, env->hpos, env->vpos, env->col, env->fill,
+-	     CU_MODE);
+-    return;
++    add_char(*arg - '0', 0, env->hpos, env->vpos, env->col, env->fill, CU_MODE);
++    goto jleave;
+   }
+   if (type != 'p')
+-    return;
+-  char *p;
+-  for (p = arg; *p == ' ' || *p == '\n'; p++)
++    goto jleave;
++
++  char *p, *tag_cmd;
++
++  for (p = arg; *p == ' ' || *p == '\n'; ++p)
+     ;
+-  char *tag = p;
+-  for (; *p != '\0' && *p != ':' && *p != ' ' && *p != '\n'; p++)
++  tag_cmd = p;
++  for (; *p != '\0' && *p != ':' && *p != ' ' && *p != '\n'; ++p)
+     ;
+-  if (*p == '\0' || strncmp(tag, "tty", p - tag) != 0) {
++  if (*p == '\0' || strncmp(tag_cmd, "tty", PTR2SIZE(p - tag_cmd)) != 0) {
+     error("X command without `tty:' tag ignored");
+-    return;
++    goto jleave;
+   }
+-  p++;
+-  for (; *p == ' ' || *p == '\n'; p++)
++
++  for (++p; *p == ' ' || *p == '\n'; ++p)
+     ;
+-  char *command = p;
+-  for (; *p != '\0' && *p != ' ' && *p != '\n'; p++)
++  tag_cmd = p;
++  for (; *p != '\0' && *p != ' ' && *p != '\n'; ++p)
+     ;
+-  if (*command == '\0') {
++  if (*tag_cmd == '\0') {
+     error("empty X command ignored");
+-    return;
++    goto jleave;
+   }
+-  if (strncmp(command, "sgr", p - command) == 0) {
+-    for (; *p == ' ' || *p == '\n'; p++)
++
++  if (!strncmp(tag_cmd, "sgr", PTR2SIZE(p - tag_cmd))) {
++    for (; *p == ' ' || *p == '\n'; ++p)
+       ;
+     int n;
+-    if (*p != '\0' && sscanf(p, "%d", &n) == 1 && n == 0)
+-      old_drawing_scheme = 1;
+-    else
+-      old_drawing_scheme = 0;
++    old_drawing_scheme = (*p != '\0' && sscanf(p, "%d", &n) == 1 && n == 0);
+     update_options();
++  } else if (_mdocmx_enable &&
++      !strncmp(tag_cmd, "mdocmx", PTR2SIZE(p - tag_cmd)))
++    _special_mdocmx(p, env);
++
++jleave:
++  ;
++}
++
++void
++tty_printer::_special_mdocmx(char const *ap, environment const *env)
++{
++  // Handle the special \X'' injections of the mdocmx(7) reference extension
++  // for the mdoc semantic markup language.
++  // See mdocmx(7) for the used protocol
++#undef __C
++#define __C(C) add_char(C, 0, env->hpos, env->vpos, env->col, env->fill, 0)
++
++  char const *cmd, *cmd_top, *cp;
++
++  for (; *ap == ' ' || *ap == '\n'; ++ap)
++    ;
++  cmd = ap;
++  for (; *ap != '\0' && *ap != ' ' && *ap != '\n'; ++ap)
++    ;
++  cmd_top = ap;
++  if (cmd == cmd_top) {
++    error("empty mdocmx X command ignored");
++    goto jleave;
+   }
++
++  // Any mdocmx(7) command places an anchor
++  for (; *ap == ' ' || *ap == '\n'; ++ap)
++    ;
++  cp = ap;
++  for (; *ap != '\0' && *ap != ' ' && *ap != '\n'; ++ap)
++    ;
++  if (cp == ap) {
++    error("empty mdocmx X anchor ignored");
++    goto jleave;
++  }
++
++  __C('{'); __C('\b');
++  for (; cp < ap; ++cp) {
++    __C(*cp); __C('\b');
++  }
++  __C('}'); __C('\b');
++
++  // The external reference .Xr injects some more
++  if (!strncmp(cmd, "xr", PTR2SIZE(cmd_top - cmd))) {
++    __C('{'); __C('\b');
++    __C('!'); __C('\b');
++
++    // Manual section
++    for (; *ap == ' ' || *ap == '\n'; ++ap)
++      ;
++    cp = ap;
++    for (; *ap != '\0' && *ap != ' ' && *ap != '\n'; ++ap)
++      ;
++    for (; cp < ap; ++cp) {
++      __C(*cp); __C('\b');
++    }
++
++    __C(';'); __C('\b');
++
++    // Manual page
++    for (; *ap == ' ' || *ap == '\n'; ++ap)
++      ;
++    cp = ap;
++    for (; *ap != '\0' && *ap != ' ' && *ap != '\n'; ++ap)
++      ;
++    for (; cp < ap; ++cp) {
++      __C(*cp); __C('\b');
++    }
++
++    __C('}'); __C('\b');
++  }
++
++jleave:
++  ;
++#undef __C
+ }
+ 
+ void tty_printer::change_color(const environment * const env)
+@@ -863,6 +947,12 @@ int main(int argc, char **argv)
+   static char stderr_buf[BUFSIZ];
+   if (getenv("GROFF_NO_SGR"))
+     old_drawing_scheme = 1;
++  do {
++    char const *cp = getenv("MDOCMX_ENABLE");
++    /* Require non-empty value since only then macros see it.. */
++    if (cp != NULL && *cp != NULL)
++      _mdocmx_enable = 1;
++  } while (0);
+   setbuf(stderr, stderr_buf);
+   setlocale(LC_CTYPE, "");
+   int c;
+diff --git a/src/roff/troff/input.cpp b/src/roff/troff/input.cpp
+index 9594f07442..4ba1fe61ac 100644
+--- a/src/roff/troff/input.cpp
++++ b/src/roff/troff/input.cpp
+@@ -36,6 +36,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>. */
+ #include "input.h"
+ #include "defs.h"
+ #include "unicode.h"
++#include "ptable.h"       /* TODO only for hash_string() */
+ 
+ // Needed for getpid() and isatty()
+ #include "posix.h"
+@@ -4863,14 +4864,18 @@ void substring_request()
+   skip_line();
+ }
+ 
+-void length_request()
++/* .length and .hash share most of their code */
++static bool _symbol_and_string(symbol *sym, string *str);
++static void length_request(void);
++static void hash_request(void);
++
++static bool
++_symbol_and_string(symbol *sym, string *str)
+ {
+-  symbol ret;
+-  ret = get_name(1);
+-  if (ret.is_null()) {
+-    skip_line();
+-    return;
+-  }
++  *sym = get_name(1);
++  if (sym->is_null())
++    goto jerr;
++
+   int c;
+   node *n;
+   if (tok.newline())
+@@ -4879,26 +4884,61 @@ void length_request()
+     c = '\t';
+   else if (!tok.space()) {
+     error("bad string definition");
+-    skip_line();
+-    return;
++    goto jerr;
+   }
+   else
+     c = get_copy(&n);
++
+   while (c == ' ')
+     c = get_copy(&n);
+   if (c == '"')
+     c = get_copy(&n);
+-  int len = 0;
+-  while (c != '\n' && c != EOF) {
++
++  int len;
++  for (len = 0; c != '\n' && c != EOF; ++len) {
+     ++len;
++    *str += (char)c;
+     c = get_copy(&n);
+   }
+-  reg *r = (reg*)number_reg_dictionary.lookup(ret);
+-  if (r)
+-    r->set_value(len);
+-  else
+-    set_number_reg(ret, len);
++
+   tok.next();
++jleave:
++  return (sym != NULL);
++jerr:
++    skip_line();
++    sym = NULL;
++    goto jleave;
++}
++
++static void
++length_request(void)
++{
++  symbol sym;
++  string str;
++
++  if (_symbol_and_string(&sym, &str)) {
++    reg *r = (reg*)number_reg_dictionary.lookup(sym);
++    if (r)
++      r->set_value(str.length());
++    else
++      set_number_reg(sym, str.length());
++  }
++}
++
++static void
++hash_request(void)
++{
++  symbol sym;
++  string str;
++
++  if (_symbol_and_string(&sym, &str)) {
++    unsigned long h = hash_string((str += '\0').contents()) & INT_MAX;
++    reg *r = (reg*)number_reg_dictionary.lookup(sym);
++    if (r)
++      r->set_value((int)h);
++    else
++      set_number_reg(sym, (int)h);
++  }
+ }
+ 
+ void asciify_macro()
+@@ -8238,12 +8278,13 @@ void init_input_requests()
+ #ifdef WIDOW_CONTROL
+   init_request("fpl", flush_pending_lines);
+ #endif /* WIDOW_CONTROL */
++  init_request("hash", &hash_request);
+   init_request("hcode", hyphenation_code);
+   init_request("hpfcode", hyphenation_patterns_file_code);
+   init_request("ie", if_else_request);
+   init_request("if", if_request);
+   init_request("ig", ignore);
+-  init_request("length", length_request);
++  init_request("length", &length_request);
+   init_request("lf", line_file);
+   init_request("lsm", leading_spaces_macro);
+   init_request("mso", macro_source);
+
