@@ -77,6 +77,30 @@
 .eo
 .
 .
+.\" NS mdocmx(7) extension
+.\" NS Only loaded upon request, yet we need stub dummies otherwise:
+.\" NS - .Mx is the user interface
+.\" NS - .mx-mac-(enter|add-arg|sequence|leave) are the call-in
+.\" NS   hooks for mdoc(7) macros (as long as mdoc(7) itself is not
+.\" NS   rewritten to use a yet non-existing
+.\" NS     .doc-output-node TYPE [DATA]"
+.\" NS   to produce output etc. instead of directly doing so
+.\" NS Note: mdocmx(7) tests \n[doc-in-synopsis-section]
+.de Mx
+.  mso mdocmx.tmac
+.  Mx \\$@
+.\}
+..
+.de mx-mac-enter
+..
+.de mx-mac-add-arg
+..
+.de mx-mac-sequence
+..
+.de mx-mac-leave
+..
+.
+.
 .\" NS doc-macro-name global string
 .\" NS   name of calling request (set in each user-requestable macro)
 .
@@ -385,6 +409,7 @@
 .        nop \|\-\|\c
 .
 .      nr doc-reg-Fl 1
+.      mx-mac-enter Fl
 .      doc-flag-recursion
 .  \}\}
 ..
@@ -406,6 +431,8 @@
 .  ds doc-str-dfr "\*[doc-arg\n[doc-arg-ptr]]
 .
 .  ie (\n[doc-reg-dfr1] == 1) \{\
+.    rm doc-mx#dfr
+.    mx-mac-leave
 .    nop \f[]\s[0]\c
 .    \*[doc-str-dfr]
 .  \}
@@ -419,22 +446,29 @@
 .      ie "\*[doc-str-dfr]"\*[Ba]" \{\
 .        if \n[doc-reg-Fl] \
 .          nop \|\-\*[doc-space]\c
+.        ds doc-mx#dfr "| 
 .        nop \)\*[Ba]\c
 .      \}
 .      el \{\
 .        ie "\*[doc-str-dfr]"\f[R]|\f[]" \{\
 .          if \n[doc-reg-Fl] \
 .            nop \|\-\*[doc-space]\c
+.          ds doc-mx#dfr "| 
 .          nop \f[R]|\f[]\c
 .        \}
 .        el \{\
 .          \" two consecutive hyphen characters?
 .          ie "\*[doc-str-dfr]"-" \
 .            nop \|\-\^\-\|\c
-.          el \
+.          el \{\
+.            if !d doc-mx#dfr .ds doc-mx#dfr
+.            mx-mac-add-arg "\*[doc-mx#dfr]\*[doc-str-dfr]
+.            rm doc-mx#dfr
 .            nop \|\%\-\*[doc-str-dfr]\&\c
+.          \}
 .    \}\}\}
 .    el \{\
+.      mx-mac-sequence
 .      nop \f[\n[doc-curr-font]]\s[\n[doc-curr-size]u]\c
 .      nop \)\*[doc-str-dfr]\f[]\s[0]\c
 .    \}
@@ -444,10 +478,26 @@
 .      if (\n[doc-reg-dfr1] == 4) \
 .        nop \|\-\c
 .      nop \f[\n[doc-curr-font]]\s[\n[doc-curr-size]u]\c
+.      rm doc-mx#dfr
+.      mx-mac-leave
 .      doc-print-and-reset
 .    \}
 .    el \{\
 .      nr doc-arg-ptr +1
+.
+.      ie (\n[doc-arg-limit] == \n[doc-arg-ptr]) \
+.        \" Next iteration will leave
+.      el .ie !(\n[doc-type\n[doc-arg-ptr]] == 2) \{\
+.        rm doc-mx#dfr
+.        mx-mac-sequence
+.      \}
+.      el .if !'\*[Ba]'\*[doc-arg\n[doc-arg-ptr]]' \{\
+.        if !'\*[Ba]'\*[doc-str-dfr]' \{\
+.          rm doc-mx#dfr
+.          mx-mac-sequence
+.        \}
+.      \}
+.
 .      ie (\n[doc-type\n[doc-arg-ptr]] == 3) \{\
 .        ie (\n[doc-type\n[doc-reg-dfr]] == 4) \
 .          nop \|\-\c
@@ -476,10 +526,24 @@
 .\" NS   doc-str-dpr
 .
 .de doc-print-recursive
+.  if (\n[.$] > 0) \{\
+.    if d doc-mx-dpr-open .mx-mac-leave
+.    ie d doc-mx-dpr-preloader \{\
+.      mx-mac-enter "\$1" "\*[doc-mx-dpr-preloader]
+.      rm doc-mx-dpr-preloader
+.    \}
+.    el .mx-mac-enter "\$1"
+.    ds doc-mx-dpr-open
+.  \}
+.
 .  nr doc-reg-dpr1 \n[doc-type\n[doc-arg-ptr]]
 .  ds doc-str-dpr "\*[doc-arg\n[doc-arg-ptr]]
 .
 .  ie (\n[doc-reg-dpr1] == 1) \{\
+.    if d doc-mx-dpr-open \{\
+.      rm doc-mx-dpr-open
+.      mx-mac-leave
+.    \}
 .    nop \f[\n[doc-curr-font]]\s[\n[doc-curr-size]u]\c
 .    \*[doc-str-dpr]
 .  \}
@@ -487,10 +551,13 @@
 .    nr doc-reg-dpr \n[doc-arg-ptr]
 .
 .    \" the `\%' prevents hyphenation on a dash (`-')
-.    ie (\n[doc-reg-dpr1] == 2) \
+.    ie (\n[doc-reg-dpr1] == 2) \{\
+.      mx-mac-add-arg "\*[doc-str-dpr]
 .      nop \%\*[doc-str-dpr]\&\c
+.    \}
 .    el \{\
 .      \" punctuation character
+.      mx-mac-sequence
 .      nop \f[\n[doc-curr-font]]\s[\n[doc-curr-size]u]\c
 .      nop \)\*[doc-str-dpr]\f[]\s[0]\c
 .    \}
@@ -498,10 +565,18 @@
 .    nr doc-arg-ptr +1
 .    ie (\n[doc-arg-limit] < \n[doc-arg-ptr]) \{\
 .      \" last argument
+.      rm doc-mx-dpr-open
+.      mx-mac-leave
 .      nop \f[\n[doc-curr-font]]\s[\n[doc-curr-size]u]\c
 .      doc-print-and-reset
 .    \}
 .    el \{\
+.      \" If a macro follows we want to place visual references
+.      \" _before_ the following whitespace
+.      if (\n[doc-type\n[doc-arg-ptr]] == 1) \{\
+.        rm doc-mx-dpr-open
+.        mx-mac-leave
+.      \}
 .      nop \)\*[doc-space\n[doc-reg-dpr]]\c
 .      doc-print-recursive
 .  \}\}
@@ -565,7 +640,7 @@
 .      nr doc-curr-font \n[.f]
 .      nr doc-curr-size \n[.ps]
 .      nop \*[doc-\$0-font]\c
-.      doc-print-recursive
+.      doc-print-recursive "\$0"
 .\"  \}
 .  \}
 .  el \{\
@@ -627,7 +702,7 @@
 .      nr doc-arg-limit \n[doc-arg-ptr]
 .      doc-parse-space-vector
 .    \}
-.    doc-print-recursive
+.    doc-print-recursive Ar
 .  \}
 ..
 .
@@ -694,17 +769,17 @@
 .          in +\n[doc-indent-synopsis]u
 .        ti -\n[doc-indent-synopsis]u
 .        nop \*[doc-Nm-font]\c
-.        doc-print-recursive
+.        doc-print-recursive Cd
 .        if !\n[doc-indent-synopsis-active] \
 .          in -\n[doc-indent-synopsis]u
 .      \}
 .      el \{\
 .        nop \*[doc-Nm-font]\c
-.        doc-print-recursive
+.        doc-print-recursive Cd
 .    \}\}
 .    el \{\
 .      nop \*[doc-Nm-font]\c
-.      doc-print-recursive
+.      doc-print-recursive Cd
 .  \}\}
 .  el \{\
 .    tm Usage: .Cd configuration_file_declaration ... (#\n[.c])
@@ -860,28 +935,33 @@
 .    nr doc-curr-font \n[.f]
 .    nr doc-curr-size \n[.ps]
 .
+.
 .    ie \n[doc-in-synopsis-section] \{\
+.      mx-mac-enter "\*[doc-macro-name]" "\*[doc-arg\n[doc-arg-ptr]]"
 .      ie "\*[doc-macro-name]"In" \{\
 .        doc-do-func-decl
 .        nop \*[doc-Fd-font]#include <\*[doc-arg\n[doc-arg-ptr]]>
 .        ft \n[doc-curr-font]
 .        ps \n[doc-curr-size]u
+.        mx-mac-leave
 .        br
 .        nr doc-arg-ptr +1
 .        ie (\n[doc-arg-limit] >= \n[doc-arg-ptr]) \
-.          doc-print-recursive
+.          doc-print-recursive NoMxPlease
 .        el \
 .          doc-reset-args
 .      \}
 .      el \{\
 .        ds doc-arg\n[doc-arg-ptr] "<\*[doc-Pa-font]\*[doc-arg\n[doc-arg-ptr]]
 .        as doc-arg\n[doc-arg-ptr] \f[\n[doc-curr-font]]\s[\n[doc-curr-size]u]>
-.        doc-print-recursive
+.        mx-mac-leave
+.        doc-print-recursive NoMxPlease
 .    \}\}
 .    el \{\
+.      ds doc-mx-dpr-preloader "\*[doc-arg\n[doc-arg-ptr]]
 .      ds doc-arg\n[doc-arg-ptr] "<\*[doc-Pa-font]\*[doc-arg\n[doc-arg-ptr]]
 .      as doc-arg\n[doc-arg-ptr] \f[\n[doc-curr-font]]\s[\n[doc-curr-size]u]>
-.      doc-print-recursive
+.      doc-print-recursive "\*[doc-macro-name]"
 .  \}\}
 .  el \{\
 .    tm Usage: .In include_file ... (#\n[.c])
@@ -983,6 +1063,7 @@
 .    nr doc-curr-font \n[.f]
 .    nr doc-curr-size \n[.ps]
 .
+.    ds doc-mx-dpr-preloader "\*[doc-command-name]
 .    ie !(\n[doc-type\n[doc-arg-ptr]] == 2) \{\
 .      ie "\*[doc-command-name]"" \
 .        tm Usage: .Nm name ... (#\n[.c])
@@ -1013,12 +1094,14 @@
 .          \}
 .          ti -\n[doc-indent-synopsis]u
 .      \}\}
-.      if "\*[doc-command-name]"" \
+.      if "\*[doc-command-name]"" \{\
 .        ds doc-command-name "\*[doc-arg\n[doc-arg-ptr]]
+.        ds doc-mx-dpr-preloader "\*[doc-command-name]
+.      \}
 .
 .      nop \*[doc-Nm-font]\c
 .    \}
-.    doc-print-recursive
+.    doc-print-recursive Nm
 .  \}
 ..
 .
@@ -1036,7 +1119,8 @@
 .
 .de Pa
 .  if !\n[doc-arg-limit] \{\
-.    ds doc-macro-name Pa
+.    ie d doc-mx-pa-is-mt .ds doc-macro-name Mt
+.    el                   .ds doc-macro-name Pa
 .    doc-parse-args \$@
 .
 .    \" default value
@@ -1044,8 +1128,10 @@
 .      nop \*[doc-Pa-font]~\f[]\s[0]
 .  \}
 .
-.  if !\n[doc-arg-limit] \
+.  if !\n[doc-arg-limit] \{\
+.    rm doc-mx-pa-is-mt
 .    return
+.  \}
 .
 .  nr doc-arg-ptr +1
 .  doc-print-prefixes
@@ -1065,9 +1151,14 @@
 .      nr doc-arg-limit \n[doc-arg-ptr]
 .      doc-parse-space-vector
 .    \}
-.    doc-print-recursive
+.    ie d doc-mx-pa-is-mt \{\
+.      rm doc-mx-pa-is-mt
+.      doc-print-recursive Mt
+.    \}
+.    el .doc-print-recursive Pa
 .  \}
 .  el \{\
+.    rm doc-mx-pa-is-mt
 .    nop \*[doc-Pa-font]~\f[]\s[0]\c
 .    doc-print-and-reset
 .  \}
@@ -1123,7 +1214,7 @@
 .    nop \)\*[doc-Tn-font-size]\c
 .    ie !\n[doc-is-reference] \{\
 .      nop \)\*[doc-Tn-font-shape]\c
-.      doc-print-recursive
+.      doc-print-recursive Tn
 .    \}
 .    el \
 .      doc-do-references
@@ -2073,7 +2164,7 @@
 .  if \n[doc-arg-limit] \{\
 .    nr doc-arg-ptr +1
 .    ie (\n[doc-arg-limit] >= \n[doc-arg-ptr]) \
-.      doc-print-recursive
+.      doc-print-recursive Ns
 .    el \
 .      doc-reset-args
 .  \}
@@ -2092,7 +2183,7 @@
 .    nop \)'\)\c
 .    nr doc-arg-ptr +1
 .    ie (\n[doc-arg-limit] >= \n[doc-arg-ptr]) \
-.      doc-print-recursive
+.      doc-print-recursive Ap
 .    el \
 .      doc-reset-args
 .  \}
@@ -2271,7 +2362,7 @@
 .  ie (\n[doc-arg-limit] > \n[doc-arg-ptr]) \{\
 .    \" skip `Sm' argument
 .    nr doc-arg-ptr +1
-.    doc-print-recursive
+.    doc-print-recursive Sm
 .  \}
 .  el \
 .    doc-reset-args
@@ -3776,7 +3867,7 @@
 .          \*[doc-arg1]
 .        el \{\
 .          nr doc-arg-ptr 1
-.          doc-print-recursive
+.          doc-print-recursive It
 .    \}\}\}
 .    el \{\
 .      tm1 "mdoc warning: .It macros in lists of type `\*[doc-str-It]'
@@ -4272,18 +4363,21 @@
 .    ie (\n[doc-type\n[doc-arg-ptr]] == 2) \{\
 .      nr doc-curr-font \n[.f]
 .      nr doc-curr-size \n[.ps]
-.      ds doc-arg\n[doc-arg-ptr] \*[doc-Xr-font]\*[doc-arg\n[doc-arg-ptr]]\f[]\s[0]
 .
 .      if (\n[doc-arg-limit] > \n[doc-arg-ptr]) \{\
 .        nr doc-reg-Xr (\n[doc-arg-ptr] + 1)
 .        \" modify second argument if it is a string and
 .        \" remove space in between
 .        if (\n[doc-type\n[doc-reg-Xr]] == 2) \{\
+.          ds doc-mx-dpr-preloader \
+             "\*[doc-arg\n[doc-reg-Xr]] \*[doc-arg\n[doc-arg-ptr]]
 .          ds doc-arg\n[doc-reg-Xr] \*[lp]\*[doc-arg\n[doc-reg-Xr]]\*[rp]
 .          ds doc-space\n[doc-arg-ptr]
 .        \}
 .      \}
-.      doc-print-recursive
+.
+.      ds doc-arg\n[doc-arg-ptr] \*[doc-Xr-font]\*[doc-arg\n[doc-arg-ptr]]\f[]\s[0]
+.      doc-print-recursive Xr
 .    \}
 .    el \
 .      doc-Xr-usage
@@ -4461,7 +4555,7 @@
 .      nr doc-curr-font \n[.f]
 .      nr doc-curr-size \n[.ps]
 .      nop \*[doc-Li-font]\c
-.      doc-print-recursive
+.      doc-print-recursive Dl
 .    \}
 .    el \
 .      tm Usage: .Dl argument ... (#\n[.c])
@@ -4493,7 +4587,7 @@
 .      ds doc-macro-name D1
 .      doc-parse-args \$@
 .      nr doc-arg-ptr 1
-.      doc-print-recursive
+.      doc-print-recursive D1
 .    \}
 .    el \
 .      tm Usage: .D1 argument ... (#\n[.c])
@@ -4559,7 +4653,7 @@
 .  nr doc-curr-font \n[.f]
 .  nr doc-curr-size \n[.ps]
 .  nop \*[doc-Ft-font]\c
-.  doc-print-recursive
+.  doc-print-recursive Vt
 .
 .  if \n[doc-in-synopsis-section] \{\
 .    ie \n[doc-have-old-func] \
@@ -4627,7 +4721,7 @@
 .  nr doc-curr-font \n[.f]
 .  nr doc-curr-size \n[.ps]
 .  nop \*[doc-Ft-font]\c
-.  doc-print-recursive
+.  doc-print-recursive Ft
 ..
 .
 .
@@ -4701,7 +4795,7 @@
 .      nr doc-curr-font \n[.f]
 .      nr doc-curr-size \n[.ps]
 .      nop \*[doc-Fa-font]\c
-.      doc-print-recursive
+.      doc-print-recursive Fa
 .
 .      if \n[doc-in-synopsis-section] \
 .        if \n[doc-have-func] \
@@ -4858,6 +4952,8 @@
 .    return
 .  \}
 .
+.  mx-mac-enter Fn "\*[doc-arg\n[doc-arg-ptr]]
+.
 .  nr doc-curr-font \n[.f]
 .  nr doc-curr-size \n[.ps]
 .  nop \*[doc-Fn-font]\*[doc-arg\n[doc-arg-ptr]]\c
@@ -4872,6 +4968,7 @@
 .  \}\}
 .
 .  nop \)\*[rp]\)\c
+.  mx-mac-leave
 .  if \n[doc-in-synopsis-section] \
 .    nop \);\)\c
 .
@@ -4881,7 +4978,7 @@
 .    nop \)\*[doc-space\n[doc-arg-ptr]]\c
 .    nr doc-arg-ptr +1
 .
-.    doc-print-recursive
+.    doc-print-recursive NoMxPlease
 .  \}
 .  el \
 .    doc-print-and-reset
@@ -5021,11 +5118,13 @@
 .
 .  nr doc-arg-ptr +1
 .  doc-print-prefixes
+.  mx-mac-enter Fo
 .  if (\n[doc-arg-limit] >= \n[doc-arg-ptr]) \{\
 .    nr doc-func-arg-count 1
 .    nr doc-curr-font \n[.f]
 .    nr doc-curr-size \n[.ps]
 .
+.    mx-mac-add-arg "\*[doc-arg\n[doc-arg-ptr]]
 .    nop \*[doc-Fn-font]\*[doc-arg\n[doc-arg-ptr]]\c
 .    nop \f[]\s[0]\*[lp]\)\c
 .    doc-reset-args
@@ -5063,10 +5162,10 @@
 .  nr doc-func-arg-count 0
 .  nr doc-in-func-enclosure 0
 .
-.  ie \n[doc-in-synopsis-section] \
-.    nop \|\*[rp];\)
-.  el \
-.    nop \|\*[rp]\)
+.  nop \|\*[rp]\c
+.  mx-mac-leave
+.  ie \n[doc-in-synopsis-section] .nop ;\)
+.  el .nop \)
 .
 .  \" finish function box
 .  br
@@ -5088,7 +5187,7 @@
 .  ie (\n[doc-arg-limit] >= \n[doc-arg-ptr]) \{\
 .    nr doc-curr-font \n[.f]
 .    nr doc-curr-size \n[.ps]
-.    doc-print-recursive
+.    doc-print-recursive Fc
 .  \}
 .  el \
 .    doc-print-and-reset
@@ -5543,7 +5642,7 @@
 .  \}
 .  el \{\
 .    nop \*[doc-Em-font]\c
-.    doc-print-recursive
+.    doc-print-recursive %B
 .  \}
 ..
 .
@@ -6115,7 +6214,7 @@
 .  \}
 .  el \{\
 .    nop \*[doc-Em-font]\c
-.    doc-print-recursive
+.    doc-print-recursive %T
 .  \}
 ..
 .
@@ -6341,7 +6440,7 @@
 .    ie (\n[doc-arg-limit] >= \n[doc-arg-ptr]) \{\
 .      nr doc-curr-font \n[.f]
 .      nr doc-curr-size \n[.ps]
-.      doc-print-recursive
+.      doc-print-recursive An
 .    \}
 .    el \{\
 .      tm Usage: .An author_name ... (#\n[.c])
@@ -6493,6 +6592,7 @@
 .
 .de Mt
 .  \" XXX: error handling missing
+.  ds doc-mx-pa-is-mt
 .  Pa \$@
 ..
 .

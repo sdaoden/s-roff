@@ -75,7 +75,8 @@
 .  if \n[doc-num-args] \
 .    doc-parse-space-vector
 .
-.  doc-print-recursive
+.  ds doc-mx-dpr-preloader UNIX
+.  doc-print-recursive Ux
 ..
 .
 .
@@ -161,7 +162,7 @@
 .  if \n[doc-num-args] \
 .    doc-parse-space-vector
 .
-.  doc-print-recursive
+.  doc-print-recursive Bx
 ..
 .
 .
@@ -263,7 +264,7 @@
 .  if \n[doc-num-args] \
 .    doc-parse-space-vector
 .
-.  doc-print-recursive
+.  doc-print-recursive At
 ..
 .
 .
@@ -327,7 +328,7 @@
 .  if \n[doc-num-args] \
 .    doc-parse-space-vector
 .
-.  doc-print-recursive
+.  doc-print-recursive Dx
 ..
 .
 .
@@ -391,7 +392,7 @@
 .  if \n[doc-num-args] \
 .    doc-parse-space-vector
 .
-.  doc-print-recursive
+.  doc-print-recursive Fx
 ..
 .
 .
@@ -456,7 +457,7 @@
 .  if \n[doc-num-args] \
 .    doc-parse-space-vector
 .
-.  doc-print-recursive
+.  doc-print-recursive Nx
 ..
 .
 .
@@ -508,7 +509,7 @@
 .  if \n[doc-num-args] \
 .    doc-parse-space-vector
 .
-.  doc-print-recursive
+.  doc-print-recursive Ox
 ..
 .
 .
@@ -560,7 +561,7 @@
 .  if \n[doc-num-args] \
 .    doc-parse-space-vector
 .
-.  doc-print-recursive
+.  doc-print-recursive Bsx
 ..
 .
 .
@@ -733,7 +734,7 @@
 .    \" replacing argument with result
 .    ds doc-arg\n[doc-arg-ptr] "\*[doc-str-St1]
 .
-.    doc-print-recursive
+.    doc-print-recursive St
 .  \}
 .  el \{\
 .    doc-St-usage
@@ -863,6 +864,7 @@
 .    el \{\
 .      tmc "mdoc warning: .Lb: no description for library
 .      tm1 " `\*[doc-arg\n[doc-arg-ptr]]' available (#\n[.c])
+.      ds doc-mx-dpr-preloader \*[doc-arg\n[doc-arg-ptr]]
 .      ds doc-str-Lb1 library \*[Lq]\*[doc-arg\n[doc-arg-ptr]]\*[Rq]
 .    \}
 .
@@ -871,7 +873,7 @@
 .
 .    if \n[doc-in-library-section] \
 .      br
-.    doc-print-recursive
+.    doc-print-recursive Lb
 .    if \n[doc-in-library-section] \
 .      br
 .  \}
