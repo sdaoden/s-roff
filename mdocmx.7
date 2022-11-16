@@ -1,21 +1,20 @@
 '\" -- preprocess: mdocmx(1)
 .\"@ mdocmx.7 - mdocmx(7) reference manual.
 .\"@ mdocmx(7) extends the mdoc(7) semantic markup language by references,
-.\"@ allowing mdoc(7) to create anchors and table of contents.
+.\"@ allowing it to create anchors and table of contents.
 .\"
 .\" Written 2014 - 2022 Steffen Nurpmeso <steffen@sdaoden.eu>.
 .\" Public Domain
 .
-.Dd Sep 03, 2022
+.Dd Nov 16, 2022
 .Dt MDOCMX 7
 .Os
 .Mx -enable
 .
 .
 .Sh NAME
-.
 .Nm .Mx
-.Nd Reference extension for the mdoc semantic markup language
+.Nd reference extension for the mdoc manual language
 .
 .
 .Sh SYNOPSIS
@@ -63,12 +62,31 @@
 .Sh DESCRIPTION
 .
 .Xr mdocmx 7
-introduces referenceable index anchors to the
+extends the
 .Xr mdoc 7
-semantic markup language that is used for
 .Ux
-manual pages by defining a single new multiplexer command:
+manual page markup language with references, allowing it to create
+anchors and table of contents (and potentially an index).
+The resulting documents are valid, compatible and distributable, and
+will become fully interactive if the local formatter is
+.Xr mdocmx 7
+aware.
+A new multiplexer command achieves this:
 .Nm .
+.
+.Pp
+Because single-pass
+.Xr troff 1
+implementations cannot create forward references documents which use
+this extension need to be preprocessed with the
+.Xr mdocmx 1
+preprocessor, implemented in portable
+.Xr sh 1
+and
+.Xr awk 1 .
+The mentioned properties also apply to preprocessed manuals.
+Also see
+.Sx COMPATIBILITY .
 .
 .Pp
 The
@@ -80,68 +98,31 @@ document prologue \(en
 .Ic \&.Dt
 and
 .Ic \&.Os
-\(en with the new command
+\(en with
 .Ql Nm Fl enable .
-It can be restricted to specific output formats by adding those
-.Xr troff 1
-output devices for which expansion is desired as further arguments to
-.Ql Fl enable ;
-for convenience all typewriter-like devices can be addressed via
+The extension can be restricted to specific output formats by specifying
+the desired output devices; for convenience all typewriter-like devices
+can be addressed via
 .Ql Ar tty .
 It is not an error to specify a device for which no special
 .Xr mdocmx 7
-support is available, but such requests are simply ignored.
-.
-.Pp
-Because macros driven by single-pass troff implementations cannot
-create forward references
-.Xr mdoc 7
-documents which use this extension need to be preprocessed with the
-.Xr mdocmx 1
-preprocessor, which is a regular part of
-.Xr mdocmx 7
-and implemented in portable
-.Xr sh 1
-and
-.Xr awk 1 .
-Specialized manual formatters and macros driven by multi-pass troff
-interpreters may not require a preprocessor to support this extension.
-It is also possible to preprocess the manual once and distribute the
-resulting document \(en refer to the
-.Sx COMPATIBILITY
-section for more on that.
-.
-.Pp
-Sometimes it may be desirable to actively suppress any processing
-of the
-.Xr mdocmx 7
-reference extension: this can either be accomplished by using
-.Nm
-with the
-.Ql Fl disable
-argument or by defining the string
-.Ql Dv mx-disable ,
-as in
-.
-.Bd -literal -offset indent
-$ < xy.z mdocmx.sh | troff -Tutf8 -mdoc -a -dmx-disable=1
-.Ed
+support is available, such requests are silently ignored.
 .
 .Ss Creating referenceable anchors
 .
-After the extension was
+When
 .Ql Fl enable Ns
 d in the document prologue the third group of
 .Nm
-usage forms can be used to enqueue index anchor requests.
-These requests form a last\(enin \(em first\(enout stack which will be
-consumed (popped) by the later occurrence of a (corresponding)
+usage forms enqueue index anchor requests.
+These form a last\(enin \(em first\(enout stack that is consumed
+(popped) by later occurrences of (corresponding)
 .Xr mdoc 7
+.Ar macro Ns
+s which support referenceable index entries.
+Each supported
 .Ar macro
-which supports referenceable index entries.
-The indices are managed with distinct namespaces for each supported
-.Ar macro ,
-meaning that, e.g.,
+has its own namespace, meaning that, for example,
 .Ql Ic .Mx Ns \0\&Ic sendmail
 and
 .Ql Ic .Mx Ns \0\&Va sendmail
@@ -155,39 +136,31 @@ the name of the
 .Ar macro
 as well as the
 .Ar key
-will be taken from the document content.
+are taken from the document content (as soon as possible).
 .Ql Nm Ar macro
-will create a stack entry that will be consumed by the next occurrence of
-.Ar macro
-only, then taking the
+creates a stack entry that is consumed by the next occurrence of
+.Ar macro ,
+then taking the
 .Ar key
 off the document content, whereas
 .Ql Nm Ar macro Ar key
-creates a stack entry that also has its
+creates an exact stack entry with also
 .Ar key
-defined, and which will be consumed once an exactly matching macro / key
-pair is seen in the document only.
-(The
-.Sx EXAMPLES
-section gives a use case for this form.)
+defined, it is popped by the exact macro / key match only.
 .
 .Pp
-Using the
-.Xr mdocmx 1
-preprocessor will also create referenceable anchors for the
+Referenceable anchors for the
 .Xr mdoc 7
 section header commands
 .Ic .Sh
 and
 .Ic .Ss
-automatically, so that a
-.Xr mdoc 7
-macro package which supports the
+are created automatically, but, again, with
 .Xr mdocmx 7
-extension will be enabled to actually create references with the
+any
 .Ic .Sx
-command, and, dependent on the output device, cross-references defined
-via the command
+referencing them will become interactive.
+Dependent upon the output device, cross-references defined via
 .Ic .Xr
 will also be backed with functionality.
 The following macros gain support for referenceable anchors via
@@ -247,7 +220,7 @@ Variable type, type reference.
 .
 .Ss String cleanup and reference prevention
 .
-Before strings get used for anchor creation or reference look up any
+Before strings get used for anchor creation or reference lookup any
 surrounding whitespace will be removed, as well as any preceding
 .Ql \e& ,
 .Ql \e%
@@ -261,14 +234,13 @@ escape characters.
 Yet, prefixing a command with two zero-width glyphs (after possible
 whitespace), as in
 .Ql \e&\e& ,
-has the special meaning that reference lookup will be actively prevented
-for all remaining arguments of the command.
+prevents reference lookup for the remaining arguments of the command.
 For example, in the hypothetic
 .Ql .Ic if\0, elif\0, else\0, endif
 all four commands would be linked, but in
 .Ql .Ic \e&\e&if\0, elif\0, else\0, endif
 none of them; if that is not desired, a new command needs to be started:
-.Ql .Ic \e&\e&if\0, .Ic elif\0, else\0, endif .
+.Ql .Ic \e&\e&if\0, \&Ic elif\0, else\0, endif .
 .
 .Ss Freely definable anchors and references
 .
@@ -276,7 +248,8 @@ Via the
 .Ql Nm Fl ix Ar category Ar key
 and
 .Ql Nm Fl ix Ar key
-usage forms anchors can be defined almost anywhere, e.g.,
+usage forms anchors can be defined almost everywhere.
+For example,
 .Ql Nm Fl ix Ns \0subsubsection """An interesting topic"""
 defines the anchor
 .Ql "An interesting topic"
@@ -291,9 +264,7 @@ will use the builtin name
 instead.
 .
 .Pp
-References to anchors that have been created via
-.Fl ix
-can be made by activating the
+References to such anchors can be made by activating the
 .Ic .Sx
 search extension via
 .Ql Nm Fl sx Ar category
@@ -310,27 +281,12 @@ followed by a normal local reference lookup:
 \&.Sx "An interesting topic"
 .Ed
 .
-.Pp
-It should be noted that these usage forms are mostly ment for automated
-conversion tools rather than for human manual creators:
-their use is non-trivial (which is owed to the implementation of
-.Xr mdoc 7 )
-and the resulting visual output should always be verified!
-As a rule of thumb anchors should
-.Em always
-be created inside some
-.Dq normal
-text so that they can be attached to something
-.Dq physical .
-.
 .Ss Creating table of contents
 .
-The final usage form of the
-.Xr mdocmx 7
-reference extension allows the creation of a document table of contents,
-which is of special interest when converting a
-.Xr mdoc 7
-document into formats such as HTML, XHTML or PDF.
+The final
+.Nm
+usage form allows creation of a table of contents, which is of special
+interest when converting into formats such as HTML, XHTML or PDF.
 To restrict the creation of the table of contents to special output
 formats, add the names of those
 .Xr troff 1
@@ -344,13 +300,12 @@ By default only
 .Ic .Sh
 section headers are a vivid part of the TOC; in order to include
 .Ic .Ss
-subsections also add a
-.Ql Fl tree
-argument.
+subsections add
+.Ql Fl tree .
 Note that if
 .Ql Fl tree
-is used in conjunction with output-device restrictions it will only
-affect those devices that appear later on the line.
+is used in conjunction with output-format restrictions it will only
+affect those output-formats that appear later on the line.
 .
 .Pp
 In the first of the following examples a table of contents will be
@@ -366,13 +321,11 @@ see a flat table of contents with only section headers.
 .
 .Ss Strings that affect mdocmx
 .
-.Sy Note
-that due to deficiencies in some implementations of
+Due to deficiencies in some implementations of
 .Xr troff 1
-strings given on the command line (via option
+strings given on the command line (via
 .Ql Fl d Ns )
-have to be given an argument in order to be perceived on the macro
-level.
+have to be given an argument to be perceivable on the macro level.
 Alternatively the shown numbers can be bitmixed via
 .Ev MDOCMX_FLAGS .
 .
@@ -406,7 +359,7 @@ lists the headings.
 .
 .Mx
 .It Dv mx-toc-force
-(32) Defining this string can be used to enforce the creation of a table of
+(32) Defining this can be used to enforce the creation of a table of
 contents as specified, even if the documents
 .Ql Fl toc
 configuration would not create one for the targeted output device.
@@ -415,8 +368,7 @@ A flat table of contents will be generated unless the value is (64)
 .
 .Mx
 .It Dv mx-toc-name
-If defined its content is used as the headline of the table of contents,
-which can be used for, e.g., localization purposes.
+If defined its content is used as the headline of the table of contents.
 The default is
 .Dq TABLE OF CONTENTS .
 (Note that if the table of contents has instead been generated by the
@@ -441,6 +393,18 @@ Whereas that is mostly owed to the necessity of ensuring (backward)
 compatibility with environments that do not support
 .Xr mdocmx 7 ,
 it also simplified implementation of the preprocessor.
+.
+.Pp
+Due to the way GNU
+.Xr mdoc 7
+is implemented, visual references will be placed after their text,
+instead of creating the well-known link style (for at least those output
+formats for which such style makes sense).
+Due to the same reason section headers which contain mdoc or troff
+commands alongside their content string are not supported.
+All this could be overcome by changing the recursive descendent GNU mdoc
+implementation that changes content during its descdend, a howto is
+thought (commented in mdocmx source).
 .
 .Ss Internal extended synopsis
 .
@@ -607,8 +571,8 @@ Be aware that the content of the
 .Ql Fl width
 argument to
 .Xr mdoc 7
-lists etc. is evaluated as if it were normal document content; e.g., in
-the following example the
+lists etc. is evaluated as if it were normal document content;
+for example, in the following example the
 .Ql \&Fn _atexit
 will be evaluated and may thus get used by
 .Nm :

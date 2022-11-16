@@ -1,12 +1,12 @@
 '\" -- preprocess: mdocmx(1)
 .\"@ mdocmx.1 - mdocmx(7) preprocessor for single-pass troff.
 .\"@ mdocmx(7) extends the mdoc(7) semantic markup language by references,
-.\"@ allowing mdoc(7) to create anchors and table of contents.
+.\"@ allowing it to create anchors and table of contents.
 .\"
 .\" Written 2014 - 2022 Steffen Nurpmeso <steffen@sdaoden.eu>.
 .\" Public Domain
 .
-.Dd Sep 03, 2022
+.Dd Nov 16, 2022
 .Dt MDOCMX 1
 .Os
 .Mx -enable
@@ -14,10 +14,11 @@
 .
 .Sh NAME
 .Nm mdocmx
-.Nd Preprocessor for the mdoc semantic markup language reference extension
+.Nd mdocmx reference extension mdoc manual preprocessor
 .
 .
 .Sh SYNOPSIS
+.
 .Nm
 .Op Fl t | Fl T Ar \&Sh | sh | \&Ss | ss Op Fl c
 .Op Fl v
@@ -29,27 +30,21 @@
 .Sh DESCRIPTION
 .
 .Nm
-can be used to overcome the restriction that single-pass troff
-implementations cannot create forward references.
-It will collect all referenceable anchors in a
-.Xr mdoc 7
-document, i.e.,
-.Ic .Sh
-and
-.Ic .Ss
-section headers as well as any explicitly set anchor of the
+is a preprocessor for
 .Xr mdocmx 7
-reference extension.
-The resulting
+that extends the
 .Xr mdoc 7
-document is itself distributable.
-It will be displayed normally unless
-.Xr mdocmx 7
-enabled
+semantic markup language with references, allowing it to create anchors
+and table of contents.
+It is needed because single-pass troff implementations cannot create
+forward references, and so it collects all referenceable anchors in a
 .Xr mdoc 7
-macros or special formatter programs with
+document.
+The result is itself a valid, compatible and distributable
+.Xr mdoc 7
+document, but which will be fully interactive if the local formatter is
 .Xr mdocmx 7
-support are used which can make use of the generated anchors.
+enabled.
 .
 .Bl -tag -width ".Fl _[9] Ar _"
 .Mx
@@ -58,33 +53,30 @@ In conjunction with
 .Fl t
 or
 .Fl T
-this will request compact display for the first level of the generated
-table of contents (the level covering
-.Ic .Ss
-subsections will always be displayed in compact format).
+a compact display for the first level of the generated table of contents
+is used (deeper levels are always compact).
 .
 .Mx
 .It Fl t
 Replace any
 .Ql .Mx -toc
-command line in the document with a resolved table of content that
-consists of section headers only.
+command in the document with a table of content of only section headers.
 The result does not require further
 .Xr mdocmx 7
-processing (but which will create references).
+processing (but which would create interactivity).
 .
 .Mx
 .It Fl T Ar \&Sh | sh | \&Ss | ss
 Replace any
 .Ql .Mx -toc
-command line in the document with a resolved table of contents that
-either consists of only section headers
+command in the document with a table of contents that either consists of
+only section headers
 .Pf ( Sq \&Sh Ns ) ,
 or the full tree of headers and their subsections
 .Pf ( Sq \&Ss Ns ) .
 The result does not require further
 .Xr mdocmx 7
-processing (but which will create references).
+processing (but which would create interactivity).
 .
 .Mx
 .It Fl v
@@ -108,21 +100,10 @@ all the possibilities that
 .Xr troff 1
 and the
 .Xr mdoc 7
-semantic markup language have to offer.
+semantic markup langouage have to offer.
 A future multi-pass
 .Xr troff 1
-will not require any preprocessor at all, nor do specialized formatters
-already today.
-Note that these restrictions should apply to
-.Xr mdocmx 7
-enabled documents that make use of anchors created by the extension
-command
-.Ic .Mx
-only \(en normal
-.Xr mdoc 7
-command based anchors should always be parsed correctly in all cases.
-Use verbosity on the preprocessor and enable debug on the macro side
-when developing manuals.
+will not require any preprocessor at all.
 .
 .
 .Sh COMPATIBILITY
