@@ -6,7 +6,7 @@
 .\" Written 2014 - 2022 Steffen Nurpmeso <steffen@sdaoden.eu>.
 .\" Public Domain
 .
-.Dd Nov 16, 2022
+.Dd Nov 23, 2022
 .Dt MDOCMX 7
 .Os
 .Mx -enable
@@ -15,6 +15,24 @@
 .Sh NAME
 .Nm .Mx
 .Nd reference extension for the mdoc manual language
+.
+.
+.eo
+.de mx-xr-url-create
+. ie 'pdf'\*[.T]' \{\
+.  ie 'mdocmx'\$3' \
+.   pdfhref W -D "https://www.sdaoden.eu/code-mdocmx-\$2.html" -P "\%" -A "\c" "[\$1]"
+.  el \
+.   pdfhref W -D "https://man.archlinux.org/man/\$3.\$2" -P "\%" -A "\c" "[\$1]"
+. \}
+. el \{\
+.  ie 'mdocmx'\$3' \
+.   URL "https://www.sdaoden.eu/code-mdocmx-\$2.html" "[\$1]"
+.  el \
+.   URL "https://man.archlinux.org/man/\$3.\$2" "[\$1]"
+. \}
+..
+.ec
 .
 .
 .Sh SYNOPSIS
@@ -85,7 +103,7 @@ preprocessor, implemented in portable
 and
 .Xr awk 1 .
 The mentioned properties also apply to preprocessed manuals.
-Also see
+For more please see
 .Sx COMPATIBILITY .
 .
 .Pp
@@ -101,8 +119,8 @@ and
 \(en with
 .Ql Nm Fl enable .
 The extension can be restricted to specific output formats by specifying
-the desired output devices; for convenience all typewriter-like devices
-can be addressed via
+the desired ones as further arguments;
+for convenience all typewriter-like devices can be addressed with
 .Ql Ar tty .
 It is not an error to specify a device for which no special
 .Xr mdocmx 7
@@ -160,9 +178,12 @@ are created automatically, but, again, with
 any
 .Ic .Sx
 referencing them will become interactive.
-Dependent upon the output device, cross-references defined via
+External cross-references defined via
 .Ic .Xr
-will also be backed with functionality.
+will also be backed with functionality; dependent upon the output format
+this requires setting
+.Dv mx-xr-url ,
+however.
 The following macros gain support for referenceable anchors via
 .Nm :
 .
@@ -218,7 +239,7 @@ Variable name.
 Variable type, type reference.
 .El
 .
-.Ss String cleanup and reference prevention
+.Ss "String cleanup and reference prevention"
 .
 Before strings get used for anchor creation or reference lookup any
 surrounding whitespace will be removed, as well as any preceding
@@ -274,25 +295,24 @@ for the builtin
 .Mx -sx
 .Ql Sx ixsx
 .Ar category )
-followed by a normal local reference lookup:
+followed by a normal local reference lookup.
+This complication is owed to compatibility of the resulting document.
 .
-.Bd -literal -offset indent
+.Bd -literal
 \&.Mx -sx subsubsection
 \&.Sx "An interesting topic"
 .Ed
 .
-.Ss Creating table of contents
+.Ss "Creating table of contents"
 .
 The final
 .Nm
 usage form allows creation of a table of contents, which is of special
 interest when converting into formats such as HTML, XHTML or PDF.
 To restrict the creation of the table of contents to special output
-formats, add the names of those
-.Xr troff 1
-output devices for which expansion is desired as further arguments to
+formats, add their names as further arguments to
 .Ql Fl toc ;
-for convenience all typewriter-like devices can be addressed via
+for convenience all typewriter-like devices can be addressed with
 .Ql Ar tty .
 .
 .Pp
@@ -314,7 +334,7 @@ In the second example a tree of contents will instead be generated for
 the output formats PDF and HTML, whereas typewriter-like devices will
 see a flat table of contents with only section headers.
 .
-.Bd -literal -offset indent
+.Bd -literal
 \&.Mx -toc pdf tty
 \&.Mx -toc tty -tree html pdf
 .Ed
@@ -380,10 +400,46 @@ of this string to ensure compatibility with, at least,
 .Mx
 .It Dv mx-toc-numbered
 (128) If defined the first level of the table of contents will be numbered.
+.
+.Mx
+.It Dv mx-xr-url
+The output formats HTML, XHTML and PDF require additional information,
+a target address, in order to be able to create interactive external
+.Ic .Xr
+references.
+Two modes are supported: one may assign an URL string or the hyphen-minus
+.Ql - ,
+in which case a macro
+.Ql mx-xr-url-create
+will be called.
+Thanks to
+.Xr troff Ns
+s late evaluation, the three arguments sequence number, manual section
+number, and reference name are available in both cases.
+The macro mode is therefore only needed when filtering is necessary, for
+example:
+.Bd -literal
+$ mdocmx mdocmx.7 |
+   MDOCMX_FLAGS=64 roff -Tpdf -mdoc \e
+    -dmx-xr-url='https://XY.org/man/\e$3.\e$2' \e
+    > x.pdf
+
+$ cat filter-example.tr
+\&.eo
+\&.de mx-xr-url-create
+\&. if 'html'\e*[.T]' \e{\e
+\&.  ie 'that-manual'\e$3' \e
+\&.   URL "https://man.YZ.org/\e$3-\e$2.htm" "[\e$1]"
+\&.  el \e
+\&.   URL "https://XY.org/man/\e$3.\e$2" "[\e$1]"
+\&. \e}
+\&..
+.ec
+.Ed
 .El
 .
 .
-.Sh IMPLEMENTATION NOTES
+.Sh "IMPLEMENTATION NOTES"
 .
 The
 .Nm
@@ -403,10 +459,10 @@ formats for which such style makes sense).
 Due to the same reason section headers which contain mdoc or troff
 commands alongside their content string are not supported.
 All this could be overcome by changing the recursive descendent GNU mdoc
-implementation that changes content during its descdend, a howto is
+implementation that changes content during its descend, a howto is
 thought (commented in mdocmx source).
 .
-.Ss Internal extended synopsis
+.Ss "Internal extended synopsis"
 .
 In addition to those usage forms that have been described above the
 .Ic .Mx
@@ -465,7 +521,7 @@ document that uses the
 .Xr mdocmx 7
 extension would for example be:
 .
-.Bd -literal -offset indent
+.Bd -literal
 \&.Dd April 22, 2015
 \&.Dt MDOCMX-EXAMPLE 7
 \&.Os
@@ -556,12 +612,11 @@ on developer machines and instead distribute the resulting documents.
 The
 .Nm
 environment appeared in 2014.
-It was rewritten to use OSC 8 in 2022.
+The terminal output was rewritten to use OSC 8 control sequences in 2022.
 .
 .
 .Sh AUTHORS
 .
-Idea and implementation by
 .An Steffen Nurpmeso Aq Mt steffen@sdaoden.eu .
 .
 .
@@ -579,19 +634,5 @@ will be evaluated and may thus get used by
 .
 .Pp
 .Dl ".Bl -tag -width "".It Fn _atexit"""
-.
-.Pp
-When developing a manual it may be helpful to increase verbosity of the
-.Xr mdocmx 1
-preprocessor on its standard error I/O channel by using the
-.Ql Fl v
-command line flag in order to get a notion on what is going on:
-.
-.Bd -literal -offset indent
-$ mdocmx.sh -vv < mdocmx.7 2> stderr.txt | \e
-  groff -Tutf8 -mdoc -dmx-toc-force=tree -dmx-debug=1 | \e
-  less -R
-$ cat stderr.txt
-.Ed
 .
 .\" s-ts-mode

@@ -6,7 +6,7 @@
 .\" Written 2014 - 2022 Steffen Nurpmeso <steffen@sdaoden.eu>.
 .\" Public Domain
 .
-.Dd Nov 16, 2022
+.Dd Nov 23, 2022
 .Dt MDOCMX 1
 .Os
 .Mx -enable
@@ -15,6 +15,24 @@
 .Sh NAME
 .Nm mdocmx
 .Nd mdocmx reference extension mdoc manual preprocessor
+.
+.
+.eo
+.de mx-xr-url-create
+. ie 'pdf'\*[.T]' \{\
+.  ie 'mdocmx'\$3' \
+.   pdfhref W -D "https://www.sdaoden.eu/code-mdocmx-\$2.html" -P "\%" -A "\c" "[\$1]"
+.  el \
+.   pdfhref W -D "https://man.archlinux.org/man/\$3.\$2" -P "\%" -A "\c" "[\$1]"
+. \}
+. el \{\
+.  ie 'mdocmx'\$3' \
+.   URL "https://www.sdaoden.eu/code-mdocmx-\$2.html" "[\$1]"
+.  el \
+.   URL "https://man.archlinux.org/man/\$3.\$2" "[\$1]"
+. \}
+..
+.ec
 .
 .
 .Sh SYNOPSIS
@@ -125,7 +143,6 @@ and
 .
 .Sh AUTHORS
 .
-Written by
 .An Steffen Nurpmeso Aq Mt steffen@sdaoden.eu .
 .
 .\" s-ts-mode
