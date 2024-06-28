@@ -127,7 +127,7 @@
 .
 .		\" Link output interface: see "Output formats" code block near EOF
 .		ie 'utf8'\*[.T]' \
-.			ds mx:istty
+.			ds mx:istty u
 .		el \{ .ie 'latin1'\*[.T]' \
 .			ds mx:istty
 .		el \{ .ie 'ascii'\*[.T]' \
@@ -145,9 +145,15 @@
 .			rm mx:gogogo
 .		\}\}\}\}
 .
+.		ds mx:dump-xr-sym \^\(if\^
+.		ds mx:dump-ref-sym \^\(dg\^
 .		ie d mx:istty \{\
 .			ds mx#s1 tty
 .			mx:dump-init-tty
+.			ie !'u'\*[mx:istty]' \{\
+.				ds mx:dump-xr-sym \^*\^
+.				ds mx:dump-ref-sym \^#\^
+.			\}
 .		\}
 .		el \
 .			ds mx#s1 \*[.T]
@@ -931,7 +937,7 @@
 .
 .de mx:dump-xr-tty-osc8
 \%\&\fR\m[blue]\
-[\X'tty: link man:\$3(\$2) id=\$1'\$1\X'tty: link']\m[]\fP\&\c
+\^\X'tty: link man:\$3(\$2) id=\$1'\*[mx:dump-xr-sym]\X'tty: link'\m[]\fP\&\c
 ..
 .
 .de mx:dump-anchor-tty-osc8
@@ -944,7 +950,7 @@
 ..
 .
 .de mx:dump-ref-tty-osc8
-\%\&\fR\m[blue][\X'tty: link #\$1'\$1\X'tty: link']\m[]\fP\&\c
+\%\&\fR\m[blue]\^\X'tty: link #\$1'\*[mx:dump-ref-sym]\X'tty: link'\m[]\fP\&\c
 ..
 .
 .\" HTML
@@ -960,7 +966,7 @@
 .de mx:dump-xr-html
 .	if !d mx-xr-url .return
 .	ie !'-'\*[mx-xr-url]' \
-.		URL "\*[mx-xr-url]" "[\$1]"
+.		URL "\*[mx-xr-url]" "\*[mx:dump-xr-sym]"
 .	el \
 .		mx-xr-url-create "\$1" "\$2" "\$3"
 ..
@@ -972,7 +978,7 @@
 ..
 .
 .de mx:dump-ref-html
-.	URL "#\$1" "[\$1]"
+.	URL "#\$1" "\*[mx:dump-ref-sym]"
 ..
 .
 .\" PDF
@@ -1004,7 +1010,7 @@
 .de mx:dump-xr-pdf
 .	if !d mx-xr-url .return
 .	ie !'-'\*[mx-xr-url]' \
-.		pdfhref W -D "\*[mx-xr-url]" -P "\%" -A "\c" "[\$1]"
+.		pdfhref W -D "\*[mx-xr-url]" -P "\%" -A "\c" "\*[mx:dump-xr-sym]"
 .	el \
 .		mx-xr-url-create "\$1" "\$2" "\$3"
 ..
@@ -1021,7 +1027,7 @@
 ..
 .
 .de mx:dump-ref-pdf
-.	pdfhref L -D "\$1" -P "\%" -A "\c" "[\$1]"
+.	pdfhref L -D "\$1" -P "\%" -A "\c" "\*[mx:dump-ref-sym]"
 ..
 .\" }}} Output formats
 .
