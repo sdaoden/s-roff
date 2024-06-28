@@ -655,6 +655,8 @@
 .as doc-str-St--p1003.1-2013   " (\*[Lq]\)\*[Px]\*[doc-str-St].1\*[Rq])
 .ds doc-str-St--p1003.1-2016   \*[doc-Tn-font-size]\%IEEE\*[doc-str-St] Std 1003.1-2008/Cor 2-2016
 .as doc-str-St--p1003.1-2016   " (\*[Lq]\)\*[Px]\*[doc-str-St].1\*[Rq])
+.ds doc-str-St--p1003.1-2024   \*[doc-Tn-font-size]\%IEEE\*[doc-str-St] Std 1003.1-2024
+.as doc-str-St--p1003.1-2024   " (\*[Lq]\)\*[Px]\*[doc-str-St].1\*[Rq])
 .
 .\" POSIX Part 2: Shell and Utilities
 .ds doc-str-St--p1003.2        \*[doc-Tn-font-size]\%IEEE\*[doc-str-St] Std 1003.2
