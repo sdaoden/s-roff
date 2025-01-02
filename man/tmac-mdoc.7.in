@@ -2053,6 +2053,8 @@ are:
 .St -isoC-99
 .It Li \-isoC\-2011
 .St -isoC-2011
+.It Li \-isoC\-2023
+.St -isoC-2023
 .El
 .
 .Pp
